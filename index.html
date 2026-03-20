@@ -3,892 +3,810 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#2563EB">
+  <meta name="theme-color" content="#667eea">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="CoworkKanban">
-  <title>CoworkKanban</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="apple-mobile-web-app-title" content="CoworkDashboard">
+  <title>CoworkDashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { overscroll-behavior: none; }
-    .kanban-col { min-height: 120px; }
-    .task-card { cursor: grab; user-select: none; }
-    .task-card:active { cursor: grabbing; }
-    .drag-over { background: #dbeafe !important; border: 2px dashed #3b82f6; }
-    .priority-hoch { border-left: 4px solid #ef4444; }
-    .priority-mittel { border-left: 4px solid #f59e0b; }
-    .priority-niedrig { border-left: 4px solid #22c55e; }
-    .overdue { background: #fef2f2 !important; }
-    @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:0.4} }
-    .recording-pulse { animation: pulse-rec 1s infinite; }
-    #bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
-    .nav-btn { flex: 1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px 2px; font-size:10px; gap:2px; cursor:pointer; color:#6b7280; transition:color 0.15s; }
-    .nav-btn.active { color:#2563EB; }
-    .nav-btn svg { width:22px; height:22px; }
-    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; display:flex; align-items:flex-end; }
-    .modal-box { background:#fff; border-radius:16px 16px 0 0; width:100%; max-height:90vh; overflow-y:auto; padding:24px 16px; }
-    .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; font-weight:600; }
-    .scrollable { overflow-x: auto; display:flex; gap:12px; padding-bottom:8px; }
-    .kanban-column { min-width:260px; flex-shrink:0; }
-    @media(min-width:768px){ .scrollable { flex-wrap:wrap; overflow-x:visible; } .kanban-column { min-width:220px; flex:1; } }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+    :root{
+      --glass:rgba(255,255,255,0.68);
+      --glass-strong:rgba(255,255,255,0.85);
+      --glass-subtle:rgba(255,255,255,0.45);
+      --glass-border:rgba(255,255,255,0.6);
+      --glass-shadow:0 8px 32px rgba(31,38,135,0.08),0 2px 8px rgba(31,38,135,0.04);
+      --blur:blur(24px) saturate(180%);
+      --accent:#007AFF;
+      --accent-r:rgba(0,122,255,0.12);
+      --text:#1c1c1e;
+      --text2:#6c6c70;
+      --text3:#aeaeb2;
+      --sep:rgba(60,60,67,0.1);
+      --red:#ff3b30;--green:#34c759;--orange:#ff9500;--purple:#af52de;--teal:#30b0c7;
+      --r-sm:10px;--r-md:16px;--r-lg:20px;--r-xl:28px;
+    }
+    body{
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+      background:linear-gradient(135deg,#ddd6fe 0%,#bfdbfe 30%,#a7f3d0 65%,#e9d5ff 100%);
+      background-attachment:fixed;
+      min-height:100dvh;color:var(--text);overflow:hidden;
+    }
+    #app{display:flex;height:100dvh;overflow:hidden;position:relative;}
+
+    /* ---- SIDEBAR (desktop only) ---- */
+    #sidebar{
+      display:none;width:240px;flex-shrink:0;
+      background:var(--glass-strong);
+      backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+      border-right:1px solid var(--glass-border);
+      box-shadow:var(--glass-shadow);
+      padding:0 10px 20px;
+      flex-direction:column;gap:2px;z-index:50;
+    }
+    .sidebar-brand{
+      font-size:17px;font-weight:800;letter-spacing:-0.4px;
+      padding:28px 10px 20px;color:var(--text);
+      display:flex;align-items:center;gap:8px;
+    }
+    .sidebar-brand .brand-icon{
+      width:30px;height:30px;border-radius:8px;
+      background:linear-gradient(135deg,#667eea,#764ba2);
+      display:flex;align-items:center;justify-content:center;font-size:14px;
+    }
+    .sidebar-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:16px 10px 6px;}
+    .sidebar-item{
+      display:flex;align-items:center;gap:10px;padding:9px 10px;
+      border-radius:var(--r-sm);cursor:pointer;color:var(--text2);
+      font-size:14px;font-weight:500;transition:all 0.15s;
+      border:none;background:none;width:100%;text-align:left;
+    }
+    .sidebar-item svg{width:17px;height:17px;flex-shrink:0;}
+    .sidebar-item:hover{background:rgba(0,0,0,0.04);color:var(--text);}
+    .sidebar-item.active{background:var(--accent-r);color:var(--accent);font-weight:600;}
+    .sidebar-item.active svg{stroke:var(--accent);}
+    .sidebar-spacer{flex:1;}
+    .sidebar-footer{padding-top:8px;border-top:1px solid var(--sep);}
+
+    /* ---- MAIN ---- */
+    #main-content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+    .tab-content{display:none;flex:1;overflow:hidden;flex-direction:column;}
+    .tab-content.active{display:flex;}
+
+    /* ---- BOTTOM NAV (mobile) ---- */
+    #bottom-nav{
+      display:flex;flex-shrink:0;
+      background:var(--glass-strong);
+      backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+      border-top:1px solid var(--glass-border);
+      padding-bottom:env(safe-area-inset-bottom);
+      box-shadow:0 -1px 0 rgba(0,0,0,0.06);
+      z-index:100;
+    }
+    .nav-item{
+      flex:1;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;padding:8px 4px 6px;gap:3px;
+      cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;
+      letter-spacing:.02em;transition:color 0.15s;
+      border:none;background:none;position:relative;
+    }
+    .nav-item svg{width:24px;height:24px;transition:transform 0.2s cubic-bezier(.34,1.56,.64,1);}
+    .nav-item.active{color:var(--accent);}
+    .nav-item.active svg{transform:scale(1.08);}
+    .nav-item.active::before{
+      content:'';position:absolute;top:0;left:25%;right:25%;
+      height:2.5px;background:var(--accent);border-radius:0 0 2px 2px;
+    }
+
+    /* ---- PAGE HEADER ---- */
+    .page-header{
+      background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+      border-bottom:1px solid var(--glass-border);
+      padding:max(16px,env(safe-area-inset-top)) 20px 14px;
+      flex-shrink:0;
+    }
+
+    /* ---- GLASS CARD ---- */
+    .glass-card{
+      background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+      border:1px solid var(--glass-border);border-radius:var(--r-lg);
+      box-shadow:var(--glass-shadow);overflow:hidden;
+    }
+    .glass-card-sm{
+      background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+      border:1px solid var(--glass-border);border-radius:var(--r-md);
+      box-shadow:var(--glass-shadow);overflow:hidden;
+    }
+
+    /* ---- LABELS ---- */
+    .section-label{
+      font-size:11px;font-weight:700;text-transform:uppercase;
+      letter-spacing:.07em;color:var(--text2);margin-bottom:8px;padding:0 2px;
+    }
+
+    /* ---- HOME ---- */
+    .home-scroll{
+      flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+      padding:16px;display:flex;flex-direction:column;gap:18px;
+    }
+    /* time grid */
+    .time-slot{display:flex;align-items:flex-start;min-height:58px;position:relative;}
+    .time-label{width:42px;flex-shrink:0;font-size:11px;color:var(--text3);padding-top:2px;text-align:right;padding-right:10px;font-weight:500;}
+    .time-line{flex:1;border-top:1px solid var(--sep);min-height:58px;cursor:pointer;transition:background 0.15s;border-radius:0 8px 8px 0;position:relative;}
+    .time-line:hover{background:rgba(0,122,255,0.05);}
+    .event-block{
+      position:absolute;left:4px;right:4px;
+      background:linear-gradient(135deg,rgba(0,122,255,0.14),rgba(0,122,255,0.07));
+      border-left:3px solid var(--accent);border-radius:8px;
+      padding:4px 8px;font-size:12px;font-weight:600;color:var(--accent);
+      cursor:pointer;z-index:2;box-shadow:0 2px 8px rgba(0,122,255,0.12);
+    }
+    /* week strip */
+    .week-day{
+      flex:1;display:flex;flex-direction:column;align-items:center;
+      gap:3px;padding:8px 4px;border-radius:12px;cursor:pointer;
+      transition:background 0.15s;
+    }
+    .week-day:hover{background:rgba(0,122,255,0.08);}
+    .week-day.today{background:rgba(0,122,255,0.1);}
+    .week-day.selected{background:var(--accent);}
+    .week-day.selected .wdn,.week-day.selected .wdnum{color:#fff!important;}
+    .wdn{font-size:10px;font-weight:600;color:var(--text2);}
+    .wdnum{font-size:16px;font-weight:700;}
+    .week-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);}
+    .week-day.selected .week-dot{background:rgba(255,255,255,0.7);}
+
+    /* ---- KANBAN ---- */
+    .kanban-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;}
+    .kanban-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+    .accordion-header{
+      width:100%;display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left;
+    }
+    .accordion-body{display:none;}
+    .accordion-body.open{display:block;}
+    .chevron{transition:transform 0.22s cubic-bezier(.34,1.56,.64,1);color:var(--text3);}
+    .chevron.open{transform:rotate(180deg);}
+    .task-item{
+      display:flex;align-items:flex-start;gap:10px;padding:11px 16px;
+      border-top:1px solid var(--sep);cursor:pointer;transition:background 0.1s;
+    }
+    .task-item:active{background:rgba(0,0,0,0.03);}
+    .task-check{
+      width:20px;height:20px;border-radius:50%;border:2px solid var(--sep);
+      flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;
+      transition:all 0.2s cubic-bezier(.34,1.56,.64,1);
+    }
+    .task-check.done{background:var(--green);border-color:var(--green);}
+    .pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+    .p-hoch{background:var(--red);}
+    .p-mittel{background:var(--orange);}
+    .p-niedrig{background:var(--green);}
+
+    /* ---- DIARY ---- */
+    .diary-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:12px;}
+
+    /* ---- MODAL ---- */
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,0.3);
+      backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+      z-index:500;display:flex;align-items:flex-end;
+      opacity:0;pointer-events:none;transition:opacity 0.25s;
+    }
+    .modal-overlay.open{opacity:1;pointer-events:all;}
+    .modal-box{
+      background:var(--glass-strong);
+      backdrop-filter:blur(40px) saturate(200%);-webkit-backdrop-filter:blur(40px) saturate(200%);
+      border:1px solid var(--glass-border);
+      border-top-left-radius:24px;border-top-right-radius:24px;
+      width:100%;max-height:90dvh;overflow-y:auto;
+      padding:20px 20px 36px;
+      transform:translateY(100%);
+      transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);
+      box-shadow:0 -4px 40px rgba(31,38,135,0.12);
+    }
+    .modal-overlay.open .modal-box{transform:translateY(0);}
+    .modal-handle{width:36px;height:4px;background:var(--text3);border-radius:2px;margin:0 auto 20px;opacity:0.35;}
+
+    /* ---- INPUTS ---- */
+    .input-field{
+      width:100%;background:rgba(120,120,128,0.08);border:1px solid var(--sep);
+      border-radius:var(--r-sm);padding:12px 14px;font-size:15px;
+      font-family:inherit;outline:none;color:var(--text);
+      transition:border-color 0.15s,background 0.15s;
+    }
+    .input-field:focus{border-color:var(--accent);background:rgba(0,122,255,0.04);}
+    textarea.input-field{line-height:1.6;}
+    .btn-primary{
+      background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);
+      padding:14px 20px;font-size:15px;font-weight:600;cursor:pointer;width:100%;
+      transition:opacity 0.15s,transform 0.1s;font-family:inherit;
+    }
+    .btn-primary:active{opacity:0.85;transform:scale(0.99);}
+    .btn-secondary{
+      background:rgba(120,120,128,0.1);color:var(--text);border:none;
+      border-radius:var(--r-sm);padding:14px 20px;font-size:15px;
+      font-weight:500;cursor:pointer;width:100%;font-family:inherit;
+    }
+
+    /* ---- REMINDER ---- */
+    .reminder-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--sep);}
+    .reminder-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:rpulse 2s infinite;}
+    @keyframes rpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+
+    /* ---- PATIENTEN ---- */
+    .pat-dash{
+      padding:16px;
+      background:linear-gradient(135deg,rgba(175,82,222,.1),rgba(88,86,214,.06));
+    }
+
+    /* ---- SCROLLBAR ---- */
+    ::-webkit-scrollbar{width:0;height:0;}
+
+    /* ======================== DESKTOP ======================== */
+    @media(min-width:768px){
+      body{overflow:hidden;}
+      #sidebar{display:flex;}
+      #bottom-nav{display:none;}
+      .page-header{padding:20px 28px 16px;}
+      .home-scroll{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        grid-template-rows:auto auto 1fr;
+        gap:20px;padding:24px;
+        align-content:start;overflow-y:auto;height:100%;
+      }
+      .reminders-section{grid-column:1/-1;}
+      .day-plan-section{grid-column:1;}
+      .week-plan-section{grid-column:2;}
+      .kanban-scroll{padding:24px;}
+      .kanban-grid{grid-template-columns:repeat(2,1fr);gap:16px;}
+      .diary-scroll{padding:24px;}
+      /* modal centered */
+      .modal-overlay{align-items:center;justify-content:center;}
+      .modal-box{
+        border-radius:24px;width:min(500px,90vw);max-height:80dvh;
+        transform:translateY(16px) scale(0.97);
+      }
+      .modal-overlay.open .modal-box{transform:translateY(0) scale(1);}
+    }
+    @media(min-width:1200px){
+      #sidebar{width:260px;}
+    }
   </style>
 </head>
-<body class="bg-gray-50 font-sans select-none" style="height:100dvh;overflow:hidden;display:flex;flex-direction:column;">
+<body>
+<div id="app">
 
-<!-- HEADER -->
-<header class="bg-blue-600 text-white px-4 py-3 flex items-center justify-between flex-shrink-0 shadow-md" style="padding-top:max(12px,env(safe-area-inset-top))">
-  <div class="flex items-center gap-2">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="11" rx="1" stroke-width="2"/></svg>
-    <span class="font-bold text-lg tracking-tight">CoworkKanban</span>
+<!-- ========== SIDEBAR ========== -->
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">⚡</div>
+    Cowork
   </div>
-  <div class="flex items-center gap-3">
-    <span id="sync-status" class="text-xs text-blue-100 flex items-center gap-1">
-      <span id="online-dot" class="w-2 h-2 rounded-full bg-green-300 inline-block"></span>
-      <span id="sync-label">Bereit</span>
-    </span>
-    <button onclick="syncNow()" class="bg-blue-500 hover:bg-blue-400 rounded-lg px-2 py-1 text-xs font-medium">Sync</button>
-    <button onclick="showSettings()" class="p-1">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
+  <div class="sidebar-section">Navigation</div>
+  <button class="sidebar-item active" onclick="showTab('home')" id="side-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Heute
+  </button>
+  <button class="sidebar-item" onclick="showTab('kanban')" id="side-kanban">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/></svg>
+    Kanban
+  </button>
+  <button class="sidebar-item" onclick="showTab('diary')" id="side-diary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Tagebuch
+  </button>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-footer">
+    <button class="sidebar-item" onclick="openSettings()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Einstellungen
     </button>
   </div>
-</header>
+</nav>
 
-<!-- MAIN CONTENT -->
-<main id="main-content" class="flex-1 overflow-y-auto overflow-x-hidden px-3 py-3" style="padding-bottom:80px">
-  <!-- Kanban view (default) -->
-  <div id="view-kanban">
-    <div class="scrollable" id="kanban-board"></div>
-  </div>
-  <!-- Tagebuch view -->
-  <div id="view-tagebuch" class="hidden">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-bold text-gray-800">Tagebuch</h2>
-      <button onclick="showDiaryEntry()" class="bg-blue-600 text-white rounded-xl px-4 py-2 text-sm font-medium">+ Eintrag</button>
-    </div>
-    <div id="diary-list" class="flex flex-col gap-3"></div>
-    <div class="text-center text-gray-400 text-sm mt-8 hidden" id="diary-empty">Noch keine Einträge. Starte mit dem ersten Tagebucheintrag!</div>
-  </div>
-  <!-- Erinnerungen view -->
-  <div id="view-erinnerungen" class="hidden">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-bold text-gray-800">Erinnerungen</h2>
-    </div>
-    <div id="reminder-list" class="flex flex-col gap-3"></div>
-    <div class="text-center text-gray-400 text-sm mt-8 hidden" id="reminder-empty">Keine Erinnerungen. Füge einer Aufgabe eine Erinnerungszeit hinzu.</div>
-  </div>
-</main>
+<!-- ========== MAIN CONTENT ========== -->
+<div id="main-content">
 
-<!-- BOTTOM NAV -->
-<nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-50 shadow-lg">
-  <button class="nav-btn active" data-cat="Barmelweid" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-    <span>Barmelweid</span>
+<!-- ===== HOME ===== -->
+<div id="tab-home" class="tab-content active">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div id="home-date" style="font-size:22px;font-weight:800;letter-spacing:-0.5px;"></div>
+        <div id="home-weekday" style="font-size:13px;color:var(--text2);margin-top:1px;font-weight:500;"></div>
+      </div>
+      <button onclick="openSettings()" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--glass-border);background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--glass-shadow);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="home-scroll">
+    <div id="reminders-section" class="reminders-section" style="display:none;">
+      <div class="section-label">Erinnerungen heute</div>
+      <div class="glass-card"><div id="reminders-list"></div></div>
+    </div>
+    <div class="day-plan-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="section-label" style="margin:0;">Tagesplan</div>
+        <button onclick="openAddEvent('day')" style="font-size:13px;color:var(--accent);font-weight:600;background:none;border:none;cursor:pointer;padding:2px 0;">+ Eintrag</button>
+      </div>
+      <div class="glass-card" style="padding:4px 0;"><div id="day-grid"></div></div>
+    </div>
+    <div class="week-plan-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="section-label" style="margin:0;">Wochenplan</div>
+        <button onclick="openAddEvent('week')" style="font-size:13px;color:var(--accent);font-weight:600;background:none;border:none;cursor:pointer;padding:2px 0;">+ Eintrag</button>
+      </div>
+      <div class="glass-card">
+        <div id="week-strip" style="display:flex;gap:4px;padding:12px 10px 8px;"></div>
+        <div id="week-events" style="min-height:56px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text2);padding:8px 12px 14px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KANBAN ===== -->
+<div id="tab-kanban" class="tab-content">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px;">Kanban</div>
+      <button onclick="openAddTask()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;">+ Task</button>
+    </div>
+  </div>
+  <div class="kanban-scroll">
+    <div id="kanban-grid" class="kanban-grid"></div>
+  </div>
+</div>
+
+<!-- ===== DIARY ===== -->
+<div id="tab-diary" class="tab-content">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px;">Tagebuch</div>
+      <button onclick="openAddDiary()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;">+ Eintrag</button>
+    </div>
+  </div>
+  <div class="diary-scroll" id="diary-list"></div>
+</div>
+
+</div><!-- /main-content -->
+
+<!-- ========== BOTTOM NAV ========== -->
+<nav id="bottom-nav">
+  <button class="nav-item active" onclick="showTab('home')" id="nav-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Heute
   </button>
-  <button class="nav-btn" data-cat="Patienten" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
-    <span>Patienten</span>
+  <button class="nav-item" onclick="showTab('kanban')" id="nav-kanban">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/></svg>Kanban
   </button>
-  <button class="nav-btn" data-cat="Privat" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-    <span>Privat</span>
-  </button>
-  <button class="nav-btn" data-cat="PSP" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-    <span>PSP</span>
-  </button>
-  <button class="nav-btn" data-cat="Tagebuch" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-    <span>Tagebuch</span>
-  </button>
-  <button class="nav-btn" data-cat="Erinnerungen" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-    <span>Erinnerung</span>
+  <button class="nav-item" onclick="showTab('diary')" id="nav-diary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Tagebuch
   </button>
 </nav>
 
-<!-- FAB ADD TASK -->
-<button id="fab-add" onclick="showAddTask()" class="fixed z-40 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-xl flex items-center justify-center transition-all" style="width:56px;height:56px;bottom:calc(72px + env(safe-area-inset-bottom) + 12px);right:16px;">
-  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-</button>
+</div><!-- /app -->
 
-<!-- MODAL: ADD/EDIT TASK -->
-<div id="modal-task" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('modal-task')">
+<!-- ========== MODALS ========== -->
+<!-- Event Modal -->
+<div id="modal-event" class="modal-overlay" onclick="closeModal('modal-event',event)">
   <div class="modal-box">
-    <div class="flex items-center justify-between mb-4">
-      <h3 id="modal-task-title" class="text-xl font-bold text-gray-800">Aufgabe hinzufügen</h3>
-      <button onclick="closeModal('modal-task')" class="text-gray-400 hover:text-gray-600">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;" id="modal-event-title">Eintrag</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input id="event-title" class="input-field" placeholder="Titel" type="text">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Von</label><input id="event-start" class="input-field" type="time"></div>
+        <div><label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Bis</label><input id="event-end" class="input-field" type="time"></div>
+      </div>
+      <input id="event-date" class="input-field" type="date">
+      <input id="event-note" class="input-field" placeholder="Notiz (optional)" type="text">
     </div>
-    <input type="hidden" id="task-edit-id">
-    <div class="flex flex-col gap-3">
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Titel *</label>
-        <input id="task-title-input" type="text" placeholder="Aufgabentitel..." class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Beschreibung</label>
-        <textarea id="task-desc-input" placeholder="Optional..." rows="2" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-sm font-medium text-gray-700 block mb-1">Kategorie</label>
-          <select id="task-cat-input" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option>Barmelweid</option>
-            <option>Patienten</option>
-            <option>Privat</option>
-            <option>PSP</option>
-            <option>Erinnerungen</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-sm font-medium text-gray-700 block mb-1">Status</label>
-          <select id="task-status-input" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="backlog">Backlog</option>
-            <option value="todo">Todo</option>
-            <option value="inprogress">In Progress</option>
-            <option value="done">Done</option>
-          </select>
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-sm font-medium text-gray-700 block mb-1">Priorität</label>
-          <select id="task-prio-input" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="mittel">Mittel</option>
-            <option value="hoch">Hoch</option>
-            <option value="niedrig">Niedrig</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-sm font-medium text-gray-700 block mb-1">Deadline</label>
-          <input id="task-deadline-input" type="date" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
-      </div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Erinnerung (Datum &amp; Uhrzeit)</label>
-        <input id="task-reminder-input" type="datetime-local" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div class="flex gap-2 mt-2">
-        <button onclick="saveTask()" class="flex-1 bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 transition">Speichern</button>
-        <button id="task-delete-btn" onclick="deleteCurrentTask()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">Löschen</button>
-      </div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn-secondary" onclick="closeModal('modal-event')" style="flex:1;">Abbrechen</button>
+      <button class="btn-primary" onclick="saveEvent()" style="flex:2;">Speichern</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: DIARY ENTRY -->
-<div id="modal-diary" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('modal-diary')">
+<!-- Task Modal -->
+<div id="modal-task" class="modal-overlay" onclick="closeModal('modal-task',event)">
   <div class="modal-box">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-xl font-bold text-gray-800">Tagebucheintrag</h3>
-      <button onclick="closeModal('modal-diary')" class="text-gray-400 hover:text-gray-600">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;">Task hinzufügen</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input id="task-title" class="input-field" placeholder="Task-Titel" type="text">
+      <select id="task-category" class="input-field">
+        <option value="Barmelweid">🏥 Barmelweid</option>
+        <option value="Patienten">👤 Patienten</option>
+        <option value="Privat">🏠 Privat</option>
+        <option value="PSP">📋 PSP</option>
+      </select>
+      <select id="task-status" class="input-field">
+        <option value="backlog">Backlog</option>
+        <option value="todo">Todo</option>
+        <option value="inprogress">In Progress</option>
+        <option value="done">Done</option>
+      </select>
+      <select id="task-priority" class="input-field">
+        <option value="mittel">Priorität: Mittel</option>
+        <option value="hoch">Priorität: Hoch</option>
+        <option value="niedrig">Priorität: Niedrig</option>
+      </select>
+      <input id="task-deadline" class="input-field" type="date" placeholder="Deadline (optional)">
     </div>
-    <input type="hidden" id="diary-edit-id">
-    <div class="flex flex-col gap-4">
-      <!-- Dictate button -->
-      <button id="dictate-btn" onclick="toggleDictation()" class="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-5 text-base font-semibold transition shadow-md">
-        <svg id="mic-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-7a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-        <span id="dictate-label">🎙 Auf Deutsch diktieren</span>
-      </button>
-      <div id="dictation-status" class="text-center text-sm text-gray-500 hidden recording-pulse">● Aufnahme läuft...</div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Text</label>
-        <textarea id="diary-text-input" placeholder="Schreibe oder diktiere deinen Eintrag..." rows="6" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="saveDiaryEntry()" class="flex-1 bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 transition">Speichern</button>
-        <button id="diary-delete-btn" onclick="deleteCurrentDiary()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">Löschen</button>
-      </div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn-secondary" onclick="closeModal('modal-task')" style="flex:1;">Abbrechen</button>
+      <button class="btn-primary" onclick="saveTask()" style="flex:2;">Speichern</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: SETTINGS -->
-<div id="modal-settings" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('modal-settings')">
+<!-- Diary Modal -->
+<div id="modal-diary" class="modal-overlay" onclick="closeModal('modal-diary',event)">
   <div class="modal-box">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-xl font-bold text-gray-800">Einstellungen</h3>
-      <button onclick="closeModal('modal-settings')" class="text-gray-400 hover:text-gray-600">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;">Tagebucheintrag</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input id="diary-date-input" class="input-field" type="date">
+      <textarea id="diary-text" class="input-field" rows="5" placeholder="Was möchtest du festhalten?"></textarea>
+      <button onclick="startDictation()" id="dict-btn" style="display:flex;align-items:center;gap:8px;border:1px solid var(--sep);border-radius:var(--r-sm);padding:11px 14px;background:rgba(120,120,128,0.08);cursor:pointer;font-size:14px;color:var(--text2);font-family:inherit;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v4a7 7 0 0 1-14 0v-4"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+        <span id="dict-label">Diktieren</span>
       </button>
     </div>
-    <div class="flex flex-col gap-4">
-      <div class="bg-blue-50 rounded-xl p-3 text-sm text-blue-800 font-medium">
-        🔄 GitHub Sync
-      </div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">GitHub Benutzername</label>
-        <input id="settings-user" type="text" placeholder="dein-username" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Repository-Name</label>
-        <input id="settings-repo" type="text" placeholder="CoworkKanban-data" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Personal Access Token</label>
-        <input id="settings-token" type="password" placeholder="ghp_..." class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <p class="text-xs text-gray-500 mt-1">Wird nur lokal in diesem Browser gespeichert.</p>
-      </div>
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800">
-        ⏰ <strong>Tipp:</strong> Für zuverlässige Erinnerungen auch wenn die App geschlossen ist: Dispatch Cron-Jobs aktivieren.
-      </div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Benachrichtigungen</label>
-        <button onclick="requestNotificationPermission()" id="notif-btn" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-left text-gray-700 hover:bg-gray-50">Berechtigung anfragen</button>
-        <p id="notif-status" class="text-xs text-gray-500 mt-1"></p>
-      </div>
-      <button onclick="saveSettings()" class="w-full bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 transition">Einstellungen speichern</button>
-      <div class="border-t pt-3">
-        <button onclick="exportData()" class="w-full border border-gray-300 text-gray-700 rounded-xl py-2.5 text-sm hover:bg-gray-50 transition">📥 Daten als JSON exportieren</button>
-      </div>
-      <div id="settings-sync-info" class="text-xs text-gray-400 text-center"></div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn-secondary" onclick="closeModal('modal-diary')" style="flex:1;">Abbrechen</button>
+      <button class="btn-primary" onclick="saveDiary()" style="flex:2;">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="modal-settings" class="modal-overlay" onclick="closeModal('modal-settings',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;">Einstellungen</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input id="set-user" class="input-field" placeholder="GitHub Username">
+      <input id="set-repo" class="input-field" placeholder="Repository Name (z.B. CoworkKanban-data)">
+      <input id="set-token" class="input-field" type="password" placeholder="GitHub Personal Access Token">
+      <div style="font-size:11px;color:var(--text3);line-height:1.6;">Token wird nur lokal im Browser-Speicher (IndexedDB) gespeichert.</div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn-secondary" onclick="closeModal('modal-settings')" style="flex:1;">Abbrechen</button>
+      <button class="btn-primary" onclick="saveSettings()" style="flex:2;">Speichern</button>
     </div>
   </div>
 </div>
 
 <script>
-// ===================== DB =====================
-const DB_NAME = 'CoworkKanban';
-const DB_VERSION = 1;
-let db;
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = e => {
-      const d = e.target.result;
-      if (!d.objectStoreNames.contains('tasks')) d.createObjectStore('tasks', {keyPath:'id'});
-      if (!d.objectStoreNames.contains('diary')) d.createObjectStore('diary', {keyPath:'id'});
-      if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings', {keyPath:'key'});
-    };
-    req.onsuccess = e => { db = e.target.result; resolve(db); };
-    req.onerror = e => reject(e);
-  });
-}
-
-function dbGetAll(store) {
-  return new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readonly');
-    const req = tx.objectStore(store).getAll();
-    req.onsuccess = e => res(e.target.result);
-    req.onerror = e => rej(e);
-  });
-}
-
-function dbPut(store, obj) {
-  return new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).put(obj);
-    req.onsuccess = e => res(e.target.result);
-    req.onerror = e => rej(e);
-  });
-}
-
-function dbDelete(store, id) {
-  return new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).delete(id);
-    req.onsuccess = e => res();
-    req.onerror = e => rej(e);
-  });
-}
-
-function dbClear(store) {
-  return new Promise((res,rej) => {
-    const tx = db.transaction(store,'readwrite');
-    const req = tx.objectStore(store).clear();
-    req.onsuccess = ()=>res();
-    req.onerror = e=>rej(e);
-  });
-}
-
-anynr function getSetting(key) {
-  return new Promise((res,rej) => {
-    const tx = db.transaction('settings','readonly');
-    const req = tx.objectStore('settings').get(key);
-    req.onsuccess = e => res(e.target.result ? e.target.result.value : null);
-    req.onerror = rej;
-  });
-}
-
-async function setSetting(key, value) {
-  return dbPut('settings', {key, value});
-}
-
-// ===================== STATE =====================
-let currentCat = 'Barmelweid';
-let tasks = [];
-let diaryEntries = [];
-let appSettings = { githubUser:'ctmos', githubRepo:'CoworkKanban-data', githubToken:'', lastSync:null };
-let recognition = null;
-let isDictating = false;
-
-// ===================== INIT =====================
-async function init() {
-  await openDB();
-  tasks = await dbGetAll('tasks');
-  diaryEntries = await dbGetAll('diary');
-  appSettings.githubUser = await getSetting('githubUser') || '';
-  appSettings.githubRepo = await getSetting('githubRepo') || 'CoworkKanban-data';
-  appSettings.githubToken = await getSetting('githubToken') || '';
-  appSettings.lastSync = await getSetting('lastSync') || null;
-  updateOnlineStatus();
-  renderCurrentView();
-  checkReminders();
-  updateSyncLabel();
-  // Auto-sync every 20 min
-  setInterval(() => { if(navigator.onLine) syncNow(false); }, 20*60*1000);
-  // Check reminders every 5 min
-  setInterval(checkReminders, 5*60*1000);
-  // Request notification permission if not set
-  if(Notification.permission === 'default') {
-    setTimeout(requestNotificationPermissionSilent, 3000);
-  }
-  // Register service worker
-  registerSW();
-  // Online/offline events
-  window.addEventListener('online', () => { updateOnlineStatus(); syncNow(false); });
-  window.addEventListener('offline', updateOnlineStatus);
-}
-
-// ===================== NAV =====================
-function switchCat(btn) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentCat = btn.dataset.cat;
-  renderCurrentView();
-}
-
-function renderCurrentView() {
-  const isTagebuch = currentCat === 'Tagebuch';
-  const isErinnerungen = currentCat === 'Erinnerungen';
-  document.getElementById('view-kanban').classList.toggle('hidden', isTagebuch || isErinnerungen);
-  document.getElementById('view-tagebuch').classList.toggle('hidden', !isTagebuch);
-  document.getElementById('view-erinnerungen').classList.toggle('hidden', !isErinnerungen);
-  document.getElementById('fab-add').classList.toggle('hidden', isTagebuch || isErinnerungen);
-  if (isTagebuch) renderDiary();
-  else if (isErinnerungen) renderReminders();
-  else renderKanban();
-}
-
-// ===================== KANBAN =====================
-const STATUSES = [
-  {key:'backlog', label:'Backlog', color:'bg-gray-100'},
-  {key:'todo', label:'Todo', color:'bg-blue-50'},
-  {key:'inprogress', label:'In Progress', color:'bg-yellow-50'},
-  {key:'done', label:'Done', color:'bg-green-50'},
-];
-
-function renderKanban() {
-  const board = document.getElementById('kanban-board');
-  const catTasks = tasks.filter(t => t.category === currentCat);
-  const now = new Date();
-  board.innerHTML = '';
-  STATUSES.forEach(st => {
-    const col = document.createElement('div');
-    col.className = `kanban-column ${st.color} rounded-2xl p-3`;
-    const colTasks = catTasks.filter(t => t.status === st.key);
-    col.innerHTML = `<div class="flex items-center justify-between mb-3">
-      <span class="font-bold text-sm text-gray-700">${st.label}</span>
-      <span class="badge bg-gray-200 text-gray-600">${colTasks.length}</span>
+const DB_V=1,eight="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <span id="dict-label">Diktieren</span>
+      </button>
     </div>
-    <div class="kanban-col flex flex-col gap-2" data-status="${st.key}"
-      ondragover="event.preventDefault();this.classList.add('drag-over')"
-      ondragleave="this.classList.remove('drag-over')"
-      ondrop="onDrop(event,'${st.key}')"></div>`;
-    const dropZone = col.querySelector('[data-status]');
-    colTasks.forEach(task => {
-      const card = createTaskCard(task, now);
-      dropZone.appendChild(card);
-    });
-    board.appendChild(col);
-  });
-}
-
-function createTaskCard(task, now) {
-  const card = document.createElement('div');
-  const overdue = task.deadline && new Date(task.deadline) < now && task.status !== 'done';
-  card.className = `task-card bg-white rounded-xl p-3 shadow-sm priority-${task.priority} ${overdue?'overdue':''} border border-gray-100`;
-  card.draggable = true;
-  card.dataset.id = task.id;
-  card.addEventListener('dragstart', e => e.dataTransfer.setData('taskId', task.id));
-  // Touch drag support
-  card.addEventListener('touchstart', handleTouchStart, {passive:true});
-  card.addEventListener('touchmove', handleTouchMove, {passive:false});
-  card.addEventListener('touchend', handleTouchEnd);
-  const prioColors = {hoch:'bg-red-100 text-red-700', mittel:'bg-yellow-100 text-yellow-700', niedrig:'bg-green-100 text-green-700'};
-  const prioLabel = {hoch:'Hoch', mittel:'Mittel', niedrig:'Niedrig'};
-  const deadlineHtml = task.deadline ? `<span class="text-xs ${overdue?'text-red-600 font-semibold':'text-gray-400'}">📅 ${new Date(task.deadline).toLocaleDateString('de-DE')}</span>` : '';
-  const reminderHtml = task.reminderAt ? `<span class="text-xs text-purple-500">⏰ ${new Date(task.reminderAt).toLocaleString('de-DE',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>` : '';
-  card.innerHTML = `<div class="flex items-start justify-between gap-2">
-    <span class="text-sm font-semibold text-gray-800 leading-snug flex-1">${esc(task.title)}</span>
-    <button onclick="editTask('${task.id}')" class="text-gray-300 hover:text-gray-500 flex-shrink-0 mt-0.5">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-    </button>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn-secondary" onclick="closeModal('modal-diary')" style="flex:1;">Abbrechen</button>
+      <button class="btn-primary" onclick="saveDiary()" style="flex:2;">Speichern</button>
+    </div>
   </div>
-  ${task.description?`<p class="text-xs text-gray-500 mt-1 line-clamp-2">${esc(task.description)}</p>`:''}
-  <div class="flex flex-wrap items-center gap-2 mt-2">
-    <span class="badge ${prioColors[task.priority]} text-xs">${prioLabel[task.priority]}</span>
-    ${deadlineHtml}
-    ${reminderHtml}
-  </div>`;
-  return card;
-}
+</div>
 
-function onDrop(e, newStatus) {
-  e.preventDefault();
-  e.target.classList.remove('drag-over');
-  const id = e.dataTransfer.getData('taskId');
-  if (!id) return;
-  updateTaskStatus(id, newStatus);
-}
-
-async function updateTaskStatus(id, newStatus) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
-  task.status = newStatus;
-  task.updatedAt = new Date().toISOString();
-  await dbPut('tasks', task);
-  renderKanban();
-  scheduleSyncDebounced();
-}
-
-// Touch drag
-let touchTask = null, touchClone = null, touchStartY = 0;
-function handleTouchStart(e) {
-  touchTask = this;
-  touchStartY = e.touches[0].clientY;
-}
-function handleTouchMove(e) {
-  if (!touchTask) return;
-  e.preventDefault();
-  const touch = e.touches[0];
-  if (!touchClone) {
-    touchClone = touchTask.cloneNode(true);
-    touchClone.style.cssText = `position:fixed;opacity:0.8;pointer-events:none;z-index:999;width:${touchTask.offsetWidth}px;top:${touchTask.getBoundingClientRect().top}px;left:${touchTask.getBoundingClientRect().left}px;`;
-    document.body.appendChild(touchClone);
-  }
-  touchClone.style.top = (touch.clientY - 40) + 'px';
-  touchClone.style.left = (touch.clientX - touchTask.offsetWidth/2) + 'px';
-  document.querySelectorAll('[data-status]').forEach(zone => {
-    const rect = zone.getBoundingClientRect();
-    if (touch.clientX >= rect.left && touch.clientX <= rect.right && touch.clientY >= rect.top && touch.clientY <= rect.bottom)
-      zone.classList.add('drag-over');
-    else zone.classList.remove('drag-over');
-  });
-}
-function handleTouchEnd(e) {
-  if (touchClone) { touchClone.remove(); touchClone = null; }
-  if (!touchTask) return;
-  const touch = e.changedTouches[0];
-  let dropped = false;
-  document.querySelectorAll('[data-status]').forEach(zone => {
-    zone.classList.remove('drag-over');
-    const rect = zone.getBoundingClientRect();
-    if (touch.clientX >= rect.left && touch.clientX <= rect.right && touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
-      const newStatus = zone.dataset.status;
-      updateTaskStatus(touchTask.dataset.id, newStatus);
-      dropped = true;
-    }
-  });
-  touchTask = null;
-}
-
-// ===================== TASK MODAL =====================
-function showAddTask() {
-  document.getElementById('task-edit-id').value = '';
-  document.getElementById('task-title-input').value = '';
-  document.getElementById('task-desc-input').value = '';
-  document.getElementById('task-cat-input').value = currentCat === 'Tagebuch' || currentCat === 'Erinnerungen' ? 'Barmelweid' : currentCat;
-  document.getElementById('task-status-input').value = 'todo';
-  document.getElementById('task-prio-input').value = 'mittel';
-  document.getElementById('task-deadline-input').value = '';
-  document.getElementById('task-reminder-input').value = '';
-  document.getElementById('task-delete-btn').classList.add('hidden');
-  document.getElementById('modal-task-title').textContent = 'Aufgabe hinzufügen';
-  openModal('modal-task');
-}
-
-function editTask(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
-  document.getElementById('task-edit-id').value = task.id;
-  document.getElementById('task-title-input').value = task.title;
-  document.getElementById('task-desc-input').value = task.description || '';
-  document.getElementById('task-cat-input').value = task.category;
-  document.getElementById('task-status-input').value = task.status;
-  document.getElementById('task-prio-input').value = task.priority;
-  document.getElementById('task-deadline-input').value = task.deadline || '';
-  document.getElementById('task-reminder-input').value = task.reminderAt ? task.reminderAt.slice(0,16) : '';
-  document.getElementById('task-delete-btn').classList.remove('hidden');
-  document.getElementById('modal-task-title').textContent = 'Aufgabe bearbeiten';
-  openModal('modal-task');
-}
-
-async function saveTask() {
-  const title = document.getElementById('task-title-input').value.trim();
-  if (!title) { alert('Bitte einen Titel eingeben.'); return; }
-  const id = document.getElementById('task-edit-id').value || uuid();
-  const existing = tasks.find(t => t.id === id);
-  const task = {
-    id,
-    title,
-    description: document.getElementById('task-desc-input').value.trim(),
-    category: document.getElementById('task-cat-input').value,
-    status: document.getElementById('task-status-input').value,
-    priority: document.getElementById('task-prio-input').value,
-    deadline: document.getElementById('task-deadline-input').value || null,
-    reminderAt: document.getElementById('task-reminder-input').value ? new Date(document.getElementById('task-reminder-input').value).toISOString() : null,
-    createdAt: existing ? existing.createdAt : new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  if (existing) {
-    const idx = tasks.indexOf(existing);
-    tasks[idx] = task;
-  } else {
-    tasks.push(task);
-  }
-  await dbPut('tasks', task);
-  closeModal('modal-task');
-  renderCurrentView();
-  scheduleSyncDebounced();
-}
-
-async function deleteCurrentTask() {
-  const id = document.getElementById('task-edit-id').value;
-  if (!id || !confirm('Aufgabe löschen?')) return;
-  tasks = tasks.filter(t => t.id !== id);
-  await dbDelete('tasks', id);
-  closeModal('modal-task');
-  renderCurrentView();
-  scheduleSyncDebounced();
-}
-
-// ===================== DIARY =====================
-function renderDiary() {
-  const list = document.getElementById('diary-list');
-  const empty = document.getElementById('diary-empty');
-  const sorted = [...diaryEntries].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-  if (sorted.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
-  empty.classList.add('hidden');
-  list.innerHTML = sorted.map(e => `
-    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-      <div class="flex items-start justify-between gap-2 mb-2">
-        <span class="text-xs text-gray-400">${new Date(e.createdAt).toLocaleString('de-DE',{weekday:'short',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
-        <button onclick="editDiaryEntry('${e.id}')" class="text-gray-300 hover:text-gray-500 flex-shrink-0">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-        </button>
+<!-- Settings Modal -->
+<div id="modal-settings" class="modal-overlay" onclick="closeModal('modal-settings',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;">Einstellungen</div>
+    <div class="glass-card-sm" style="margin-bottom:16px;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--sep);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);">GitHub Sync</div>
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+        <div><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Benutzername</label><input id="settings-user" class="input-field" type="text" placeholder="ctmos"></div>
+        <div><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Repository</label><input id="settings-repo" class="input-field" type="text" placeholder="CoworkKanban-data"></div>
+        <div><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">Token</label><input id="settings-token" class="input-field" type="password" placeholder="ghp_..."></div>
       </div>
-      <p class="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">${esc(e.text)}</p>
-    </div>`).join('');
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="btn-secondary" onclick="syncNow()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sync
+      </button>
+      <button class="btn-primary" onclick="saveSettings()" style="flex:2;">Speichern</button>
+    </div>
+    <div id="sync-status-text" style="font-size:12px;color:var(--text2);text-align:center;min-height:18px;"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DB
+// ============================================================
+const DB_NAME='CoworkDashboard';const DB_VERSION=1;let db;
+async function initDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=e=>{const d=e.target.result;['events','tasks','diary','settings'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:s==='settings'?'key':'id'});});};r.onsuccess=e=>{db=e.target.result;res();};r.onerror=rej;});}
+const dbGet=(s,k)=>new Promise(r=>db.transaction(s).objectStore(s).get(k).onsuccess=e=>r(e.target.result));
+const dbGetAll=s=>new Promise(r=>db.transaction(s).objectStore(s).getAll().onsuccess=e=>r(e.target.result));
+const dbPut=(s,o)=>new Promise(r=>db.transaction(s,'readwrite').objectStore(s).put(o).onsuccess=r);
+const dbDel=(s,k)=>new Promise(r=>db.transaction(s,'readwrite').objectStore(s).delete(k).onsuccess=r);
+const uuid=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
+
+// ============================================================
+// SETTINGS
+// ============================================================
+let S={githubUser:'ctmos',githubRepo:'CoworkKanban-data',githubToken:''};
+async function loadSettings(){const u=await dbGet('settings','githubUser');const r=await dbGet('settings','githubRepo');const t=await dbGet('settings','githubToken');if(u)S.githubUser=u.value;if(r)S.githubRepo=r.value;if(t)S.githubToken=t.value;}
+function openSettings(){document.getElementById('settings-user').value=S.githubUser;document.getElementById('settings-repo').value=S.githubRepo;document.getElementById('settings-token').value=S.githubToken;openModal('modal-settings');}
+async function saveSettings(){S.githubUser=document.getElementById('settings-user').value.trim()||'ctmos';S.githubRepo=document.getElementById('settings-repo').value.trim()||'CoworkKanban-data';S.githubToken=document.getElementById('settings-token').value.trim();await dbPut('settings',{key:'githubUser',value:S.githubUser});await dbPut('settings',{key:'githubRepo',value:S.githubRepo});await dbPut('settings',{key:'githubToken',value:S.githubToken});setSyncStatus('Gespeichert ✓');setTimeout(()=>closeModal('modal-settings'),800);}
+
+// ============================================================
+// NAV
+// ============================================================
+let currentTab='home';
+function showTab(t){
+  document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+  ['nav-','side-'].forEach(p=>{const el=document.getElementById(p+t);if(el)el.classList.add('active');});
+  ['nav-home','nav-kanban','nav-diary','side-home','side-kanban','side-diary'].forEach(id=>{const el=document.getElementById(id);if(el&&!id.endsWith(t))el.classList.remove('active');});
+  document.getElementById('tab-'+t).classList.add('active');
+  currentTab=t;
+  if(t==='home')renderHome();if(t==='kanban')renderKanban();if(t==='diary')renderDiary();
 }
 
-function showDiaryEntry() {
-  document.getElementById('diary-edit-id').value = '';
-  document.getElementById('diary-text-input').value = '';
-  document.getElementById('diary-delete-btn').classList.add('hidden');
-  openModal('modal-diary');
+// ============================================================
+// MODALS
+// ============================================================
+const openModal=id=>document.getElementById(id).classList.add('open');
+function closeModal(id,e){if(e&&e.target!==document.getElementById(id))return;document.getElementById(id).classList.remove('open');}
+
+// ============================================================
+// HOME
+// ============================================================
+let selWeek=null;
+function renderHome(){
+  const now=new Date();
+  const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  const months=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  document.getElementById('home-date').textContent=`${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('home-weekday').textContent=days[now.getDay()];
+  renderDayGrid();renderWeekStrip();renderReminders();
 }
 
-function editDiaryEntry(id) {
-  const e = diaryEntries.find(d => d.id === id);
-  if (!e) return;
-  document.getElementById('diary-edit-id').value = e.id;
-  document.getElementById('diary-text-input').value = e.text;
-  document.getElementById('diary-delete-btn').classList.remove('hidden');
-  openModal('modal-diary');
+async function renderReminders(){
+  const tasks=await dbGetAll('tasks');const today=new Date().toISOString().slice(0,10);
+  const due=tasks.filter(t=>t.reminderAt&&t.reminderAt.slice(0,10)===today&&t.status!=='done');
+  const sec=document.getElementById('reminders-section');const list=document.getElementById('reminders-list');
+  if(!due.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  list.innerHTML=due.map(t=>`<div class="reminder-item"><div class="reminder-dot"></div><div style="flex:1;"><div style="font-size:13px;font-weight:600;">${t.title}</div><div style="font-size:11px;color:var(--text2);">${t.category} · ${t.reminderAt?.slice(11,16)||''}</div></div></div>`).join('');
 }
 
-async function saveDiaryEntry() {
-  const text = document.getElementById('diary-text-input').value.trim();
-  if (!text) { alert('Bitte Text eingeben.'); return; }
-  const id = document.getElementById('diary-edit-id').value || uuid();
-  const existing = diaryEntries.find(d => d.id === id);
-  const entry = { id, text, createdAt: existing ? existing.createdAt : new Date().toISOString(), updatedAt: new Date().toISOString() };
-  if (existing) { const idx = diaryEntries.indexOf(existing); diaryEntries[idx] = entry; }
-  else diaryEntries.push(entry);
-  await dbPut('diary', entry);
-  closeModal('modal-diary');
-  if (isDictating) stopDictation();
-  renderDiary();
-  scheduleSyncDebounced();
+async function renderDayGrid(){
+  const today=new Date().toISOString().slice(0,10);
+  const events=(await dbGetAll('events')).filter(e=>e.date===today);
+  const grid=document.getElementById('day-grid');
+  const hours=[];for(let h=7;h<=22;h++)hours.push(h);
+  grid.innerHTML=hours.map(h=>{
+    const lbl=h+':00';
+    const hEv=events.filter(e=>e.startTime&&parseInt(e.startTime)===h);
+    const evH=hEv.map(e=>`<div class="event-block" onclick="event.stopPropagation();deleteEvent('${e.id}')"><div style="font-size:10px;opacity:.7;">${e.startTime||''} ${e.endTime?'→ '+e.endTime:''}</div><div>${e.title}</div></div>`).join('');
+    return `<div class="time-slot" onclick="quickAddEvent('${lbl}')"><div class="time-label">${lbl}</div><div class="time-line">${evH}</div></div>`;
+  }).join('');
 }
 
-async function deleteCurrentDiary() {
-  const id = document.getElementById('diary-edit-id').value;
-  if (!id || !confirm('Eintrag löschen?')) return;
-  diaryEntries = diaryEntries.filter(d => d.id !== id);
-  await dbDelete('diary', id);
-  closeModal('modal-diary');
-  renderDiary();
-  scheduleSyncDebounced();
+async function renderWeekStrip(){
+  const strip=document.getElementById('week-strip');
+  const now=new Date();const day=now.getDay();
+  const mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));
+  const dns=['Mo','Di','Mi','Do','Fr','Sa','So'];
+  const allEv=await dbGetAll('events');const today=now.toISOString().slice(0,10);
+  strip.innerHTML=Array.from({length:7},(_,i)=>{
+    const d=new Date(mon);d.setDate(mon.getDate()+i);
+    const ds=d.toISOString().slice(0,10);
+    const isT=ds===today;const isSel=ds===selWeek;
+    const hasEv=allEv.some(e=>e.date===ds);
+    return `<div class="week-day ${isT?'today':''} ${isSel?'selected':''}" onclick="selectWeekDay('${ds}')"><div class="wdn">${dns[i]}</div><div class="wdnum" style="color:${isT?'var(--accent)':'var(--text)'};">${d.getDate()}</div>${hasEv?`<div class="week-dot"></div>`:`<div style="height:5px;"></div>`}</div>`;
+  }).join('');
 }
 
-// ===================== DICTATION =====================
-function toggleDictation() {
-  if (isDictating) stopDictation();
-  else startDictation();
+async function selectWeekDay(ds){
+  selWeek=ds;renderWeekStrip();
+  const ev=(await dbGetAll('events')).filter(e=>e.date===ds);
+  const el=document.getElementById('week-events');
+  if(!ev.length){el.innerHTML=`<span style="color:var(--text2);font-size:13px;">Keine Einträge</span>`;return;}
+  el.innerHTML=`<div style="width:100%;">`+ev.sort((a,b)=>(a.startTime||'').localeCompare(b.startTime||'')).map(e=>`<div style="display:flex;gap:10px;padding:9px 12px;border-bottom:1px solid var(--sep);"><div style="font-size:12px;color:var(--accent);font-weight:700;min-width:38px;">${e.startTime||''}</div><div style="flex:1;font-size:13px;font-weight:500;">${e.title}</div></div>`).join('')+`</div>`;
 }
 
-function startDictation() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { alert('Spracherkennung wird in diesem Browser nicht unterstützt. Bitte Chrome verwenden.'); return; }
-  recognition = new SR();
-  recognition.lang = 'de-DE';
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  let finalText = document.getElementById('diary-text-input').value;
-  recognition.onresult = e => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) finalText += e.results[i][0].transcript + ' ';
-      else interim = e.results[i][0].transcript;
-    }
-    document.getElementById('diary-text-input').value = finalText + interim;
-  };
-  recognition.onerror = e => { console.error('Speech error', e); stopDictation(); };
-  recognition.onend = () => { if (isDictating) recognition.start(); };
-  recognition.start();
-  isDictating = true;
-  document.getElementById('dictate-btn').classList.add('bg-red-600');
-  document.getElementById('dictate-btn').classList.remove('bg-blue-600');
-  document.getElementById('dictate-label').textContent = '⏹ Aufnahme stoppen';
-  document.getElementById('dictation-status').classList.remove('hidden');
+let addEvType='day';
+function openAddEvent(type){
+  addEvType=type;
+  document.getElementById('modal-event-title').textContent=type==='day'?'Tagesplan – Eintrag':'Wochenplan – Eintrag';
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('event-date').value=selWeek&&type==='week'?selWeek:today;
+  ['event-title','event-start','event-end','event-note'].forEach(id=>document.getElementById(id).value='');
+  openModal('modal-event');
 }
-
-function stopDictation() {
-  if (recognition) { recognition.onend = null; recognition.stop(); recognition = null; }
-  isDictating = false;
-  document.getElementById('dictate-btn').classList.remove('bg-red-600');
-  document.getElementById('dictate-btn').classList.add('bg-blue-600');
-  document.getElementById('dictate-label').textContent = '🎙 Auf Deutsch diktieren';
-  document.getElementById('dictation-status').classList.add('hidden');
+function quickAddEvent(lbl){
+  addEvType='day';
+  document.getElementById('modal-event-title').textContent='Tagesplan – Eintrag';
+  document.getElementById('event-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('event-start').value=parseInt(lbl)+':00';
+  document.getElementById('event-end').value=(parseInt(lbl)+1)+':00';
+  document.getElementById('event-title').value='';document.getElementById('event-note').value='';
+  openModal('modal-event');
 }
+async function saveEvent(){
+  const title=document.getElementById('event-title').value.trim();if(!title)return;
+  const ev={id:uuid(),title,date:document.getElementById('event-date').value,startTime:document.getElementById('event-start').value,endTime:document.getElementById('event-end').value,note:document.getElementById('event-note').value.trim(),type:addEvType,createdAt:new Date().toISOString()};
+  await dbPut('events',ev);closeModal('modal-event');renderHome();syncData();
+}
+async function deleteEvent(id){if(!confirm('Eintrag löschen?'))return;await dbDel('events',id);renderHome();syncData();}
 
-// ===================== REMINDERS =====================
-function renderReminders() {
-  const list = document.getElementById('reminder-list');
-  const empty = document.getElementById('reminder-empty');
-  const withReminder = tasks.filter(t => t.reminderAt).sort((a,b) => new Date(a.reminderAt) - new Date(b.reminderAt));
-  if (withReminder.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
-  empty.classList.add('hidden');
-  const now = new Date();
-  list.innerHTML = withReminder.map(t => {
-    const rDate = new Date(t.reminderAt);
-    const isPast = rDate < now;
-    return `<div class="bg-white rounded-2xl p-4 shadow-sm border ${isPast?'border-red-200 bg-red-50':'border-gray-100'}">
-      <div class="flex items-start justify-between gap-2">
-        <div class="flex-1">
-          <div class="text-xs font-semibold ${isPast?'text-red-500':'text-purple-500'} mb-1">⏰ ${rDate.toLocaleString('de-DE',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
-          <div class="text-sm font-semibold text-gray-800">${esc(t.title)}</div>
-          <div class="text-xs text-gray-400 mt-0.5">${t.category} · ${{backlog:'Backlog',todo:'Todo',inprogress:'In Progress',done:'Done'}[t.status]}</div>
+// ============================================================
+// KANBAN
+// ============================================================
+const CATS=[
+  {id:'Barmelweid',icon:'🏥',color:'#0ea5e9',bg:'rgba(14,165,233,.07)',br:'rgba(14,165,233,.25)'},
+  {id:'Patienten',icon:'👤',color:'#af52de',bg:'rgba(175,82,222,.07)',br:'rgba(175,82,222,.25)',special:true},
+  {id:'Privat',icon:'🏠',color:'#34c759',bg:'rgba(52,199,89,.07)',br:'rgba(52,199,89,.25)'},
+  {id:'PSP',icon:'📋',color:'#ff9500',bg:'rgba(255,149,0,.07)',br:'rgba(255,149,0,.25)'}
+];
+const STO�['backlog','todo','inprogress','done'];
+const STL={backlog:'Backlog',todo:'Todo',inprogress:'In Progress',done:'Done'};
+let openCats=new Set();
+
+async function renderKanban(){
+  const tasks=await dbGetAll('tasks');
+  const container=document.getElementById('kanban-grid');
+  container.innerHTML=CATS.map(cat=>{
+    const ct=tasks.filter(t=>t.category===cat.id);
+    const open=openCats.has(cat.id);
+    const nOpen=ct.filter(t=>t.status!=='done').length;
+    return `<div class="glass-card" style="border-color:${cat.br};">
+      <button class="accordion-header" onclick="toggleCat('${cat.id}')" style="background:${cat.bg};">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px;">${cat.icon}</span>
+          <div>
+            <div style="font-size:15px;font-weight:700;">${cat.id}</div>
+            ${cat.special?`<div style="font-size:10px;font-weight:700;color:${cat.color};text-transform:uppercase;letter-spacing:.04em;">Dashboard</div>`:''}
+          </div>
         </div>
-        <button onclick="editTask('${t.id}')" class="text-gray-300 hover:text-gray-500">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-        </button>
-      </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${nOpen>0?`<span style="font-size:12px;font-weight:700;background:rgba(0,0,0,0.05);padding:2px 9px;border-radius:99px;color:var(--text2);">${nOpen}</span>`:''}
+          <svg class="chevron ${open?'open':''}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </button>
+      <div class="accordion-body ${open?'open':''}">${cat.special?renderPatDash(ct):renderCatTasks(cat.id,ct)}</div>
     </div>`;
   }).join('');
 }
 
-function checkReminders() {
-  if (Notification.permission !== 'granted') return;
-  const now = new Date();
-  const fiveMinAgo = new Date(now - 5*60*1000);
-  tasks.forEach(task => {
-    if (!task.reminderAt) return;
-    const rDate = new Date(task.reminderAt);
-    if (rDate >= fiveMinAgo && rDate <= now) {
-      new Notification('⏰ CoworkKanban Erinnerung', {
-        body: task.title,
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%232563EB"/><text y=".9em" font-size="80" x="10">📋</text></svg>'
-      });
-    }
-  });
+function renderCatTasks(catId,tasks){
+  if(!tasks.length)return`<div style="padding:16px;font-size:13px;color:var(--text2);">Keine Tasks · <button onclick="openAddTask('${catId}')" style="color:var(--accent);font-weight:600;background:none;border:none;cursor:pointer;">+ hinzufügen</button></div>`;
+  return STO.map(st=>{
+    const sts=tasks.filter(t=>t.status===st);if(!sts.length)return'';
+    return`<div><div style="padding:4px 16px 6px;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;">${STL[st]}</div>${sts.map(t=>`<div class="task-item" onclick="cycleStatus('${t.id}')"><div class="task-check ${t.status==='done'?'done':''}">${t.status==='done'?'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}</div><div class="pdot p-${t.priority}"></div><div style="flex:1;"><div style="font-size:13px;font-weight:500;${t.status==='done'?'text-decoration:line-through;color:var(--text3);':''}">${t.title}</div>${t.deadline?`<div style="font-size:11px;color:var(--text2);">📅 ${t.deadline}</div>`:''}</div></div>`).join('')}</div>`;
+  }).join('');
 }
 
-async function requestNotificationPermission() {
-  const perm = await Notification.requestPermission();
-  updateNotifStatus();
-  if (perm === 'granted') alert('Benachrichtigungen aktiviert! ✅');
+function renderPatDash(tasks){
+  const n=tasks.filter(t=>t.status!=='done').length;
+  return`<div class="pat-dash"><div style="font-size:10px;font-weight:700;color:#af52de;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Patienten Dashboard</div><div style="display:flex;align-items:center;gap:12px;"><div style="font-size:38px;font-weight:900;color:#6d28d9;line-height:1;">${n}</div><div style="font-size:12px;color:#7c3aed;line-height:1.4;">offene<br>Tasks</div></div><div style="margin-top:10px;font-size:12px;color:#9333ea;opacity:.7;">Detailansicht folgt ↗</div></div>${renderCatTasks('Patienten',tasks)}`;
 }
 
-function requestNotificationPermissionSilent() {
-  if (Notification.permission === 'default') Notification.requestPermission();
+function toggleCat(id){if(openCats.has(id))openCats.delete(id);else openCats.add(id);renderKanban();}
+
+async function cycleStatus(id){
+  const tasks=await dbGetAll('tasks');const t=tasks.find(x=>x.id===id);if(!t)return;
+  const i=STO.indexOf(t.status);t.status=STO[(i+1)%STO.length];t.updatedAt=new Date().toISOString();
+  await dbPut('tasks',t);renderKanban();syncData();
 }
 
-function updateNotifStatus() {
-  const el = document.getElementById('notif-status');
-  if (!el) return;
-  const map = {granted:'✅ Aktiviert', denied:'❌ Verweigert (Browser-Einstellungen)', default:'⚠️ Nicht angefragt'};
-  if (el) el.textContent = map[Notification.permission] || '';
+function openAddTask(pre){
+  if(pre)document.getElementById('task-category').value=pre;
+  document.getElementById('task-title').value='';document.getElementById('task-deadline').value='';
+  openModal('modal-task');
+}
+async function saveTask(){
+  const title=document.getElementById('task-title').value.trim();if(!title)return;
+  const t={id:uuid(),title,category:document.getElementById('task-category').value,status:document.getElementById('task-status').value,priority:document.getElementById('task-priority').value,deadline:document.getElementById('task-deadline').value||null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  await dbPut('tasks',t);closeModal('modal-task');if(currentTab==='kanban')renderKanban();syncData();
 }
 
-// ===================== SETTINGS =====================
-function showSettings() {
-  document.getElementById('settings-user').value = appSettings.githubUser;
-  document.getElementById('settings-repo').value = appSettings.githubRepo;
-  document.getElementById('settings-token').value = appSettings.githubToken;
-  updateNotifStatus();
-  const info = document.getElementById('settings-sync-info');
-  if (info) info.textContent = appSettings.lastSync ? `Letzter Sync: ${new Date(appSettings.lastSync).toLocaleString('de-DE')}` : 'Noch kein Sync';
-  openModal('modal-settings');
+// ============================================================
+// DIARY
+// ============================================================
+async function renderDiary(){
+  const entries=await dbGetAll('diary');
+  const container=document.getElementById('diary-list');
+  if(!entries.length){container.innerHTML=`<div class="glass-card" style="padding:32px;text-align:center;color:var(--text2);font-size:14px;">Noch keine Einträge</div>`;return;}
+  const byDate={};entries.forEach(e=>{if(!byDate[e.date])byDate[e.date]=[];byDate[e.date].push(e);});
+  const sorted=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+  container.innerHTML=sorted.map(date=>{
+    const de=byDate[date];const open=openCats.has('d-'+date);
+    const d=new Date(date+'T12:00:00');
+    const lbl=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    return`<div class="glass-card"><button class="accordion-header" onclick="toggleDiary('${date}')"><div><div style="font-size:14px;font-weight:700;">${lbl}</div><div style="font-size:11px;color:var(--text2);margin-top:2px;">${de.length} Eintrag${de.length>1?'e':''}</div></div><svg class="chevron ${open?'open':''}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><div class="accordion-body ${open?'open':''}"><div style="padding:0 14px 14px;">${de.map(e=>`<div style="margin-bottom:10px;padding:12px;background:rgba(120,120,128,0.06);border-radius:10px;"><div style="font-size:11px;color:var(--text2);margin-bottom:5px;">${new Date(e.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</div><div style="font-size:14px;line-height:1.6;white-space:pre-wrap;">${e.text}</div></div>`).join('')}</div></div></div>`;
+  }).join('');
 }
 
-async function saveSettings() {
-  appSettings.githubUser = document.getElementById('settings-user').value.trim();
-  appSettings.githubRepo = document.getElementById('settings-repo').value.trim() || 'CoworkKanban-data';
-  appSettings.githubToken = document.getElementById('settings-token').value.trim();
-  await setSetting('githubUser', appSettings.githubUser);
-  await setSetting('githubRepo', appSettings.githubRepo);
-  await setSetting('githubToken', appSettings.githubToken);
-  closeModal('modal-settings');
-  if (appSettings.githubToken && navigator.onLine) syncNow();
+function toggleDiary(d){const k='d-'+d;if(openCats.has(k))openCats.delete(k);else openCats.add(k);renderDiary();}
+
+function openAddDiary(){
+  document.getElementById('diary-date-input').value=new Date().toISOString().slice(0,10);
+  document.getElementById('diary-text').value='';openModal('modal-diary');
+}
+async function saveDiary(){
+  const text=document.getElementById('diary-text').value.trim();if(!text)return;
+  const e={id:uuid(),date:document.getElementById('diary-date-input').value,text,createdAt:new Date().toISOString()};
+  await dbPut('diary',e);closeModal('modal-diary');if(currentTab==='diary')renderDiary();syncData();
 }
 
-// ===================== GITHUB SYNC =====================
-let syncTimer = null;
-function scheduleSyncDebounced() {
-  clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => { if(navigator.onLine && appSettings.githubToken) syncNow(false); }, 10000);
+// ============================================================
+// DICTATION
+// ============================================================
+let rec=null,isRec=false;
+function startDictation(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('Diktieren nur in Chrome/Safari');return;}
+  if(isRec){rec?.stop();return;}
+  rec=new SR();rec.lang='de-DE';rec.continuous=true;rec.interimResults=false;
+  rec.onresult=e=>{const t=Array.from(e.results).map(r=>r[0].transcript).join(' ');const ta=document.getElementById('diary-text');ta.value=ta.value?ta.value+' '+t:t;};
+  rec.onend=()=>{isRec=false;document.getElementById('dict-label').textContent='Diktieren';document.getElementById('dict-btn').style.background='rgba(120,120,128,.08)';};
+  rec.start();isRec=true;
+  document.getElementById('dict-label').textContent='⏹ Aufnahme stoppen';
+  document.getElementById('dict-btn').style.background='rgba(255,59,48,.1)';
 }
 
-async function syncNow(showFeedback = true) {
-  if (!appSettings.githubUser || !appSettings.githubToken) {
-    if (showFeedback) alert('Bitte zuerst GitHub-Einstellungen eingeben.');
-    return;
-  }
-  setSyncLabel('Sync läuft...');
-  try {
-    // Pull remote data
-    const [remoteTasks, remoteDiary] = await Promise.all([
-      fetchGitHubFile('data/tasks.json'),
-      fetchGitHubFile('data/diary.json'),
-    ]);
-    // Merge tasks
-    if (remoteTasks) {
-      const merged = mergeItems(tasks, remoteTasks);
-      tasks = merged;
-      await dbClear('tasks');
-      for (const t of tasks) await dbPut('tasks', t);
-    }
-    // Merge diary
-    if (remoteDiary) {
-      const merged = mergeItems(diaryEntries, remoteDiary);
-      diaryEntries = merged;
-      await dbClear('diary');
-      for (const d of diaryEntries) await dbPut('diary', d);
-    }
-    // Push local data
-    await pushGitHubFile('data/tasks.json', JSON.stringify(tasks, null, 2));
-    await pushGitHubFile('data/diary.json', JSON.stringify(diaryEntries, null, 2));
-    appSettings.lastSync = new Date().toISOString();
-    await setSetting('lastSync', appSettings.lastSync);
-    setSyncLabel('Synced ✓');
-    renderCurrentView();
-    if (showFeedback) alert('Sync erfolgreich! ✅');
-  } catch(err) {
-    console.error('Sync error', err);
-    setSyncLabel('Sync fehlgeschlagen');
-    if (showFeedback) alert('Sync fehlgeschlagen: ' + err.message);
-  }
+// ============================================================
+// GITHUB SYNC
+// ============================================================
+const setSyncStatus=m=>{const el=document.getElementById('sync-status-text');if(el)el.textContent=m;};
+async function syncData(){
+  if(!S.githubToken||!S.githubUser)return;
+  try{
+    const tasks=await dbGetAll('tasks');const diary=await dbGetAll('diary');const events=await dbGetAll('events');
+    await ghPut('data/tasks.json',JSON.stringify(tasks,null,2));
+    await ghPut('data/diary.json',JSON.stringify(diary,null,2));
+    await ghPut('data/events.json',JSON.stringify(events,null,2));
+  }catch(e){console.warn('Sync failed',e);}
+}
+async function syncNow(){
+  if(!S.githubToken){setSyncStatus('Bitte Token eingeben');return;}
+  setSyncStatus('Synchronisiere...');
+  try{
+    const t=await ghGet('data/tasks.json');const d=await ghGet('data/diary.json');const ev=await ghGet('data/events.json');
+    if(t)for(const x of t)await dbPut('tasks',x);
+    if(d)for(const x of d)await dbPut('diary',x);
+    if(ev)for(const x of ev)await dbPut('events',x);
+    await syncData();
+    setSyncStatus('Synchronisiert ✓ '+new Date().toLocaleTimeString('de-DE'));
+    if(currentTab==='home')renderHome();if(currentTab==='kanban')renderKanban();if(currentTab==='diary')renderDiary();
+  }catch(e){setSyncStatus('Fehler: '+e.message);}
+}
+async function ghGet(path){
+  const res=await fetch(`https://api.github.com/repos/${S.githubUser}/${S.githubRepo}/contents/${path}`,{headers:{Authorization:`token ${S.githubToken}`}});
+  if(!res.ok)return null;const data=await res.json();return JSON.parse(atob(data.content.replace(/\n/g,'')));
+}
+async function ghPut(path,content){
+  const url=`https://api.github.com/repos/${S.githubUser}/${S.githubRepo}/contents/${path}`;
+  let sha;try{const r=await fetch(url,{headers:{Authorization:`token ${S.githubToken}`}});if(r.ok){const d=await r.json();sha=d.sha;}}catch{}
+  const body={message:`sync ${new Date().toISOString()}`,content:btoa(unescape(encodeURIComponent(content)))};
+  if(sha)body.sha=sha;
+  await fetch(url,{method:'PUT',headers:{Authorization:`token ${S.githubToken}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
 }
 
-function mergeItems(local, remote) {
-  const map = {};
-  [...local, ...remote].forEach(item => {
-    const existing = map[item.id];
-    if (!existing || new Date(item.updatedAt) > new Date(existing.updatedAt)) map[item.id] = item;
-  });
-  return Object.values(map);
-}
+// ============================================================
+// PWA
+// ============================================================
+const swCode=`self.addEventListener('install',e=>e.waitUntil(caches.open('cwd-v3').then(c=>c.addAll(['./','./index.html']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+if('serviceWorker'in navigator)navigator.serviceWorker.register(URL.createObjectURL(new Blob([swCode],{type:'application/javascript'}))).catch(()=>{});
+const manifest={name:'CoworkDashboard',short_name:'Dashboard',start_url:'./',display:'standalone',background_color:'#ddd6fe', theme_color:'#667eea',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="%23667eea"/><stop offset="1" stop-color="%2306b6d4"/></linearGradient></defs><rect width="512" height="512" rx="100" fill="url(%23g)"/><rect x="60" y="80" width="160" height="352" rx="20" fill="white" opacity=".9"/><rect x="260" y="80" width="192" height="220" rx="20" fill="white" opacity=".9"/><rect x="260" y="320" width="192" height="112" rx="20" fill="white" opacity=".5"/></svg>',sizes:'512x512',type:'image/svg+xml'}]};
+const mL=document.createElement('link');mL.rel='manifest';mL.href=URL,.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));document.head.appendChild(mL);
 
-async function fetchGitHubFile(path) {
-  const url = `https://api.github.com/repos/${appSettings.githubUser}/${appSettings.githubRepo}/contents/${path}`;
-  const res = await fetch(url, { headers: { Authorization: `token ${appSettings.githubToken}`, Accept: 'application/vnd.github.v3+json' }});
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-  const data = await res.json();
-  return JSON.parse(atob(data.content.replace(/\n/g,'')));
-}
-
-async function pushGitHubFile(path, content) {
-  const url = `https://api.github.com/repos/${appSettings.githubUser}/${appSettings.githubRepo}/contents/${path}`;
-  // Get current SHA
-  let sha;
-  try {
-    const res = await fetch(url, { headers: { Authorization: `token ${appSettings.githubToken}`, Accept: 'application/vnd.github.v3+json' }});
-    if (res.ok) { const d = await res.json(); sha = d.sha; }
-  } catch(e) {}
-  const body = { message: `CoworkKanban sync ${new Date().toISOString()}`, content: btoa(unescape(encodeURIComponent(content))) };
-  if (sha) body.sha = sha;
-  const res = await fetch(url, { method:'PUT', headers:{ Authorization:`token ${appSettings.githubToken}`, 'Content-Type':'application/json', Accept:'application/vnd.github.v3+json' }, body: JSON.stringify(body) });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.message || res.status); }
-}
-
-function setSyncLabel(text) {
-  const el = document.getElementById('sync-label');
-  if (el) el.textContent = text;
-}
-
-function updateSyncLabel() {
-  setSyncLabel(appSettings.lastSync ? `Sync ${new Date(appSettings.lastSync).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}` : 'Bereit');
-}
-
-function updateOnlineStatus() {
-  const dot = document.getElementById('online-dot');
-  if (dot) { dot.className = navigator.onLine ? 'w-2 h-2 rounded-full bg-green-300 inline-block' : 'w-2 h-2 rounded-full bg-red-300 inline-block'; }
-}
-
-// ===================== EXPORT =====================
-function exportData() {
-  const data = { tasks, diary: diaryEntries, exportedAt: new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `CoworkKanban-Export-${new Date().toISOString().slice(0,10)}.json`;
-  a.click(); URL.revokeObjectURL(url);
-}
-
-// ===================== MODAL UTILS =====================
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-// ===================== HELPERS =====================
-function uuid() { return crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:r&0x3|0x8).toString(16);}); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-// ===================== SERVICE WORKER =====================
-function registerSW() {
-  if (!('serviceWorker' in navigator)) return;
-  const swCode = `
-const CACHE = 'cowork-kanban-v1';
-const ASSETS = [self.location.href];
-self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))); self.skipWaiting(); });
-self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))); self.clients.claim(); });
-self.addEventListener('fetch', e => { if(e.request.method!=='GET')return; e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(CACHE).then(cache=>cache.put(e.request,c));}return res;}).catch(()=>caches.match(e.request)))); });
-`;
-  const blob = new Blob([swCode], {type:'application/javascript'});
-  const url = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(url).then(() => console.log('SW registered')).catch(e => console.warn('SW error', e));
-}
-
-// PWA Manifest
-$function() {
-  const manifest = { name:'CoworkKanban', short_name:'Kanban', start_url:'./', display:'standalone', background_color:'#ffffff', theme_color:'#2563EB', icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="80" fill="%232563EB"/><rect x="80" y="100" width="140" height="312" rx="16" fill="white" opacity="0.9"/><rect x="286" y="100" width="140" height="200" rx="16" fill="white" opacity="0.9"/></svg>',sizes:'512x512',type:'image/svg+xml'}] };
-  const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('link');
-  link.rel = 'manifest'; link.href = url;
-  document.head.appendChild(link);
-})();
-
-// Start
-init();
+// ============================================================
+// INIT
+// ============================================================
+(async()=>{await initDB();await loadSettings();renderHome();})();
 </script>
 </body>
 </html>
