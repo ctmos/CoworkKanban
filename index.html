@@ -67,7 +67,7 @@
       <button onclick="showDiaryEntry()" class="bg-blue-600 text-white rounded-xl px-4 py-2 text-sm font-medium">+ Eintrag</button>
     </div>
     <div id="diary-list" class="flex flex-col gap-3"></div>
-    <div class="text-center text-gray-400 text-sm mt-8 hidden" id="diary-empty">Noch keine Einträge. Starte mit dem ersten Tagebucheintrag!</div>
+    <div class="text-center text-gray-400 text-sm mt-8 hidden" id="diary-empty">Noch keine EintrÃ¤ge. Starte mit dem ersten Tagebucheintrag!</div>
   </div>
   <!-- Erinnerungen view -->
   <div id="view-erinnerungen" class="hidden">
@@ -75,7 +75,7 @@
       <h2 class="text-lg font-bold text-gray-800">Erinnerungen</h2>
     </div>
     <div id="reminder-list" class="flex flex-col gap-3"></div>
-    <div class="text-center text-gray-400 text-sm mt-8 hidden" id="reminder-empty">Keine Erinnerungen. Füge einer Aufgabe eine Erinnerungszeit hinzu.</div>
+    <div class="text-center text-gray-400 text-sm mt-8 hidden" id="reminder-empty">Keine Erinnerungen. FÃ¼ge einer Aufgabe eine Erinnerungszeit hinzu.</div>
   </div>
 </main>
 
@@ -116,7 +116,7 @@
 <div id="modal-task" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('modal-task')">
   <div class="modal-box">
     <div class="flex items-center justify-between mb-4">
-      <h3 id="modal-task-title" class="text-xl font-bold text-gray-800">Aufgabe hinzufügen</h3>
+      <h3 id="modal-task-title" class="text-xl font-bold text-gray-800">Aufgabe hinzufÃ¼gen</h3>
       <button onclick="closeModal('modal-task')" class="text-gray-400 hover:text-gray-600">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
@@ -154,7 +154,7 @@
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="text-sm font-medium text-gray-700 block mb-1">Priorität</label>
+          <label class="text-sm font-medium text-gray-700 block mb-1">PrioritÃ¤t</label>
           <select id="task-prio-input" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
             <option value="mittel">Mittel</option>
             <option value="hoch">Hoch</option>
@@ -172,7 +172,7 @@
       </div>
       <div class="flex gap-2 mt-2">
         <button onclick="saveTask()" class="flex-1 bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 transition">Speichern</button>
-        <button id="task-delete-btn" onclick="deleteCurrentTask()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">Löschen</button>
+        <button id="task-delete-btn" onclick="deleteCurrentTask()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">LÃ¶schen</button>
       </div>
     </div>
   </div>
@@ -192,16 +192,16 @@
       <!-- Dictate button -->
       <button id="dictate-btn" onclick="toggleDictation()" class="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-5 text-base font-semibold transition shadow-md">
         <svg id="mic-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-7a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-        <span id="dictate-label">🎙 Auf Deutsch diktieren</span>
+        <span id="dictate-label">ð Auf Deutsch diktieren</span>
       </button>
-      <div id="dictation-status" class="text-center text-sm text-gray-500 hidden recording-pulse">● Aufnahme läuft...</div>
+      <div id="dictation-status" class="text-center text-sm text-gray-500 hidden recording-pulse">â Aufnahme lÃ¤uft...</div>
       <div>
         <label class="text-sm font-medium text-gray-700 block mb-1">Text</label>
         <textarea id="diary-text-input" placeholder="Schreibe oder diktiere deinen Eintrag..." rows="6" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
       </div>
       <div class="flex gap-2">
         <button onclick="saveDiaryEntry()" class="flex-1 bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 transition">Speichern</button>
-        <button id="diary-delete-btn" onclick="deleteCurrentDiary()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">Löschen</button>
+        <button id="diary-delete-btn" onclick="deleteCurrentDiary()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">LÃ¶schen</button>
       </div>
     </div>
   </div>
@@ -218,7 +218,7 @@
     </div>
     <div class="flex flex-col gap-4">
       <div class="bg-blue-50 rounded-xl p-3 text-sm text-blue-800 font-medium">
-        🔄 GitHub Sync
+        ð GitHub Sync
       </div>
       <div>
         <label class="text-sm font-medium text-gray-700 block mb-1">GitHub Benutzername</label>
@@ -226,7 +226,7 @@
       </div>
       <div>
         <label class="text-sm font-medium text-gray-700 block mb-1">Repository-Name</label>
-        <input id="settings-repo" type="text" placeholder="CoworkKanban" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input id="settings-repo" type="text" placeholder="CoworkKanban-data" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
       <div>
         <label class="text-sm font-medium text-gray-700 block mb-1">Personal Access Token</label>
@@ -234,7 +234,7 @@
         <p class="text-xs text-gray-500 mt-1">Wird nur lokal in diesem Browser gespeichert.</p>
       </div>
       <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800">
-        ⏰ <strong>Tipp:</strong> Für zuverlässige Erinnerungen auch wenn die App geschlossen ist: Dispatch Cron-Jobs aktivieren.
+        â° <strong>Tipp:</strong> FÃ¼r zuverlÃ¤ssige Erinnerungen auch wenn die App geschlossen ist: Dispatch Cron-Jobs aktivieren.
       </div>
       <div>
         <label class="text-sm font-medium text-gray-700 block mb-1">Benachrichtigungen</label>
@@ -243,7 +243,7 @@
       </div>
       <button onclick="saveSettings()" class="w-full bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 transition">Einstellungen speichern</button>
       <div class="border-t pt-3">
-        <button onclick="exportData()" class="w-full border border-gray-300 text-gray-700 rounded-xl py-2.5 text-sm hover:bg-gray-50 transition">📥 Daten als JSON exportieren</button>
+        <button onclick="exportData()" class="w-full border border-gray-300 text-gray-700 rounded-xl py-2.5 text-sm hover:bg-gray-50 transition">ð¥ Daten als JSON exportieren</button>
       </div>
       <div id="settings-sync-info" class="text-xs text-gray-400 text-center"></div>
     </div>
@@ -332,8 +332,8 @@ async function init() {
   await openDB();
   tasks = await dbGetAll('tasks');
   diaryEntries = await dbGetAll('diary');
-  appSettings.githubUser = await getSetting('githubUser') || '';
-  appSettings.githubRepo = await getSetting('githubRepo') || 'CoworkKanban';
+  appSettings.githubUser = await getSetting('githubUser') || 'ctmos';
+  appSettings.githubRepo = await getSetting('githubRepo') || 'CoworkKanban-data';
   appSettings.githubToken = await getSetting('githubToken') || '';
   appSettings.lastSync = await getSetting('lastSync') || null;
   updateOnlineStatus();
@@ -422,8 +422,8 @@ function createTaskCard(task, now) {
   card.addEventListener('touchend', handleTouchEnd);
   const prioColors = {hoch:'bg-red-100 text-red-700', mittel:'bg-yellow-100 text-yellow-700', niedrig:'bg-green-100 text-green-700'};
   const prioLabel = {hoch:'Hoch', mittel:'Mittel', niedrig:'Niedrig'};
-  const deadlineHtml = task.deadline ? `<span class="text-xs ${overdue?'text-red-600 font-semibold':'text-gray-400'}">📅 ${new Date(task.deadline).toLocaleDateString('de-DE')}</span>` : '';
-  const reminderHtml = task.reminderAt ? `<span class="text-xs text-purple-500">⏰ ${new Date(task.reminderAt).toLocaleString('de-DE',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>` : '';
+  const deadlineHtml = task.deadline ? `<span class="text-xs ${overdue?'text-red-600 font-semibold':'text-gray-400'}">ð ${new Date(task.deadline).toLocaleDateString('de-DE')}</span>` : '';
+  const reminderHtml = task.reminderAt ? `<span class="text-xs text-purple-500">â° ${new Date(task.reminderAt).toLocaleString('de-DE',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>` : '';
   card.innerHTML = `<div class="flex items-start justify-between gap-2">
     <span class="text-sm font-semibold text-gray-800 leading-snug flex-1">${esc(task.title)}</span>
     <button onclick="editTask('${task.id}')" class="text-gray-300 hover:text-gray-500 flex-shrink-0 mt-0.5">
@@ -509,7 +509,7 @@ function showAddTask() {
   document.getElementById('task-deadline-input').value = '';
   document.getElementById('task-reminder-input').value = '';
   document.getElementById('task-delete-btn').classList.add('hidden');
-  document.getElementById('modal-task-title').textContent = 'Aufgabe hinzufügen';
+  document.getElementById('modal-task-title').textContent = 'Aufgabe hinzufÃ¼gen';
   openModal('modal-task');
 }
 
@@ -560,7 +560,7 @@ async function saveTask() {
 
 async function deleteCurrentTask() {
   const id = document.getElementById('task-edit-id').value;
-  if (!id || !confirm('Aufgabe löschen?')) return;
+  if (!id || !confirm('Aufgabe lÃ¶schen?')) return;
   tasks = tasks.filter(t => t.id !== id);
   await dbDelete('tasks', id);
   closeModal('modal-task');
@@ -620,7 +620,7 @@ async function saveDiaryEntry() {
 
 async function deleteCurrentDiary() {
   const id = document.getElementById('diary-edit-id').value;
-  if (!id || !confirm('Eintrag löschen?')) return;
+  if (!id || !confirm('Eintrag lÃ¶schen?')) return;
   diaryEntries = diaryEntries.filter(d => d.id !== id);
   await dbDelete('diary', id);
   closeModal('modal-diary');
@@ -636,7 +636,7 @@ function toggleDictation() {
 
 function startDictation() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { alert('Spracherkennung wird in diesem Browser nicht unterstützt. Bitte Chrome verwenden.'); return; }
+  if (!SR) { alert('Spracherkennung wird in diesem Browser nicht unterstÃ¼tzt. Bitte Chrome verwenden.'); return; }
   recognition = new SR();
   recognition.lang = 'de-DE';
   recognition.continuous = true;
@@ -656,7 +656,7 @@ function startDictation() {
   isDictating = true;
   document.getElementById('dictate-btn').classList.add('bg-red-600');
   document.getElementById('dictate-btn').classList.remove('bg-blue-600');
-  document.getElementById('dictate-label').textContent = '⏹ Aufnahme stoppen';
+  document.getElementById('dictate-label').textContent = 'â¹ Aufnahme stoppen';
   document.getElementById('dictation-status').classList.remove('hidden');
 }
 
@@ -665,7 +665,7 @@ function stopDictation() {
   isDictating = false;
   document.getElementById('dictate-btn').classList.remove('bg-red-600');
   document.getElementById('dictate-btn').classList.add('bg-blue-600');
-  document.getElementById('dictate-label').textContent = '🎙 Auf Deutsch diktieren';
+  document.getElementById('dictate-label').textContent = 'ð Auf Deutsch diktieren';
   document.getElementById('dictation-status').classList.add('hidden');
 }
 
@@ -683,9 +683,9 @@ function renderReminders() {
     return `<div class="bg-white rounded-2xl p-4 shadow-sm border ${isPast?'border-red-200 bg-red-50':'border-gray-100'}">
       <div class="flex items-start justify-between gap-2">
         <div class="flex-1">
-          <div class="text-xs font-semibold ${isPast?'text-red-500':'text-purple-500'} mb-1">⏰ ${rDate.toLocaleString('de-DE',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+          <div class="text-xs font-semibold ${isPast?'text-red-500':'text-purple-500'} mb-1">â° ${rDate.toLocaleString('de-DE',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
           <div class="text-sm font-semibold text-gray-800">${esc(t.title)}</div>
-          <div class="text-xs text-gray-400 mt-0.5">${t.category} · ${{backlog:'Backlog',todo:'Todo',inprogress:'In Progress',done:'Done'}[t.status]}</div>
+          <div class="text-xs text-gray-400 mt-0.5">${t.category} Â· ${{backlog:'Backlog',todo:'Todo',inprogress:'In Progress',done:'Done'}[t.status]}</div>
         </div>
         <button onclick="editTask('${t.id}')" class="text-gray-300 hover:text-gray-500">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -703,9 +703,9 @@ function checkReminders() {
     if (!task.reminderAt) return;
     const rDate = new Date(task.reminderAt);
     if (rDate >= fiveMinAgo && rDate <= now) {
-      new Notification('⏰ CoworkKanban Erinnerung', {
+      new Notification('â° CoworkKanban Erinnerung', {
         body: task.title,
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%232563EB"/><text y=".9em" font-size="80" x="10">📋</text></svg>'
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%232563EB"/><text y=".9em" font-size="80" x="10">ð</text></svg>'
       });
     }
   });
@@ -714,7 +714,7 @@ function checkReminders() {
 async function requestNotificationPermission() {
   const perm = await Notification.requestPermission();
   updateNotifStatus();
-  if (perm === 'granted') alert('Benachrichtigungen aktiviert! ✅');
+  if (perm === 'granted') alert('Benachrichtigungen aktiviert! â');
 }
 
 function requestNotificationPermissionSilent() {
@@ -724,7 +724,7 @@ function requestNotificationPermissionSilent() {
 function updateNotifStatus() {
   const el = document.getElementById('notif-status');
   if (!el) return;
-  const map = {granted:'✅ Aktiviert', denied:'❌ Verweigert (Browser-Einstellungen)', default:'⚠️ Nicht angefragt'};
+  const map = {granted:'â Aktiviert', denied:'â Verweigert (Browser-Einstellungen)', default:'â ï¸ Nicht angefragt'};
   if (el) el.textContent = map[Notification.permission] || '';
 }
 
@@ -762,7 +762,7 @@ async function syncNow(showFeedback = true) {
     if (showFeedback) alert('Bitte zuerst GitHub-Einstellungen eingeben.');
     return;
   }
-  setSyncLabel('Sync läuft...');
+  setSyncLabel('Sync lÃ¤uft...');
   try {
     // Pull remote data
     const [remoteTasks, remoteDiary] = await Promise.all([
@@ -788,9 +788,9 @@ async function syncNow(showFeedback = true) {
     await pushGitHubFile('data/diary.json', JSON.stringify(diaryEntries, null, 2));
     appSettings.lastSync = new Date().toISOString();
     await setSetting('lastSync', appSettings.lastSync);
-    setSyncLabel('Synced ✓');
+    setSyncLabel('Synced â');
     renderCurrentView();
-    if (showFeedback) alert('Sync erfolgreich! ✅');
+    if (showFeedback) alert('Sync erfolgreich! â');
   } catch(err) {
     console.error('Sync error', err);
     setSyncLabel('Sync fehlgeschlagen');
