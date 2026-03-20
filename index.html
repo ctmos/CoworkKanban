@@ -1,178 +1,6 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#2563EB">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="CoworkKanban">
-  <title>CoworkKanban</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { overscroll-behavior: none; }
-    .kanban-col { min-height: 120px; }
-    .task-card { cursor: grab; user-select: none; }
-    .task-card:active { cursor: grabbing; }
-    .drag-over { background: #dbeafe !important; border: 2px dashed #3b82f6; }
-    .priority-hoch { border-left: 4px solid #ef4444; }
-    .priority-mittel { border-left: 4px solid #f59e0b; }
-    .priority-niedrig { border-left: 4px solid #22c55e; }
-    .overdue { background: #fef2f2 !important; }
-    @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:0.4} }
-    .recording-pulse { animation: pulse-rec 1s infinite; }
-    #bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
-    .nav-btn { flex: 1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px 2px; font-size:10px; gap:2px; cursor:pointer; color:#6b7280; transition:color 0.15s; }
-    .nav-btn.active { color:#2563EB; }
-    .nav-btn svg { width:22px; height:22px; }
-    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; display:flex; align-items:flex-end; }
-    .modal-box { background:#fff; border-radius:16px 16px 0 0; width:100%; max-height:90vh; overflow-y:auto; padding:24px 16px; }
-    .badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; font-weight:600; }
-    .scrollable { overflow-x: auto; display:flex; gap:12px; padding-bottom:8px; }
-    .kanban-column { min-width:260px; flex-shrink:0; }
-    @media(min-width:768px){ .scrollable { flex-wrap:wrap; overflow-x:visible; } .kanban-column { min-width:220px; flex:1; } }
-  </style>
-</head>
-<body class="bg-gray-50 font-sans select-none" style="height:100dvh;overflow:hidden;display:flex;flex-direction:column;">
-
-<!-- HEADER -->
-<header class="bg-blue-600 text-white px-4 py-3 flex items-center justify-between flex-shrink-0 shadow-md" style="padding-top:max(12px,env(safe-area-inset-top))">
-  <div class="flex items-center gap-2">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="11" rx="1" stroke-width="2"/></svg>
-    <span class="font-bold text-lg tracking-tight">CoworkKanban</span>
-  </div>
-  <div class="flex items-center gap-3">
-    <span id="sync-status" class="text-xs text-blue-100 flex items-center gap-1">
-      <span id="online-dot" class="w-2 h-2 rounded-full bg-green-300 inline-block"></span>
-      <span id="sync-label">Bereit</span>
-    </span>
-    <button onclick="syncNow()" class="bg-blue-500 hover:bg-blue-400 rounded-lg px-2 py-1 text-xs font-medium">Sync</button>
-    <button onclick="showSettings()" class="p-1">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
-    </button>
-  </div>
-</header>
-
-<!-- MAIN CONTENT -->
-<main id="main-content" class="flex-1 overflow-y-auto overflow-x-hidden px-3 py-3" style="padding-bottom:80px">
-  <!-- Kanban view (default) -->
-  <div id="view-kanban">
-    <div class="scrollable" id="kanban-board"></div>
-  </div>
-  <!-- Tagebuch view -->
-  <div id="view-tagebuch" class="hidden">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-bold text-gray-800">Tagebuch</h2>
-      <button onclick="showDiaryEntry()" class="bg-blue-600 text-white rounded-xl px-4 py-2 text-sm font-medium">+ Eintrag</button>
-    </div>
-    <div id="diary-list" class="flex flex-col gap-3"></div>
-    <div class="text-center text-gray-400 text-sm mt-8 hidden" id="diary-empty">Noch keine EintrÃ¤ge. Starte mit dem ersten Tagebucheintrag!</div>
-  </div>
-  <!-- Erinnerungen view -->
-  <div id="view-erinnerungen" class="hidden">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-bold text-gray-800">Erinnerungen</h2>
-    </div>
-    <div id="reminder-list" class="flex flex-col gap-3"></div>
-    <div class="text-center text-gray-400 text-sm mt-8 hidden" id="reminder-empty">Keine Erinnerungen. FÃ¼ge einer Aufgabe eine Erinnerungszeit hinzu.</div>
-  </div>
-</main>
-
-<!-- BOTTOM NAV -->
-<nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-50 shadow-lg">
-  <button class="nav-btn active" data-cat="Barmelweid" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-    <span>Barmelweid</span>
-  </button>
-  <button class="nav-btn" data-cat="Patienten" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
-    <span>Patienten</span>
-  </button>
-  <button class="nav-btn" data-cat="Privat" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-    <span>Privat</span>
-  </button>
-  <button class="nav-btn" data-cat="PSP" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-    <span>PSP</span>
-  </button>
-  <button class="nav-btn" data-cat="Tagebuch" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-    <span>Tagebuch</span>
-  </button>
-  <button class="nav-btn" data-cat="Erinnerungen" onclick="switchCat(this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-    <span>Erinnerung</span>
-  </button>
-</nav>
-
-<!-- FAB ADD TASK -->
-<button id="fab-add" onclick="showAddTask()" class="fixed z-40 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-xl flex items-center justify-center transition-all" style="width:56px;height:56px;bottom:calc(72px + env(safe-area-inset-bottom) + 12px);right:16px;">
-  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-</button>
-
-<!-- MODAL: ADD/EDIT TASK -->
-<div id="modal-task" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('modal-task')">
-  <div class="modal-box">
-    <div class="flex items-center justify-between mb-4">
-      <h3 id="modal-task-title" class="text-xl font-bold text-gray-800">Aufgabe hinzufÃ¼gen</h3>
-      <button onclick="closeModal('modal-task')" class="text-gray-400 hover:text-gray-600">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <input type="hidden" id="task-edit-id">
-    <div class="flex flex-col gap-3">
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Titel *</label>
-        <input id="task-title-input" type="text" placeholder="Aufgabentitel..." class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Beschreibung</label>
-        <textarea id="task-desc-input" placeholder="Optional..." rows="2" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-sm font-medium text-gray-700 block mb-1">Kategorie</label>
-          <select id="task-cat-input" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option>Barmelweid</option>
-            <option>Patienten</option>
-            <option>Privat</option>
-            <option>PSP</option>
-            <option>Erinnerungen</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-sm font-medium text-gray-700 block mb-1">Status</label>
-          <select id="task-status-input" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="backlog">Backlog</option>
-            <option value="todo">Todo</option>
-            <option value="inprogress">In Progress</option>
-            <option value="done">Done</option>
-          </select>
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-sm font-medium text-gray-700 block mb-1">PrioritÃ¤t</label>
-          <select id="task-prio-input" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="mittel">Mittel</option>
-            <option value="hoch">Hoch</option>
-            <option value="niedrig">Niedrig</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-sm font-medium text-gray-700 block mb-1">Deadline</label>
-          <input id="task-deadline-input" type="date" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
-      </div>
-      <div>
-        <label class="text-sm font-medium text-gray-700 block mb-1">Erinnerung (Datum &amp; Uhrzeit)</label>
-        <input id="task-reminder-input" type="datetime-local" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-      <div class="flex gap-2 mt-2">
+t-2">
         <button onclick="saveTask()" class="flex-1 bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 transition">Speichern</button>
-        <button id="task-delete-btn" onclick="deleteCurrentTask()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">LÃ¶schen</button>
+        <button id="task-delete-btn" onclick="deleteCurrentTask()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">Löschen</button>
       </div>
     </div>
   </div>
@@ -192,16 +20,16 @@
       <!-- Dictate button -->
       <button id="dictate-btn" onclick="toggleDictation()" class="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-5 text-base font-semibold transition shadow-md">
         <svg id="mic-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-7a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-        <span id="dictate-label">ð Auf Deutsch diktieren</span>
+        <span id="dictate-label">🎙 Auf Deutsch diktieren</span>
       </button>
-      <div id="dictation-status" class="text-center text-sm text-gray-500 hidden recording-pulse">â Aufnahme lÃ¤uft...</div>
+      <div id="dictation-status" class="text-center text-sm text-gray-500 hidden recording-pulse">● Aufnahme läuft...</div>
       <div>
         <label class="text-sm font-medium text-gray-700 block mb-1">Text</label>
         <textarea id="diary-text-input" placeholder="Schreibe oder diktiere deinen Eintrag..." rows="6" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
       </div>
       <div class="flex gap-2">
         <button onclick="saveDiaryEntry()" class="flex-1 bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 transition">Speichern</button>
-        <button id="diary-delete-btn" onclick="deleteCurrentDiary()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">LÃ¶schen</button>
+        <button id="diary-delete-btn" onclick="deleteCurrentDiary()" class="bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 font-semibold text-sm hidden hover:bg-red-100 transition">Löschen</button>
       </div>
     </div>
   </div>
@@ -218,7 +46,7 @@
     </div>
     <div class="flex flex-col gap-4">
       <div class="bg-blue-50 rounded-xl p-3 text-sm text-blue-800 font-medium">
-        ð GitHub Sync
+        🔄 GitHub Sync
       </div>
       <div>
         <label class="text-sm font-medium text-gray-700 block mb-1">GitHub Benutzername</label>
@@ -234,7 +62,7 @@
         <p class="text-xs text-gray-500 mt-1">Wird nur lokal in diesem Browser gespeichert.</p>
       </div>
       <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800">
-        â° <strong>Tipp:</strong> FÃ¼r zuverlÃ¤ssige Erinnerungen auch wenn die App geschlossen ist: Dispatch Cron-Jobs aktivieren.
+        ⏰ <strong>Tipp:</strong> Für zuverlässige Erinnerungen auch wenn die App geschlossen ist: Dispatch Cron-Jobs aktivieren.
       </div>
       <div>
         <label class="text-sm font-medium text-gray-700 block mb-1">Benachrichtigungen</label>
@@ -243,7 +71,7 @@
       </div>
       <button onclick="saveSettings()" class="w-full bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 transition">Einstellungen speichern</button>
       <div class="border-t pt-3">
-        <button onclick="exportData()" class="w-full border border-gray-300 text-gray-700 rounded-xl py-2.5 text-sm hover:bg-gray-50 transition">ð¥ Daten als JSON exportieren</button>
+        <button onclick="exportData()" class="w-full border border-gray-300 text-gray-700 rounded-xl py-2.5 text-sm hover:bg-gray-50 transition">📥 Daten als JSON exportieren</button>
       </div>
       <div id="settings-sync-info" class="text-xs text-gray-400 text-center"></div>
     </div>
@@ -261,634 +89,740 @@ function openDB() {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = e => {
       const d = e.target.result;
+      if (!d.objectStoreNames.contains('tasks')) d.createObjectStore('tas<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#f0f9ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="CoworkDashboard">
+  <title>CoworkDashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { overscroll-behavior: none; background: #f8fafc; }
+    :root {
+      --primary: #7dd3fc;
+      --primary-dark: #0ea5e9;
+      --primary-light: #e0f2fe;
+      --accent: #0369a1;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 16px;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text); }
+
+    /* Nav */
+    #bottom-nav { padding-bottom: env(safe-area-inset-bottom); background: var(--surface); border-top: 1px solid var(--border); }
+    .nav-btn { flex: 1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 2px 6px; font-size:10px; gap:3px; cursor:pointer; color: var(--text-muted); transition: color 0.15s; position: relative; }
+    .nav-btn.active { color: var(--accent); }
+    .nav-btn.active::after { content:''; position:absolute; top:0; left:25%; right:25%; height:2px; background: var(--accent); border-radius:0 0 2px 2px; }
+    .nav-btn svg { width:22px; height:22px; }
+
+    /* Tab content */
+    .tab-content { display:none; flex:1; overflow-y:auto; }
+    .tab-content.active { display:flex; flex-direction:column; }
+
+    /* Header */
+    .page-header { background: var(--surface); padding: 16px 20px 12px; padding-top: max(16px, env(safe-area-inset-top)); border-bottom: 1px solid var(--border); }
+
+    /* Cards */
+    .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+    .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 8px; }
+
+    /* Time grid */
+    .time-slot { display: flex; align-items: flex-start; min-height: 56px; position: relative; }
+    .time-label { width: 48px; flex-shrink:0; font-size: 11px; color: var(--text-muted); padding-top: 2px; text-align: right; padding-right: 8px; }
+    .time-line { flex: 1; border-top: 1px solid var(--border); position: relative; min-height: 56px; cursor: pointer; }
+    .time-line:hover { background: var(--primary-light); }
+    .event-block { position: absolute; left: 4px; right: 4px; background: var(--primary-light); border-left: 3px solid var(--primary-dark); border-radius: 6px; padding: 4px 8px; font-size: 12px; font-weight: 500; color: var(--accent); cursor: pointer; z-index:2; overflow: hidden; }
+
+    /* Accordion */
+    .accordion-item { border-bottom: 1px solid var(--border); }
+    .accordion-item:last-child { border-bottom: none; }
+    .accordion-header { width:100%; text-align:left; padding: 16px 20px; display:flex; align-items:center; justify-content:space-between; background: var(--surface); cursor:pointer; transition: background 0.15s; }
+    .accordion-header:hover { background: var(--primary-light); }
+    .accordion-header.open { background: var(--primary-light); }
+    .accordion-body { display:none; background: #fafcff; border-top: 1px solid var(--border); }
+    .accordion-body.open { display:block; }
+    .chevron { transition: transform 0.2s; color: var(--text-muted); }
+    .chevron.open { transform: rotate(180deg); }
+
+    /* Kanban status chips */
+    .chip { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:99px; }
+    .chip-backlog { background:#f1f5f9; color:#475569; }
+    .chip-todo { background:#fef9c3; color:#854d0e; }
+    .chip-progress { background:#dbeafe; color:#1d4ed8; }
+    .chip-done { background:#dcfce7; color:#15803d; }
+
+    /* Task card */
+    .task-item { padding: 12px 20px; border-bottom: 1px solid var(--border); display:flex; align-items:flex-start; gap:10px; }
+    .task-item:last-child { border-bottom: none; }
+    .task-check { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-top:1px; transition: all 0.15s; }
+    .task-check.done { background: #22c55e; border-color: #22c55e; }
+    .priority-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:6px; }
+    .p-hoch { background:#ef4444; }
+    .p-mittel { background:#f59e0b; }
+    .p-niedrig { background:#22c55e; }
+
+    /* Modal */
+    .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.4); z-index:200; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition: opacity 0.2s; }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal-box { background:#fff; border-radius:20px 20px 0 0; width:100%; max-height:88vh; overflow-y:auto; padding:24px 20px 32px; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-handle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+
+    /* Input */
+    .input-field { width:100%; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:14px; outline:none; transition:border-color 0.15s; background:var(--bg); }
+    .input-field:focus { border-color: var(--primary-dark); }
+    .btn-primary { background: var(--accent); color:#fff; border:none; border-radius:12px; padding:12px 20px; font-size:14px; font-weight:600; cursor:pointer; width:100%; transition:opacity 0.15s; }
+    .btn-primary:hover { opacity:0.9; }
+    .btn-ghost { background:transparent; border:1px solid var(--border); border-radius:12px; padding:10px 16px; font-size:13px; font-weight:500; cursor:pointer; color:var(--text-muted); }
+
+    /* Week grid */
+    .week-day { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 4px; border-radius:10px; cursor:pointer; transition:background 0.15s; }
+    .week-day:hover { background: var(--primary-light); }
+    .week-day.today { background: var(--primary-light); }
+    .week-day.selected { background: var(--accent); color:#fff; }
+    .week-day-dot { width:6px; height:6px; border-radius:50%; background: var(--primary-dark); }
+
+    /* Diary */
+    .diary-date-header { font-size:13px; font-weight:600; color:var(--text-muted); padding:8px 0 4px; }
+    .recording-pulse { animation: pulse-rec 1s infinite; }
+    @keyframes pulse-rec { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Settings */
+    .settings-row { padding:14px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+    .settings-label { font-size:14px; font-weight:500; }
+    .settings-value { font-size:13px; color:var(--text-muted); }
+
+    /* Reminders banner */
+    .reminder-banner { background: linear-gradient(135deg, #eff6ff, #e0f2fe); border: 1px solid #bae6fd; border-radius: 12px; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+    .reminder-pulse { width:10px; height:10px; border-radius:50%; background:#0ea5e9; animation: pulse-rec 1.5s infinite; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width:0; }
+
+    /* Patienten special badge */
+    .cat-patienten .accordion-header { border-left: 3px solid #7c3aed; }
+    .badge-special { font-size:10px; font-weight:700; background:#7c3aed; color:#fff; padding:2px 7px; border-radius:99px; }
+
+    .sync-dot { width:7px; height:7px; border-radius:50%; background:#22c55e; display:inline-block; }
+    .sync-dot.syncing { animation: pulse-rec 1s infinite; background:#f59e0b; }
+    .sync-dot.error { background:#ef4444; }
+  </style>
+</head>
+<body style="height:100dvh;overflow:hidden;display:flex;flex-direction:column;">
+
+<!-- ===== HOME TAB ===== -->
+<div id="tab-home" class="tab-content active">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div id="home-date" style="font-size:22px;font-weight:700;letter-spacing:-0.5px;"></div>
+        <div id="home-weekday" style="font-size:14px;color:var(--text-muted);margin-top:1px;"></div>
+      </div>
+      <button onclick="openSettings()" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:16px 16px 8px;">
+
+    <!-- Reminders Today -->
+    <div id="reminders-section" style="display:none;margin-bottom:16px;">
+      <div class="section-label">Erinnerungen heute</div>
+      <div id="reminders-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- Day Plan -->
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="section-label">Tagesplan</div>
+        <button onclick="openAddEvent('day')" style="font-size:12px;color:var(--accent);font-weight:600;background:none;border:none;cursor:pointer;padding:0;">+ Eintrag</button>
+      </div>
+      <div class="card">
+        <div id="day-grid" style="padding:8px 0;"></div>
+      </div>
+    </div>
+
+    <!-- Week Plan -->
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="section-label">Wochenplan</div>
+        <button onclick="openAddEvent('week')" style="font-size:12px;color:var(--accent);font-weight:600;background:none;border:none;cursor:pointer;padding:0;">+ Eintrag</button>
+      </div>
+      <!-- Week strip -->
+      <div class="card" style="padding:12px 8px 8px;">
+        <div id="week-strip" style="display:flex;gap:4px;margin-bottom:8px;"></div>
+        <div id="week-events" style="font-size:13px;color:var(--text-muted);text-align:center;padding:8px 0;">Kein Tag ausgewählt</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== KANBAN TAB ===== -->
+<div id="tab-kanban" class="tab-content">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:20px;font-weight:700;">Kanban</div>
+      <button onclick="openAddTask()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;">+ Task</button>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <div id="kanban-accordion" class="card" style="margin:16px;border-radius:var(--radius);overflow:hidden;"></div>
+  </div>
+</div>
+
+<!-- ===== DIARY TAB ===== -->
+<div id="tab-diary" class="tab-content">
+  <div class="page-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:20px;font-weight:700;">Tagebuch</div>
+      <button onclick="openAddDiary()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;">+ Eintrag</button>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:16px;">
+    <div id="diary-list" class="card" style="border-radius:var(--radius);overflow:hidden;"></div>
+  </div>
+</div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav id="bottom-nav" style="display:flex;flex-shrink:0;border-top:1px solid var(--border);background:var(--surface);">
+  <button class="nav-btn active" onclick="showTab('home')" id="nav-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Heute
+  </button>
+  <button class="nav-btn" onclick="showTab('kanban')" id="nav-kanban">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/></svg>
+    Kanban
+  </button>
+  <button class="nav-btn" onclick="showTab('diary')" id="nav-diary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Tagebuch
+  </button>
+</nav>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Add Event Modal -->
+<div id="modal-event" class="modal-overlay" onclick="closeModal('modal-event', event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;" id="modal-event-title">Eintrag hinzufügen</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <input id="event-title" class="input-field" placeholder="Titel" type="text">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <label style="font-size:12px;color:var(--text-muted);font-weight:500;">Von</label>
+          <input id="event-start" class="input-field" type="time" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--text-muted);font-weight:500;">Bis</label>
+          <input id="event-end" class="input-field" type="time" style="margin-top:4px;">
+        </div>
+      </div>
+      <input id="event-date" class="input-field" type="date">
+      <input id="event-note" class="input-field" placeholder="Notiz (optional)" type="text">
+    </div>
+    <div style="margin-top:20px;display:flex;gap:8px;">
+      <button class="btn-ghost" onclick="closeModal('modal-event')" style="flex:1;">Abbrechen</button>
+      <button class="btn-primary" onclick="saveEvent()" style="flex:2;">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Task Modal -->
+<div id="modal-task" class="modal-overlay" onclick="closeModal('modal-task', event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;">Task hinzufügen</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <input id="task-title" class="input-field" placeholder="Task-Titel" type="text">
+      <select id="task-category" class="input-field">
+        <option value="Barmelweid">Barmelweid</option>
+        <option value="Patienten">Patienten</option>
+        <option value="Privat">Privat</option>
+        <option value="PSP">PSP</option>
+      </select>
+      <select id="task-status" class="input-field">
+        <option value="backlog">Backlog</option>
+        <option value="todo">Todo</option>
+        <option value="inprogress">In Progress</option>
+        <option value="done">Done</option>
+      </select>
+      <select id="task-priority" class="input-field">
+        <option value="mittel">Mittel</option>
+        <option value="hoch">Hoch</option>
+        <option value="niedrig">Niedrig</option>
+      </select>
+      <input id="task-deadline" class="input-field" type="date" placeholder="Deadline (optional)">
+    </div>
+    <div style="margin-top:20px;display:flex;gap:8px;">
+      <button class="btn-ghost" onclick="closeModal('modal-task')" style="flex:1;">Abbrechen</button>
+      <button class="btn-primary" onclick="saveTask()" style="flex:2;">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Diary Modal -->
+<div id="modal-diary" class="modal-overlay" onclick="closeModal('modal-diary', event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;">Tagebucheintraf</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <input id="diary-date-input" class="input-field" type="date">
+      <textarea id="diary-text" class="input-field" rows="5" placeholder="Was möchtest du festhalten?" style="resize:none;"></textarea>
+      <button onclick="startDictation()" id="dict-btn" style="display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--bg);cursor:pointer;font-size:13px;color:var(--text-muted);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <span id="dict-label">Diktieren</span>
+      </button>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:8px;">
+      <button class="btn-ghost" onclick="closeModal('modal-diary')" style="flex:1;">Abbrechen</button>
+      <button class="btn-primary" onclick="saveDiary()" style="flex:2;">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="modal-settings" class="modal-overlay" onclick="closeModal('modal-settings', event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:20px;">Einstellungen</div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);">GitHub Sync</div>
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <label style="font-size:12px;font-weight:500;color:var(--text-muted);">Benutzername</label>
+          <input id="settings-user" class="input-field" type="text" placeholder="ctmos" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:500;color:var(--text-muted);">Repository</label>
+          <input id="settings-repo" class="input-field" type="text" placeholder="CoworkKanban-data" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:500;color:var(--text-muted);">Token</label>
+          <input id="settings-token" class="input-field" type="password" placeholder="ghp_..." style="margin-top:4px;">
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn-ghost" onclick="syncNow()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sync
+      </button>
+      <button class="btn-primary" onclick="saveSettings()" style="flex:2;">Speichern</button>
+    </div>
+    <div id="sync-status-text" style="font-size:12px;color:var(--text-muted);text-align:center;min-height:18px;"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATABASE
+// ============================================================
+const DB_NAME = 'CoworkDashboard';
+const DB_VERSION = 1;
+let db;
+
+async function initDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('events')) d.createObjectStore('events', {keyPath:'id'});
       if (!d.objectStoreNames.contains('tasks')) d.createObjectStore('tasks', {keyPath:'id'});
       if (!d.objectStoreNames.contains('diary')) d.createObjectStore('diary', {keyPath:'id'});
       if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings', {keyPath:'key'});
     };
-    req.onsuccess = e => { db = e.target.result; resolve(db); };
-    req.onerror = e => reject(e);
+    req.onsuccess = e => { db = e.target.result; resolve(); };
+    req.onerror = reject;
   });
 }
 
+function dbGet(store, key) {
+  return new Promise(r => db.transaction(store).objectStore(store).get(key).onsuccess = e => r(e.target.result));
+}
 function dbGetAll(store) {
-  return new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readonly');
-    const req = tx.objectStore(store).getAll();
-    req.onsuccess = e => res(e.target.result);
-    req.onerror = e => rej(e);
-  });
+  return new Promise(r => db.transaction(store).objectStore(store).getAll().onsuccess = e => r(e.target.result));
 }
-
 function dbPut(store, obj) {
-  return new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).put(obj);
-    req.onsuccess = e => res(e.target.result);
-    req.onerror = e => rej(e);
-  });
+  return new Promise(r => db.transaction(store,'readwrite').objectStore(store).put(obj).onsuccess = r);
+}
+function dbDelete(store, key) {
+  return new Promise(r => db.transaction(store,'readwrite').objectStore(store).delete(key).onsuccess = r);
+}
+function uuid() { return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+// ============================================================
+// SETTINGS
+// ============================================================
+let appSettings = { githubUser:'ctmos', githubRepo:'CoworkKanban-data', githubToken:'' };
+
+async function loadSettings() {
+  const u = await dbGet('settings','githubUser');
+  const r = await dbGet('settings','githubRepo');
+  const t = await dbGet('settings','githubToken');
+  if (u) appSettings.githubUser = u.value;
+  if (r) appSettings.githubRepo = r.value;
+  if (t) appSettings.githubToken = t.value;
 }
 
-function dbDelete(store, id) {
-  return new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).delete(id);
-    req.onsuccess = e => res();
-    req.onerror = e => rej(e);
-  });
-}
-
-function dbClear(store) {
-  return new Promise((res,rej) => {
-    const tx = db.transaction(store,'readwrite');
-    const req = tx.objectStore(store).clear();
-    req.onsuccess = ()=>res();
-    req.onerror = e=>rej(e);
-  });
-}
-
-async function getSetting(key) {
-  return new Promise((res,rej) => {
-    const tx = db.transaction('settings','readonly');
-    const req = tx.objectStore('settings').get(key);
-    req.onsuccess = e => res(e.target.result ? e.target.result.value : null);
-    req.onerror = rej;
-  });
-}
-
-async function setSetting(key, value) {
-  return dbPut('settings', {key, value});
-}
-
-// ===================== STATE =====================
-let currentCat = 'Barmelweid';
-let tasks = [];
-let diaryEntries = [];
-let appSettings = { githubUser:'', githubRepo:'CoworkKanban', githubToken:'', lastSync:null };
-let recognition = null;
-let isDictating = false;
-
-// ===================== INIT =====================
-async function init() {
-  await openDB();
-  tasks = await dbGetAll('tasks');
-  diaryEntries = await dbGetAll('diary');
-  appSettings.githubUser = await getSetting('githubUser') || 'ctmos';
-  appSettings.githubRepo = await getSetting('githubRepo') || 'CoworkKanban-data';
-  appSettings.githubToken = await getSetting('githubToken') || '';
-  appSettings.lastSync = await getSetting('lastSync') || null;
-  updateOnlineStatus();
-  renderCurrentView();
-  checkReminders();
-  updateSyncLabel();
-  // Auto-sync every 20 min
-  setInterval(() => { if(navigator.onLine) syncNow(false); }, 20*60*1000);
-  // Check reminders every 5 min
-  setInterval(checkReminders, 5*60*1000);
-  // Request notification permission if not set
-  if(Notification.permission === 'default') {
-    setTimeout(requestNotificationPermissionSilent, 3000);
-  }
-  // Register service worker
-  registerSW();
-  // Online/offline events
-  window.addEventListener('online', () => { updateOnlineStatus(); syncNow(false); });
-  window.addEventListener('offline', updateOnlineStatus);
-}
-
-// ===================== NAV =====================
-function switchCat(btn) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentCat = btn.dataset.cat;
-  renderCurrentView();
-}
-
-function renderCurrentView() {
-  const isTagebuch = currentCat === 'Tagebuch';
-  const isErinnerungen = currentCat === 'Erinnerungen';
-  document.getElementById('view-kanban').classList.toggle('hidden', isTagebuch || isErinnerungen);
-  document.getElementById('view-tagebuch').classList.toggle('hidden', !isTagebuch);
-  document.getElementById('view-erinnerungen').classList.toggle('hidden', !isErinnerungen);
-  document.getElementById('fab-add').classList.toggle('hidden', isTagebuch || isErinnerungen);
-  if (isTagebuch) renderDiary();
-  else if (isErinnerungen) renderReminders();
-  else renderKanban();
-}
-
-// ===================== KANBAN =====================
-const STATUSES = [
-  {key:'backlog', label:'Backlog', color:'bg-gray-100'},
-  {key:'todo', label:'Todo', color:'bg-blue-50'},
-  {key:'inprogress', label:'In Progress', color:'bg-yellow-50'},
-  {key:'done', label:'Done', color:'bg-green-50'},
-];
-
-function renderKanban() {
-  const board = document.getElementById('kanban-board');
-  const catTasks = tasks.filter(t => t.category === currentCat);
-  const now = new Date();
-  board.innerHTML = '';
-  STATUSES.forEach(st => {
-    const col = document.createElement('div');
-    col.className = `kanban-column ${st.color} rounded-2xl p-3`;
-    const colTasks = catTasks.filter(t => t.status === st.key);
-    col.innerHTML = `<div class="flex items-center justify-between mb-3">
-      <span class="font-bold text-sm text-gray-700">${st.label}</span>
-      <span class="badge bg-gray-200 text-gray-600">${colTasks.length}</span>
-    </div>
-    <div class="kanban-col flex flex-col gap-2" data-status="${st.key}"
-      ondragover="event.preventDefault();this.classList.add('drag-over')"
-      ondragleave="this.classList.remove('drag-over')"
-      ondrop="onDrop(event,'${st.key}')"></div>`;
-    const dropZone = col.querySelector('[data-status]');
-    colTasks.forEach(task => {
-      const card = createTaskCard(task, now);
-      dropZone.appendChild(card);
-    });
-    board.appendChild(col);
-  });
-}
-
-function createTaskCard(task, now) {
-  const card = document.createElement('div');
-  const overdue = task.deadline && new Date(task.deadline) < now && task.status !== 'done';
-  card.className = `task-card bg-white rounded-xl p-3 shadow-sm priority-${task.priority} ${overdue?'overdue':''} border border-gray-100`;
-  card.draggable = true;
-  card.dataset.id = task.id;
-  card.addEventListener('dragstart', e => e.dataTransfer.setData('taskId', task.id));
-  // Touch drag support
-  card.addEventListener('touchstart', handleTouchStart, {passive:true});
-  card.addEventListener('touchmove', handleTouchMove, {passive:false});
-  card.addEventListener('touchend', handleTouchEnd);
-  const prioColors = {hoch:'bg-red-100 text-red-700', mittel:'bg-yellow-100 text-yellow-700', niedrig:'bg-green-100 text-green-700'};
-  const prioLabel = {hoch:'Hoch', mittel:'Mittel', niedrig:'Niedrig'};
-  const deadlineHtml = task.deadline ? `<span class="text-xs ${overdue?'text-red-600 font-semibold':'text-gray-400'}">ð ${new Date(task.deadline).toLocaleDateString('de-DE')}</span>` : '';
-  const reminderHtml = task.reminderAt ? `<span class="text-xs text-purple-500">â° ${new Date(task.reminderAt).toLocaleString('de-DE',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>` : '';
-  card.innerHTML = `<div class="flex items-start justify-between gap-2">
-    <span class="text-sm font-semibold text-gray-800 leading-snug flex-1">${esc(task.title)}</span>
-    <button onclick="editTask('${task.id}')" class="text-gray-300 hover:text-gray-500 flex-shrink-0 mt-0.5">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-    </button>
-  </div>
-  ${task.description?`<p class="text-xs text-gray-500 mt-1 line-clamp-2">${esc(task.description)}</p>`:''}
-  <div class="flex flex-wrap items-center gap-2 mt-2">
-    <span class="badge ${prioColors[task.priority]} text-xs">${prioLabel[task.priority]}</span>
-    ${deadlineHtml}
-    ${reminderHtml}
-  </div>`;
-  return card;
-}
-
-function onDrop(e, newStatus) {
-  e.preventDefault();
-  e.target.classList.remove('drag-over');
-  const id = e.dataTransfer.getData('taskId');
-  if (!id) return;
-  updateTaskStatus(id, newStatus);
-}
-
-async function updateTaskStatus(id, newStatus) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
-  task.status = newStatus;
-  task.updatedAt = new Date().toISOString();
-  await dbPut('tasks', task);
-  renderKanban();
-  scheduleSyncDebounced();
-}
-
-// Touch drag
-let touchTask = null, touchClone = null, touchStartY = 0;
-function handleTouchStart(e) {
-  touchTask = this;
-  touchStartY = e.touches[0].clientY;
-}
-function handleTouchMove(e) {
-  if (!touchTask) return;
-  e.preventDefault();
-  const touch = e.touches[0];
-  if (!touchClone) {
-    touchClone = touchTask.cloneNode(true);
-    touchClone.style.cssText = `position:fixed;opacity:0.8;pointer-events:none;z-index:999;width:${touchTask.offsetWidth}px;top:${touchTask.getBoundingClientRect().top}px;left:${touchTask.getBoundingClientRect().left}px;`;
-    document.body.appendChild(touchClone);
-  }
-  touchClone.style.top = (touch.clientY - 40) + 'px';
-  touchClone.style.left = (touch.clientX - touchTask.offsetWidth/2) + 'px';
-  document.querySelectorAll('[data-status]').forEach(zone => {
-    const rect = zone.getBoundingClientRect();
-    if (touch.clientX >= rect.left && touch.clientX <= rect.right && touch.clientY >= rect.top && touch.clientY <= rect.bottom)
-      zone.classList.add('drag-over');
-    else zone.classList.remove('drag-over');
-  });
-}
-function handleTouchEnd(e) {
-  if (touchClone) { touchClone.remove(); touchClone = null; }
-  if (!touchTask) return;
-  const touch = e.changedTouches[0];
-  let dropped = false;
-  document.querySelectorAll('[data-status]').forEach(zone => {
-    zone.classList.remove('drag-over');
-    const rect = zone.getBoundingClientRect();
-    if (touch.clientX >= rect.left && touch.clientX <= rect.right && touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
-      const newStatus = zone.dataset.status;
-      updateTaskStatus(touchTask.dataset.id, newStatus);
-      dropped = true;
-    }
-  });
-  touchTask = null;
-}
-
-// ===================== TASK MODAL =====================
-function showAddTask() {
-  document.getElementById('task-edit-id').value = '';
-  document.getElementById('task-title-input').value = '';
-  document.getElementById('task-desc-input').value = '';
-  document.getElementById('task-cat-input').value = currentCat === 'Tagebuch' || currentCat === 'Erinnerungen' ? 'Barmelweid' : currentCat;
-  document.getElementById('task-status-input').value = 'todo';
-  document.getElementById('task-prio-input').value = 'mittel';
-  document.getElementById('task-deadline-input').value = '';
-  document.getElementById('task-reminder-input').value = '';
-  document.getElementById('task-delete-btn').classList.add('hidden');
-  document.getElementById('modal-task-title').textContent = 'Aufgabe hinzufÃ¼gen';
-  openModal('modal-task');
-}
-
-function editTask(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
-  document.getElementById('task-edit-id').value = task.id;
-  document.getElementById('task-title-input').value = task.title;
-  document.getElementById('task-desc-input').value = task.description || '';
-  document.getElementById('task-cat-input').value = task.category;
-  document.getElementById('task-status-input').value = task.status;
-  document.getElementById('task-prio-input').value = task.priority;
-  document.getElementById('task-deadline-input').value = task.deadline || '';
-  document.getElementById('task-reminder-input').value = task.reminderAt ? task.reminderAt.slice(0,16) : '';
-  document.getElementById('task-delete-btn').classList.remove('hidden');
-  document.getElementById('modal-task-title').textContent = 'Aufgabe bearbeiten';
-  openModal('modal-task');
-}
-
-async function saveTask() {
-  const title = document.getElementById('task-title-input').value.trim();
-  if (!title) { alert('Bitte einen Titel eingeben.'); return; }
-  const id = document.getElementById('task-edit-id').value || uuid();
-  const existing = tasks.find(t => t.id === id);
-  const task = {
-    id,
-    title,
-    description: document.getElementById('task-desc-input').value.trim(),
-    category: document.getElementById('task-cat-input').value,
-    status: document.getElementById('task-status-input').value,
-    priority: document.getElementById('task-prio-input').value,
-    deadline: document.getElementById('task-deadline-input').value || null,
-    reminderAt: document.getElementById('task-reminder-input').value ? new Date(document.getElementById('task-reminder-input').value).toISOString() : null,
-    createdAt: existing ? existing.createdAt : new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  if (existing) {
-    const idx = tasks.indexOf(existing);
-    tasks[idx] = task;
-  } else {
-    tasks.push(task);
-  }
-  await dbPut('tasks', task);
-  closeModal('modal-task');
-  renderCurrentView();
-  scheduleSyncDebounced();
-}
-
-async function deleteCurrentTask() {
-  const id = document.getElementById('task-edit-id').value;
-  if (!id || !confirm('Aufgabe lÃ¶schen?')) return;
-  tasks = tasks.filter(t => t.id !== id);
-  await dbDelete('tasks', id);
-  closeModal('modal-task');
-  renderCurrentView();
-  scheduleSyncDebounced();
-}
-
-// ===================== DIARY =====================
-function renderDiary() {
-  const list = document.getElementById('diary-list');
-  const empty = document.getElementById('diary-empty');
-  const sorted = [...diaryEntries].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-  if (sorted.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
-  empty.classList.add('hidden');
-  list.innerHTML = sorted.map(e => `
-    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-      <div class="flex items-start justify-between gap-2 mb-2">
-        <span class="text-xs text-gray-400">${new Date(e.createdAt).toLocaleString('de-DE',{weekday:'short',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
-        <button onclick="editDiaryEntry('${e.id}')" class="text-gray-300 hover:text-gray-500 flex-shrink-0">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-        </button>
-      </div>
-      <p class="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">${esc(e.text)}</p>
-    </div>`).join('');
-}
-
-function showDiaryEntry() {
-  document.getElementById('diary-edit-id').value = '';
-  document.getElementById('diary-text-input').value = '';
-  document.getElementById('diary-delete-btn').classList.add('hidden');
-  openModal('modal-diary');
-}
-
-function editDiaryEntry(id) {
-  const e = diaryEntries.find(d => d.id === id);
-  if (!e) return;
-  document.getElementById('diary-edit-id').value = e.id;
-  document.getElementById('diary-text-input').value = e.text;
-  document.getElementById('diary-delete-btn').classList.remove('hidden');
-  openModal('modal-diary');
-}
-
-async function saveDiaryEntry() {
-  const text = document.getElementById('diary-text-input').value.trim();
-  if (!text) { alert('Bitte Text eingeben.'); return; }
-  const id = document.getElementById('diary-edit-id').value || uuid();
-  const existing = diaryEntries.find(d => d.id === id);
-  const entry = { id, text, createdAt: existing ? existing.createdAt : new Date().toISOString(), updatedAt: new Date().toISOString() };
-  if (existing) { const idx = diaryEntries.indexOf(existing); diaryEntries[idx] = entry; }
-  else diaryEntries.push(entry);
-  await dbPut('diary', entry);
-  closeModal('modal-diary');
-  if (isDictating) stopDictation();
-  renderDiary();
-  scheduleSyncDebounced();
-}
-
-async function deleteCurrentDiary() {
-  const id = document.getElementById('diary-edit-id').value;
-  if (!id || !confirm('Eintrag lÃ¶schen?')) return;
-  diaryEntries = diaryEntries.filter(d => d.id !== id);
-  await dbDelete('diary', id);
-  closeModal('modal-diary');
-  renderDiary();
-  scheduleSyncDebounced();
-}
-
-// ===================== DICTATION =====================
-function toggleDictation() {
-  if (isDictating) stopDictation();
-  else startDictation();
-}
-
-function startDictation() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { alert('Spracherkennung wird in diesem Browser nicht unterstÃ¼tzt. Bitte Chrome verwenden.'); return; }
-  recognition = new SR();
-  recognition.lang = 'de-DE';
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  let finalText = document.getElementById('diary-text-input').value;
-  recognition.onresult = e => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) finalText += e.results[i][0].transcript + ' ';
-      else interim = e.results[i][0].transcript;
-    }
-    document.getElementById('diary-text-input').value = finalText + interim;
-  };
-  recognition.onerror = e => { console.error('Speech error', e); stopDictation(); };
-  recognition.onend = () => { if (isDictating) recognition.start(); };
-  recognition.start();
-  isDictating = true;
-  document.getElementById('dictate-btn').classList.add('bg-red-600');
-  document.getElementById('dictate-btn').classList.remove('bg-blue-600');
-  document.getElementById('dictate-label').textContent = 'â¹ Aufnahme stoppen';
-  document.getElementById('dictation-status').classList.remove('hidden');
-}
-
-function stopDictation() {
-  if (recognition) { recognition.onend = null; recognition.stop(); recognition = null; }
-  isDictating = false;
-  document.getElementById('dictate-btn').classList.remove('bg-red-600');
-  document.getElementById('dictate-btn').classList.add('bg-blue-600');
-  document.getElementById('dictate-label').textContent = 'ð Auf Deutsch diktieren';
-  document.getElementById('dictation-status').classList.add('hidden');
-}
-
-// ===================== REMINDERS =====================
-function renderReminders() {
-  const list = document.getElementById('reminder-list');
-  const empty = document.getElementById('reminder-empty');
-  const withReminder = tasks.filter(t => t.reminderAt).sort((a,b) => new Date(a.reminderAt) - new Date(b.reminderAt));
-  if (withReminder.length === 0) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
-  empty.classList.add('hidden');
-  const now = new Date();
-  list.innerHTML = withReminder.map(t => {
-    const rDate = new Date(t.reminderAt);
-    const isPast = rDate < now;
-    return `<div class="bg-white rounded-2xl p-4 shadow-sm border ${isPast?'border-red-200 bg-red-50':'border-gray-100'}">
-      <div class="flex items-start justify-between gap-2">
-        <div class="flex-1">
-          <div class="text-xs font-semibold ${isPast?'text-red-500':'text-purple-500'} mb-1">â° ${rDate.toLocaleString('de-DE',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
-          <div class="text-sm font-semibold text-gray-800">${esc(t.title)}</div>
-          <div class="text-xs text-gray-400 mt-0.5">${t.category} Â· ${{backlog:'Backlog',todo:'Todo',inprogress:'In Progress',done:'Done'}[t.status]}</div>
-        </div>
-        <button onclick="editTask('${t.id}')" class="text-gray-300 hover:text-gray-500">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function checkReminders() {
-  if (Notification.permission !== 'granted') return;
-  const now = new Date();
-  const fiveMinAgo = new Date(now - 5*60*1000);
-  tasks.forEach(task => {
-    if (!task.reminderAt) return;
-    const rDate = new Date(task.reminderAt);
-    if (rDate >= fiveMinAgo && rDate <= now) {
-      new Notification('â° CoworkKanban Erinnerung', {
-        body: task.title,
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%232563EB"/><text y=".9em" font-size="80" x="10">ð</text></svg>'
-      });
-    }
-  });
-}
-
-async function requestNotificationPermission() {
-  const perm = await Notification.requestPermission();
-  updateNotifStatus();
-  if (perm === 'granted') alert('Benachrichtigungen aktiviert! â');
-}
-
-function requestNotificationPermissionSilent() {
-  if (Notification.permission === 'default') Notification.requestPermission();
-}
-
-function updateNotifStatus() {
-  const el = document.getElementById('notif-status');
-  if (!el) return;
-  const map = {granted:'â Aktiviert', denied:'â Verweigert (Browser-Einstellungen)', default:'â ï¸ Nicht angefragt'};
-  if (el) el.textContent = map[Notification.permission] || '';
-}
-
-// ===================== SETTINGS =====================
-function showSettings() {
+function openSettings() {
   document.getElementById('settings-user').value = appSettings.githubUser;
   document.getElementById('settings-repo').value = appSettings.githubRepo;
   document.getElementById('settings-token').value = appSettings.githubToken;
-  updateNotifStatus();
-  const info = document.getElementById('settings-sync-info');
-  if (info) info.textContent = appSettings.lastSync ? `Letzter Sync: ${new Date(appSettings.lastSync).toLocaleString('de-DE')}` : 'Noch kein Sync';
   openModal('modal-settings');
 }
 
 async function saveSettings() {
-  appSettings.githubUser = document.getElementById('settings-user').value.trim();
-  appSettings.githubRepo = document.getElementById('settings-repo').value.trim() || 'CoworkKanban';
+  appSettings.githubUser = document.getElementById('settings-user').value.trim() || 'ctmos';
+  appSettings.githubRepo = document.getElementById('settings-repo').value.trim() || 'CoworkKanban-data';
   appSettings.githubToken = document.getElementById('settings-token').value.trim();
-  await setSetting('githubUser', appSettings.githubUser);
-  await setSetting('githubRepo', appSettings.githubRepo);
-  await setSetting('githubToken', appSettings.githubToken);
-  closeModal('modal-settings');
-  if (appSettings.githubToken && navigator.onLine) syncNow();
+  await dbPut('settings',{key:'githubUser',value:appSettings.githubUser});
+  await dbPut('settings',{key:'githubRepo',value:appSettings.githubRepo});
+  await dbPut('settings',{key:'githubToken',value:appSettings.githubToken});
+  setSyncStatus('Gespeichert ✓');
+  setTimeout(() => closeModal('modal-settings'), 800);
 }
 
-// ===================== GITHUB SYNC =====================
-let syncTimer = null;
-function scheduleSyncDebounced() {
-  clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => { if(navigator.onLine && appSettings.githubToken) syncNow(false); }, 10000);
+// ============================================================
+// NAVIGATION
+// ============================================================
+let currentTab = 'home';
+function showTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('nav-'+tab).classList.add('active');
+  currentTab = tab;
+  if (tab === 'home') renderHome();
+  if (tab === 'kanban') renderKanban();
+  if (tab === 'diary') renderDiary();
 }
 
-async function syncNow(showFeedback = true) {
-  if (!appSettings.githubUser || !appSettings.githubToken) {
-    if (showFeedback) alert('Bitte zuerst GitHub-Einstellungen eingeben.');
+// ============================================================
+// MODALS
+// ============================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id, e) {
+  if (e && e.target !== document.getElementById(id)) return;
+  document.getElementById(id).classList.remove('open');
+}
+
+// ============================================================
+// HOME / EVENTS
+// ============================================================
+let selectedWeekDay = null;
+
+function renderHome() {
+  const now = new Date();
+  const days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  const months = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  document.getElementById('home-date').textContent = `${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('home-weekday').textContent = days[now.getDay()];
+  renderDayGrid();
+  renderWeekStrip();
+  renderReminders();
+}
+
+async function renderReminders() {
+  const tasks = await dbGetAll('tasks');
+  const today = new Date().toISOString().slice(0,10);
+  const due = tasks.filter(t => t.reminderAt && t.reminderAt.slice(0,10) === today && t.status !== 'done');
+  const sec = document.getElementById('reminders-section');
+  const list = document.getElementById('reminders-list');
+  if (due.length === 0) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  list.innerHTML = due.map(t => `
+    <div class="reminder-banner">
+      <div class="reminder-pulse"></div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;">${t.title}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${t.category} · ${t.reminderAt?.slice(11,16)||''}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function renderDayGrid() {
+  const today = new Date().toISOString().slice(0,10);
+  const events = (await dbGetAll('events')).filter(e => e.date === today);
+  const grid = document.getElementById('day-grid');
+  const hours = [];
+  for (let h = 7; h <= 22; h++) hours.push(h);
+
+  grid.innerHTML = hours.map(h => {
+    const label = h + ':00';
+    const hEvents = events.filter(e => e.startTime && parseInt(e.startTime) === h);
+    const evHTML = hEvents.map(e => `
+      <div class="event-block" onclick="deleteEvent('${e.id}')">
+        <div>${e.startTime||''} ${e.endTime ? '– '+e.endTime : ''}</div>
+        <div style="font-weight:600;">${e.title}</div>
+        ${e.note ? `<div style="font-size:11px;opacity:0.7;">${e.note}</div>` : ''}
+      </div>`).join('');
+    return `<div class="time-slot" onclick="quickAddEvent('${label}')">
+      <div class="time-label">${label}</div>
+      <div class="time-line">${evHTML}</div>
+    </div>`;
+  }).join('');
+}
+
+async function renderWeekStrip() {
+  const strip = document.getElementById('week-strip');
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now); monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  const days = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+  const allEvents = await dbGetAll('events');
+  const today = now.toISOString().slice(0,10);
+
+  strip.innerHTML = Array.from({length:7},(_,i) => {
+    const d = new Date(monday); d.setDate(monday.getDate()+i);
+    const ds = d.toISOString().slice(0,10);
+    const isToday = ds === today;
+    const isSel = ds === selectedWeekDay;
+    const hasEvents = allEvents.some(e => e.date === ds);
+    return `<div class="week-day ${isToday?'today':''} ${isSel?'selected':''}" onclick="selectWeekDay('${ds}')">
+      <div style="font-size:10px;font-weight:500;">${days[i]}</div>
+      <div style="font-size:15px;font-weight:${isToday?'700':'400'};">${d.getDate()}</div>
+      ${hasEvents ? `<div class="week-day-dot ${isSel?'style="background:#fff"':''}"></div>` : '<div style="height:6px;"></div>'}
+    </div>`;
+  }).join('');
+}
+
+async function selectWeekDay(ds) {
+  selectedWeekDay = ds;
+  renderWeekStrip();
+  const allEvents = await dbGetAll('events');
+  const dayEvents = allEvents.filter(e => e.date === ds);
+  const el = document.getElementById('week-events');
+  if (dayEvents.length === 0) {
+    el.innerHTML = `<div style="color:var(--text-muted);font-size:13px;">Keine Einträge</div>`;
     return;
   }
-  setSyncLabel('Sync lÃ¤uft...');
-  try {
-    // Pull remote data
-    const [remoteTasks, remoteDiary] = await Promise.all([
-      fetchGitHubFile('data/tasks.json'),
-      fetchGitHubFile('data/diary.json'),
-    ]);
-    // Merge tasks
-    if (remoteTasks) {
-      const merged = mergeItems(tasks, remoteTasks);
-      tasks = merged;
-      await dbClear('tasks');
-      for (const t of tasks) await dbPut('tasks', t);
-    }
-    // Merge diary
-    if (remoteDiary) {
-      const merged = mergeItems(diaryEntries, remoteDiary);
-      diaryEntries = merged;
-      await dbClear('diary');
-      for (const d of diaryEntries) await dbPut('diary', d);
-    }
-    // Push local data
-    await pushGitHubFile('data/tasks.json', JSON.stringify(tasks, null, 2));
-    await pushGitHubFile('data/diary.json', JSON.stringify(diaryEntries, null, 2));
-    appSettings.lastSync = new Date().toISOString();
-    await setSetting('lastSync', appSettings.lastSync);
-    setSyncLabel('Synced â');
-    renderCurrentView();
-    if (showFeedback) alert('Sync erfolgreich! â');
-  } catch(err) {
-    console.error('Sync error', err);
-    setSyncLabel('Sync fehlgeschlagen');
-    if (showFeedback) alert('Sync fehlgeschlagen: ' + err.message);
-  }
+  el.innerHTML = dayEvents.sort((a,b) => (a.startTime||'').localeCompare(b.startTime||'')).map(e => `
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 4px;border-bottom:1px solid var(--border);">
+      <div style="font-size:12px;color:var(--accent);font-weight:600;min-width:40px;">${e.startTime||''}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:500;">${e.title}</div>
+        ${e.note ? `<div style="font-size:12px;color:var(--text-muted);">${e.note}</div>` : ''}
+      </div>
+    </div>`).join('');
 }
 
-function mergeItems(local, remote) {
-  const map = {};
-  [...local, ...remote].forEach(item => {
-    const existing = map[item.id];
-    if (!existing || new Date(item.updatedAt) > new Date(existing.updatedAt)) map[item.id] = item;
-  });
-  return Object.values(map);
+let addEventType = 'day';
+function openAddEvent(type) {
+  addEventType = type;
+  const title = type === 'day' ? 'Tagesplan – Eintrag' : 'Wochenplan – Eintrag';
+  document.getElementById('modal-event-title').textContent = title;
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('event-date').value = selectedWeekDay && type === 'week' ? selectedWeekDay : today;
+  document.getElementById('event-title').value = '';
+  document.getElementById('event-start').value = '';
+  document.getElementById('event-end').value = '';
+  document.getElementById('event-note').value = '';
+  openModal('modal-event');
 }
 
-async function fetchGitHubFile(path) {
-  const url = `https://api.github.com/repos/${appSettings.githubUser}/${appSettings.githubRepo}/contents/${path}`;
-  const res = await fetch(url, { headers: { Authorization: `token ${appSettings.githubToken}`, Accept: 'application/vnd.github.v3+json' }});
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+function quickAddEvent(timeLabel) {
+  addEventType = 'day';
+  document.getElementById('modal-event-title').textContent = 'Tagesplan – Eintrag';
+  document.getElementById('event-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('event-start').value = timeLabel.replace(':00','') + ':00';
+  document.getElementById('event-end').value = (parseInt(timeLabel)+1) + ':00';
+  document.getElementById('event-title').value = '';
+  document.getElementById('event-note').value = '';
+  openModal('modal-event');
+}
+
+async function saveEvent() {
+  const title = document.getElementById('event-title').value.trim();
+  if (!title) return;
+  const ev = {
+    id: uuid(),
+    title,
+    date: document.getElementById('event-date').value,
+    startTime: document.getElementById('event-start').value,
+    endTime: document.getElementById('event-end').value,
+    note: document.getElementById('event-note').value.trim(),
+    type: addEventType,
+    createdAt: new Date().toISOString()
+  };
+  await dbPut('events', ev);
+  closeModal('modal-event');
+  renderHome();
+  syncData();
+}
+
+async function deleteEvent(id) {
+  if (!confirm('Eintrag löschen?')) return;
+  await dbDelete('events', id);
+  renderHome();
+  syncData();
+}
+
+// ============================================================
+// KANBAN
+// ============================================================
+const CATEGORIES = [
+  { id: 'Barmelweid', icon: '🏥', color: '#0ea5e9' },
+  { id: 'Patienten', icon: '👤', color: '#7c3aed', special: true },
+  { id: 'Privat', icon: '🏠', color: '#22c55e' },
+  { id: 'PSP', icon: '📋', color: '#f59e0b' }
+];
+const STATUS_ORDER = ['backlog','todo','inprogress','done'];
+const STATUS_LABELS = { backlog:'Backlog', todo:'Todo', inprogress:'In Progress', done:'Done' };
+const STATUS_CHIPS = { backlog:'chip-backlog', todo:'chip-todo', inprogress:'chip-progress', done:'chip-done' };
+
+let openCats = new Set();
+
+async function renderKanban() {
+  const tasks = await dbGetAll('tasks');
+  const container = document.getElementById('kanban-accordion');
+  container.innerHTML = CATEGORIES.map(cat => {
+    const catTasks = tasks.filter(t => t.category === cat.id);
+    const open = openCats.has(cat.id);
+    const totalOpen = catTasks.filter(t => t.status !== 'done').length;
+    return `
+      <div class="accordion-item ${cat.special ? 'cat-patienten' : ''}">
+        <button class="accordion-header ${open ? 'open' : ''}" onclick="toggleCat('${cat.id}')">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:18px;">${cat.icon}</span>
+            <span style="font-size:15px;font-weight:600;">${cat.id}</span>
+            ${cat.special ? '<span class="badge-special">Dashboard</span>' : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${totalOpen > 0 ? `<span style="font-size:12px;font-weight:700;background:var(--primary-light);color:var(--accent);padding:2px 8px;border-radius:99px;">${totalOpen}</span>` : ''}
+            <svg class="chevron ${open ? 'open' : ''}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </button>
+        <div class="accordion-body ${open ? 'open' : ''}">
+          ${cat.special ? renderPatientenDashboard(catTasks) : renderCatTasks(cat.id, catTasks)}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderCatTasks(catId, tasks) {
+  if (tasks.length === 0) return `<div style="padding:16px 20px;font-size:13px;color:var(--text-muted);">Keine Tasks — <button onclick="openAddTask('${catId}')" style="color:var(--accent);font-weight:600;background:none;border:none;cursor:pointer;">+ hinzufügen</button></div>`;
+  return STATUS_ORDER.map(status => {
+    const sts = tasks.filter(t => t.status === status);
+    if (sts.length === 0) return '';
+    return `<div style="padding:8px 0;">
+      <div style="padding:4px 20px 8px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">${STATUS_LABELS[status]}</div>
+      ${sts.map(t => `
+        <div class="task-item" onclick="cycleStatus('${t.id}')">
+          <div class="task-check ${t.status==='done'?'done':''}">${t.status==='done'?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
+          <div class="priority-dot p-${t.priority}"></div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:500;${t.status==='done'?'text-decoration:line-through;color:var(--text-muted);':''}">${t.title}</div>
+            ${t.deadline ? `<div style="font-size:11px;color:var(--text-muted);">📅 ${t.deadline}</div>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderPatientenDashboard(tasks) {
+  const open = tasks.filter(t => t.status !== 'done').length;
+  return `
+    <div style="padding:16px 20px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);">
+      <div style="font-size:12px;color:#7c3aed;font-weight:600;margin-bottom:8px;">PATIENTEN DASHBOARD</div>
+      <div style="font-size:24px;font-weight:700;color:#4c1d95;">${open}</div>
+      <div style="font-size:12px;color:#6d28d9;">offene Tasks</div>
+      <div style="margin-top:12px;font-size:12px;color:#7c3aed;opacity:0.7;">Detailansicht folgt in Kürze →</div>
+    </div>
+    ${renderCatTasks('Patienten', tasks)}`;
+}
+
+function toggleCat(catId) {
+  if (openCats.has(catId)) openCats.delete(catId);
+  else openCats.add(catId);
+  renderKanban();
+}
+
+async function cycleStatus(id) {
+  const tasks = await dbGetAll('tasks');
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  const idx = STATUS_ORDER.indexOf(t.status);
+  t.status = STATUS_ORDER[(idx+1) % STATUS_ORDER.length];
+  t.updatedAt = new Date().toISOString();
+  await dbPut('tasks', t);
+  renderKanban();
+  syncData();
+}
+
+function openAddTask(presetCat) {
+  if (presetCat) document.getElementById('task-category').value = presetCat;
+  document.getElementById('task-title').value = '';
+  document.getElementById('task-deadline').value = '';
+  openModal('modal-task');
+}
+
+async function saveTask() {
+  const title = document.getElementById('task-title').value.trim();
+  if (!title) return;
+  const t = {
+    id: uuid(),
+    title,
+    category: document.getElementById('task-category').value,
+    status: document.getElementById('task-status').value,
+    priority: document.getElementById('task-priority').value,
+    deadline: document.getElementById('task-deadline').value || null,
+    createdAt: new Date().toISOString(),
+   fetch(url, { headers: { Authorization: `token ${appSettings.githubToken}` } });
+  if (!res.ok) return null;
   const data = await res.json();
   return JSON.parse(atob(data.content.replace(/\n/g,'')));
 }
 
-async function pushGitHubFile(path, content) {
+async function ghPutFile(path, content) {
   const url = `https://api.github.com/repos/${appSettings.githubUser}/${appSettings.githubRepo}/contents/${path}`;
-  // Get current SHA
+  const token = appSettings.githubToken;
   let sha;
   try {
-    const res = await fetch(url, { headers: { Authorization: `token ${appSettings.githubToken}`, Accept: 'application/vnd.github.v3+json' }});
-    if (res.ok) { const d = await res.json(); sha = d.sha; }
-  } catch(e) {}
-  const body = { message: `CoworkKanban sync ${new Date().toISOString()}`, content: btoa(unescape(encodeURIComponent(content))) };
+    const r = await fetch(url, { headers: { Authorization: `token ${token}` } });
+    if (r.ok) { const d = await r.json(); sha = d.sha; }
+  } catch {}
+  const body = { message: `sync ${new Date().toISOString()}`, content: btoa(unescape(encodeURIComponent(content))) };
   if (sha) body.sha = sha;
-  const res = await fetch(url, { method:'PUT', headers:{ Authorization:`token ${appSettings.githubToken}`, 'Content-Type':'application/json', Accept:'application/vnd.github.v3+json' }, body: JSON.stringify(body) });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.message || res.status); }
+  await fetch(url, { method:'PUT', headers:{ Authorization:`token ${token}`, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
 }
 
-function setSyncLabel(text) {
-  const el = document.getElementById('sync-label');
-  if (el) el.textContent = text;
-}
-
-function updateSyncLabel() {
-  setSyncLabel(appSettings.lastSync ? `Sync ${new Date(appSettings.lastSync).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}` : 'Bereit');
-}
-
-function updateOnlineStatus() {
-  const dot = document.getElementById('online-dot');
-  if (dot) { dot.className = navigator.onLine ? 'w-2 h-2 rounded-full bg-green-300 inline-block' : 'w-2 h-2 rounded-full bg-red-300 inline-block'; }
-}
-
-// ===================== EXPORT =====================
-function exportData() {
-  const data = { tasks, diary: diaryEntries, exportedAt: new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `CoworkKanban-Export-${new Date().toISOString().slice(0,10)}.json`;
-  a.click(); URL.revokeObjectURL(url);
-}
-
-// ===================== MODAL UTILS =====================
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-// ===================== HELPERS =====================
-function uuid() { return crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:r&0x3|0x8).toString(16);}); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-// ===================== SERVICE WORKER =====================
-function registerSW() {
-  if (!('serviceWorker' in navigator)) return;
-  const swCode = `
-const CACHE = 'cowork-kanban-v1';
-const ASSETS = [self.location.href];
-self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))); self.skipWaiting(); });
-self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))); self.clients.claim(); });
-self.addEventListener('fetch', e => { if(e.request.method!=='GET')return; e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res.ok){const c=res.clone();caches.open(CACHE).then(cache=>cache.put(e.request,c));}return res;}).catch(()=>caches.match(e.request)))); });
+// ============================================================
+// PWA
+// ============================================================
+const swCode = `
+self.addEventListener('install', e => e.waitUntil(caches.open('cwd-v1').then(c => c.addAll(['./', './index.html']))));
+self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
 `;
-  const blob = new Blob([swCode], {type:'application/javascript'});
-  const url = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(url).then(() => console.log('SW registered')).catch(e => console.warn('SW error', e));
-}
+const swBlob = new Blob([swCode], {type:'application/javascript'});
+const swURL = URL.createObjectURL(swBlob);
+if ('serviceWorker' in navigator) navigator.serviceWorker.register(swURL).catch(()=>{});
 
-// PWA Manifest
-(function() {
-  const manifest = { name:'CoworkKanban', short_name:'Kanban', start_url:'./', display:'standalone', background_color:'#ffffff', theme_color:'#2563EB', icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="80" fill="%232563EB"/><rect x="80" y="100" width="140" height="312" rx="16" fill="white" opacity="0.9"/><rect x="286" y="100" width="140" height="200" rx="16" fill="white" opacity="0.9"/></svg>',sizes:'512x512',type:'image/svg+xml'}] };
-  const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('link');
-  link.rel = 'manifest'; link.href = url;
-  document.head.appendChild(link);
+const manifest = {name:'CoworkDashboard',short_name:'Dashboard',start_url:'./',display:'standalone',background_color:'#f8fafc',theme_color:'#f0f9ff',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="80" fill="%230ea5e9"/><rect x="60" y="80" width="160" height="352" rx="20" fill="white" opacity="0.9"/><rect x="260" y="80" width="192" height="220" rx="20" fill="white" opacity="0.9"/><rect x="260" y="320" width="192" height="112" rx="20" fill="white" opacity="0.5"/></svg>',sizes:'512x512',type:'image/svg+xml'}]};
+const mLink = document.createElement('link');
+mLink.rel = 'manifest';
+mLink.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));
+document.head.appendChild(mLink);
+
+// ============================================================
+// INIT
+// ============================================================
+(async () => {
+  await initDB();
+  await loadSettings();
+  renderHome();
 })();
-
-// Start
-init();
 </script>
 </body>
 </html>
