@@ -437,6 +437,7 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
 @media(min-width:1024px){.bottom-nav,#bottom-nav,[class*="bottom-nav"]{display:none!important}.sidebar,#sidebar,[class*="sidebar"]{display:flex!important}.main-content,[class*="main-content"],.content-area{margin-left:var(--sidebar-w)}}
 @media(min-width:1600px){:root{--sidebar-w:260px}.main-content,[class*="main-content"]{max-width:1200px;margin-right:auto}}
 /* === End v5 === */
+.filter-chip{padding:4px 12px;border-radius:20px;border:1.5px solid #d1d5db;background:#fff;cursor:pointer;font-size:13px;white-space:nowrap;color:#374151;transition:all .15s}.filter-chip.active{background:#10b981;border-color:#10b981;color:#fff}.filter-chip:hover{border-color:#10b981}
 </style>
 </head>
 <body>
@@ -470,7 +471,11 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       Einstellungen
     </button>
-  </nav>
+    <button class="nav-btn" data-page="projects">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+    Projekte
+  </button>
+</nav>
   <div class="sidebar-bottom">
     <div id="sidebar-sync" class="sync-pill">
       <div class="sync-dot" id="sync-dot-sidebar"></div>
@@ -523,6 +528,9 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
   <!-- KANBAN -->
   <section id="page-kanban" class="page">
     <div class="page-title">Aufgaben</div>
+    <div id="kanban-project-filter" style="display:none;gap:8px;flex-wrap:wrap;padding:0 0 8px 0">
+      <button class="filter-chip active" data-project="" onclick="setKanbanProjectFilter('',this)">Alle</button>
+    </div>
     <div class="kanban-cols">
       <div class="kanban-col col-todo">
         <div class="kanban-col-head">
@@ -705,6 +713,12 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
       <label class="form-label">FÃ¤llig am</label>
       <input type="date" id="task-due-input">
     </div>
+    <div class="form-group">
+      <label class="form-label">Projekt</label>
+      <select id="task-project-input" class="form-select">
+        <option value="">Kein Projekt</option>
+      </select>
+    </div>
     <button class="btn-primary" id="save-task-btn">Speichern</button>
     <button class="btn-secondary" id="cancel-task-btn">Abbrechen</button>
     <button class="btn-danger" id="delete-task-btn" style="display:none;">LÃ¶schen</button>
@@ -779,7 +793,7 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
 
 // ââ PWA Service Worker ââââââââââââââââââââââââââââââââââââââââââââââ
 const SW_BLOB = `
-const CACHE='cwd-v5';
+const CACHE='cwd-v5.1';
 const SHELL=['/'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -796,7 +810,7 @@ let _db=null;
 function openDB(){
   if(_db) return Promise.resolve(_db);
   return new Promise((res,rej)=>{
-    const req=indexedDB.open('cowork-v4',1);
+    const req=indexedDB.open('cowork-v4',2);
     req.onupgradeneeded=e=>{
       const db=e.target.result;
       if(!db.objectStoreNames.contains('tasks')) db.createObjectStore('tasks',{keyPath:'id'});
@@ -804,6 +818,7 @@ function openDB(){
       if(!db.objectStoreNames.contains('diary')) db.createObjectStore('diary',{keyPath:'id'});
       if(!db.objectStoreNames.contains('settings')) db.createObjectStore('settings',{keyPath:'key'});
       if(!db.objectStoreNames.contains('cats')) db.createObjectStore('cats',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('projects')) db.createObjectStore('projects',{keyPath:'id'});
     };
     req.onsuccess=e=>{_db=e.target.result;res(_db);};
     req.onerror=()=>rej(req.error);
@@ -945,7 +960,7 @@ async function syncData(){
   if(btn){ btn.disabled=true; btn.textContent='Synchronisiere…'; }
   setSyncState('syncing');
   try {
-    const stores = ['tasks','events','diary','settings','cats'];
+    const stores = ['tasks','events','diary','settings','cats','projects'];
     for(const store of stores){
       const data = await dbAll(store);
       const json = JSON.stringify(data, null, 2);
@@ -970,13 +985,13 @@ async function confirmRestoreData(){
   await restoreData();
 }
 
-async function restoreData(){
+async function restoreData(silent=false){
   if(!ghToken||!ghRepo) return toast('GitHub nicht konfiguriert');
-  const btn = document.getElementById('restore-data-btn');
+  const btn = silent?null:document.getElementById('restore-data-btn');
   if(btn){ btn.disabled=true; btn.textContent='Stelle wieder her…'; }
-  setSyncState('syncing');
+  if(!silent)setSyncState('syncing');
   try {
-    const stores = ['tasks','events','diary','settings','cats'];
+    const stores = ['tasks','events','diary','settings','cats','projects'];
     for(const store of stores){
       const path = 'data/'+store+'.json';
       try {
@@ -1027,6 +1042,7 @@ function goTo(page){
   if(page==='diary') renderDiary();
   if(page==='cats') renderCats();
   if(page==='home') renderHome();
+  if(page==='projects') renderProjects();
 }
 document.querySelectorAll('[data-page]').forEach(btn=>{
   btn.addEventListener('click',()=>goTo(btn.dataset.page));
@@ -1103,6 +1119,7 @@ async function renderHome(){
 
 // ââ Kanban ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderKanban(){
+  updateKanbanFilterBar().catch(()=>{});
   const tasks=await dbAll('tasks');
   const cols={todo:[],doing:[],done:[]};
   tasks.forEach(t=>(cols[t.status]||cols.todo).push(t));
@@ -1240,6 +1257,7 @@ function hexToRgba(hex,alpha){
 // ââ Task Modal âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let editingTask=null;
 async function openTaskModal(task,defaultStatus){
+  updateProjSelectors().catch(()=>{});
   editingTask=task||null;
   document.getElementById('task-modal-title').textContent=task?'Aufgabe bearbeiten':'Neue Aufgabe';
   document.getElementById('task-title-input').value=task?.title||'';
@@ -1270,6 +1288,7 @@ document.getElementById('save-task-btn').addEventListener('click',async()=>{
     status:document.getElementById('task-status-input').value,
     category:document.getElementById('task-cat-input').value,
     due:document.getElementById('task-due-input').value,
+    projectId:document.getElementById('task-project-input').value||null,
     createdAt:editingTask?.createdAt||new Date().toISOString(),
     updatedAt:new Date().toISOString()
   };
@@ -1441,9 +1460,26 @@ async function refreshAll(){
 }
 
 // ââ Init ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+async function checkAndPullData(){
+  const token=settings.ghToken,repo=settings.ghRepo;
+  if(!token||!repo)return;
+  try{
+    const meta=await ghGet('/repos/'+repo+'/contents/data/tasks.json');
+    if(!meta||!meta.sha)return;
+    const lastSha=localStorage.getItem('cwd_lastPullSha');
+    if(meta.sha===lastSha)return;
+    toast('Lade neueste Daten…');
+    await restoreData(true);
+    localStorage.setItem('cwd_lastPullSha',meta.sha);
+    toast('Daten aktualisiert ✓');
+  }catch(e){
+    console.log('Auto-pull skipped:',e.message);
+  }
+}
 async function init(){
   await loadSettings();
   await ensureDefaultCats();
+  await checkAndPullData();
   renderHome();
   if(settings.ghToken&&settings.ghRepo){
     syncFromGitHub();
@@ -1453,6 +1489,139 @@ init();
 
 // Auto-sync data when app goes to background
 document.addEventListener('visibilitychange', () => { if(document.hidden) syncData(); });
+
+// ── PROJECTS ──────────────────────────────────────────
+let _projColor='#10b981',_editProjId=null,_kanbanProjFilter='';
+
+function selProjColor(color,el){
+  _projColor=color;
+  document.getElementById('proj-color-input').value=color;
+  document.querySelectorAll('#project-modal [onclick^="selProjColor"]').forEach(s=>s.style.border='2px solid transparent');
+  el.style.border='2px solid #333';
+}
+function openProjectModal(proj){
+  _editProjId=proj?proj.id:null;
+  document.getElementById('project-modal-title').textContent=proj?'Projekt bearbeiten':'Neues Projekt';
+  document.getElementById('proj-name-input').value=proj?proj.name:'';
+  document.getElementById('proj-icon-input').value=proj?(proj.icon||''):'';
+  document.getElementById('proj-desc-input').value=proj?(proj.description||''):'';
+  const col=proj?(proj.color||'#10b981'):'#10b981';
+  document.getElementById('proj-color-input').value=col;
+  _projColor=col;
+  document.getElementById('delete-project-btn').style.display=proj?'':'none';
+  document.getElementById('project-modal').style.display='flex';
+}
+function closeProjectModal(){document.getElementById('project-modal').style.display='none';}
+async function saveProject(){
+  const name=document.getElementById('proj-name-input').value.trim();
+  if(!name)return toast('Name erforderlich');
+  const existing=_editProjId?await getProjectById(_editProjId):null;
+  const proj={
+    id:_editProjId||crypto.randomUUID(),
+    name,
+    icon:document.getElementById('proj-icon-input').value.trim()||'📁',
+    color:document.getElementById('proj-color-input').value||'#10b981',
+    description:document.getElementById('proj-desc-input').value.trim(),
+    createdAt:existing?existing.createdAt:new Date().toISOString()
+  };
+  await openDB().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction(['projects'],'readwrite');
+    tx.objectStore('projects').put(proj);
+    tx.oncomplete=res;tx.onerror=rej;
+  }));
+  closeProjectModal();
+  renderProjects();
+  updateProjSelectors();
+  updateKanbanFilterBar();
+  toast('Projekt gespeichert');
+}
+async function deleteCurrentProject(){
+  if(!_editProjId||!confirm('Projekt löschen?'))return;
+  await openDB().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction(['projects'],'readwrite');
+    tx.objectStore('projects').delete(_editProjId);
+    tx.oncomplete=res;tx.onerror=rej;
+  }));
+  closeProjectModal();
+  renderProjects();
+  updateProjSelectors();
+  updateKanbanFilterBar();
+  toast('Gelöscht');
+}
+async function getProjectById(id){
+  return openDB().then(db=>new Promise(res=>{
+    const q=db.transaction(['projects'],'readonly').objectStore('projects').get(id);
+    q.onsuccess=()=>res(q.result);q.onerror=()=>res(null);
+  }));
+}
+async function getAllProjects(){
+  return openDB().then(db=>new Promise(res=>{
+    const req=db.transaction(['projects'],'readonly').objectStore('projects').getAll();
+    req.onsuccess=()=>res(req.result||[]);req.onerror=()=>res([]);
+  }));
+}
+async function renderProjects(){
+  const projects=await getAllProjects();
+  const el=document.getElementById('projects-list');
+  if(!el)return;
+  if(!projects.length){el.innerHTML='<div style="text-align:center;color:#999;padding:40px">Noch keine Projekte. Tippe + um eines anzulegen.</div>';return;}
+  const tasks=await openDB().then(db=>new Promise(res=>{const r=db.transaction(['tasks'],'readonly').objectStore('tasks').getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>res([]);}));
+  const counts={};tasks.forEach(t=>{if(t.projectId)counts[t.projectId]=(counts[t.projectId]||0)+1;});
+  el.innerHTML=projects.map(p=>`<div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick='openProjectModal(${JSON.stringify(p)})'><div style="width:40px;height:40px;border-radius:50%;background:${p.color};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${p.icon||'📁'}</div><div style="flex:1"><div style="font-weight:600">${esc(p.name)}</div>${p.description?'<div style="font-size:13px;color:#666">'+esc(p.description)+'</div>':''}<div style="font-size:12px;color:#999">${counts[p.id]||0} Aufgaben</div></div></div>`).join('');
+}
+async function updateProjSelectors(){
+  const projects=await getAllProjects();
+  const sel=document.getElementById('task-project-input');
+  if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Kein Projekt</option>'+projects.map(p=>`<option value="${p.id}">${p.icon||''} ${esc(p.name)}</option>`).join('');
+  if(cur)sel.value=cur;
+}
+async function updateKanbanFilterBar(){
+  const projects=await getAllProjects();
+  const bar=document.getElementById('kanban-project-filter');
+  if(!bar)return;
+  if(!projects.length){bar.style.display='none';return;}
+  bar.style.display='flex';
+  bar.innerHTML='<button class="filter-chip'+(_kanbanProjFilter===''?' active':'')+'" onclick="setKanbanProjFilter(\'\')" >Alle</button>'+
+    projects.map(p=>`<button class="filter-chip${_kanbanProjFilter===p.id?' active':''}" onclick="setKanbanProjFilter('${p.id}')" style="border-color:${p.color}">${p.icon||''} ${esc(p.name)}</button>`).join('');
+}
+function setKanbanProjFilter(id){
+  _kanbanProjFilter=id;
+  updateKanbanFilterBar();
+  renderKanban();
+}
+// ── END PROJECTS ──────────────────────────────────────
+
 </script>
+
+<section id="page-projects" class="page">
+  <div class="page-title">Projekte</div>
+  <div id="projects-list" style="display:flex;flex-direction:column;gap:12px;padding-bottom:80px"></div>
+  <button class="fab" id="new-project-fab" onclick="openProjectModal()">+</button>
+</section>
+<div id="project-modal" class="modal" style="display:none">
+  <div class="modal-content">
+    <div class="modal-header"><span id="project-modal-title">Neues Projekt</span><button class="modal-close" onclick="closeProjectModal()">&times;</button></div>
+    <div class="form-group"><label class="form-label">Name *</label><input type="text" id="proj-name-input" class="form-input" placeholder="Projektname"></div>
+    <div class="form-group"><label class="form-label">Icon (Emoji)</label><input type="text" id="proj-icon-input" class="form-input" placeholder="📁" maxlength="4"></div>
+    <div class="form-group">
+      <label class="form-label">Farbe</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="width:28px;height:28px;border-radius:50%;background:#10b981;cursor:pointer;border:2px solid #333" onclick="selProjColor('#10b981',this)"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;cursor:pointer;border:2px solid transparent" onclick="selProjColor('#3b82f6',this)"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#f59e0b;cursor:pointer;border:2px solid transparent" onclick="selProjColor('#f59e0b',this)"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#ef4444;cursor:pointer;border:2px solid transparent" onclick="selProjColor('#ef4444',this)"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#8b5cf6;cursor:pointer;border:2px solid transparent" onclick="selProjColor('#8b5cf6',this)"></div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#ec4899;cursor:pointer;border:2px solid transparent" onclick="selProjColor('#ec4899',this)"></div>
+      </div>
+      <input type="hidden" id="proj-color-input" value="#10b981">
+    </div>
+    <div class="form-group"><label class="form-label">Beschreibung</label><input type="text" id="proj-desc-input" class="form-input" placeholder="Kurze Beschreibung"></div>
+    <button class="btn-primary" onclick="saveProject()">Speichern</button>
+    <button class="btn-secondary" onclick="closeProjectModal()">Abbrechen</button>
+    <button class="btn-danger" id="delete-project-btn" style="display:none" onclick="deleteCurrentProject()">Löschen</button>
+  </div>
+</div>
 </body>
 </html>
