@@ -57,7 +57,7 @@ textarea{resize:vertical;min-height:80px;}
 select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 16px;width:100%;outline:none;-webkit-appearance:none;appearance:none;}
 a{color:var(--accent);text-decoration:none;}
 
-/* ── Layout ── */
+/* ââ Layout ââ */
 #app{display:flex;flex-direction:column;min-height:100dvh;}
 #sidebar{display:none;}
 #main-content{flex:1;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));}
@@ -85,15 +85,15 @@ a{color:var(--accent);text-decoration:none;}
 .page{display:none;padding:20px 16px;}
 .page.active{display:block;}
 
-/* ── Typography ── */
+/* ââ Typography ââ */
 .page-title{font-family:var(--font-head);font-size:28px;font-weight:800;letter-spacing:-0.02em;margin-bottom:20px;}
 .section-label{font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;}
 
-/* ── Cards ── */
+/* ââ Cards ââ */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;}
 .card+.card{margin-top:10px;}
 
-/* ── Home page ── */
+/* ââ Home page ââ */
 #page-home .greeting{font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:4px;}
 #page-home .date-line{font-family:var(--font-mono);font-size:13px;color:var(--text2);margin-bottom:24px;}
 .quick-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
@@ -130,7 +130,7 @@ a{color:var(--accent);text-decoration:none;}
 .prio-med{background:var(--amber);}
 .prio-low{background:var(--green);}
 
-/* ── Diary quick-entry ── */
+/* ââ Diary quick-entry ââ */
 .quick-diary{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:24px;}
 .quick-diary-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .quick-diary-header span{font-family:var(--font-head);font-size:16px;font-weight:700;}
@@ -139,7 +139,7 @@ a{color:var(--accent);text-decoration:none;}
 .btn-save-diary{margin-top:10px;background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);border-radius:var(--r-md);padding:10px 20px;font-weight:600;min-height:var(--tap);width:100%;transition:background 0.15s;}
 .btn-save-diary:active{background:rgba(0,212,170,0.2);}
 
-/* ── Kanban ── */
+/* ââ Kanban ââ */
 #page-kanban .kanban-cols{display:flex;flex-direction:column;gap:16px;}
 .kanban-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .kanban-col-title{font-family:var(--font-head);font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;}
@@ -176,7 +176,7 @@ a{color:var(--accent);text-decoration:none;}
 }
 .add-task-btn:active{border-color:var(--accent);color:var(--accent);}
 
-/* ── Calendar ── */
+/* ââ Calendar ââ */
 #page-cal .cal-header{display:flex;align-items:center;gap:8px;margin-bottom:20px;}
 .cal-nav{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);width:var(--tap);height:var(--tap);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
 .cal-month-name{font-family:var(--font-head);font-size:20px;font-weight:800;flex:1;letter-spacing:-0.01em;}
@@ -211,7 +211,7 @@ a{color:var(--accent);text-decoration:none;}
 .cal-event-sub{font-size:12px;color:var(--text2);margin-top:3px;}
 .event-color-bar{width:3px;flex-shrink:0;border-radius:3px;min-height:36px;}
 
-/* ── Diary ── */
+/* ââ Diary ââ */
 #page-diary .diary-list{margin-top:8px;}
 .diary-entry{
   background:var(--surface);border:1px solid var(--border);
@@ -223,7 +223,7 @@ a{color:var(--accent);text-decoration:none;}
 .diary-entry-text{font-size:14px;line-height:1.6;color:var(--text2);}
 .diary-entry-text.preview{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-overflow:hidden;overflow:hidden;}
 
-/* ── Categories ── */
+/* ââ Categories ââ */
 #page-cats .cats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .cat-card{
   background:var(--surface);border:1px solid var(--border);
@@ -240,7 +240,7 @@ a{color:var(--accent);text-decoration:none;}
 .cat-name{font-family:var(--font-head);font-size:15px;font-weight:700;margin-bottom:4px;}
 .cat-count{font-family:var(--font-mono);font-size:12px;color:var(--text2);}
 
-/* ── FAB ── */
+/* ââ FAB ââ */
 .fab{
   position:fixed;right:20px;
   bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px);
@@ -255,7 +255,7 @@ a{color:var(--accent);text-decoration:none;}
 .fab:active{transform:scale(0.92);box-shadow:0 2px 10px rgba(0,212,170,0.3);}
 .fab svg{color:#080810;}
 
-/* ── Modal ── */
+/* ââ Modal ââ */
 .modal-backdrop{
   position:fixed;inset:0;z-index:200;
   background:rgba(8,8,16,0.85);
@@ -306,7 +306,7 @@ a{color:var(--accent);text-decoration:none;}
 }
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
-/* ── Sync indicator ── */
+/* ââ Sync indicator ââ */
 .sync-pill{
   display:inline-flex;align-items:center;gap:6px;
   background:var(--surface2);border:1px solid var(--border);
@@ -320,7 +320,7 @@ a{color:var(--accent);text-decoration:none;}
 .sync-dot.error{background:var(--red);}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
-/* ── Settings ── */
+/* ââ Settings ââ */
 #page-settings .setting-row{
   display:flex;align-items:center;justify-content:space-between;
   background:var(--surface);border:1px solid var(--border);
@@ -344,7 +344,7 @@ a{color:var(--accent);text-decoration:none;}
 .toggle.on .toggle-thumb{transform:translateX(22px);}
 .setting-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;font-family:var(--font-mono);font-size:12px;width:180px;text-align:right;}
 
-/* ── Desktop layout ── */
+/* ââ Desktop layout ââ */
 @media(min-width:768px){
   #app{flex-direction:row;}
   #sidebar{
@@ -396,7 +396,7 @@ a{color:var(--accent);text-decoration:none;}
   #page-cats .cats-grid{grid-template-columns:repeat(4,1fr);}
 }
 
-/* ── Dictation button ── */
+/* ââ Dictation button ââ */
 .dictation-btn{
   display:flex;align-items:center;gap:8px;
   background:var(--surface2);border:1px solid var(--border);
@@ -410,12 +410,12 @@ a{color:var(--accent);text-decoration:none;}
 .dictation-btn .rec-dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:none;animation:pulse 0.8s infinite;}
 .dictation-btn.recording .rec-dot{display:block;}
 
-/* ── Empty state ── */
+/* ââ Empty state ââ */
 .empty-state{text-align:center;padding:48px 24px;}
 .empty-icon{font-size:40px;margin-bottom:12px;opacity:0.4;}
 .empty-text{font-size:14px;color:var(--text2);}
 
-/* ── Toast ── */
+/* ââ Toast ââ */
 .toast{
   position:fixed;top:calc(env(safe-area-inset-top)+16px);left:50%;
   transform:translateX(-50%) translateY(-80px);
@@ -432,7 +432,7 @@ a{color:var(--accent);text-decoration:none;}
 
 <!-- Sidebar (desktop only) -->
 <aside id="sidebar">
-  <div class="sidebar-logo">Cowork<span>·</span>Kanban</div>
+  <div class="sidebar-logo">Cowork<span>Â·</span>Kanban</div>
   <nav class="sidebar-nav">
     <button class="sidebar-btn active" data-page="home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -473,21 +473,21 @@ a{color:var(--accent);text-decoration:none;}
   <!-- HOME -->
   <section id="page-home" class="page active">
     <p class="greeting" id="greeting-text">Guten Morgen</p>
-    <p class="date-line" id="date-display">—</p>
+    <p class="date-line" id="date-display">â</p>
     <div class="sync-pill" id="mobile-sync-pill" style="display:inline-flex;">
       <div class="sync-dot" id="sync-dot-mobile"></div>
       <span id="sync-label-mobile">Bereit</span>
     </div>
-    <div class="section-label">Überblick</div>
+    <div class="section-label">Ãberblick</div>
     <div class="quick-stats">
-      <div class="stat-card"><div class="stat-num" id="stat-open">—</div><div class="stat-label">Offen</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-today">—</div><div class="stat-label">Heute fällig</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-done-week">—</div><div class="stat-label">Woche erledigt</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-events">—</div><div class="stat-label">Termine</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-open">â</div><div class="stat-label">Offen</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-today">â</div><div class="stat-label">Heute fÃ¤llig</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-done-week">â</div><div class="stat-label">Woche erledigt</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-events">â</div><div class="stat-label">Termine</div></div>
     </div>
     <div id="home-grid" class="home-grid">
       <div>
-        <div class="section-label">Heute fällige Aufgaben</div>
+        <div class="section-label">Heute fÃ¤llige Aufgaben</div>
         <div class="today-tasks" id="today-tasks-list"></div>
       </div>
       <div>
@@ -496,7 +496,7 @@ a{color:var(--accent);text-decoration:none;}
           <div class="quick-diary-header">
             <span>Tagebucheintrag</span>
           </div>
-          <textarea class="diary-textarea" id="quick-diary-text" placeholder="Was beschäftigt dich heute?"></textarea>
+          <textarea class="diary-textarea" id="quick-diary-text" placeholder="Was beschÃ¤ftigt dich heute?"></textarea>
           <button class="dictation-btn" id="dictation-btn" style="margin-top:8px;">
             <div class="rec-dot"></div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
@@ -519,7 +519,7 @@ a{color:var(--accent);text-decoration:none;}
         <div id="col-todo-items"></div>
         <button class="add-task-btn" data-col="todo">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Aufgabe hinzufügen
+          Aufgabe hinzufÃ¼gen
         </button>
       </div>
       <div class="kanban-col col-doing">
@@ -529,7 +529,7 @@ a{color:var(--accent);text-decoration:none;}
         <div id="col-doing-items"></div>
         <button class="add-task-btn" data-col="doing">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Aufgabe hinzufügen
+          Aufgabe hinzufÃ¼gen
         </button>
       </div>
       <div class="kanban-col col-done">
@@ -548,7 +548,7 @@ a{color:var(--accent);text-decoration:none;}
       <button class="cal-nav" id="cal-prev">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <div class="cal-month-name" id="cal-month-name">—</div>
+      <div class="cal-month-name" id="cal-month-name">â</div>
       <button class="cal-nav" id="cal-next">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
@@ -563,8 +563,8 @@ a{color:var(--accent);text-decoration:none;}
     <div class="page-title">Tagebuch</div>
     <div class="diary-list" id="diary-list"></div>
     <div class="empty-state" id="diary-empty" style="display:none;">
-      <div class="empty-icon">📓</div>
-      <div class="empty-text">Noch keine Einträge</div>
+      <div class="empty-icon">ð</div>
+      <div class="empty-text">Noch keine EintrÃ¤ge</div>
     </div>
   </section>
 
@@ -605,12 +605,19 @@ a{color:var(--accent);text-decoration:none;}
     <div class="section-label">App-Info</div>
     <div class="card">
       <div style="font-family:var(--font-mono);font-size:12px;color:var(--text2);line-height:2;">
-        CoworkKanban v4 — Clinical Dark<br>
-        © 2025 ctmos<br>
-        <span id="app-last-sync">Letzter Sync: —</span>
+        CoworkKanban v4 â Clinical Dark<br>
+        Â© 2025 ctmos<br>
+        <span id="app-last-sync">Letzter Sync: â</span>
       </div>
     </div>
-  </section>
+  
+    <div class="setting-row card" style="margin-top:14px">
+      <div class="section-label">Datensicherung</div>
+      <p class="setting-sub" style="margin-bottom:8px">Synchronisiert Aufgaben, Ereignisse, Tagebuch, Kategorien &amp; Einstellungen als JSON nach GitHub.</p>
+      <button class="btn-primary" id="sync-data-btn" onclick="syncData()" style="width:100%;margin-bottom:8px">&#x1F4BE; Daten synchronisieren</button>
+      <button class="btn-secondary" id="restore-data-btn" onclick="confirmRestoreData()" style="width:100%">&#x1F504; Von GitHub wiederherstellen</button>
+    </div>
+</section>
 
 </div><!-- /main-content -->
 
@@ -660,7 +667,7 @@ a{color:var(--accent);text-decoration:none;}
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Priorität</label>
+        <label class="form-label">PrioritÃ¤t</label>
         <select id="task-prio-input">
           <option value="low">Niedrig</option>
           <option value="med" selected>Mittel</option>
@@ -679,16 +686,16 @@ a{color:var(--accent);text-decoration:none;}
     <div class="form-group">
       <label class="form-label">Kategorie</label>
       <select id="task-cat-input">
-        <option value="">— keine —</option>
+        <option value="">â keine â</option>
       </select>
     </div>
     <div class="form-group">
-      <label class="form-label">Fällig am</label>
+      <label class="form-label">FÃ¤llig am</label>
       <input type="date" id="task-due-input">
     </div>
     <button class="btn-primary" id="save-task-btn">Speichern</button>
     <button class="btn-secondary" id="cancel-task-btn">Abbrechen</button>
-    <button class="btn-danger" id="delete-task-btn" style="display:none;">Löschen</button>
+    <button class="btn-danger" id="delete-task-btn" style="display:none;">LÃ¶schen</button>
   </div>
 </div>
 
@@ -723,12 +730,12 @@ a{color:var(--accent);text-decoration:none;}
         <option value="#a855f7">Lila</option>
         <option value="#f43f5e">Rot</option>
         <option value="#f59e0b">Gelb</option>
-        <option value="#22c55e">Grøn</option>
+        <option value="#22c55e">GrÃ¸n</option>
       </select>
     </div>
     <button class="btn-primary" id="save-event-btn">Speichern</button>
     <button class="btn-secondary" id="cancel-event-btn">Abbrechen</button>
-    <button class="btn-danger" id="delete-event-btn" style="display:none;">Löschen</button>
+    <button class="btn-danger" id="delete-event-btn" style="display:none;">LÃ¶schen</button>
   </div>
 </div>
 
@@ -748,7 +755,7 @@ a{color:var(--accent);text-decoration:none;}
     </button>
     <button class="btn-primary" id="save-diary-modal-btn">Speichern</button>
     <button class="btn-secondary" id="cancel-diary-btn">Abbrechen</button>
-    <button class="btn-danger" id="delete-diary-btn" style="display:none;">Löschen</button>
+    <button class="btn-danger" id="delete-diary-btn" style="display:none;">LÃ¶schen</button>
   </div>
 </div>
 
@@ -758,7 +765,7 @@ a{color:var(--accent);text-decoration:none;}
 <script>
 'use strict';
 
-// ── PWA Service Worker ──────────────────────────────────────────────
+// ââ PWA Service Worker ââââââââââââââââââââââââââââââââââââââââââââââ
 const SW_BLOB = `
 const CACHE='cwd-v4';
 const SHELL=['/'];
@@ -772,7 +779,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register(url).catch(()=>{});
 }
 
-// ── IndexedDB ────────────────────────────────────────────────────────
+// ââ IndexedDB ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let _db=null;
 function openDB(){
   if(_db) return Promise.resolve(_db);
@@ -823,7 +830,7 @@ function dbGet(store,key){
   }));
 }
 
-// ── Settings ─────────────────────────────────────────────────────────
+// ââ Settings âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let settings={ghToken:'',ghRepo:'',lastSync:null};
 async function loadSettings(){
   const rows=await dbAll('settings');
@@ -839,7 +846,7 @@ async function saveSetting(key,value){
   await dbPut('settings',{key,value});
 }
 
-// ── GitHub API ───────────────────────────────────────────────────────
+// ââ GitHub API âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function ghGet(path){
   const r=await fetch(`https://api.github.com/repos/${settings.ghRepo}/contents/${path}`,{
     headers:{Authorization:`token ${settings.ghToken}`,Accept:'application/vnd.github.v3+json'}
@@ -877,7 +884,7 @@ async function syncToGitHub(){
     await saveSetting('lastSync',now);
     document.getElementById('app-last-sync').textContent='Letzter Sync: '+new Date(now).toLocaleString('de-DE');
     setSyncState('synced');
-    toast('✓ GitHub sync erfolgreich');
+    toast('â GitHub sync erfolgreich');
   }catch(e){
     setSyncState('error');
     toast('Sync-Fehler: '+e.message);
@@ -904,21 +911,88 @@ async function syncFromGitHub(){
   }
 }
 
-// ── Sync state ───────────────────────────────────────────────────────
+// ââ Sync state âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function setSyncState(state){
   ['sync-dot-sidebar','sync-dot-mobile'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.className='sync-dot';el.classList.add(state);}
   });
-  const labels={synced:'Synced',syncing:'Syncing…',error:'Fehler',ready:'Bereit'};
+  const labels={synced:'Synced',syncing:'Syncingâ¦',error:'Fehler',ready:'Bereit'};
   ['sync-label-sidebar','sync-label-mobile'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.textContent=labels[state]||state;
   });
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────
+// ââ Toast âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let toastTimer=null;
+
+async function syncData(){
+  if(!ghToken||!ghRepo) return toast('GitHub nicht konfiguriert');
+  const btn = document.getElementById('sync-data-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Synchronisiere…'; }
+  setSyncState('syncing');
+  try {
+    const stores = ['tasks','events','diary','settings','cats'];
+    for(const store of stores){
+      const data = await dbAll(store);
+      const json = JSON.stringify(data, null, 2);
+      const content = btoa(unescape(encodeURIComponent(json)));
+      const path = 'data/'+store+'.json';
+      let sha;
+      try{ const ex = await ghGet(path); sha = ex.sha; }catch(e){}
+      await ghPut(path, content, sha);
+    }
+    setSyncState('synced');
+    toast('Daten synchronisiert ✓');
+  } catch(e){
+    setSyncState('error');
+    toast('Sync-Fehler: '+e.message);
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='💾 Daten synchronisieren'; }
+  }
+}
+
+async function confirmRestoreData(){
+  if(!confirm('Lokale Daten wirklich mit GitHub-Daten überschreiben? Alle lokalen Änderungen gehen verloren!')) return;
+  await restoreData();
+}
+
+async function restoreData(){
+  if(!ghToken||!ghRepo) return toast('GitHub nicht konfiguriert');
+  const btn = document.getElementById('restore-data-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Stelle wieder her…'; }
+  setSyncState('syncing');
+  try {
+    const stores = ['tasks','events','diary','settings','cats'];
+    for(const store of stores){
+      const path = 'data/'+store+'.json';
+      try {
+        const file = await ghGet(path);
+        const json = JSON.parse(decodeURIComponent(escape(atob(file.content.replace(/\n/g,'')))));
+        const db = await openDB();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(store,'readwrite');
+          const st = tx.objectStore(store);
+          st.clear();
+          const items = Array.isArray(json) ? json : [json];
+          items.forEach(item => st.put(item));
+          tx.oncomplete = resolve;
+          tx.onerror = reject;
+        });
+      } catch(e){ console.warn('Restore skip store:', store, e); }
+    }
+    setSyncState('synced');
+    toast('Wiederherstellung abgeschlossen ✓');
+    setTimeout(() => goTo('home'), 1200);
+  } catch(e){
+    setSyncState('error');
+    toast('Fehler bei Wiederherstellung: '+e.message);
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='🔄 Von GitHub wiederherstellen'; }
+  }
+}
+
 function toast(msg){
   const el=document.getElementById('toast');
   el.textContent=msg;el.classList.add('show');
@@ -926,7 +1000,7 @@ function toast(msg){
   toastTimer=setTimeout(()=>el.classList.remove('show'),2400);
 }
 
-// ── Navigation ───────────────────────────────────────────────────────
+// ââ Navigation âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let currentPage='home';
 function goTo(page){
   currentPage=page;
@@ -946,14 +1020,14 @@ document.querySelectorAll('[data-page]').forEach(btn=>{
   btn.addEventListener('click',()=>goTo(btn.dataset.page));
 });
 
-// ── Default categories ────────────────────────────────────────────────
+// ââ Default categories ââââââââââââââââââââââââââââââââââââââââââââââââ
 const DEFAULT_CATS=[
-  {id:'c1',name:'Arbeit',icon:'💼',color:'#38bdf8'},
-  {id:'c2',name:'Persönlich',icon:'🙋',color:'#a855f7'},
-  {id:'c3',name:'Gesundheit',icon:'🩺',color:'#22c55e'},
-  {id:'c4',name:'Finanzen',icon:'💶',color:'#f59e0b'},
-  {id:'c5',name:'Lernen',icon:'📚',color:'#00d4aa'},
-  {id:'c6',name:'Projekte',icon:'🚀',color:'#fb923c'},
+  {id:'c1',name:'Arbeit',icon:'ð¼',color:'#38bdf8'},
+  {id:'c2',name:'PersÃ¶nlich',icon:'ð',color:'#a855f7'},
+  {id:'c3',name:'Gesundheit',icon:'ð©º',color:'#22c55e'},
+  {id:'c4',name:'Finanzen',icon:'ð¶',color:'#f59e0b'},
+  {id:'c5',name:'Lernen',icon:'ð',color:'#00d4aa'},
+  {id:'c6',name:'Projekte',icon:'ð',color:'#fb923c'},
 ];
 async function ensureDefaultCats(){
   const existing=await dbAll('cats');
@@ -962,7 +1036,7 @@ async function ensureDefaultCats(){
   }
 }
 
-// ── Home page ─────────────────────────────────────────────────────────
+// ââ Home page âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderHome(){
   const now=new Date();
   const hour=now.getHours();
@@ -988,7 +1062,7 @@ async function renderHome(){
   const list=document.getElementById('today-tasks-list');
   list.innerHTML='';
   if(todayTasks.length===0){
-    list.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Keine fälligen Aufgaben</div></div>';
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">â</div><div class="empty-text">Keine fÃ¤lligen Aufgaben</div></div>';
   } else {
     todayTasks.slice(0,6).forEach(t=>{
       const el=document.createElement('div');
@@ -1015,7 +1089,7 @@ async function renderHome(){
   }
 }
 
-// ── Kanban ──────────────────────────────────────────────────────────
+// ââ Kanban ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderKanban(){
   const tasks=await dbAll('tasks');
   const cols={todo:[],doing:[],done:[]};
@@ -1040,11 +1114,11 @@ async function renderKanban(){
   });
 }
 
-// ── Calendar ─────────────────────────────────────────────────────────
+// ââ Calendar âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
 let calSelectedDate=new Date().toISOString().split('T')[0];
 async function renderCal(){
-  const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const months=['Januar','Februar','MÃ¤rz','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
   document.getElementById('cal-month-name').textContent=months[calMonth]+' '+calYear;
   const events=await dbAll('events');
   const today=new Date().toISOString().split('T')[0];
@@ -1084,13 +1158,13 @@ async function renderCal(){
   evList.innerHTML='';
   const dayEvs=events.filter(e=>e.date===calSelectedDate).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
   if(dayEvs.length===0){
-    evList.innerHTML='<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-text">Keine Termine</div></div>';
+    evList.innerHTML='<div class="empty-state"><div class="empty-icon">ð</div><div class="empty-text">Keine Termine</div></div>';
   } else {
     dayEvs.forEach(ev=>{
       const el=document.createElement('div');el.className='cal-event-item';
       el.innerHTML=`
         <div class="event-color-bar" style="background:${ev.color||'var(--accent)'}"></div>
-        <div class="cal-event-time">${ev.time||'—'}</div>
+        <div class="cal-event-time">${ev.time||'â'}</div>
         <div class="cal-event-body">
           <div class="cal-event-title">${esc(ev.title)}</div>
           ${ev.notes?`<div class="cal-event-sub">${esc(ev.notes)}</div>`:''}
@@ -1107,7 +1181,7 @@ document.getElementById('cal-next').addEventListener('click',()=>{
   calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCal();
 });
 
-// ── Diary ─────────────────────────────────────────────────────────────
+// ââ Diary âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderDiary(){
   const entries=await dbAll('diary');
   entries.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
@@ -1121,7 +1195,7 @@ async function renderDiary(){
       const el=document.createElement('div');el.className='diary-entry';
       const d=new Date(e.createdAt);
       el.innerHTML=`
-        <div class="diary-entry-date">${d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} · ${d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="diary-entry-date">${d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} Â· ${d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</div>
         <div class="diary-entry-text preview">${esc(e.text)}</div>`;
       el.addEventListener('click',()=>openDiaryModal(e));
       list.appendChild(el);
@@ -1129,7 +1203,7 @@ async function renderDiary(){
   }
 }
 
-// ── Categories ───────────────────────────────────────────────────────
+// ââ Categories âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderCats(){
   const [cats,tasks]=await Promise.all([dbAll('cats'),dbAll('tasks')]);
   const grid=document.getElementById('cats-grid');
@@ -1151,7 +1225,7 @@ function hexToRgba(hex,alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-// ── Task Modal ───────────────────────────────────────────────────────
+// ââ Task Modal âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let editingTask=null;
 async function openTaskModal(task,defaultStatus){
   editingTask=task||null;
@@ -1164,7 +1238,7 @@ async function openTaskModal(task,defaultStatus){
   document.getElementById('delete-task-btn').style.display=task?'block':'none';
   const cats=await dbAll('cats');
   const catSel=document.getElementById('task-cat-input');
-  catSel.innerHTML='<option value="">— keine —</option>';
+  catSel.innerHTML='<option value="">â keine â</option>';
   cats.forEach(c=>{
     const o=document.createElement('option');
     o.value=c.name;o.textContent=c.name;
@@ -1189,19 +1263,19 @@ document.getElementById('save-task-btn').addEventListener('click',async()=>{
   };
   await dbPut('tasks',task);
   closeModal('task-modal');
-  toast('✓ Aufgabe gespeichert');
+  toast('â Aufgabe gespeichert');
   refreshAll();
 });
 document.getElementById('delete-task-btn').addEventListener('click',async()=>{
   if(!editingTask) return;
   await dbDel('tasks',editingTask.id);
   closeModal('task-modal');
-  toast('Aufgabe gelöscht');
+  toast('Aufgabe gelÃ¶scht');
   refreshAll();
 });
 document.getElementById('cancel-task-btn').addEventListener('click',()=>closeModal('task-modal'));
 
-// ── Event Modal ──────────────────────────────────────────────────────
+// ââ Event Modal ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let editingEvent=null;
 function openEventModal(ev){
   editingEvent=ev||null;
@@ -1228,19 +1302,19 @@ document.getElementById('save-event-btn').addEventListener('click',async()=>{
   };
   await dbPut('events',ev);
   closeModal('event-modal');
-  toast('✓ Termin gespeichert');
+  toast('â Termin gespeichert');
   refreshAll();
 });
 document.getElementById('delete-event-btn').addEventListener('click',async()=>{
   if(!editingEvent) return;
   await dbDel('events',editingEvent.id);
   closeModal('event-modal');
-  toast('Termin gelöscht');
+  toast('Termin gelÃ¶scht');
   refreshAll();
 });
 document.getElementById('cancel-event-btn').addEventListener('click',()=>closeModal('event-modal'));
 
-// ── Diary Modal ──────────────────────────────────────────────────────
+// ââ Diary Modal ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let editingDiary=null;
 function openDiaryModal(entry){
   editingDiary=entry||null;
@@ -1260,28 +1334,28 @@ document.getElementById('save-diary-modal-btn').addEventListener('click',async()
   };
   await dbPut('diary',entry);
   closeModal('diary-modal');
-  toast('✓ Eintrag gespeichert');
+  toast('â Eintrag gespeichert');
   renderDiary();
 });
 document.getElementById('delete-diary-btn').addEventListener('click',async()=>{
   if(!editingDiary) return;
   await dbDel('diary',editingDiary.id);
   closeModal('diary-modal');
-  toast('Eintrag gelöscht');
+  toast('Eintrag gelÃ¶scht');
   renderDiary();
 });
 document.getElementById('cancel-diary-btn').addEventListener('click',()=>closeModal('diary-modal'));
 
-// ── Quick diary (Home) ────────────────────────────────────────────────
+// ââ Quick diary (Home) ââââââââââââââââââââââââââââââââââââââââââââââââ
 document.getElementById('save-diary-btn').addEventListener('click',async()=>{
   const text=document.getElementById('quick-diary-text').value.trim();
   if(!text){toast('Bitte Text eingeben');return;}
   await dbPut('diary',{id:uid(),text,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
   document.getElementById('quick-diary-text').value='';
-  toast('✓ Tagebucheintrag gespeichert');
+  toast('â Tagebucheintrag gespeichert');
 });
 
-// ── FAB ──────────────────────────────────────────────────────────────
+// ââ FAB ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 document.getElementById('fab').addEventListener('click',()=>{
   if(currentPage==='kanban') openTaskModal(null,'todo');
   else if(currentPage==='cal') openEventModal(null);
@@ -1292,7 +1366,7 @@ document.querySelectorAll('.add-task-btn').forEach(btn=>{
   btn.addEventListener('click',()=>openTaskModal(null,btn.dataset.col));
 });
 
-// ── Modal helpers ────────────────────────────────────────────────────
+// ââ Modal helpers ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function openModal(id){
   const el=document.getElementById(id);
   el.classList.add('open');
@@ -1302,7 +1376,7 @@ function openModal(id){
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 
-// ── Dictation ────────────────────────────────────────────────────────
+// ââ Dictation ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let recognition=null;let recognizing=false;
 function setupDictation(btnId,targetId){
   const btn=document.getElementById(btnId);
@@ -1327,11 +1401,11 @@ function setupDictation(btnId,targetId){
 setupDictation('dictation-btn','quick-diary-text');
 setupDictation('diary-dictation-btn','diary-text-input');
 
-// ── Settings handlers ────────────────────────────────────────────────
+// ââ Settings handlers ââââââââââââââââââââââââââââââââââââââââââââââââ
 document.getElementById('save-gh-btn').addEventListener('click',async()=>{
   await saveSetting('ghToken',document.getElementById('gh-token-input').value.trim());
   await saveSetting('ghRepo',document.getElementById('gh-repo-input').value.trim());
-  toast('✓ Einstellungen gespeichert');
+  toast('â Einstellungen gespeichert');
   syncFromGitHub();
 });
 document.getElementById('sync-now-btn').addEventListener('click',()=>syncToGitHub());
@@ -1344,7 +1418,7 @@ document.getElementById('export-btn').addEventListener('click',async()=>{
   toast('Export gespeichert');
 });
 
-// ── Helpers ───────────────────────────────────────────────────────────
+// ââ Helpers âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 async function refreshAll(){
@@ -1354,7 +1428,7 @@ async function refreshAll(){
   if(currentPage==='diary') renderDiary();
 }
 
-// ── Init ──────────────────────────────────────────────────────────────
+// ââ Init ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function init(){
   await loadSettings();
   await ensureDefaultCats();
@@ -1364,6 +1438,9 @@ async function init(){
   }
 }
 init();
+
+// Auto-sync data when app goes to background
+document.addEventListener('visibilitychange', () => { if(document.hidden) syncData(); });
 </script>
 </body>
 </html>
