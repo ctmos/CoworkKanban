@@ -12,7 +12,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--bg:#f0fdf8;--surface:#ffffff;--surface2:#f7fdfb;--surface3:#edfaf5;--border:rgba(16,185,129,0.12);--border-strong:rgba(16,185,129,0.25);--text:#0f2921;--text2:#3d6b5a;--text3:#7aaa96;--accent:#10b981;--accent-dim:rgba(16,185,129,0.10);--accent-border:rgba(16,185,129,0.30);--pastel-mint:#e6faf3;--pastel-sage:#f0f9f0;--pastel-sky:#e8f4fd;--pastel-warm:#fdf8ee;--red:#ef4444;--amber:#f59e0b;--green:#22c55e;--purple:#8b5cf6;--blue:#3b82f6;--font-head:'Inter',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'JetBrains Mono','Fira Code',monospace;--r-sm:8px;--r-md:14px;--r-lg:20px;--r-xl:28px;--shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);--shadow-md:0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04);--shadow-lg:0 8px 24px rgba(0,0,0,0.10),0 4px 8px rgba(0,0,0,0.04);--tap:48px;--nav-h:64px;--sidebar-w:240px;}
+:root{--bg:#f0fdf8;--surface:#ffffff;--surface2:#f7fdfb;--surface3:#edfaf5;--border:rgba(16,185,129,0.12);--border-strong:rgba(16,185,129,0.25);--text:#0f2921;--text2:#3d6b5a;--text3:#7aaa96;--accent:#10b981;--accent-dim:rgba(16,185,129,0.10);--accent-border:rgba(16,185,129,0.30);--pastel-mint:#e6faf3;--pastel-sage:#f0f9f0;--pastel-sky:#e8f4fd;--pastel-warm:#fdf8ee;--red:#ef4444;--amber:#f59e0b;--green:#22c55e;--purple:#8b5cf6;--blue:#3b82f6;--font-head:'Inter',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'JetBrains Mono','Fira Code',monospace;--r-sm:4px;--r-md:6px;--r-lg:8px;--r-xl:12px;
+  --space-xs:8px;--space-sm:12px;--space-md:20px;--space-lg:32px;--space-xl:48px;--shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);--shadow-md:0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04);--shadow-lg:0 8px 24px rgba(0,0,0,0.10),0 4px 8px rgba(0,0,0,0.04);--tap:48px;--sidebar-w:240px;}
 html{font-size:16px;-webkit-text-size-adjust:100%;}
 body{
   background:var(--bg);
@@ -34,29 +35,11 @@ a{color:var(--accent);text-decoration:none;}
 /* ââ Layout ââ */
 #app{display:flex;flex-direction:column;min-height:100dvh;}
 #sidebar{display:none;}
-#main-content{flex:1;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));}
-#bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;z-index:100;
-  background:var(--surface);
-  border-top:1px solid var(--border);
-  display:flex;
-  height:calc(var(--nav-h) + env(safe-area-inset-bottom));
-  padding-bottom:env(safe-area-inset-bottom);
-}
-.nav-btn{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:4px;min-height:var(--tap);
-  color:var(--text3);font-size:10px;font-family:var(--font-body);font-weight:600;
-  letter-spacing:0.04em;text-transform:uppercase;
-  transition:color 0.15s;
-  -webkit-tap-highlight-color:transparent;
-}
-.nav-btn.active{color:var(--accent);}
-.nav-btn svg{width:22px;height:22px;transition:transform 0.15s;}
-.nav-btn.active svg{transform:scale(1.1);}
+#main-content{flex:1;padding-top:72px;}
+
 
 /* Pages */
-.page{display:none;padding:20px 16px;}
+.page{display:none;padding:24px 20px;max-width:1100px;margin:0 auto;}
 .page.active{display:block;}
 
 /* ââ Typography ââ */
@@ -114,14 +97,14 @@ a{color:var(--accent);text-decoration:none;}
 .btn-save-diary:active{background:rgba(0,212,170,0.2);}
 
 /* ââ Kanban ââ */
-#page-kanban .kanban-cols{display:flex;flex-direction:column;gap:16px;}
+#page-kanban .kanban-cols{display:flex;flex-direction:row;flex-wrap:wrap;gap:16px;align-items:flex-start;}
 .kanban-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .kanban-col-title{font-family:var(--font-head);font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;}
 .col-count{font-family:var(--font-mono);font-size:12px;background:var(--surface3);border-radius:20px;padding:2px 8px;color:var(--text2);}
 .col-dot{width:8px;height:8px;border-radius:50%;}
-.col-todo .col-dot{background:var(--amber);}
-.col-doing .col-dot{background:var(--blue);}
-.col-done .col-dot{background:var(--green);}
+
+
+
 .kanban-card{
   background:var(--surface);border:1px solid var(--border);
   border-radius:var(--r-lg);padding:14px 16px;
@@ -350,7 +333,7 @@ a{color:var(--accent);text-decoration:none;}
   .sidebar-btn svg{width:18px;height:18px;flex-shrink:0;}
   .sidebar-bottom{padding:16px 12px;border-top:1px solid var(--border);}
   #main-content{flex:1;overflow-y:auto;min-height:100dvh;padding-bottom:0;}
-  #bottom-nav{display:none;}
+  
   .fab{right:32px;bottom:32px;}
   .page{padding:32px;}
   .page-title{font-size:36px;}
@@ -404,7 +387,7 @@ a{color:var(--accent);text-decoration:none;}
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh}
 #app{background:var(--bg)}
-nav,.nav,.bottom-nav,#bottom-nav,[class*="bottom-nav"]{background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,0.06)}
+nav,.nav{background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,0.06)}
 .nav-item,.tab-item{color:var(--text3)}.nav-item.active,.tab-item.active{color:var(--accent)}
 .sidebar,#sidebar,[class*="sidebar"]{background:var(--surface);border-right:1px solid var(--border);box-shadow:var(--shadow-sm);width:var(--sidebar-w)}
 .sidebar-item,[class*="sidebar-item"]{color:var(--text2);border-radius:var(--r-md)}
@@ -434,13 +417,79 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
 .diary-entry,[class*="diary"]{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm)}
 .setting-row,[class*="setting-row"],.settings-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);color:var(--text)}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px}
-@media(min-width:1024px){.bottom-nav,#bottom-nav,[class*="bottom-nav"]{display:none!important}.sidebar,#sidebar,[class*="sidebar"]{display:flex!important}.main-content,[class*="main-content"],.content-area{margin-left:var(--sidebar-w)}}
+@media(min-width:1024px){{display:none!important}.sidebar,#sidebar,[class*="sidebar"]{display:flex!important}.main-content,[class*="main-content"],.content-area{margin-left:var(--sidebar-w)}}
 @media(min-width:1600px){:root{--sidebar-w:260px}.main-content,[class*="main-content"]{max-width:1200px;margin-right:auto}}
 /* === End v5 === */
 .filter-chip{padding:4px 12px;border-radius:20px;border:1.5px solid #d1d5db;background:#fff;cursor:pointer;font-size:13px;white-space:nowrap;color:#374151;transition:all .15s}.filter-chip.active{background:#10b981;border-color:#10b981;color:#fff}.filter-chip:hover{border-color:#10b981}
+
+/* ── Top Nav ── */
+.top-nav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;z-index:100;gap:2px;}
+.top-nav .nav-logo{font-family:var(--font-head);font-weight:700;font-size:16px;color:var(--accent);margin-right:12px;white-space:nowrap;letter-spacing:-0.02em;}
+.top-nav-btn{display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.15s;white-space:nowrap;border:none;background:transparent;font-family:var(--font-body);min-height:36px;-webkit-tap-highlight-color:transparent;}
+.top-nav-btn:hover,.top-nav-btn.active{background:var(--accent-dim);color:var(--accent);}
+.top-nav-btn svg{width:15px;height:15px;flex-shrink:0;}
+.hamburger{display:none;align-items:center;justify-content:center;width:40px;height:40px;border:none;background:transparent;cursor:pointer;color:var(--text2);border-radius:var(--r-sm);margin-left:auto;}
+.hamburger:hover{background:var(--surface2);}
+.hamburger svg{width:20px;height:20px;}
+.nav-dropdown{position:fixed;top:56px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow-md);z-index:99;padding:8px;display:none;flex-direction:column;gap:2px;}
+.nav-dropdown.open{display:flex;}
+.nav-dropdown .top-nav-btn{justify-content:flex-start;width:100%;padding:10px 12px;font-size:14px;}
+@media(max-width:767px){.top-nav .top-nav-btn{display:none;}.hamburger{display:flex!important;}.page{padding:16px!important;}}
+@media(min-width:768px){.hamburger{display:none!important;}.nav-dropdown{display:none!important;}}
+@media(min-width:1440px){.page{max-width:1200px!important;}}
+/* ── Kanban category cols ── */
+.kanban-col{background:var(--surface2);border-radius:var(--r-md);padding:16px;min-width:260px;flex:1;max-width:380px;}
+/* ── Termine ── */
+.termine-group{margin-bottom:var(--space-lg,32px);}
+.termine-group-head{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.termine-item{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;margin-bottom:6px;cursor:pointer;transition:border-color 0.15s;}
+.termine-item:hover{border-color:var(--border-strong);}
+.termine-item.overdue{border-left:3px solid var(--red);}
+.termine-date{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text2);min-width:76px;margin-top:1px;}
+.termine-item.overdue .termine-date{color:var(--red);}
+.termine-title{font-size:14px;font-weight:500;flex:1;line-height:1.4;}
+.termine-done-badge{font-size:11px;color:var(--green);font-weight:600;white-space:nowrap;}
+
+/* ── Sidebar hidden - replaced by top-nav ── */
+#sidebar{display:none!important;}
+#app{display:block!important;}
+#main-content{display:block;width:100%;}
+/* ── Kanban card done state ── */
+.kanban-card.kc-done{opacity:0.65;}
+.kc-title.done{text-decoration:line-through;color:var(--text3);}
+.kc-title{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:4px;}
+.kc-date{font-family:var(--font-mono);font-size:11px;color:var(--text2);display:block;margin-top:4px;}
+/* ── Card spacing improvements ── */
+.card{padding:20px;}
+.card+.card{margin-top:10px;}
+.task-item{padding:14px 16px;}
+/* ── Section label spacing ── */
+.section-label{margin-bottom:var(--space-sm,12px);}
+/* ── Page title ── */
+.page-title{font-size:24px;font-weight:700;letter-spacing:-0.02em;margin-bottom:var(--space-md,20px);}
 </style>
 </head>
 <body>
+<nav class="top-nav" id="top-nav">
+  <span class="nav-logo">Cowork&#183;Kanban</span>
+  <button class="top-nav-btn active" data-page="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</button>
+  <button class="top-nav-btn" data-page="kanban"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="10"/></svg>Kanban</button>
+  <button class="top-nav-btn" data-page="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Projekte</button>
+  <button class="top-nav-btn" data-page="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Termine</button>
+  <button class="top-nav-btn" data-page="diary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>Tagebuch</button>
+  <button class="top-nav-btn" data-page="cats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Kategorien</button>
+  <button class="top-nav-btn" data-page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Einstellungen</button>
+  <button class="hamburger" id="hamburger-btn" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+</nav>
+<div class="nav-dropdown" id="nav-dropdown">
+  <button class="top-nav-btn active" data-page="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</button>
+  <button class="top-nav-btn" data-page="kanban"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="10"/></svg>Kanban</button>
+  <button class="top-nav-btn" data-page="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Projekte</button>
+  <button class="top-nav-btn" data-page="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Termine</button>
+  <button class="top-nav-btn" data-page="diary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>Tagebuch</button>
+  <button class="top-nav-btn" data-page="cats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Kategorien</button>
+  <button class="top-nav-btn" data-page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Einstellungen</button>
+</div>
 <div id="app">
 
 <!-- Sidebar (desktop only) -->
@@ -456,9 +505,7 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
       Aufgaben
     </button>
     <button class="sidebar-btn" data-page="cal">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Kalender
-    </button>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Termine</button>
     <button class="sidebar-btn" data-page="diary">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
       Tagebuch
@@ -507,21 +554,7 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
         <div class="section-label">Heute fÃ¤llige Aufgaben</div>
         <div class="today-tasks" id="today-tasks-list"></div>
       </div>
-      <div>
-        <div class="section-label">Notiz</div>
-        <div class="quick-diary">
-          <div class="quick-diary-header">
-            <span>Tagebucheintrag</span>
-          </div>
-          <textarea class="diary-textarea" id="quick-diary-text" placeholder="Was beschÃ¤ftigt dich heute?"></textarea>
-          <button class="dictation-btn" id="dictation-btn" style="margin-top:8px;">
-            <div class="rec-dot"></div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-            Diktieren (de-DE)
-          </button>
-          <button class="btn-save-diary" id="save-diary-btn">Speichern</button>
-        </div>
-      </div>
+      
     </div>
   </section>
 
@@ -563,20 +596,14 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
 
   <!-- CALENDAR -->
   <section id="page-cal" class="page">
-    <div class="page-title">Kalender</div>
-    <div class="cal-header">
-      <button class="cal-nav" id="cal-prev">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="cal-month-name" id="cal-month-name">â</div>
-      <button class="cal-nav" id="cal-next">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <div class="cal-grid" id="cal-grid"></div>
-    <div class="section-label" id="cal-events-label">Termine</div>
-    <div class="cal-events" id="cal-events-list"></div>
-  </section>
+  <div class="page-title">Termine</div>
+  <div id="termine-list"></div>
+  <div id="termine-empty" class="empty-state" style="display:none">
+    <div style="font-size:32px;margin-bottom:12px">&#x1F4C5;</div>
+    <div style="font-weight:600;margin-bottom:4px">Keine Termine</div>
+    <div style="color:var(--text2);font-size:14px">Aufgaben mit einem F&#xe4;lligkeitsdatum erscheinen hier, geordnet nach Kategorie.</div>
+  </div>
+</section>
 
   <!-- DIARY -->
   <section id="page-diary" class="page">
@@ -637,33 +664,20 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
       <button class="btn-primary" id="sync-data-btn" onclick="syncData()" style="width:100%;margin-bottom:8px">&#x1F4BE; Daten synchronisieren</button>
       <button class="btn-secondary" id="restore-data-btn" onclick="confirmRestoreData()" style="width:100%">&#x1F504; Von GitHub wiederherstellen</button>
     </div>
+
+  <div style="margin-top:var(--space-lg,32px)">
+    <div class="section-label" style="margin-bottom:12px">Konto</div>
+    <a href="https://claude.ai/settings" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;text-decoration:none;color:var(--text1);min-height:var(--tap,44px);transition:border-color 0.15s;">
+      <span style="font-size:14px;font-weight:500">Claude Nutzung &amp; Limits</span>
+      <span style="color:var(--accent);font-size:14px;font-weight:600">&#x2192;</span>
+    </a>
+  </div>
 </section>
 
 </div><!-- /main-content -->
 
 <!-- Bottom nav (mobile) -->
-<nav id="bottom-nav">
-  <button class="nav-btn active" data-page="home">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    Heute
-  </button>
-  <button class="nav-btn" data-page="kanban">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="10"/></svg>
-    Aufgaben
-  </button>
-  <button class="nav-btn" data-page="cal">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    Kalender
-  </button>
-  <button class="nav-btn" data-page="diary">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-    Tagebuch
-  </button>
-  <button class="nav-btn" data-page="cats">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
-    Kategorien
-  </button>
-</nav>
+
 
 </div><!-- /app -->
 
@@ -793,7 +807,7 @@ h1,h2,h3,h4,h5{color:var(--text);font-family:var(--font-head)}
 
 // ââ PWA Service Worker ââââââââââââââââââââââââââââââââââââââââââââââ
 const SW_BLOB = `
-const CACHE='cwd-v5.1';
+const CACHE='cwd-v6';
 const SHELL=['/'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -1034,7 +1048,7 @@ function goTo(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const el=document.getElementById('page-'+page);
   if(el) el.classList.add('active');
-  document.querySelectorAll('.nav-btn,[data-page]').forEach(b=>{
+  document.querySelectorAll('[data-page]').forEach(b=>{
     b.classList.toggle('active',b.dataset.page===page);
   });
   if(page==='kanban') renderKanban();
@@ -1481,6 +1495,7 @@ async function init(){
   await ensureDefaultCats();
   await checkAndPullData();
   renderHome();
+  await seedDefaultCats();
   if(settings.ghToken&&settings.ghRepo){
     syncFromGitHub();
   }
@@ -1592,6 +1607,163 @@ function setKanbanProjFilter(id){
   renderKanban();
 }
 // ── END PROJECTS ──────────────────────────────────────
+
+
+// ── Top Nav hamburger toggle ──
+(function(){
+  const btn = document.getElementById('hamburger-btn');
+  const dd = document.getElementById('nav-dropdown');
+  if(btn && dd){
+    btn.addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
+    document.addEventListener('click', e => { if(!dd.contains(e.target) && e.target!==btn) dd.classList.remove('open'); });
+  }
+  // Close dropdown when a nav item is clicked
+  document.querySelectorAll('#nav-dropdown .top-nav-btn').forEach(b => {
+    b.addEventListener('click', () => dd.classList.remove('open'));
+  });
+})();
+
+// ── Default categories seed ──
+async function seedDefaultCats(){
+  const cats = await getAll('cats');
+  if(cats.length === 0){
+    const defaults = [
+      {id: Date.now()+1, name:'Arbeit',    color:'#3b82f6'},
+      {id: Date.now()+2, name:'Privates',  color:'#8b5cf6'},
+      {id: Date.now()+3, name:'Finanzen',  color:'#22c55e'},
+      {id: Date.now()+4, name:'Barmelweid',color:'#f59e0b'},
+      {id: Date.now()+5, name:'Gesundheit',color:'#ef4444'}
+    ];
+    for(const c of defaults) await put('cats', c);
+  }
+}
+
+// ── Override renderKanban: category-based columns ──
+async function renderKanban(){
+  const [tasks, cats] = await Promise.all([getAll('tasks'), getAll('cats')]);
+  const selProj = document.getElementById('kanban-project-filter')?.value || '';
+  const filtered = selProj ? tasks.filter(t => t.projectId == selProj) : tasks;
+
+  // Build category map
+  const catMap = {};
+  cats.forEach(c => { catMap[c.id] = c; });
+
+  // Group tasks by category
+  const groups = {};
+  const defaultCatKey = '__none__';
+  filtered.forEach(t => {
+    const key = t.cat ? String(t.cat) : defaultCatKey;
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+
+  // Build columns: one per category + Allgemein
+  let cols = cats.map(c => ({ id: String(c.id), name: c.name, color: c.color || 'var(--accent)', tasks: groups[String(c.id)] || [] }));
+  if(groups[defaultCatKey] && groups[defaultCatKey].length > 0){
+    cols.push({ id: defaultCatKey, name: 'Allgemein', color: 'var(--text3)', tasks: groups[defaultCatKey] });
+  }
+  if(cols.length === 0) cols = [{ id: defaultCatKey, name: 'Allgemein', color: 'var(--text3)', tasks: filtered }];
+
+  const container = document.querySelector('.kanban-cols');
+  if(!container) return;
+  container.innerHTML = cols.map(col => `
+    <div class="kanban-col" data-cat="${col.id}">
+      <div class="kanban-col-head">
+        <div class="kanban-col-title">
+          <span class="col-dot" style="background:${col.color}"></span>
+          ${col.name}
+        </div>
+        <span class="col-count">${col.tasks.length}</span>
+      </div>
+      ${col.tasks.length === 0
+        ? '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px 0">Keine Aufgaben</div>'
+        : col.tasks.map(t => `
+        <div class="kanban-card${t.status==='done'?' kc-done':''}" onclick="openTask(${t.id})">
+          <div class="kc-title${t.status==='done'?' done':''}">${t.text||''}</div>
+          ${t.due ? `<span class="kc-date">${t.due}</span>` : ''}
+          ${t.status==='done' ? '<span style="font-size:11px;color:var(--green);font-weight:600">&#x2713; Erledigt</span>' : ''}
+        </div>`).join('')
+      }
+      <button class="btn-add-task" style="margin-top:10px;width:100%;padding:8px;border:1px dashed var(--border);border-radius:var(--r-sm);background:transparent;color:var(--text3);font-size:13px;cursor:pointer;" onclick="newTaskInCat('${col.id}')">+ Aufgabe</button>
+    </div>
+  `).join('');
+}
+
+// ── Helper: new task in category ──
+function newTaskInCat(catId){
+  const el = document.getElementById('new-task-cat');
+  if(el && catId !== '__none__') el.value = catId;
+  const modal = document.getElementById('task-modal');
+  if(modal) modal.classList.add('open');
+}
+
+// ── Override renderCal: Termine grouped by category ──
+async function renderCal(){
+  const [tasks, cats] = await Promise.all([getAll('tasks'), getAll('cats')]);
+  const today = new Date().toISOString().slice(0,10);
+  
+  // Tasks with due date
+  const withDue = tasks.filter(t => t.due && t.due.trim());
+  
+  const listEl = document.getElementById('termine-list');
+  const emptyEl = document.getElementById('termine-empty');
+  if(!listEl) return;
+  
+  if(withDue.length === 0){
+    listEl.innerHTML = '';
+    if(emptyEl) emptyEl.style.display = '';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display = 'none';
+
+  // Build category map
+  const catMap = {};
+  cats.forEach(c => { catMap[String(c.id)] = c; });
+
+  // Group by category
+  const groups = {};
+  withDue.forEach(t => {
+    const key = t.cat ? String(t.cat) : '__none__';
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+
+  // Sort each group by due date ascending
+  Object.values(groups).forEach(arr => arr.sort((a,b) => a.due > b.due ? 1 : -1));
+
+  // Build ordered category list: known cats first, then Ohne Kategorie
+  const orderedKeys = [
+    ...cats.map(c => String(c.id)).filter(k => groups[k]),
+    ...(groups['__none__'] ? ['__none__'] : [])
+  ];
+
+  listEl.innerHTML = orderedKeys.map(key => {
+    const catName = key === '__none__' ? 'Ohne Kategorie' : (catMap[key]?.name || 'Unbekannt');
+    const catColor = key === '__none__' ? 'var(--text3)' : (catMap[key]?.color || 'var(--accent)');
+    const items = groups[key];
+    return `<div class="termine-group">
+      <div class="termine-group-head" style="border-bottom-color:${catColor}">${catName}</div>
+      ${items.map(t => {
+        const overdue = t.status !== 'done' && t.due < today;
+        const done = t.status === 'done';
+        return `<div class="termine-item${overdue?' overdue':''}" onclick="openTask(${t.id})">
+          <div class="termine-date">${formatDate(t.due)}</div>
+          <div class="termine-title${done?' done':''}">${t.text||''}</div>
+          ${done ? '<span class="termine-done-badge">&#x2713;</span>' : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+// ── Date formatter helper (if not already defined) ──
+function formatDate(d){
+  if(!d) return '';
+  try {
+    const dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  } catch(e){ return d; }
+}
 
 </script>
 
