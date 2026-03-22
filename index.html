@@ -290,7 +290,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
 <!-- PASSWORD LOCK OVERLAY -->
 <div id="pin-overlay">
   <div class="pin-box">
-    <div class="pin-title">🔒 CoworkDashboard</div>
+    <div class="pin-title">ð CoworkDashboard</div>
     <div class="pin-sub">Bitte Passwort eingeben, um fortzufahren</div>
     <input class="pin-input" id="pw-input" type="password" placeholder="Passwort" autocomplete="current-password">
     <button class="pin-btn" id="pw-unlock-btn">Entsperren</button>
@@ -302,9 +302,9 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
 <div id="app">
   <!-- Mobile header -->
   <header id="mobile-header">
-    <button class="mh-btn" id="burger-btn" aria-label="Menü">☰</button>
+    <button class="mh-btn" id="burger-btn" aria-label="MenÃ¼">â°</button>
     <div class="mh-logo">Cowork <span class="mh-badge">v8.3</span></div>
-    <button class="mh-btn" id="header-sync-btn" title="Sync">↻</button>
+    <button class="mh-btn" id="header-sync-btn" title="Sync">â»</button>
   </header>
 
   <!-- Sidebar overlay -->
@@ -314,12 +314,12 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
   <nav id="sidebar">
     <div class="sidebar-logo">Cowork <span class="sidebar-badge">v8.3</span></div>
     <div class="nav-section">Werkzeuge</div>
-    <button class="nav-item active" data-view="kanban"><span class="nav-icon">📋</span>Kanban</button>
-    <button class="nav-item" data-view="tagesplan"><span class="nav-icon">📅</span>Tagesplan</button>
-    <button class="nav-item" data-view="tagebuch"><span class="nav-icon">📔</span>Tagebuch</button>
-    <button class="nav-item" data-view="patienten"><span class="nav-icon">👥</span>Patienten</button>
-    <button class="nav-item" data-view="roadmap"><span class="nav-icon">🗺️</span>Roadmap</button>
-    <button class="nav-item" data-view="einstellungen"><span class="nav-icon">⚙️</span>Einstellungen</button>
+    <button class="nav-item active" data-view="kanban"><span class="nav-icon">ð</span>Kanban</button>
+    <button class="nav-item" data-view="tagesplan"><span class="nav-icon">ð</span>Tagesplan</button>
+    <button class="nav-item" data-view="tagebuch"><span class="nav-icon">ð</span>Tagebuch</button>
+    <button class="nav-item" data-view="patienten"><span class="nav-icon">ð¥</span>Patienten</button>
+    <button class="nav-item" data-view="roadmap"><span class="nav-icon">ðºï¸</span>Roadmap</button>
+    <button class="nav-item" data-view="einstellungen"><span class="nav-icon">âï¸</span>Einstellungen</button>
     <div class="nav-bottom">
       <div class="sync-info" id="sidebar-sync-info">
         <span class="sync-dot" id="sync-dot"></span>
@@ -337,7 +337,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
         <div class="view-header">
           <div class="view-title">Kanban</div>
           <div class="view-actions">
-            <button class="btn btn-ghost btn-sm" id="manage-cats-btn">🏷️ Kategorien</button>
+            <button class="btn btn-ghost btn-sm" id="manage-cats-btn">ð·ï¸ Kategorien</button>
             <button class="btn btn-primary btn-sm" id="add-task-btn-desk">+ Aufgabe</button>
           </div>
         </div>
@@ -366,9 +366,9 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
         </div>
         <div class="diary-filters">
           <button class="mood-chip active" data-mood="">Alle</button>
-          <button class="mood-chip" data-mood="1">😊 Gut</button>
-          <button class="mood-chip" data-mood="2">😐 Okay</button>
-          <button class="mood-chip" data-mood="3">😞 Schlecht</button>
+          <button class="mood-chip" data-mood="1">ð Gut</button>
+          <button class="mood-chip" data-mood="2">ð Okay</button>
+          <button class="mood-chip" data-mood="3">ð Schlecht</button>
         </div>
         <div id="diary-list"></div>
       </div>
@@ -384,19 +384,19 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
             </div>
           </div>
           <div class="patient-search">
-            <input class="form-input" id="patient-search-input" placeholder="Suchen…" type="search">
+            <input class="form-input" id="patient-search-input" placeholder="Suchenâ¦" type="search">
           </div>
           <div class="patient-grid" id="patient-grid"></div>
         </div>
         <!-- Detail -->
         <div id="patient-detail">
-          <button class="pd-back" id="pd-back-btn">← Zurück</button>
+          <button class="pd-back" id="pd-back-btn">â ZurÃ¼ck</button>
           <div class="pd-header">
             <div class="pd-id" id="pd-id"></div>
             <div class="pd-name" id="pd-name"></div>
             <div class="pd-actions">
-              <button class="btn btn-ghost btn-sm" id="pd-edit-btn">✏️ Bearbeiten</button>
-              <button class="btn btn-danger btn-sm" id="pd-delete-btn">🗑️ Löschen</button>
+              <button class="btn btn-ghost btn-sm" id="pd-edit-btn">âï¸ Bearbeiten</button>
+              <button class="btn btn-danger btn-sm" id="pd-delete-btn">ðï¸ LÃ¶schen</button>
             </div>
             <div class="pd-status-btns" id="pd-status-btns"></div>
           </div>
@@ -415,11 +415,11 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
         <div class="view-header">
           <div class="view-title">Roadmap</div>
           <div class="view-actions">
-            <button class="btn btn-ghost btn-sm" id="roadmap-refresh-btn">↻ Neu laden</button>
+            <button class="btn btn-ghost btn-sm" id="roadmap-refresh-btn">â» Neu laden</button>
           </div>
         </div>
         <div class="roadmap-content" id="roadmap-content">
-          <div class="roadmap-loading">Lade Roadmap…</div>
+          <div class="roadmap-loading">Lade Roadmapâ¦</div>
         </div>
       </div>
 
@@ -428,7 +428,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
         <div class="view-header">
           <div class="view-title">Einstellungen</div>
           <div class="view-actions">
-            <button class="btn btn-primary btn-sm" id="save-settings-btn">💾 Speichern</button>
+            <button class="btn btn-primary btn-sm" id="save-settings-btn">ð¾ Speichern</button>
           </div>
         </div>
         <div class="settings-group">
@@ -436,9 +436,9 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
           <div class="settings-row">
             <div class="settings-row-label">
               <div class="settings-row-name">GitHub Token</div>
-              <div class="settings-row-sub">Personal Access Token (ghp_…)</div>
+              <div class="settings-row-sub">Personal Access Token (ghp_â¦)</div>
             </div>
-            <input class="settings-input wide mono" id="s-gh-token" type="password" placeholder="ghp_…">
+            <input class="settings-input wide mono" id="s-gh-token" type="password" placeholder="ghp_â¦">
           </div>
           <div class="settings-row">
             <div class="settings-row-label">
@@ -450,20 +450,20 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
           <div class="settings-row">
             <div class="settings-row-label">
               <div class="settings-row-name">Auto-Sync</div>
-              <div class="settings-row-sub">Bei jeder Änderung synchronisieren</div>
+              <div class="settings-row-sub">Bei jeder Ãnderung synchronisieren</div>
             </div>
             <button class="toggle" id="s-auto-sync"></button>
           </div>
           <div class="settings-row" style="justify-content:flex-end">
-            <button class="btn btn-ghost btn-sm" id="sync-now-btn">↻ Jetzt synchronisieren</button>
+            <button class="btn btn-ghost btn-sm" id="sync-now-btn">â» Jetzt synchronisieren</button>
           </div>
         </div>
         <div class="settings-group">
           <div class="settings-group-title">Passwort-Sperre</div>
           <div class="settings-row">
             <div class="settings-row-label">
-              <div class="settings-row-name">Passwort ändern</div>
-              <div class="settings-row-sub">Standard: cowork2026 · Als SHA-256 gespeichert</div>
+              <div class="settings-row-name">Passwort Ã¤ndern</div>
+              <div class="settings-row-sub">Standard: cowork2026 Â· Als SHA-256 gespeichert</div>
             </div>
             <button class="btn btn-ghost btn-sm" id="change-pin-btn">Passwort setzen</button>
           </div>
@@ -472,20 +472,20 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
               <div class="settings-row-name">Jetzt sperren</div>
               <div class="settings-row-sub">App sofort sperren (Session beenden)</div>
             </div>
-            <button class="btn btn-danger btn-sm" id="lock-now-btn">🔒 Sperren</button>
+            <button class="btn btn-danger btn-sm" id="lock-now-btn">ð Sperren</button>
           </div>
         </div>
         <div class="settings-group">
           <div class="settings-group-title">Daten</div>
           <div class="settings-row">
             <div class="settings-row-label">
-              <div class="settings-row-name">Alle Daten löschen</div>
-              <div class="settings-row-sub">Unwiderruflich – IndexedDB wird geleert</div>
+              <div class="settings-row-name">Alle Daten lÃ¶schen</div>
+              <div class="settings-row-sub">Unwiderruflich â IndexedDB wird geleert</div>
             </div>
-            <button class="btn btn-danger btn-sm" id="clear-data-btn">🗑️ Löschen</button>
+            <button class="btn btn-danger btn-sm" id="clear-data-btn">ðï¸ LÃ¶schen</button>
           </div>
         </div>
-        <div style="padding:8px 0;font-size:12px;color:var(--text-3);text-align:center">Cowork v8.3 · Single-file PWA · IndexedDB</div>
+        <div style="padding:8px 0;font-size:12px;color:var(--text-3);text-align:center">Cowork v8.3 Â· Single-file PWA Â· IndexedDB</div>
       </div>
 
     </main>
@@ -494,17 +494,17 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
   <!-- Bottom Nav -->
   <nav id="bottom-nav">
     <div class="bn-items">
-      <button class="bn-item active" data-view="kanban"><span class="bn-icon">📋</span><span>Kanban</span></button>
-      <button class="bn-item" data-view="tagesplan"><span class="bn-icon">📅</span><span>Heute</span></button>
-      <button class="bn-item" data-view="tagebuch"><span class="bn-icon">📔</span><span>Tagebuch</span></button>
-      <button class="bn-item" data-view="patienten"><span class="bn-icon">👥</span><span>Patienten</span></button>
-      <button class="bn-item" data-view="roadmap"><span class="bn-icon">🗺️</span><span>Mehr</span></button>
+      <button class="bn-item active" data-view="kanban"><span class="bn-icon">ð</span><span>Kanban</span></button>
+      <button class="bn-item" data-view="tagesplan"><span class="bn-icon">ð</span><span>Heute</span></button>
+      <button class="bn-item" data-view="tagebuch"><span class="bn-icon">ð</span><span>Tagebuch</span></button>
+      <button class="bn-item" data-view="patienten"><span class="bn-icon">ð¥</span><span>Patienten</span></button>
+      <button class="bn-item" data-view="einstellungen"><span class="bn-icon">⚙️</span><span>Einstellungen</span></button>
     </div>
   </nav>
 </div>
 
 <!-- FAB -->
-<button id="fab" class="visible" title="Hinzufügen">+</button>
+<button id="fab" class="visible" title="HinzufÃ¼gen">+</button>
 
 <!-- TOAST -->
 <div id="toast"></div>
@@ -514,13 +514,13 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
   <div class="modal">
     <div class="modal-head">
       <div class="modal-title" id="task-modal-title">Aufgabe</div>
-      <button class="modal-close" data-close="overlay-task">×</button>
+      <button class="modal-close" data-close="overlay-task">Ã</button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="task-id">
       <div class="form-row">
         <label class="form-label">Titel *</label>
-        <input class="form-input" id="task-title" placeholder="Aufgabentitel…">
+        <input class="form-input" id="task-title" placeholder="Aufgabentitelâ¦">
       </div>
       <div class="form-row">
         <label class="form-label">Kategorie</label>
@@ -536,7 +536,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
       </div>
       <div class="form-row-inline">
         <div class="form-row" style="flex:1">
-          <label class="form-label">Fällig am</label>
+          <label class="form-label">FÃ¤llig am</label>
           <input class="form-input" id="task-due" type="date">
         </div>
         <div class="form-row" style="flex:1">
@@ -546,12 +546,12 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
       </div>
       <div class="form-row">
         <label class="form-label">Notizen</label>
-        <textarea class="form-input" id="task-notes" rows="3" placeholder="Optionale Notizen…"></textarea>
+        <textarea class="form-input" id="task-notes" rows="3" placeholder="Optionale Notizenâ¦"></textarea>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" data-close="overlay-task">Abbrechen</button>
-      <button class="btn btn-danger btn-sm" id="task-delete-btn" style="display:none">Löschen</button>
+      <button class="btn btn-danger btn-sm" id="task-delete-btn" style="display:none">LÃ¶schen</button>
       <button class="btn btn-primary" id="task-save-btn">Speichern</button>
     </div>
   </div>
@@ -562,7 +562,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
   <div class="modal">
     <div class="modal-head">
       <div class="modal-title" id="diary-modal-title">Tagebucheintrag</div>
-      <button class="modal-close" data-close="overlay-diary">×</button>
+      <button class="modal-close" data-close="overlay-diary">Ã</button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="diary-id">
@@ -573,15 +573,15 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
       <div class="form-row">
         <label class="form-label">Stimmung</label>
         <div style="display:flex;gap:10px">
-          <button class="mood-chip" data-diary-mood="1">😊 Gut</button>
-          <button class="mood-chip" data-diary-mood="2">😐 Okay</button>
-          <button class="mood-chip" data-diary-mood="3">😞 Schlecht</button>
+          <button class="mood-chip" data-diary-mood="1">ð Gut</button>
+          <button class="mood-chip" data-diary-mood="2">ð Okay</button>
+          <button class="mood-chip" data-diary-mood="3">ð Schlecht</button>
         </div>
         <input type="hidden" id="diary-mood" value="1">
       </div>
       <div class="form-row">
         <label class="form-label">Eintrag</label>
-        <textarea class="form-input" id="diary-text" rows="6" placeholder="Wie war dein Tag…"></textarea>
+        <textarea class="form-input" id="diary-text" rows="6" placeholder="Wie war dein Tagâ¦"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -596,7 +596,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
   <div class="modal">
     <div class="modal-head">
       <div class="modal-title" id="patient-modal-title">Patient</div>
-      <button class="modal-close" data-close="overlay-patient">×</button>
+      <button class="modal-close" data-close="overlay-patient">Ã</button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="patient-edit-id">
@@ -606,7 +606,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
       </div>
       <div class="form-row">
         <label class="form-label">Name</label>
-        <input class="form-input" id="patient-name" placeholder="Vollständiger Name…">
+        <input class="form-input" id="patient-name" placeholder="VollstÃ¤ndiger Nameâ¦">
       </div>
     </div>
     <div class="modal-footer">
@@ -621,12 +621,12 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
   <div class="modal">
     <div class="modal-head">
       <div class="modal-title">Kategorien verwalten</div>
-      <button class="modal-close" data-close="overlay-category">×</button>
+      <button class="modal-close" data-close="overlay-category">Ã</button>
     </div>
     <div class="modal-body">
       <div id="cat-list-modal" style="background:var(--bg);border-radius:var(--r-sm);border:1.5px solid var(--border);margin-bottom:14px;overflow:hidden"></div>
       <div style="display:flex;gap:8px">
-        <input class="form-input" id="new-cat-name" placeholder="Neue Kategorie…" style="flex:1">
+        <input class="form-input" id="new-cat-name" placeholder="Neue Kategorieâ¦" style="flex:1">
         <input type="color" id="new-cat-color" value="#3b82f6" title="Farbe">
         <button class="btn btn-primary" id="add-cat-btn">+</button>
       </div>
@@ -639,7 +639,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
   <div class="modal">
     <div class="modal-head">
       <div class="modal-title">Sitzungsnotiz</div>
-      <button class="modal-close" data-close="overlay-note">×</button>
+      <button class="modal-close" data-close="overlay-note">Ã</button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="note-patient-id">
@@ -650,7 +650,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
       </div>
       <div class="form-row">
         <label class="form-label">Notiz</label>
-        <textarea class="form-input" id="note-text" rows="5" placeholder="Sitzungsnotiz…"></textarea>
+        <textarea class="form-input" id="note-text" rows="5" placeholder="Sitzungsnotizâ¦"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -660,12 +660,12 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
   </div>
 </div>
 
-<!-- MODAL: Passwort ändern -->
+<!-- MODAL: Passwort Ã¤ndern -->
 <div class="overlay" id="overlay-pin-setup">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title">Passwort ändern</div>
-      <button class="modal-close" data-close="overlay-pin-setup">×</button>
+      <div class="modal-title">Passwort Ã¤ndern</div>
+      <button class="modal-close" data-close="overlay-pin-setup">Ã</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
@@ -677,7 +677,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
         <input class="form-input" id="new-pin" type="password" placeholder="Neues Passwort" autocomplete="new-password">
       </div>
       <div class="form-row">
-        <label class="form-label">Neues Passwort bestätigen</label>
+        <label class="form-label">Neues Passwort bestÃ¤tigen</label>
         <input class="form-input" id="new-pin-confirm" type="password" placeholder="Passwort wiederholen" autocomplete="new-password">
       </div>
     </div>
@@ -691,7 +691,7 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
 <script>
 'use strict';
 
-// ─── IndexedDB ───────────────────────────────────────────────────────────────
+// âââ IndexedDB âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const DB_NAME = 'cowork-v8', DB_VER = 1;
 let _db = null;
 
@@ -750,7 +750,7 @@ function dbClear(store) {
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-// ─── Settings ────────────────────────────────────────────────────────────────
+// âââ Settings ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const S = {
   async get(key, def='') {
     const r = await dbGet('settings', key);
@@ -761,7 +761,7 @@ const S = {
   }
 };
 
-// ─── State ───────────────────────────────────────────────────────────────────
+// âââ State âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const state = {
   view: 'kanban',
   diaryMoodFilter: '',
@@ -771,7 +771,7 @@ const state = {
   syncOk: null,
 };
 
-// ─── Toast ───────────────────────────────────────────────────────────────────
+// âââ Toast âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let _toastTimer = null;
 function toast(msg, dur=2200) {
   const el = document.getElementById('toast');
@@ -781,7 +781,7 @@ function toast(msg, dur=2200) {
   _toastTimer = setTimeout(() => el.classList.remove('show'), dur);
 }
 
-// ─── Navigation ──────────────────────────────────────────────────────────────
+// âââ Navigation ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function navigate(v) {
   state.view = v;
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
@@ -817,11 +817,11 @@ function closeSidebar() {
   document.getElementById('sidebar-overlay').classList.remove('open');
 }
 
-// ─── Modal helpers ───────────────────────────────────────────────────────────
+// âââ Modal helpers âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// ─── Categories ──────────────────────────────────────────────────────────────
+// âââ Categories ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function loadCategories() {
   state.categories = await dbGet('categories');
   if (!state.categories.length) {
@@ -841,11 +841,11 @@ function getCategoryById(id) {
 
 function renderCatSelect(selectId, selectedId='') {
   const sel = document.getElementById(selectId);
-  sel.innerHTML = '<option value="">— Keine —</option>' +
+  sel.innerHTML = '<option value="">â Keine â</option>' +
     state.categories.map(c => `<option value="${c.id}" ${c.id===selectedId?'selected':''}>${c.name}</option>`).join('');
 }
 
-// ─── KANBAN ──────────────────────────────────────────────────────────────────
+// âââ KANBAN ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderKanban() {
   const tasks = await dbGet('tasks');
   const cols = {
@@ -868,8 +868,8 @@ async function renderKanban() {
         </div>
         <div class="task-card-meta">
           ${cat ? `<span class="task-card-tag" style="background:${cat.color}18;color:${cat.color}">${esc(cat.name)}</span>` : ''}
-          ${t.dueDate ? `<span class="task-card-due${overdue?' overdue':''}">${overdue?'⚠ ':''}${fmtDate(t.dueDate)}</span>` : ''}
-          ${t.scheduledTime ? `<span class="task-card-due">🕐 ${t.scheduledTime}</span>` : ''}
+          ${t.dueDate ? `<span class="task-card-due${overdue?' overdue':''}">${overdue?'â  ':''}${fmtDate(t.dueDate)}</span>` : ''}
+          ${t.scheduledTime ? `<span class="task-card-due">ð ${t.scheduledTime}</span>` : ''}
         </div>
         ${t.notes ? `<div class="task-card-note">${esc(t.notes)}</div>` : ''}
       </div>`;
@@ -1017,19 +1017,19 @@ async function saveTask() {
   renderKanban();
   if (state.view === 'tagesplan') renderTagesplan();
   triggerAutoSync();
-  toast('Gespeichert ✓');
+  toast('Gespeichert â');
 }
 
 async function deleteTask(id) {
-  if (!confirm('Aufgabe löschen?')) return;
+  if (!confirm('Aufgabe lÃ¶schen?')) return;
   await dbDelete('tasks', id);
   closeModal('overlay-task');
   renderKanban();
   triggerAutoSync();
-  toast('Gelöscht');
+  toast('GelÃ¶scht');
 }
 
-// ─── TAGESPLAN ───────────────────────────────────────────────────────────────
+// âââ TAGESPLAN âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderTagesplan() {
   const today = new Date();
   const todayStr = today.toISOString().slice(0,10);
@@ -1044,7 +1044,7 @@ async function renderTagesplan() {
 
   const el = document.getElementById('tagesplan-content');
   if (!todayTasks.length) {
-    el.innerHTML = '<div class="agenda-empty">📭 Keine geplanten Aufgaben für heute.<br>Füge einer Aufgabe eine Uhrzeit hinzu.</div>';
+    el.innerHTML = '<div class="agenda-empty">ð­ Keine geplanten Aufgaben fÃ¼r heute.<br>FÃ¼ge einer Aufgabe eine Uhrzeit hinzu.</div>';
     return;
   }
   el.innerHTML = `<div class="agenda-list">${todayTasks.map(t => {
@@ -1064,7 +1064,7 @@ async function renderTagesplan() {
   });
 }
 
-// ─── TAGEBUCH ────────────────────────────────────────────────────────────────
+// âââ TAGEBUCH ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderDiary() {
   const all = await dbGet('diary');
   const mf = state.diaryMoodFilter;
@@ -1072,10 +1072,10 @@ async function renderDiary() {
     .filter(e => !mf || String(e.mood) === mf)
     .sort((a,b) => b.date.localeCompare(a.date));
 
-  const moodEmoji = {1:'😊',2:'😐',3:'😞'};
+  const moodEmoji = {1:'ð',2:'ð',3:'ð'};
   const el = document.getElementById('diary-list');
   if (!entries.length) {
-    el.innerHTML = '<div class="diary-empty">📔 Noch keine Einträge.</div>';
+    el.innerHTML = '<div class="diary-empty">ð Noch keine EintrÃ¤ge.</div>';
     return;
   }
   el.innerHTML = entries.map(e => `
@@ -1083,12 +1083,12 @@ async function renderDiary() {
       <div class="diary-card-head">
         <div class="diary-card-date">${fmtDateLong(e.date)}</div>
         <div class="diary-card-preview">${esc(e.text.slice(0,80))}</div>
-        <div class="diary-card-mood">${moodEmoji[e.mood]||'😊'}</div>
+        <div class="diary-card-mood">${moodEmoji[e.mood]||'ð'}</div>
       </div>
       <div class="diary-card-body">${esc(e.text)}</div>
       <div class="diary-card-footer">
-        <button class="btn btn-ghost btn-sm diary-edit-btn" data-id="${e.id}">✏️ Bearbeiten</button>
-        <button class="btn btn-danger btn-sm diary-del-btn" data-id="${e.id}">🗑️ Löschen</button>
+        <button class="btn btn-ghost btn-sm diary-edit-btn" data-id="${e.id}">âï¸ Bearbeiten</button>
+        <button class="btn btn-danger btn-sm diary-del-btn" data-id="${e.id}">ðï¸ LÃ¶schen</button>
       </div>
     </div>`).join('');
 
@@ -1101,7 +1101,7 @@ async function renderDiary() {
   el.querySelectorAll('.diary-del-btn').forEach(b => {
     b.addEventListener('click', async e => {
       e.stopPropagation();
-      if (!confirm('Eintrag löschen?')) return;
+      if (!confirm('Eintrag lÃ¶schen?')) return;
       await dbDelete('diary', b.dataset.id);
       renderDiary();
       triggerAutoSync();
@@ -1137,14 +1137,14 @@ async function saveDiary() {
   closeModal('overlay-diary');
   renderDiary();
   triggerAutoSync();
-  toast('Gespeichert ✓');
+  toast('Gespeichert â');
 }
 
-// ─── PATIENTEN ───────────────────────────────────────────────────────────────
+// âââ PATIENTEN âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const STATUS_KEYS = ['kogu','ambulant','wohn','tagessprache'];
 const STATUS_LABELS = {kogu:'Kogu bis',ambulant:'Ambulante Therapie',wohn:'Wohnsituation',tagessprache:'Tagessprache'};
 const STATUS_STATES = ['pending','ok','problem'];
-const STATUS_ICONS = {pending:'⏳',ok:'✓',problem:'✕'};
+const STATUS_ICONS = {pending:'â³',ok:'â',problem:'â'};
 
 function showPatientList() {
   document.getElementById('patient-list').style.display = '';
@@ -1175,7 +1175,7 @@ async function renderPatients() {
     }).join('');
     return `<div class="patient-card" data-id="${p.id}">
       <div class="patient-id">${esc(p.id)}</div>
-      <div class="patient-name">${esc(p.name||'—')}</div>
+      <div class="patient-name">${esc(p.name||'â')}</div>
       <div class="patient-statuses">${pills}</div>
     </div>`;
   }).join('');
@@ -1188,7 +1188,7 @@ async function renderPatientDetail(pid) {
   const p = await dbGet('patients', pid);
   if (!p) { showPatientList(); return; }
   document.getElementById('pd-id').textContent = p.id;
-  document.getElementById('pd-name').textContent = p.name || '—';
+  document.getElementById('pd-name').textContent = p.name || 'â';
 
   // Status buttons
   const sb = document.getElementById('pd-status-btns');
@@ -1221,8 +1221,8 @@ async function renderPatientDetail(pid) {
       <div class="pd-note-date">${fmtDateLong(n.date)}</div>
       <div class="pd-note-text">${esc(n.text)}</div>
       <div class="pd-note-actions">
-        <button class="btn btn-ghost btn-sm" data-note-edit="${i}">✏️</button>
-        <button class="btn btn-danger btn-sm" data-note-del="${i}">🗑️</button>
+        <button class="btn btn-ghost btn-sm" data-note-edit="${i}">âï¸</button>
+        <button class="btn btn-danger btn-sm" data-note-del="${i}">ðï¸</button>
       </div>
     </div>`).join('') : '<div class="pd-notes-empty">Noch keine Notizen.</div>';
 
@@ -1231,7 +1231,7 @@ async function renderPatientDetail(pid) {
   });
   nl.querySelectorAll('[data-note-del]').forEach(b => {
     b.addEventListener('click', async () => {
-      if (!confirm('Notiz löschen?')) return;
+      if (!confirm('Notiz lÃ¶schen?')) return;
       p.notes.splice(Number(b.dataset.noteDel), 1);
       p.updatedAt = Date.now();
       await dbPut('patients', p);
@@ -1259,7 +1259,7 @@ function openPatientModal(id) {
 
 async function savePatient() {
   const pid = document.getElementById('patient-pid').value.toUpperCase().trim();
-  if (!/^[A-Z]{3}\d{4}$/.test(pid)) { toast('ID muss 3 Großbuchstaben + 4 Ziffern sein (z.B. MUS1234)'); return; }
+  if (!/^[A-Z]{3}\d{4}$/.test(pid)) { toast('ID muss 3 GroÃbuchstaben + 4 Ziffern sein (z.B. MUS1234)'); return; }
   const name = document.getElementById('patient-name').value.trim();
   const editId = document.getElementById('patient-edit-id').value;
   const existing = editId ? await dbGet('patients', editId) : null;
@@ -1277,7 +1277,7 @@ async function savePatient() {
   renderPatients();
   if (state.currentPatientId) renderPatientDetail(pid);
   triggerAutoSync();
-  toast('Gespeichert ✓');
+  toast('Gespeichert â');
 }
 
 function openNoteModal(pid, idx) {
@@ -1311,13 +1311,13 @@ async function saveNote() {
   closeModal('overlay-note');
   renderPatientDetail(pid);
   triggerAutoSync();
-  toast('Notiz gespeichert ✓');
+  toast('Notiz gespeichert â');
 }
 
-// ─── ROADMAP ─────────────────────────────────────────────────────────────────
+// âââ ROADMAP âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderRoadmap() {
   const el = document.getElementById('roadmap-content');
-  el.innerHTML = '<div class="roadmap-loading">⏳ Lade Roadmap…</div>';
+  el.innerHTML = '<div class="roadmap-loading">â³ Lade Roadmapâ¦</div>';
   const token = await S.get('ghToken','');
   const url = 'https://api.github.com/repos/ctmos/dispatch-memory/contents/BUILDBACKLOG.md';
   try {
@@ -1328,7 +1328,7 @@ async function renderRoadmap() {
     const md = await res.text();
     el.innerHTML = renderMarkdown(md);
   } catch (e) {
-    el.innerHTML = `<div class="roadmap-error">⚠ Konnte Roadmap nicht laden: ${esc(e.message)}<br><small>Stelle sicher, dass ein GitHub-Token in den Einstellungen hinterlegt ist.</small></div>`;
+    el.innerHTML = `<div class="roadmap-error">â  Konnte Roadmap nicht laden: ${esc(e.message)}<br><small>Stelle sicher, dass ein GitHub-Token in den Einstellungen hinterlegt ist.</small></div>`;
   }
 }
 
@@ -1370,24 +1370,24 @@ function renderMarkdown(md) {
   return html;
 }
 
-// ─── EINSTELLUNGEN ───────────────────────────────────────────────────────────
+// âââ EINSTELLUNGEN âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderSettings() {
   document.getElementById('s-gh-token').value = await S.get('ghToken','');
   document.getElementById('s-gh-repo').value = await S.get('ghRepo','ctmos/CoworkKanban');
   const autoSync = await S.get('autoSync', false);
   state.autoSync = autoSync === true || autoSync === 'true';
   document.getElementById('s-auto-sync').classList.toggle('on', state.autoSync);
-  // password lock – no toggle, always active
+  // password lock â no toggle, always active
 }
 
 async function saveSettings() {
   await S.set('ghToken', document.getElementById('s-gh-token').value.trim());
   await S.set('ghRepo', document.getElementById('s-gh-repo').value.trim());
   await S.set('autoSync', state.autoSync);
-  toast('Einstellungen gespeichert ✓');
+  toast('Einstellungen gespeichert â');
 }
 
-// ─── CATEGORIES MODAL ────────────────────────────────────────────────────────
+// âââ CATEGORIES MODAL ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function renderCatModal() {
   await loadCategories();
   const tasks = await dbGet('tasks');
@@ -1399,12 +1399,12 @@ async function renderCatModal() {
       <div class="cat-color-swatch" style="background:${c.color}"></div>
       <div class="cat-row-name">${esc(c.name)}</div>
       <div class="cat-row-count">${count}</div>
-      <button class="btn btn-ghost btn-sm cat-del-btn" data-id="${c.id}">🗑️</button>
+      <button class="btn btn-ghost btn-sm cat-del-btn" data-id="${c.id}">ðï¸</button>
     </div>`;
   }).join('');
   el.querySelectorAll('.cat-del-btn').forEach(b => {
     b.addEventListener('click', async () => {
-      if (!confirm('Kategorie löschen?')) return;
+      if (!confirm('Kategorie lÃ¶schen?')) return;
       await dbDelete('categories', b.dataset.id);
       await loadCategories();
       renderCatModal();
@@ -1413,7 +1413,7 @@ async function renderCatModal() {
   });
 }
 
-// ─── GITHUB SYNC ─────────────────────────────────────────────────────────────
+// âââ GITHUB SYNC âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function getGhHeaders() {
   const token = await S.get('ghToken','');
   return { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' };
@@ -1446,7 +1446,7 @@ async function syncToGitHub() {
     await ghPut(repo, 'data/cowork.json', data, sha);
     state.syncOk = true;
     updateSyncUI('ok', 'Sync OK ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
-    toast('Synchronisiert ✓');
+    toast('Synchronisiert â');
   } catch (e) {
     state.syncOk = false;
     updateSyncUI('err', 'Sync fehlgeschlagen');
@@ -1465,7 +1465,7 @@ async function triggerAutoSync() {
   if (state.autoSync || (await S.get('autoSync',false)) === 'true') syncToGitHub();
 }
 
-// ─── PASSWORD LOCK ────────────────────────────────────────────────────────────
+// âââ PASSWORD LOCK ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const PW_SESSION_KEY = 'pwUnlockTime';
 const PW_HASH_KEY    = 'pwHash';
 const PW_FAIL_KEY    = 'pwFailCount';
@@ -1537,7 +1537,7 @@ async function handleUnlock() {
       errEl.textContent = 'Falsches Passwort. Bitte ' + (LOCKOUT_MS/1000) + 's warten.';
     } else {
       const left = MAX_FAILS - newFails;
-      errEl.textContent = 'Falsches Passwort. (' + left + ' Versuch' + (left !== 1 ? 'e' : '') + ' übrig)';
+      errEl.textContent = 'Falsches Passwort. (' + left + ' Versuch' + (left !== 1 ? 'e' : '') + ' Ã¼brig)';
       setTimeout(() => { errEl.textContent = ''; }, 2500);
     }
   }
@@ -1552,16 +1552,16 @@ async function savePinSetup() {
   const storedHash = await S.get(PW_HASH_KEY, await sha256(DEFAULT_PW));
   if (oldHash !== storedHash) { toast('Aktuelles Passwort falsch'); return; }
   if (!p1 || p1.length < 4) { toast('Neues Passwort muss mind. 4 Zeichen haben'); return; }
-  if (p1 !== p2) { toast('Passwörter stimmen nicht überein'); return; }
+  if (p1 !== p2) { toast('PasswÃ¶rter stimmen nicht Ã¼berein'); return; }
   await S.set(PW_HASH_KEY, await sha256(p1));
   document.getElementById('old-pw').value = '';
   document.getElementById('new-pin').value = '';
   document.getElementById('new-pin-confirm').value = '';
   closeModal('overlay-pin-setup');
-  toast('Passwort gespeichert ✓');
+  toast('Passwort gespeichert â');
 }
 
-// ─── Utility ─────────────────────────────────────────────────────────────────
+// âââ Utility âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function fmtDate(d) {
@@ -1575,7 +1575,7 @@ function fmtDateLong(d) {
   try { return new Date(d + 'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'long',year:'numeric'}); } catch { return d; }
 }
 
-// ─── Event Listeners ─────────────────────────────────────────────────────────
+// âââ Event Listeners âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function attachListeners() {
   // Nav items (sidebar + bottom)
   document.querySelectorAll('.nav-item[data-view], .bn-item[data-view]').forEach(el => {
@@ -1648,7 +1648,7 @@ function attachListeners() {
   document.getElementById('pd-add-note-btn').addEventListener('click', () => openNoteModal(state.currentPatientId));
   document.getElementById('pd-edit-btn').addEventListener('click', () => openPatientModal(state.currentPatientId));
   document.getElementById('pd-delete-btn').addEventListener('click', async () => {
-    if (!confirm('Patient löschen?')) return;
+    if (!confirm('Patient lÃ¶schen?')) return;
     await dbDelete('patients', state.currentPatientId);
     showPatientList();
     renderPatients();
@@ -1670,11 +1670,11 @@ function attachListeners() {
   document.getElementById('pin-setup-save-btn').addEventListener('click', savePinSetup);
   document.getElementById('lock-now-btn').addEventListener('click', () => { lockApp(); navigate('kanban'); });
   document.getElementById('clear-data-btn').addEventListener('click', async () => {
-    if (!confirm('Alle Daten unwiderruflich löschen?')) return;
+    if (!confirm('Alle Daten unwiderruflich lÃ¶schen?')) return;
     for (const s of ['tasks','categories','diary','patients']) await dbClear(s);
     await loadCategories();
     renderKanban();
-    toast('Daten gelöscht');
+    toast('Daten gelÃ¶scht');
   });
 
   // Category modal
@@ -1703,7 +1703,7 @@ function attachListeners() {
   document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleUnlock(); });
 }
 
-// ─── Service Worker ───────────────────────────────────────────────────────────
+// âââ Service Worker âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   const swCode = `
@@ -1725,7 +1725,7 @@ self.addEventListener('fetch',e=>{
   } catch {}
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
+// âââ INIT âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function init() {
   await loadCategories();
   attachListeners();
