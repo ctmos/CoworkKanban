@@ -1,0 +1,23 @@
+{
+  "tasks": [],
+  "diary": [],
+  "patients": [],
+  "categories": [
+    {
+      "id": "mn22zpnlek8g2",
+      "name": "Klinik",
+      "color": "#22c55e"
+    },
+    {
+      "id": "mn22zpnlis8tw",
+      "name": "Allgemein",
+      "color": "#3b82f6"
+    },
+    {
+      "id": "mn22zpnlkw0vt",
+      "name": "Privat",
+      "color": "#f59e0b"
+    }
+  ],
+  "updatedAt": 1774206228574
+}
