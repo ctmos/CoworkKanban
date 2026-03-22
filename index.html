@@ -30,17 +30,16 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;font-size:15px;ba
 button,input,textarea,select{font-family:inherit}
 button,[role=button]{touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
 
-/* PIN */
+/* PASSWORD LOCK */
 #pin-overlay{position:fixed;inset:0;z-index:2000;background:var(--bg-nav);display:flex;align-items:center;justify-content:center;flex-direction:column}
-.pin-box{text-align:center;padding:40px 32px;background:rgba(255,255,255,.07);border-radius:20px;border:1.5px solid rgba(255,255,255,.1);min-width:300px;max-width:90vw}
-.pin-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:4px}
-.pin-sub{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:24px}
-.pin-dots{display:flex;gap:12px;justify-content:center;margin-bottom:22px}
-.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.35);transition:background .15s,border-color .15s}
-.pin-dot.filled{background:#fff;border-color:#fff}
-.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:220px;margin:0 auto}
-.pin-key{height:58px;border-radius:var(--r-sm);border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.1);color:#fff;font-size:20px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
-.pin-key:active{background:rgba(255,255,255,.3)}
+.pin-box{text-align:center;padding:40px 32px;background:rgba(255,255,255,.07);border-radius:20px;border:1.5px solid rgba(255,255,255,.1);min-width:320px;max-width:90vw;width:360px}
+.pin-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.5px}
+.pin-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:28px}
+.pin-input{width:100%;padding:12px 14px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--r-sm);color:#fff;font-size:16px;outline:none;transition:border-color .15s;margin-bottom:12px;box-sizing:border-box}
+.pin-input::placeholder{color:rgba(255,255,255,.35)}
+.pin-input:focus{border-color:rgba(255,255,255,.5)}
+.pin-btn{width:100%;padding:12px;background:var(--accent);border:none;border-radius:var(--r-sm);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s}
+.pin-btn:hover{background:var(--accent-h)}
 .pin-error{color:#fca5a5;font-size:13px;margin-top:10px;min-height:20px}
 
 /* APP SHELL */
@@ -288,31 +287,13 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
 </head>
 <body>
 
-<!-- PIN OVERLAY -->
+<!-- PASSWORD LOCK OVERLAY -->
 <div id="pin-overlay">
   <div class="pin-box">
-    <div class="pin-title">🔒 Cowork</div>
-    <div class="pin-sub" id="pin-sub">PIN eingeben</div>
-    <div class="pin-dots" id="pin-dots">
-      <div class="pin-dot" id="pd0"></div>
-      <div class="pin-dot" id="pd1"></div>
-      <div class="pin-dot" id="pd2"></div>
-      <div class="pin-dot" id="pd3"></div>
-    </div>
-    <div class="pin-pad">
-      <button class="pin-key" data-k="1">1</button>
-      <button class="pin-key" data-k="2">2</button>
-      <button class="pin-key" data-k="3">3</button>
-      <button class="pin-key" data-k="4">4</button>
-      <button class="pin-key" data-k="5">5</button>
-      <button class="pin-key" data-k="6">6</button>
-      <button class="pin-key" data-k="7">7</button>
-      <button class="pin-key" data-k="8">8</button>
-      <button class="pin-key" data-k="9">9</button>
-      <button class="pin-key" data-k="del" style="font-size:14px">⌫</button>
-      <button class="pin-key" data-k="0">0</button>
-      <button class="pin-key" data-k="ok" style="font-size:13px;font-weight:700">OK</button>
-    </div>
+    <div class="pin-title">🔒 CoworkDashboard</div>
+    <div class="pin-sub">Bitte Passwort eingeben, um fortzufahren</div>
+    <input class="pin-input" id="pw-input" type="password" placeholder="Passwort" autocomplete="current-password">
+    <button class="pin-btn" id="pw-unlock-btn">Entsperren</button>
     <div class="pin-error" id="pin-error"></div>
   </div>
 </div>
@@ -478,19 +459,20 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
           </div>
         </div>
         <div class="settings-group">
-          <div class="settings-group-title">PIN-Sperre</div>
+          <div class="settings-group-title">Passwort-Sperre</div>
           <div class="settings-row">
             <div class="settings-row-label">
-              <div class="settings-row-name">PIN aktivieren</div>
-              <div class="settings-row-sub">App beim Start mit PIN schützen</div>
+              <div class="settings-row-name">Passwort ändern</div>
+              <div class="settings-row-sub">Standard: cowork2026 · Als SHA-256 gespeichert</div>
             </div>
-            <button class="toggle" id="s-pin-enabled"></button>
+            <button class="btn btn-ghost btn-sm" id="change-pin-btn">Passwort setzen</button>
           </div>
-          <div class="settings-row" id="pin-change-row">
+          <div class="settings-row">
             <div class="settings-row-label">
-              <div class="settings-row-name">PIN ändern</div>
+              <div class="settings-row-name">Jetzt sperren</div>
+              <div class="settings-row-sub">App sofort sperren (Session beenden)</div>
             </div>
-            <button class="btn btn-ghost btn-sm" id="change-pin-btn">PIN setzen</button>
+            <button class="btn btn-danger btn-sm" id="lock-now-btn">🔒 Sperren</button>
           </div>
         </div>
         <div class="settings-group">
@@ -678,26 +660,30 @@ input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);c
   </div>
 </div>
 
-<!-- MODAL: Set PIN -->
+<!-- MODAL: Passwort ändern -->
 <div class="overlay" id="overlay-pin-setup">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title">PIN setzen</div>
+      <div class="modal-title">Passwort ändern</div>
       <button class="modal-close" data-close="overlay-pin-setup">×</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
-        <label class="form-label">Neuer PIN (4 Ziffern)</label>
-        <input class="form-input" id="new-pin" type="password" maxlength="4" inputmode="numeric" placeholder="····">
+        <label class="form-label">Aktuelles Passwort</label>
+        <input class="form-input" id="old-pw" type="password" placeholder="Aktuelles Passwort" autocomplete="current-password">
       </div>
       <div class="form-row">
-        <label class="form-label">PIN bestätigen</label>
-        <input class="form-input" id="new-pin-confirm" type="password" maxlength="4" inputmode="numeric" placeholder="····">
+        <label class="form-label">Neues Passwort</label>
+        <input class="form-input" id="new-pin" type="password" placeholder="Neues Passwort" autocomplete="new-password">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Neues Passwort bestätigen</label>
+        <input class="form-input" id="new-pin-confirm" type="password" placeholder="Passwort wiederholen" autocomplete="new-password">
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" data-close="overlay-pin-setup">Abbrechen</button>
-      <button class="btn btn-primary" id="pin-setup-save-btn">PIN speichern</button>
+      <button class="btn btn-primary" id="pin-setup-save-btn">Passwort speichern</button>
     </div>
   </div>
 </div>
@@ -1391,8 +1377,7 @@ async function renderSettings() {
   const autoSync = await S.get('autoSync', false);
   state.autoSync = autoSync === true || autoSync === 'true';
   document.getElementById('s-auto-sync').classList.toggle('on', state.autoSync);
-  const pinEnabled = await S.get('pinEnabled', false);
-  document.getElementById('s-pin-enabled').classList.toggle('on', pinEnabled === true || pinEnabled === 'true');
+  // password lock – no toggle, always active
 }
 
 async function saveSettings() {
@@ -1480,18 +1465,31 @@ async function triggerAutoSync() {
   if (state.autoSync || (await S.get('autoSync',false)) === 'true') syncToGitHub();
 }
 
-// ─── PIN ─────────────────────────────────────────────────────────────────────
-let pinBuffer = '';
-let pinSetupMode = false;
+// ─── PASSWORD LOCK ────────────────────────────────────────────────────────────
+const PW_SESSION_KEY = 'pwUnlockTime';
+const PW_HASH_KEY    = 'pwHash';
+const PW_FAIL_KEY    = 'pwFailCount';
+const PW_FAIL_TS_KEY = 'pwFailTime';
+const SESSION_MS     = 24 * 60 * 60 * 1000;
+const LOCKOUT_MS     = 30 * 1000;
+const MAX_FAILS      = 3;
+const DEFAULT_PW     = 'cowork2026';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
 
 async function initPin() {
-  const enabled = await S.get('pinEnabled', false);
-  if (enabled === true || enabled === 'true') {
-    document.getElementById('pin-sub').textContent = 'PIN eingeben';
-    document.getElementById('pin-overlay').style.display = 'flex';
-  } else {
-    unlockApp();
+  let stored = await S.get(PW_HASH_KEY, null);
+  if (!stored) {
+    stored = await sha256(DEFAULT_PW);
+    await S.set(PW_HASH_KEY, stored);
   }
+  const unlockTime = parseInt(await S.get(PW_SESSION_KEY, '0') || '0', 10);
+  if (Date.now() - unlockTime < SESSION_MS) { unlockApp(); return; }
+  document.getElementById('pin-overlay').style.display = 'flex';
+  document.getElementById('pw-input').focus();
 }
 
 function unlockApp() {
@@ -1499,41 +1497,68 @@ function unlockApp() {
   document.getElementById('app').classList.add('ready');
 }
 
-function updatePinDots() {
-  for (let i = 0; i < 4; i++) {
-    document.getElementById('pd'+i).classList.toggle('filled', i < pinBuffer.length);
-  }
+function lockApp() {
+  S.set(PW_SESSION_KEY, '0');
+  document.getElementById('pin-overlay').style.display = 'flex';
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pw-input').focus();
 }
 
-async function handlePinKey(k) {
-  if (k === 'del') { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(); return; }
-  if (k === 'ok' || pinBuffer.length === 4) {
-    if (pinBuffer.length < 4) { toast('Bitte 4 Ziffern eingeben'); return; }
-    const stored = await S.get('pin','');
-    if (pinBuffer === stored) {
-      pinBuffer = '';
-      updatePinDots();
-      unlockApp();
-    } else {
-      pinBuffer = '';
-      updatePinDots();
-      document.getElementById('pin-error').textContent = 'Falscher PIN';
-      setTimeout(() => { document.getElementById('pin-error').textContent = ''; }, 1500);
-    }
+async function handleUnlock() {
+  const errEl = document.getElementById('pin-error');
+  const failCount = parseInt(await S.get(PW_FAIL_KEY, '0') || '0', 10);
+  const failTime  = parseInt(await S.get(PW_FAIL_TS_KEY, '0') || '0', 10);
+  const elapsed   = Date.now() - failTime;
+  if (failCount >= MAX_FAILS && elapsed < LOCKOUT_MS) {
+    const secs = Math.ceil((LOCKOUT_MS - elapsed) / 1000);
+    errEl.textContent = 'Zu viele Versuche. Bitte ' + secs + 's warten.';
     return;
   }
-  if (pinBuffer.length < 4) { pinBuffer += k; updatePinDots(); }
-  if (pinBuffer.length === 4) await handlePinKey('ok');
+  if (failCount >= MAX_FAILS && elapsed >= LOCKOUT_MS) {
+    await S.set(PW_FAIL_KEY, '0'); await S.set(PW_FAIL_TS_KEY, '0');
+  }
+  const entered = document.getElementById('pw-input').value;
+  if (!entered) { errEl.textContent = 'Bitte Passwort eingeben.'; return; }
+  const enteredHash = await sha256(entered);
+  const storedHash  = await S.get(PW_HASH_KEY, await sha256(DEFAULT_PW));
+  if (enteredHash === storedHash) {
+    await S.set(PW_FAIL_KEY, '0'); await S.set(PW_FAIL_TS_KEY, '0');
+    await S.set(PW_SESSION_KEY, String(Date.now()));
+    document.getElementById('pw-input').value = '';
+    errEl.textContent = '';
+    unlockApp();
+  } else {
+    document.getElementById('pw-input').value = '';
+    const newFails = failCount + 1;
+    await S.set(PW_FAIL_KEY, String(newFails));
+    await S.set(PW_FAIL_TS_KEY, String(Date.now()));
+    if (newFails >= MAX_FAILS) {
+      errEl.textContent = 'Falsches Passwort. Bitte ' + (LOCKOUT_MS/1000) + 's warten.';
+    } else {
+      const left = MAX_FAILS - newFails;
+      errEl.textContent = 'Falsches Passwort. (' + left + ' Versuch' + (left !== 1 ? 'e' : '') + ' übrig)';
+      setTimeout(() => { errEl.textContent = ''; }, 2500);
+    }
+  }
 }
 
 async function savePinSetup() {
-  const p1 = document.getElementById('new-pin').value;
-  const p2 = document.getElementById('new-pin-confirm').value;
-  if (p1.length !== 4 || !/^\d{4}$/.test(p1)) { toast('PIN muss 4 Ziffern sein'); return; }
-  if (p1 !== p2) { toast('PINs stimmen nicht überein'); return; }
-  await S.set('pin', p1);
+  const oldPw = document.getElementById('old-pw').value;
+  const p1    = document.getElementById('new-pin').value;
+  const p2    = document.getElementById('new-pin-confirm').value;
+  if (!oldPw) { toast('Bitte aktuelles Passwort eingeben'); return; }
+  const oldHash    = await sha256(oldPw);
+  const storedHash = await S.get(PW_HASH_KEY, await sha256(DEFAULT_PW));
+  if (oldHash !== storedHash) { toast('Aktuelles Passwort falsch'); return; }
+  if (!p1 || p1.length < 4) { toast('Neues Passwort muss mind. 4 Zeichen haben'); return; }
+  if (p1 !== p2) { toast('Passwörter stimmen nicht überein'); return; }
+  await S.set(PW_HASH_KEY, await sha256(p1));
+  document.getElementById('old-pw').value = '';
+  document.getElementById('new-pin').value = '';
+  document.getElementById('new-pin-confirm').value = '';
   closeModal('overlay-pin-setup');
-  toast('PIN gespeichert ✓');
+  toast('Passwort gespeichert ✓');
 }
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
@@ -1641,12 +1666,9 @@ function attachListeners() {
     this.classList.toggle('on', state.autoSync);
     S.set('autoSync', state.autoSync);
   });
-  document.getElementById('s-pin-enabled').addEventListener('click', function() {
-    const on = this.classList.toggle('on');
-    S.set('pinEnabled', on);
-  });
   document.getElementById('change-pin-btn').addEventListener('click', () => openModal('overlay-pin-setup'));
   document.getElementById('pin-setup-save-btn').addEventListener('click', savePinSetup);
+  document.getElementById('lock-now-btn').addEventListener('click', () => { lockApp(); navigate('kanban'); });
   document.getElementById('clear-data-btn').addEventListener('click', async () => {
     if (!confirm('Alle Daten unwiderruflich löschen?')) return;
     for (const s of ['tasks','categories','diary','patients']) await dbClear(s);
@@ -1676,11 +1698,9 @@ function attachListeners() {
     ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
   });
 
-  // PIN keypad
-  document.querySelectorAll('.pin-key').forEach(k => {
-    k.addEventListener('click', () => handlePinKey(k.dataset.k));
-    k.addEventListener('touchend', e => { e.preventDefault(); handlePinKey(k.dataset.k); });
-  });
+  // Password lock
+  document.getElementById('pw-unlock-btn').addEventListener('click', handleUnlock);
+  document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleUnlock(); });
 }
 
 // ─── Service Worker ───────────────────────────────────────────────────────────
