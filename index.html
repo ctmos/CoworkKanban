@@ -1,1743 +1,460 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Cowork">
-<title>Cowork v8.3</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#f1f5f9;--bg-card:#fff;--bg-nav:#0f172a;
-  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
-  --border:#e2e8f0;--accent:#3b82f6;--accent-h:#2563eb;--accent-lt:#eff6ff;
-  --green:#22c55e;--green-lt:#f0fdf4;--red:#ef4444;--red-lt:#fef2f2;
-  --yellow:#f59e0b;--yellow-lt:#fffbeb;
-  --shadow-sm:0 1px 3px rgba(15,23,42,.07);
-  --shadow-md:0 4px 16px rgba(15,23,42,.1);
-  --shadow-lg:0 8px 32px rgba(15,23,42,.16);
-  --r:12px;--r-sm:8px;--r-xs:6px;--nav-w:240px;
-  --tr:150ms cubic-bezier(.4,0,.2,1);
-  --header-h:56px;--bn-h:64px;
-}
-html,body{height:100%;font-family:'Inter',system-ui,sans-serif;font-size:15px;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
-button,input,textarea,select{font-family:inherit}
-button,[role=button]{touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer}
-
-/* PASSWORD LOCK */
-#pin-overlay{position:fixed;inset:0;z-index:2000;background:var(--bg-nav);display:flex;align-items:center;justify-content:center;flex-direction:column}
-.pin-box{text-align:center;padding:40px 32px;background:rgba(255,255,255,.07);border-radius:20px;border:1.5px solid rgba(255,255,255,.1);min-width:320px;max-width:90vw;width:360px}
-.pin-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.5px}
-.pin-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:28px}
-.pin-input{width:100%;padding:12px 14px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--r-sm);color:#fff;font-size:16px;outline:none;transition:border-color .15s;margin-bottom:12px;box-sizing:border-box}
-.pin-input::placeholder{color:rgba(255,255,255,.35)}
-.pin-input:focus{border-color:rgba(255,255,255,.5)}
-.pin-btn{width:100%;padding:12px;background:var(--accent);border:none;border-radius:var(--r-sm);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s}
-.pin-btn:hover{background:var(--accent-h)}
-.pin-error{color:#fca5a5;font-size:13px;margin-top:10px;min-height:20px}
-
-/* APP SHELL */
-#app{display:none;height:100vh;overflow:hidden}
-#app.ready{display:flex;flex-direction:column}
-@media(min-width:769px){#app.ready{flex-direction:row}}
-
-/* MOBILE HEADER */
-#mobile-header{display:none;height:var(--header-h);background:var(--bg-nav);align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:100;position:relative}
-.mh-btn{width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);border:none;border-radius:var(--r-sm);color:#fff;font-size:20px;touch-action:manipulation;flex-shrink:0;cursor:pointer}
-.mh-logo{flex:1;font-size:16px;font-weight:800;color:#fff;display:flex;align-items:baseline;gap:7px}
-.mh-badge{font-size:11px;font-weight:600;color:rgba(255,255,255,.45);background:rgba(255,255,255,.1);padding:2px 7px;border-radius:20px}
-
-/* SIDEBAR */
-#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:290;touch-action:manipulation}
-#sidebar-overlay.open{display:block}
-#sidebar{width:var(--nav-w);min-width:var(--nav-w);height:100%;background:var(--bg-nav);display:flex;flex-direction:column;padding:0 0 16px;z-index:300;flex-shrink:0;transition:transform var(--tr)}
-.sidebar-logo{padding:22px 20px 14px;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px;display:flex;align-items:baseline;gap:8px}
-.sidebar-badge{font-size:11px;font-weight:600;color:rgba(255,255,255,.45);background:rgba(255,255,255,.1);padding:2px 7px;border-radius:20px}
-.nav-section{padding:4px 12px;font-size:10.5px;font-weight:700;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase;margin-top:10px;margin-bottom:2px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:11px 18px;color:#94a3b8;cursor:pointer;border-radius:var(--r-sm);margin:1px 8px;font-size:14px;font-weight:500;transition:background var(--tr),color var(--tr);border:none;background:transparent;touch-action:manipulation;text-align:left;width:calc(100% - 16px);user-select:none}
-.nav-item:hover{background:rgba(255,255,255,.07);color:#e2e8f0}
-.nav-item.active{background:var(--accent);color:#fff}
-.nav-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center}
-.nav-bottom{margin-top:auto;padding:0 12px}
-.sync-info{padding:10px 12px;background:rgba(255,255,255,.05);border-radius:var(--r-sm);font-size:12px;color:var(--text-3);line-height:1.6}
-.sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--text-3);margin-right:5px;vertical-align:middle}
-.sync-dot.ok{background:var(--green)}.sync-dot.err{background:var(--red)}
-
-/* CONTENT */
-#content-wrap{flex:1;display:flex;overflow:hidden}
-#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-
-/* BOTTOM NAV */
-#bottom-nav{display:none;height:var(--bn-h);background:var(--bg-card);border-top:1.5px solid var(--border);flex-shrink:0;z-index:100;position:relative}
-.bn-items{display:grid;grid-template-columns:repeat(5,1fr);height:100%}
-.bn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;color:var(--text-3);font-size:10px;font-weight:600;padding:6px 4px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;transition:color var(--tr);min-height:44px;width:100%}
-.bn-item.active{color:var(--accent)}
-.bn-icon{font-size:20px;line-height:1}
-
-/* FAB */
-#fab{position:fixed;right:20px;bottom:calc(var(--bn-h) + 14px);width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:28px;font-weight:300;box-shadow:0 4px 20px rgba(59,130,246,.45);display:none;align-items:center;justify-content:center;z-index:150;touch-action:manipulation;transition:transform .12s,box-shadow .12s;cursor:pointer}
-#fab:active{transform:scale(.93)}
-#fab.visible{display:flex}
-@media(min-width:769px){#fab.visible{bottom:28px;right:28px}}
-
-/* VIEWS */
-.view{display:none;padding:28px 32px;min-height:100%}
-.view.active{display:block;animation:fadeUp .18s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.view-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px}
-.view-title{font-size:20px;font-weight:800;color:var(--text)}
-.view-actions{display:flex;align-items:center;gap:8px}
-
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r-sm);border:none;cursor:pointer;font-size:13.5px;font-weight:600;transition:background var(--tr),transform .08s;font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent;white-space:nowrap}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:var(--accent-h)}
-.btn-ghost{background:transparent;color:var(--text-2);border:1.5px solid var(--border)}
-.btn-ghost:hover{background:var(--bg);border-color:var(--accent);color:var(--accent)}
-.btn-danger{background:var(--red-lt);color:var(--red);border:1.5px solid transparent}
-.btn-danger:hover{background:#fee2e2}
-.btn-sm{padding:6px 12px;font-size:12.5px}
-.btn-icon{width:34px;height:34px;padding:0;border-radius:var(--r-sm);justify-content:center}
-
-/* FORMS */
-.form-row{margin-bottom:14px}
-.form-label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:5px}
-.form-input{width:100%;padding:9px 12px;border-radius:var(--r-sm);border:1.5px solid var(--border);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;transition:border-color var(--tr);-webkit-appearance:none}
-.form-input:focus{border-color:var(--accent);background:#fff}
-textarea.form-input{resize:vertical;min-height:80px}
-.form-row-inline{display:flex;gap:10px}
-
-/* MODAL */
-.overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:500;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
-.overlay.open{display:flex;animation:fadeIn .15s ease}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{background:var(--bg-card);border-radius:var(--r);box-shadow:var(--shadow-lg);width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:scaleIn .18s cubic-bezier(.34,1.56,.64,1)}
-@keyframes scaleIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
-.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1.5px solid var(--border);position:sticky;top:0;background:var(--bg-card);z-index:1}
-.modal-title{font-size:15px;font-weight:700;color:var(--text)}
-.modal-close{width:30px;height:30px;border-radius:var(--r-xs);border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:20px;touch-action:manipulation;line-height:1}
-.modal-close:hover{background:var(--bg);color:var(--text)}
-.modal-body{padding:20px 22px}
-.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1.5px solid var(--border)}
-
-/* KANBAN */
-.kanban-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-.kanban-board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start}
-.kanban-col{background:var(--bg);border-radius:var(--r);border:1.5px solid var(--border);overflow:hidden}
-.kanban-col-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid var(--border);background:var(--bg-card)}
-.kanban-col-title{font-size:13px;font-weight:700;color:var(--text)}
-.kanban-col-count{font-size:11px;font-weight:700;background:var(--bg);border:1.5px solid var(--border);color:var(--text-3);padding:2px 7px;border-radius:20px}
-.kanban-col-body{padding:10px;min-height:100px;display:flex;flex-direction:column;gap:8px;transition:background .15s}
-.kanban-col-body.drag-over{background:var(--accent-lt);outline:2px dashed var(--accent);outline-offset:-2px}
-.task-card{background:var(--bg-card);border-radius:var(--r-sm);border:1.5px solid var(--border);padding:11px 13px;cursor:grab;transition:box-shadow var(--tr),border-color var(--tr);user-select:none;position:relative}
-.task-card:hover{box-shadow:var(--shadow-md);border-color:#bfdbfe}
-.task-card.dragging{opacity:.4;box-shadow:var(--shadow-lg)}
-.task-card-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:5px}
-.task-card-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.task-card-title{font-size:13.5px;font-weight:600;color:var(--text);flex:1;line-height:1.4}
-.task-card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.task-card-tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--accent-lt);color:var(--accent)}
-.task-card-due{font-size:11px;color:var(--text-3)}
-.task-card-due.overdue{color:var(--red);font-weight:600}
-.task-card-note{font-size:11.5px;color:var(--text-3);margin-top:6px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.kanban-empty{text-align:center;padding:18px 10px;color:var(--text-3);font-size:12.5px}
-
-/* TAGESPLAN */
-.agenda-header{font-size:14px;font-weight:600;color:var(--text-2);margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.agenda-list{background:var(--bg-card);border-radius:var(--r);border:1.5px solid var(--border);overflow:hidden}
-.agenda-item{display:flex;gap:14px;padding:14px 18px;border-bottom:1.5px solid var(--border);align-items:flex-start;cursor:pointer;transition:background var(--tr);touch-action:manipulation}
-.agenda-item:last-child{border-bottom:none}
-.agenda-item:hover{background:#f8fafc}
-.agenda-time{width:52px;flex-shrink:0;font-size:13px;font-weight:700;color:var(--text-3);font-variant-numeric:tabular-nums;padding-top:2px}
-.agenda-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.agenda-content{flex:1;min-width:0}
-.agenda-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
-.agenda-cat{font-size:12px;font-weight:500;color:var(--text-3)}
-.agenda-empty{text-align:center;padding:60px 20px;color:var(--text-3);font-size:14px}
-
-/* TAGEBUCH */
-.diary-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.mood-chip{padding:6px 13px;border-radius:40px;border:1.5px solid var(--border);background:var(--bg-card);font-size:13.5px;cursor:pointer;font-weight:500;transition:border-color var(--tr),background var(--tr);touch-action:manipulation}
-.mood-chip.active{border-color:var(--accent);background:var(--accent-lt);color:var(--accent)}
-.diary-card{background:var(--bg-card);border-radius:var(--r);border:1.5px solid var(--border);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow-sm)}
-.diary-card-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.diary-card-head:hover{background:#f8fafc}
-.diary-card-date{font-size:13px;font-weight:700;color:var(--text-2);flex:1}
-.diary-card-preview{font-size:12px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
-.diary-card-mood{font-size:22px;flex-shrink:0}
-.diary-card-body{display:none;padding:14px 18px;border-top:1.5px solid var(--border);font-size:14px;line-height:1.75;color:var(--text-2);white-space:pre-wrap;word-break:break-word}
-.diary-card-footer{display:none;justify-content:flex-end;gap:6px;padding:10px 16px;border-top:1.5px solid var(--border)}
-.diary-card.open .diary-card-body{display:block}
-.diary-card.open .diary-card-footer{display:flex}
-.diary-empty{text-align:center;padding:60px 20px;color:var(--text-3);font-size:14px}
-
-/* PATIENTEN */
-.patient-search{display:flex;gap:8px;margin-bottom:16px}
-.patient-search .form-input{flex:1}
-.patient-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
-.patient-card{background:var(--bg-card);border-radius:var(--r);border:1.5px solid var(--border);padding:16px;cursor:pointer;transition:box-shadow var(--tr),border-color var(--tr);touch-action:manipulation}
-.patient-card:hover{box-shadow:var(--shadow-md);border-color:#bfdbfe}
-.patient-id{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--accent);margin-bottom:2px;font-family:monospace}
-.patient-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:10px}
-.patient-statuses{display:flex;gap:5px;flex-wrap:wrap}
-.ps-pill{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:20px}
-.ps-pending{background:var(--yellow-lt);color:#92400e}
-.ps-ok{background:var(--green-lt);color:#166534}
-.ps-problem{background:var(--red-lt);color:#991b1b}
-
-/* PATIENT DETAIL */
-#patient-detail{display:none}
-#patient-detail.active{display:block}
-.pd-back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--accent);cursor:pointer;margin-bottom:18px;border:none;background:none;touch-action:manipulation;padding:0;-webkit-tap-highlight-color:transparent}
-.pd-header{background:var(--bg-card);border-radius:var(--r);border:1.5px solid var(--border);padding:20px 22px;margin-bottom:14px}
-.pd-id{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--accent);margin-bottom:3px;font-family:monospace}
-.pd-name{font-size:22px;font-weight:800;color:var(--text);margin-bottom:16px}
-.pd-actions{display:flex;gap:8px;margin-bottom:16px}
-.pd-status-btns{display:flex;gap:8px;flex-wrap:wrap}
-.pd-status-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 14px;border-radius:var(--r-sm);border:2px solid transparent;cursor:pointer;min-width:100px;font-family:inherit;transition:all .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
-.pd-status-btn.s-pending{background:var(--yellow-lt);border-color:#fcd34d;color:#92400e}
-.pd-status-btn.s-ok{background:var(--green-lt);border-color:#86efac;color:#166534}
-.pd-status-btn.s-problem{background:var(--red-lt);border-color:#fca5a5;color:#991b1b}
-.pd-status-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;opacity:.7;font-weight:600}
-.pd-status-val{font-size:12px;font-weight:700}
-.pd-notes{background:var(--bg-card);border-radius:var(--r);border:1.5px solid var(--border);overflow:hidden}
-.pd-notes-head{padding:14px 18px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.pd-notes-title{font-size:14px;font-weight:700;color:var(--text)}
-.pd-note-item{padding:13px 18px;border-bottom:1.5px solid var(--border)}
-.pd-note-item:last-child{border-bottom:none}
-.pd-note-date{font-size:12px;font-weight:600;color:var(--text-3);margin-bottom:3px}
-.pd-note-text{font-size:13.5px;color:var(--text);line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.pd-note-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
-.pd-notes-empty{padding:22px 18px;text-align:center;color:var(--text-3);font-size:13px}
-
-/* ROADMAP */
-.roadmap-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:18px}
-.roadmap-content{background:var(--bg-card);border-radius:var(--r);border:1.5px solid var(--border);padding:28px 32px;font-size:14px;line-height:1.85;color:var(--text-2)}
-.roadmap-loading{padding:40px;text-align:center;color:var(--text-3)}
-.roadmap-error{padding:16px;color:var(--red);background:var(--red-lt);border-radius:var(--r-sm);font-size:13.5px}
-.roadmap-content h1{font-size:22px;font-weight:800;color:var(--text);margin:0 0 14px;padding-bottom:10px;border-bottom:1.5px solid var(--border)}
-.roadmap-content h2{font-size:17px;font-weight:700;color:var(--text);margin:22px 0 8px}
-.roadmap-content h3{font-size:15px;font-weight:700;color:var(--text-2);margin:16px 0 6px}
-.roadmap-content p{margin-bottom:10px}
-.roadmap-content ul,.roadmap-content ol{padding-left:22px;margin-bottom:10px}
-.roadmap-content li{margin-bottom:3px}
-.roadmap-content code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12.5px;color:#be123c}
-.roadmap-content pre{background:#0f172a;padding:16px;border-radius:var(--r-sm);overflow-x:auto;margin:10px 0}
-.roadmap-content pre code{background:none;color:#e2e8f0;padding:0;font-size:13px}
-.roadmap-content blockquote{border-left:3px solid var(--accent);margin:10px 0;padding:8px 14px;background:var(--accent-lt);border-radius:0 var(--r-xs) var(--r-xs) 0;color:var(--text-2)}
-.roadmap-content hr{border:none;border-top:1.5px solid var(--border);margin:18px 0}
-.roadmap-content a{color:var(--accent);text-decoration:none}
-.roadmap-content a:hover{text-decoration:underline}
-.roadmap-content strong{font-weight:700;color:var(--text)}
-.roadmap-content input[type=checkbox]{width:14px;height:14px;margin-right:5px;vertical-align:middle;accent-color:var(--accent)}
-
-/* EINSTELLUNGEN */
-.settings-group{background:var(--bg-card);border-radius:var(--r);border:1.5px solid var(--border);margin-bottom:14px;overflow:hidden}
-.settings-group-title{font-size:11.5px;font-weight:700;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;padding:13px 20px 9px;border-bottom:1.5px solid var(--border)}
-.settings-row{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1.5px solid var(--border)}
-.settings-row:last-child{border-bottom:none}
-.settings-row-label{flex:1}
-.settings-row-name{font-size:14px;font-weight:500;color:var(--text)}
-.settings-row-sub{font-size:12px;color:var(--text-3);margin-top:1px}
-.settings-input{padding:7px 11px;border-radius:var(--r-sm);border:1.5px solid var(--border);font-size:13px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;transition:border-color var(--tr);-webkit-appearance:none}
-.settings-input:focus{border-color:var(--accent)}
-.settings-input.wide{width:200px}
-.settings-input.mono{font-family:monospace;font-size:12px}
-.toggle{width:44px;height:24px;background:#cbd5e1;border-radius:20px;position:relative;cursor:pointer;transition:background .2s;border:none;flex-shrink:0;touch-action:manipulation}
-.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.toggle.on{background:var(--accent)}
-.toggle.on::after{transform:translateX(20px)}
-
-/* CATEGORIES MANAGER */
-.cat-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--border)}
-.cat-row:last-child{border-bottom:none}
-.cat-color-swatch{width:18px;height:18px;border-radius:50%;flex-shrink:0}
-.cat-row-name{flex:1;font-size:14px;font-weight:500;color:var(--text)}
-.cat-row-count{font-size:12px;color:var(--text-3);margin-right:8px}
-
-/* TOAST */
-#toast{position:fixed;bottom:calc(var(--bn-h) + 70px);left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 18px;border-radius:40px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:900;white-space:nowrap}
-#toast.show{opacity:1}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  #mobile-header{display:flex}
-  #sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%)}
-  #sidebar.open{transform:translateX(0)}
-  #bottom-nav{display:block}
-  .view{padding:14px 14px 20px}
-  .kanban-board{grid-template-columns:1fr;gap:10px}
-  .view-title{font-size:18px}
-  .roadmap-content{padding:16px}
-  .settings-input.wide{width:150px}
-  .patient-grid{grid-template-columns:1fr}
-  .pd-status-btn{min-width:80px;padding:8px 10px}
-  #toast{bottom:calc(var(--bn-h) + 14px)}
-  #fab{bottom:calc(var(--bn-h) + 16px)}
-}
-input[type=color]{width:36px;height:36px;border:none;border-radius:var(--r-sm);cursor:pointer;padding:2px;background:none}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cowork v9.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f9fafb;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-light: #eff6ff;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --nav-height: 64px;
+    }
+    [data-theme="dark"] {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --accent-light: #1e3a5f;
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    #pin-screen {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 1000; padding: 24px;
+    }
+    #pin-screen .logo { font-size: 28px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+    #pin-screen .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
+    #pin-dots { display: flex; gap: 12px; margin-bottom: 32px; }
+    .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--border); border: 2px solid var(--border); transition: background 0.15s; }
+    .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
+    #pin-error { color: var(--danger); font-size: 13px; margin-bottom: 16px; min-height: 20px; text-align: center; }
+    #pin-keypad { display: grid; grid-template-columns: repeat(3, 72px); gap: 12px; }
+    .key-btn { height: 72px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); font-size: 22px; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.1s; display: flex; align-items: center; justify-content: center; }
+    .key-btn:active { transform: scale(0.95); background: var(--accent-light); }
+    .key-btn.delete { font-size: 16px; color: var(--muted); }
+    .key-btn.empty { background: transparent; border: none; cursor: default; }
+    #app { display: none; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; position: relative; }
+    #app.visible { display: flex; }
+    #header { padding: 14px 16px 12px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    #header h1 { font-size: 18px; font-weight: 700; color: var(--accent); }
+    #header .header-actions { display: flex; gap: 8px; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .icon-btn:hover { color: var(--text); border-color: var(--accent); }
+    #content { flex: 1; overflow-y: auto; padding-bottom: calc(var(--nav-height) + 16px); }
+    .tab-panel { display: none; padding: 16px; }
+    .tab-panel.active { display: block; }
+    #bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; height: var(--nav-height); background: var(--bg); border-top: 1px solid var(--border); display: flex; align-items: center; z-index: 100; }
+    .nav-btn { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; border: none; background: transparent; color: var(--muted); font-size: 10px; font-weight: 500; transition: color 0.15s; }
+    .nav-btn.active { color: var(--accent); }
+    .nav-btn svg { display: block; }
+    #fab { position: fixed; bottom: calc(var(--nav-height) + 16px); right: calc(50% - 232px); width: 52px; height: 52px; border-radius: 50%; background: var(--accent); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37,99,235,0.4); transition: all 0.15s; z-index: 99; }
+    #fab:hover { background: var(--accent-hover); transform: scale(1.05); }
+    @media (max-width: 480px) { #fab { right: 16px; } }
+    .card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; box-shadow: var(--card-shadow); margin-bottom: 10px; }
+    .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; }
+    .badge-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .priority-low { background: #dcfce7; color: #166534; }
+    .priority-medium { background: #fef9c3; color: #854d0e; }
+    .priority-high { background: #fee2e2; color: #991b1b; }
+    [data-theme="dark"] .priority-low { background: #14532d; color: #86efac; }
+    [data-theme="dark"] .priority-medium { background: #451a03; color: #fde68a; }
+    [data-theme="dark"] .priority-high { background: #450a0a; color: #fca5a5; }
+    #kanban-view { padding: 0; }
+    .kanban-scroll { overflow-x: auto; display: flex; gap: 12px; padding: 16px; min-height: calc(100vh - 140px); }
+    .kanban-col { min-width: 280px; flex-shrink: 0; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; }
+    .kanban-col-header { font-weight: 600; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+    .col-count { background: var(--border); color: var(--muted); font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 20px; }
+    .kanban-cards { flex: 1; min-height: 60px; }
+    .kanban-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: grab; box-shadow: var(--card-shadow); transition: box-shadow 0.15s, opacity 0.15s; }
+    .kanban-card.dragging { opacity: 0.5; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .kanban-card-title { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+    .kanban-card-footer { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .heute-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .heute-date { font-size: 15px; font-weight: 600; }
+    .progress-bar-wrap { background: var(--border); border-radius: 99px; height: 6px; margin-bottom: 16px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
+    .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .task-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; box-shadow: var(--card-shadow); }
+    .task-item.done .task-text { text-decoration: line-through; color: var(--muted); }
+    .task-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .task-check.checked { background: var(--accent); border-color: var(--accent); }
+    .task-check.checked::after { content: ''; display: block; width: 5px; height: 9px; border: 2px solid white; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px,-1px); }
+    .task-text { flex: 1; font-size: 14px; }
+    .task-delete { color: var(--muted); cursor: pointer; padding: 4px; border-radius: 4px; background: none; border: none; }
+    .task-delete:hover { color: var(--danger); }
+    .entry-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; box-shadow: var(--card-shadow); }
+    .entry-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .entry-date { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .mood-dots { display: flex; gap: 4px; }
+    .mood-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+    .mood-dot.active { background: var(--warning); }
+    .entry-text { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+    .entry-actions { margin-top: 10px; }
+    .patient-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; box-shadow: var(--card-shadow); cursor: pointer; }
+    .patient-card:hover { border-color: var(--accent); }
+    .patient-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .patient-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .patient-tag { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; font-size: 11px; color: var(--muted); font-weight: 500; }
+    .patient-notes { font-size: 13px; color: var(--muted); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .settings-section { margin-bottom: 24px; }
+    .settings-section h3 { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+    .settings-row { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; box-shadow: var(--card-shadow); }
+    .settings-row label { font-size: 14px; font-weight: 500; }
+    .settings-row span { font-size: 13px; color: var(--muted); }
+    .toggle { width: 44px; height: 26px; border-radius: 13px; background: var(--border); border: none; cursor: pointer; position: relative; transition: background 0.2s; }
+    .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform 0.2s; }
+    .toggle.on { background: var(--accent); }
+    .toggle.on::after { transform: translateX(18px); }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+    .form-input, .form-textarea, .form-select { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; transition: border-color 0.15s; outline: none; }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px; }
+    .btn { padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger { background: #fee2e2; color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: white; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .btn-block { width: 100%; justify-content: center; margin-bottom: 8px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--bg); border-radius: 16px 16px 0 0; padding: 24px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-title { font-size: 16px; font-weight: 700; }
+    .modal-close { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; color: var(--muted); font-size: 13px; }
+    .modal-close:hover { color: var(--text); }
+    .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; }
+    .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); }
+    .empty-state svg { margin: 0 auto 16px; opacity: 0.4; }
+    .empty-state p { font-size: 14px; }
+    #roadmap-content { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; max-height: 300px; overflow-y: auto; color: var(--text); }
+    #toast { position: fixed; bottom: calc(var(--nav-height) + 80px); left: 50%; transform: translateX(-50%) translateY(20px); background: #111; color: white; padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 500; opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .syncing { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    .mood-selector { display: flex; gap: 8px; }
+    .mood-btn { flex: 1; padding: 8px; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); cursor: pointer; text-align: center; font-size: 11px; font-weight: 500; transition: all 0.15s; color: var(--muted); }
+    .mood-btn.selected { border-color: var(--warning); background: #fef3c7; color: #92400e; }
+    [data-theme="dark"] .mood-btn.selected { background: #451a03; color: #fde68a; }
+    .migration-notice { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
+    [data-theme="dark"] .migration-notice { background: #451a03; border-color: #92400e; }
+    .migration-notice p { font-size: 13px; color: #92400e; margin-bottom: 10px; }
+    [data-theme="dark"] .migration-notice p { color: #fde68a; }
+    .token-row { display: flex; gap: 8px; }
+    .token-row .form-input { flex: 1; }
+  </style>
 </head>
 <body>
 
-<!-- PASSWORD LOCK OVERLAY -->
-<div id="pin-overlay">
-  <div class="pin-box">
-    <div class="pin-title">ð CoworkDashboard</div>
-    <div class="pin-sub">Bitte Passwort eingeben, um fortzufahren</div>
-    <input class="pin-input" id="pw-input" type="password" placeholder="Passwort" autocomplete="current-password">
-    <button class="pin-btn" id="pw-unlock-btn">Entsperren</button>
-    <div class="pin-error" id="pin-error"></div>
+<div id="pin-screen">
+  <div class="logo">Cowork</div>
+  <div class="subtitle">v9.0 &mdash; Sicher &amp; verschl&uuml;sselt</div>
+  <div id="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div id="pin-error"></div>
+  <div id="pin-keypad">
+    <button class="key-btn" onclick="pinKey('1')">1</button>
+    <button class="key-btn" onclick="pinKey('2')">2</button>
+    <button class="key-btn" onclick="pinKey('3')">3</button>
+    <button class="key-btn" onclick="pinKey('4')">4</button>
+    <button class="key-btn" onclick="pinKey('5')">5</button>
+    <button class="key-btn" onclick="pinKey('6')">6</button>
+    <button class="key-btn" onclick="pinKey('7')">7</button>
+    <button class="key-btn" onclick="pinKey('8')">8</button>
+    <button class="key-btn" onclick="pinKey('9')">9</button>
+    <button class="key-btn empty"></button>
+    <button class="key-btn" onclick="pinKey('0')">0</button>
+    <button class="key-btn delete" onclick="pinDelete()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+    </button>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
-  <!-- Mobile header -->
-  <header id="mobile-header">
-    <button class="mh-btn" id="burger-btn" aria-label="MenÃ¼">â°</button>
-    <div class="mh-logo">Cowork <span class="mh-badge">v8.3</span></div>
-    <button class="mh-btn" id="header-sync-btn" title="Sync">â»</button>
-  </header>
-
-  <!-- Sidebar overlay -->
-  <div id="sidebar-overlay"></div>
-
-  <!-- Sidebar -->
-  <nav id="sidebar">
-    <div class="sidebar-logo">Cowork <span class="sidebar-badge">v8.3</span></div>
-    <div class="nav-section">Werkzeuge</div>
-    <button class="nav-item active" data-view="kanban"><span class="nav-icon">ð</span>Kanban</button>
-    <button class="nav-item" data-view="tagesplan"><span class="nav-icon">ð</span>Tagesplan</button>
-    <button class="nav-item" data-view="tagebuch"><span class="nav-icon">ð</span>Tagebuch</button>
-    <button class="nav-item" data-view="patienten"><span class="nav-icon">ð¥</span>Patienten</button>
-    <button class="nav-item" data-view="roadmap"><span class="nav-icon">ðºï¸</span>Roadmap</button>
-    <button class="nav-item" data-view="einstellungen"><span class="nav-icon">âï¸</span>Einstellungen</button>
-    <div class="nav-bottom">
-      <div class="sync-info" id="sidebar-sync-info">
-        <span class="sync-dot" id="sync-dot"></span>
-        <span id="sync-label">Nicht synchronisiert</span>
-      </div>
+  <div id="header">
+    <h1>Cowork</h1>
+    <div class="header-actions">
+      <button class="icon-btn" id="sync-btn" onclick="syncData()" title="Synchronisieren">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      </button>
     </div>
-  </nav>
-
-  <!-- Content -->
-  <div id="content-wrap">
-    <main id="main">
-
-      <!-- KANBAN VIEW -->
-      <div class="view active" id="view-kanban">
-        <div class="view-header">
-          <div class="view-title">Kanban</div>
-          <div class="view-actions">
-            <button class="btn btn-ghost btn-sm" id="manage-cats-btn">ð·ï¸ Kategorien</button>
-            <button class="btn btn-primary btn-sm" id="add-task-btn-desk">+ Aufgabe</button>
-          </div>
-        </div>
-        <div class="kanban-board" id="kanban-board"></div>
-      </div>
-
-      <!-- TAGESPLAN VIEW -->
-      <div class="view" id="view-tagesplan">
-        <div class="view-header">
-          <div class="view-title">Tagesplan</div>
-          <div class="view-actions">
-            <button class="btn btn-primary btn-sm" id="add-task-tagesplan-btn">+ Aufgabe</button>
-          </div>
-        </div>
-        <div class="agenda-header" id="agenda-date-label"></div>
-        <div id="tagesplan-content"></div>
-      </div>
-
-      <!-- TAGEBUCH VIEW -->
-      <div class="view" id="view-tagebuch">
-        <div class="view-header">
-          <div class="view-title">Tagebuch</div>
-          <div class="view-actions">
-            <button class="btn btn-primary btn-sm" id="add-diary-btn-desk">+ Eintrag</button>
-          </div>
-        </div>
-        <div class="diary-filters">
-          <button class="mood-chip active" data-mood="">Alle</button>
-          <button class="mood-chip" data-mood="1">ð Gut</button>
-          <button class="mood-chip" data-mood="2">ð Okay</button>
-          <button class="mood-chip" data-mood="3">ð Schlecht</button>
-        </div>
-        <div id="diary-list"></div>
-      </div>
-
-      <!-- PATIENTEN VIEW -->
-      <div class="view" id="view-patienten">
-        <!-- List -->
-        <div id="patient-list">
-          <div class="view-header">
-            <div class="view-title">Patienten</div>
-            <div class="view-actions">
-              <button class="btn btn-primary btn-sm" id="add-patient-btn-desk">+ Patient</button>
-            </div>
-          </div>
-          <div class="patient-search">
-            <input class="form-input" id="patient-search-input" placeholder="Suchenâ¦" type="search">
-          </div>
-          <div class="patient-grid" id="patient-grid"></div>
-        </div>
-        <!-- Detail -->
-        <div id="patient-detail">
-          <button class="pd-back" id="pd-back-btn">â ZurÃ¼ck</button>
-          <div class="pd-header">
-            <div class="pd-id" id="pd-id"></div>
-            <div class="pd-name" id="pd-name"></div>
-            <div class="pd-actions">
-              <button class="btn btn-ghost btn-sm" id="pd-edit-btn">âï¸ Bearbeiten</button>
-              <button class="btn btn-danger btn-sm" id="pd-delete-btn">ðï¸ LÃ¶schen</button>
-            </div>
-            <div class="pd-status-btns" id="pd-status-btns"></div>
-          </div>
-          <div class="pd-notes">
-            <div class="pd-notes-head">
-              <div class="pd-notes-title">Sitzungsnotizen</div>
-              <button class="btn btn-primary btn-sm" id="pd-add-note-btn">+ Notiz</button>
-            </div>
-            <div id="pd-notes-list"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ROADMAP VIEW -->
-      <div class="view" id="view-roadmap">
-        <div class="view-header">
-          <div class="view-title">Roadmap</div>
-          <div class="view-actions">
-            <button class="btn btn-ghost btn-sm" id="roadmap-refresh-btn">â» Neu laden</button>
-          </div>
-        </div>
-        <div class="roadmap-content" id="roadmap-content">
-          <div class="roadmap-loading">Lade Roadmapâ¦</div>
-        </div>
-      </div>
-
-      <!-- EINSTELLUNGEN VIEW -->
-      <div class="view" id="view-einstellungen">
-        <div class="view-header">
-          <div class="view-title">Einstellungen</div>
-          <div class="view-actions">
-            <button class="btn btn-primary btn-sm" id="save-settings-btn">ð¾ Speichern</button>
-          </div>
-        </div>
-        <div class="settings-group">
-          <div class="settings-group-title">GitHub Sync</div>
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <div class="settings-row-name">GitHub Token</div>
-              <div class="settings-row-sub">Personal Access Token (ghp_â¦)</div>
-            </div>
-            <input class="settings-input wide mono" id="s-gh-token" type="password" placeholder="ghp_â¦">
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <div class="settings-row-name">Repo Pfad</div>
-              <div class="settings-row-sub">z.B. ctmos/CoworkKanban</div>
-            </div>
-            <input class="settings-input wide" id="s-gh-repo" placeholder="owner/repo">
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <div class="settings-row-name">Auto-Sync</div>
-              <div class="settings-row-sub">Bei jeder Ãnderung synchronisieren</div>
-            </div>
-            <button class="toggle" id="s-auto-sync"></button>
-          </div>
-          <div class="settings-row" style="justify-content:flex-end">
-            <button class="btn btn-ghost btn-sm" id="sync-now-btn">â» Jetzt synchronisieren</button>
-          </div>
-        </div>
-        <div class="settings-group">
-          <div class="settings-group-title">Passwort-Sperre</div>
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <div class="settings-row-name">Passwort Ã¤ndern</div>
-              <div class="settings-row-sub">Standard: cowork2026 Â· Als SHA-256 gespeichert</div>
-            </div>
-            <button class="btn btn-ghost btn-sm" id="change-pin-btn">Passwort setzen</button>
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <div class="settings-row-name">Jetzt sperren</div>
-              <div class="settings-row-sub">App sofort sperren (Session beenden)</div>
-            </div>
-            <button class="btn btn-danger btn-sm" id="lock-now-btn">ð Sperren</button>
-          </div>
-        </div>
-        <div class="settings-group">
-          <div class="settings-group-title">Daten</div>
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <div class="settings-row-name">Alle Daten lÃ¶schen</div>
-              <div class="settings-row-sub">Unwiderruflich â IndexedDB wird geleert</div>
-            </div>
-            <button class="btn btn-danger btn-sm" id="clear-data-btn">ðï¸ LÃ¶schen</button>
-          </div>
-        </div>
-        <div style="padding:8px 0;font-size:12px;color:var(--text-3);text-align:center">Cowork v8.3 Â· Single-file PWA Â· IndexedDB</div>
-      </div>
-
-    </main>
   </div>
-
-  <!-- Bottom Nav -->
-  <nav id="bottom-nav">
-    <div class="bn-items">
-      <button class="bn-item active" data-view="kanban"><span class="bn-icon">ð</span><span>Kanban</span></button>
-      <button class="bn-item" data-view="tagesplan"><span class="bn-icon">ð</span><span>Heute</span></button>
-      <button class="bn-item" data-view="tagebuch"><span class="bn-icon">ð</span><span>Tagebuch</span></button>
-      <button class="bn-item" data-view="patienten"><span class="bn-icon">ð¥</span><span>Patienten</span></button>
-      <button class="bn-item" data-view="einstellungen"><span class="bn-icon">⚙️</span><span>Einstellungen</span></button>
+  <div id="content">
+    <div id="tab-kanban" class="tab-panel active" style="padding:0;">
+      <div id="kanban-view"><div class="kanban-scroll" id="kanban-scroll"></div></div>
     </div>
+    <div id="tab-heute" class="tab-panel">
+      <div class="heute-header"><div class="heute-date" id="heute-date"></div></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="heute-progress" style="width:0%"></div></div>
+      <div class="progress-label" id="heute-label">0 von 0 erledigt</div>
+      <div id="heute-tasks"></div>
+    </div>
+    <div id="tab-tagebuch" class="tab-panel"><div id="tagebuch-list"></div></div>
+    <div id="tab-patienten" class="tab-panel"><div id="patienten-list"></div></div>
+    <div id="tab-einstellungen" class="tab-panel">
+      <div id="migration-notice" style="display:none"></div>
+      <div class="settings-section">
+        <h3>GitHub Verbindung</h3>
+        <div class="card">
+          <div class="form-group">
+            <label class="form-label">Personal Access Token</label>
+            <div class="token-row">
+              <input type="password" id="github-token-input" class="form-input" placeholder="ghp_...">
+              <button class="btn btn-primary" onclick="saveToken()">Speichern</button>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--muted)">Ben&ouml;tigt repo Berechtigung f&uuml;r ctmos/CoworkKanban</div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Darstellung</h3>
+        <div class="settings-row">
+          <label>Dunkles Design</label>
+          <button class="toggle" id="theme-toggle" onclick="toggleTheme()"></button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Synchronisation</h3>
+        <button class="btn btn-secondary btn-block" onclick="syncData()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          Jetzt synchronisieren
+        </button>
+        <button class="btn btn-secondary btn-block" onclick="migrateOldData()">Daten migrieren (alt &rarr; neu)</button>
+      </div>
+      <div class="settings-section">
+        <h3>Roadmap</h3>
+        <button class="btn btn-secondary btn-block" onclick="loadRoadmap()">Roadmap anzeigen</button>
+        <div id="roadmap-content" style="display:none"></div>
+      </div>
+      <div class="settings-section">
+        <h3>Info</h3>
+        <div class="settings-row"><label>Version</label><span>v9.0</span></div>
+        <div class="settings-row"><label>Datenspeicher</label><span>GitHub API</span></div>
+      </div>
+    </div>
+  </div>
+  <nav id="bottom-nav">
+    <button class="nav-btn active" id="nav-kanban" onclick="switchTab('kanban')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      Kanban
+    </button>
+    <button class="nav-btn" id="nav-heute" onclick="switchTab('heute')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Heute
+    </button>
+    <button class="nav-btn" id="nav-tagebuch" onclick="switchTab('tagebuch')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Tagebuch
+    </button>
+    <button class="nav-btn" id="nav-patienten" onclick="switchTab('patienten')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Patienten
+    </button>
+    <button class="nav-btn" id="nav-einstellungen" onclick="switchTab('einstellungen')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Einstellungen
+    </button>
   </nav>
+  <button id="fab" onclick="openAddModal()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
 </div>
 
-<!-- FAB -->
-<button id="fab" class="visible" title="HinzufÃ¼gen">+</button>
+<div class="modal-overlay" id="modal-card">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-card-title">Neue Karte</div>
+      <button class="modal-close" onclick="closeModal('modal-card')">Schlie&szlig;en</button>
+    </div>
+    <div class="form-group"><label class="form-label">Titel *</label><input type="text" id="card-title" class="form-input" placeholder="Aufgabentitel..."></div>
+    <div class="form-group"><label class="form-label">Beschreibung</label><textarea id="card-desc" class="form-textarea" placeholder="Details..."></textarea></div>
+    <div class="form-group"><label class="form-label">Kategorie</label><select id="card-cat" class="form-select"><option value="">Keine Kategorie</option></select></div>
+    <div class="form-group"><label class="form-label">Priorit&auml;t</label><select id="card-prio" class="form-select"><option value="low">Niedrig</option><option value="medium" selected>Mittel</option><option value="high">Hoch</option></select></div>
+    <div class="form-group"><label class="form-label">Spalte</label><select id="card-col" class="form-select"></select></div>
+    <div class="form-group"><label class="form-label">F&auml;lligkeit</label><input type="date" id="card-due" class="form-input"></div>
+    <input type="hidden" id="card-id">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-card')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveCard()">Speichern</button>
+    </div>
+    <div style="margin-top:8px"><button class="btn btn-danger btn-sm" id="delete-card-btn" onclick="deleteCard()" style="display:none;width:100%;justify-content:center">Karte l&ouml;schen</button></div>
+  </div>
+</div>
 
-<!-- TOAST -->
+<div class="modal-overlay" id="modal-heute">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Aufgabe hinzuf&uuml;gen</div>
+      <button class="modal-close" onclick="closeModal('modal-heute')">Schlie&szlig;en</button>
+    </div>
+    <div class="form-group"><label class="form-label">Aufgabe *</label><input type="text" id="heute-task-input" class="form-input" placeholder="Was steht heute an?"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-heute')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveHeuteTask()">Hinzuf&uuml;gen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-entry">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-entry-title">Neuer Eintrag</div>
+      <button class="modal-close" onclick="closeModal('modal-entry')">Schlie&szlig;en</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Stimmung</label>
+      <div class="mood-selector">
+        <button class="mood-btn" data-mood="1" onclick="selectMood(1)">&#128542;<br>Schlecht</button>
+        <button class="mood-btn" data-mood="2" onclick="selectMood(2)">&#128533;<br>M&auml;&szlig;ig</button>
+        <button class="mood-btn" data-mood="3" onclick="selectMood(3)">&#128528;<br>Ok</button>
+        <button class="mood-btn" data-mood="4" onclick="selectMood(4)">&#128522;<br>Gut</button>
+        <button class="mood-btn" data-mood="5" onclick="selectMood(5)">&#128516;<br>Super</button>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Eintrag *</label><textarea id="entry-text" class="form-textarea" rows="5" placeholder="Was bewegt dich heute?"></textarea></div>
+    <input type="hidden" id="entry-id">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-entry')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+    </div>
+    <div style="margin-top:8px"><button class="btn btn-danger btn-sm" id="delete-entry-btn" onclick="deleteEntry()" style="display:none;width:100%;justify-content:center">Eintrag l&ouml;schen</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-patient">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-patient-title">Neuer Patient</div>
+      <button class="modal-close" onclick="closeModal('modal-patient')">Schlie&szlig;en</button>
+    </div>
+    <div class="form-group"><label class="form-label">Name *</label><input type="text" id="patient-name" class="form-input" placeholder="Vor- und Nachname"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label class="form-label">Kogu-Status</label><input type="text" id="patient-kogu" class="form-input" placeholder="z.B. A3"></div>
+      <div class="form-group"><label class="form-label">Ambulant</label><input type="text" id="patient-ambulant" class="form-input" placeholder="z.B. 2x/Woche"></div>
+      <div class="form-group"><label class="form-label">Wohnsituation</label><input type="text" id="patient-wohn" class="form-input" placeholder="z.B. WG"></div>
+      <div class="form-group"><label class="form-label">Tagessprache</label><input type="text" id="patient-sprache" class="form-input" placeholder="z.B. Arabisch"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notizen</label><textarea id="patient-notes" class="form-textarea" placeholder="Klinische Notizen..."></textarea></div>
+    <input type="hidden" id="patient-id">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-patient')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="savePatient()">Speichern</button>
+    </div>
+    <div style="margin-top:8px"><button class="btn btn-danger btn-sm" id="delete-patient-btn" onclick="deletePatient()" style="display:none;width:100%;justify-content:center">Patient l&ouml;schen</button></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
-<!-- MODAL: Task -->
-<div class="overlay" id="overlay-task">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title" id="task-modal-title">Aufgabe</div>
-      <button class="modal-close" data-close="overlay-task">Ã</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="task-id">
-      <div class="form-row">
-        <label class="form-label">Titel *</label>
-        <input class="form-input" id="task-title" placeholder="Aufgabentitelâ¦">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Kategorie</label>
-        <select class="form-input" id="task-category"></select>
-      </div>
-      <div class="form-row">
-        <label class="form-label">Status</label>
-        <select class="form-input" id="task-status">
-          <option value="open">Offen</option>
-          <option value="inprogress">In Arbeit</option>
-          <option value="done">Erledigt</option>
-        </select>
-      </div>
-      <div class="form-row-inline">
-        <div class="form-row" style="flex:1">
-          <label class="form-label">FÃ¤llig am</label>
-          <input class="form-input" id="task-due" type="date">
-        </div>
-        <div class="form-row" style="flex:1">
-          <label class="form-label">Uhrzeit (Tagesplan)</label>
-          <input class="form-input" id="task-time" type="time">
-        </div>
-      </div>
-      <div class="form-row">
-        <label class="form-label">Notizen</label>
-        <textarea class="form-input" id="task-notes" rows="3" placeholder="Optionale Notizenâ¦"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" data-close="overlay-task">Abbrechen</button>
-      <button class="btn btn-danger btn-sm" id="task-delete-btn" style="display:none">LÃ¶schen</button>
-      <button class="btn btn-primary" id="task-save-btn">Speichern</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Diary -->
-<div class="overlay" id="overlay-diary">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title" id="diary-modal-title">Tagebucheintrag</div>
-      <button class="modal-close" data-close="overlay-diary">Ã</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="diary-id">
-      <div class="form-row">
-        <label class="form-label">Datum</label>
-        <input class="form-input" id="diary-date" type="date">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Stimmung</label>
-        <div style="display:flex;gap:10px">
-          <button class="mood-chip" data-diary-mood="1">ð Gut</button>
-          <button class="mood-chip" data-diary-mood="2">ð Okay</button>
-          <button class="mood-chip" data-diary-mood="3">ð Schlecht</button>
-        </div>
-        <input type="hidden" id="diary-mood" value="1">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Eintrag</label>
-        <textarea class="form-input" id="diary-text" rows="6" placeholder="Wie war dein Tagâ¦"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" data-close="overlay-diary">Abbrechen</button>
-      <button class="btn btn-primary" id="diary-save-btn">Speichern</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Patient -->
-<div class="overlay" id="overlay-patient">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title" id="patient-modal-title">Patient</div>
-      <button class="modal-close" data-close="overlay-patient">Ã</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="patient-edit-id">
-      <div class="form-row">
-        <label class="form-label">Patienten-ID * (z.B. MUS1234)</label>
-        <input class="form-input" id="patient-pid" placeholder="AAA0000" maxlength="7" style="font-family:monospace;text-transform:uppercase">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Name</label>
-        <input class="form-input" id="patient-name" placeholder="VollstÃ¤ndiger Nameâ¦">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" data-close="overlay-patient">Abbrechen</button>
-      <button class="btn btn-primary" id="patient-save-btn">Speichern</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Category -->
-<div class="overlay" id="overlay-category">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title">Kategorien verwalten</div>
-      <button class="modal-close" data-close="overlay-category">Ã</button>
-    </div>
-    <div class="modal-body">
-      <div id="cat-list-modal" style="background:var(--bg);border-radius:var(--r-sm);border:1.5px solid var(--border);margin-bottom:14px;overflow:hidden"></div>
-      <div style="display:flex;gap:8px">
-        <input class="form-input" id="new-cat-name" placeholder="Neue Kategorieâ¦" style="flex:1">
-        <input type="color" id="new-cat-color" value="#3b82f6" title="Farbe">
-        <button class="btn btn-primary" id="add-cat-btn">+</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Patient Note -->
-<div class="overlay" id="overlay-note">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title">Sitzungsnotiz</div>
-      <button class="modal-close" data-close="overlay-note">Ã</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="note-patient-id">
-      <input type="hidden" id="note-index">
-      <div class="form-row">
-        <label class="form-label">Datum</label>
-        <input class="form-input" id="note-date" type="date">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Notiz</label>
-        <textarea class="form-input" id="note-text" rows="5" placeholder="Sitzungsnotizâ¦"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" data-close="overlay-note">Abbrechen</button>
-      <button class="btn btn-primary" id="note-save-btn">Speichern</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: Passwort Ã¤ndern -->
-<div class="overlay" id="overlay-pin-setup">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title">Passwort Ã¤ndern</div>
-      <button class="modal-close" data-close="overlay-pin-setup">Ã</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <label class="form-label">Aktuelles Passwort</label>
-        <input class="form-input" id="old-pw" type="password" placeholder="Aktuelles Passwort" autocomplete="current-password">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Neues Passwort</label>
-        <input class="form-input" id="new-pin" type="password" placeholder="Neues Passwort" autocomplete="new-password">
-      </div>
-      <div class="form-row">
-        <label class="form-label">Neues Passwort bestÃ¤tigen</label>
-        <input class="form-input" id="new-pin-confirm" type="password" placeholder="Passwort wiederholen" autocomplete="new-password">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" data-close="overlay-pin-setup">Abbrechen</button>
-      <button class="btn btn-primary" id="pin-setup-save-btn">Passwort speichern</button>
-    </div>
-  </div>
-</div>
-
 <script>
-'use strict';
-
-// âââ IndexedDB âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-const DB_NAME = 'cowork-v8', DB_VER = 1;
-let _db = null;
-
-function openDB() {
-  if (_db) return Promise.resolve(_db);
-  return new Promise((res, rej) => {
-    const req = indexedDB.open(DB_NAME, DB_VER);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      ['tasks','categories','diary','patients','settings'].forEach(s => {
-        if (!db.objectStoreNames.contains(s)) {
-          db.createObjectStore(s, {keyPath:'id'});
-        }
-      });
-    };
-    req.onsuccess = e => { _db = e.target.result; res(_db); };
-    req.onerror = e => rej(e.target.error);
-  });
-}
-
-function dbGet(store, id) {
-  return openDB().then(db => new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readonly');
-    const req = id !== undefined ? tx.objectStore(store).get(id) : tx.objectStore(store).getAll();
-    req.onsuccess = () => res(req.result);
-    req.onerror = e => rej(e.target.error);
-  }));
-}
-
-function dbPut(store, obj) {
-  return openDB().then(db => new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).put(obj);
-    req.onsuccess = () => res(req.result);
-    req.onerror = e => rej(e.target.error);
-  }));
-}
-
-function dbDelete(store, id) {
-  return openDB().then(db => new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).delete(id);
-    req.onsuccess = () => res();
-    req.onerror = e => rej(e.target.error);
-  }));
-}
-
-function dbClear(store) {
-  return openDB().then(db => new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).clear();
-    req.onsuccess = () => res();
-    req.onerror = e => rej(e.target.error);
-  }));
-}
-
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-
-// âââ Settings ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-const S = {
-  async get(key, def='') {
-    const r = await dbGet('settings', key);
-    return r ? r.value : def;
-  },
-  async set(key, value) {
-    await dbPut('settings', {id: key, value});
-  }
-};
-
-// âââ State âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-const state = {
-  view: 'kanban',
-  diaryMoodFilter: '',
-  currentPatientId: null,
-  categories: [],
-  autoSync: false,
-  syncOk: null,
-};
-
-// âââ Toast âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-let _toastTimer = null;
-function toast(msg, dur=2200) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  if (_toastTimer) clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => el.classList.remove('show'), dur);
-}
-
-// âââ Navigation ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function navigate(v) {
-  state.view = v;
-  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-  const vEl = document.getElementById('view-' + v);
-  if (vEl) vEl.classList.add('active');
-
-  document.querySelectorAll('.nav-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.view === v);
-  });
-  document.querySelectorAll('.bn-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.view === v);
-  });
-
-  // FAB visibility
-  const fab = document.getElementById('fab');
-  const fabViews = ['kanban','tagesplan','tagebuch','patienten'];
-  fab.classList.toggle('visible', fabViews.includes(v));
-
-  // Render
-  if (v === 'kanban') renderKanban();
-  if (v === 'tagesplan') renderTagesplan();
-  if (v === 'tagebuch') renderDiary();
-  if (v === 'patienten') { showPatientList(); renderPatients(); }
-  if (v === 'roadmap') renderRoadmap();
-  if (v === 'einstellungen') renderSettings();
-
-  // Close sidebar on mobile
-  closeSidebar();
-}
-
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('open');
-}
-
-// âââ Modal helpers âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-// âââ Categories ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function loadCategories() {
-  state.categories = await dbGet('categories');
-  if (!state.categories.length) {
-    const defaults = [
-      {id: uid(), name: 'Allgemein', color: '#3b82f6'},
-      {id: uid(), name: 'Klinik', color: '#22c55e'},
-      {id: uid(), name: 'Privat', color: '#f59e0b'},
-    ];
-    for (const c of defaults) await dbPut('categories', c);
-    state.categories = defaults;
-  }
-}
-
-function getCategoryById(id) {
-  return state.categories.find(c => c.id === id) || null;
-}
-
-function renderCatSelect(selectId, selectedId='') {
-  const sel = document.getElementById(selectId);
-  sel.innerHTML = '<option value="">â Keine â</option>' +
-    state.categories.map(c => `<option value="${c.id}" ${c.id===selectedId?'selected':''}>${c.name}</option>`).join('');
-}
-
-// âââ KANBAN ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function renderKanban() {
-  const tasks = await dbGet('tasks');
-  const cols = {
-    open: { label: 'Offen', tasks: [] },
-    inprogress: { label: 'In Arbeit', tasks: [] },
-    done: { label: 'Erledigt', tasks: [] },
-  };
-  tasks.forEach(t => { if (cols[t.status]) cols[t.status].tasks.push(t); });
-
-  const board = document.getElementById('kanban-board');
-  board.innerHTML = Object.entries(cols).map(([status, col]) => {
-    const today = new Date().toISOString().slice(0,10);
-    const cards = col.tasks.map(t => {
-      const cat = getCategoryById(t.category);
-      const overdue = t.dueDate && t.dueDate < today && status !== 'done';
-      return `<div class="task-card" draggable="true" data-id="${t.id}" data-status="${t.status}">
-        <div class="task-card-top">
-          <div class="task-card-dot" style="background:${cat ? cat.color : '#94a3b8'}"></div>
-          <div class="task-card-title">${esc(t.title)}</div>
-        </div>
-        <div class="task-card-meta">
-          ${cat ? `<span class="task-card-tag" style="background:${cat.color}18;color:${cat.color}">${esc(cat.name)}</span>` : ''}
-          ${t.dueDate ? `<span class="task-card-due${overdue?' overdue':''}">${overdue?'â  ':''}${fmtDate(t.dueDate)}</span>` : ''}
-          ${t.scheduledTime ? `<span class="task-card-due">ð ${t.scheduledTime}</span>` : ''}
-        </div>
-        ${t.notes ? `<div class="task-card-note">${esc(t.notes)}</div>` : ''}
-      </div>`;
-    }).join('') || '<div class="kanban-empty">Keine Aufgaben</div>';
-
-    return `<div class="kanban-col" data-col-status="${status}">
-      <div class="kanban-col-head">
-        <div class="kanban-col-title">${col.label}</div>
-        <div class="kanban-col-count">${col.tasks.length}</div>
-      </div>
-      <div class="kanban-col-body" data-status="${status}">${cards}</div>
-    </div>`;
-  }).join('');
-
-  initKanbanDrag();
-}
-
-let dragId = null;
-let touchDragEl = null, touchGhost = null, touchTargetStatus = null;
-
-function initKanbanDrag() {
-  // Desktop drag-and-drop
-  document.querySelectorAll('.task-card').forEach(card => {
-    card.addEventListener('dragstart', e => {
-      dragId = card.dataset.id;
-      card.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    card.addEventListener('dragend', () => {
-      document.querySelectorAll('.task-card').forEach(c => c.classList.remove('dragging'));
-      document.querySelectorAll('.kanban-col-body').forEach(c => c.classList.remove('drag-over'));
-    });
-    card.addEventListener('click', e => {
-      if (!e.target.closest('.task-card')) return;
-      openTaskModal(card.dataset.id);
-    });
-
-    // Touch drag
-    card.addEventListener('touchstart', handleTouchStart, {passive: true});
-  });
-
-  document.querySelectorAll('.kanban-col-body').forEach(col => {
-    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
-    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
-    col.addEventListener('drop', async e => {
-      e.preventDefault();
-      col.classList.remove('drag-over');
-      if (dragId && col.dataset.status) {
-        const task = await dbGet('tasks', dragId);
-        if (task && task.status !== col.dataset.status) {
-          task.status = col.dataset.status;
-          task.updatedAt = Date.now();
-          await dbPut('tasks', task);
-          renderKanban();
-          triggerAutoSync();
-        }
-      }
-    });
-  });
-}
-
-function handleTouchStart(e) {
-  const card = e.currentTarget;
-  const touch = e.touches[0];
-  const rect = card.getBoundingClientRect();
-  touchDragEl = card;
-  touchTargetStatus = card.dataset.status;
-
-  touchGhost = card.cloneNode(true);
-  touchGhost.style.cssText = `position:fixed;z-index:999;width:${rect.width}px;pointer-events:none;opacity:0.85;box-shadow:0 8px 30px rgba(0,0,0,.2);border-radius:8px;left:${rect.left}px;top:${rect.top}px;transform:rotate(2deg)`;
-  document.body.appendChild(touchGhost);
-  card.style.opacity = '0.3';
-}
-
-document.addEventListener('touchmove', e => {
-  if (!touchDragEl) return;
-  e.preventDefault();
-  const touch = e.touches[0];
-  touchGhost.style.left = (touch.clientX - touchGhost.offsetWidth / 2) + 'px';
-  touchGhost.style.top = (touch.clientY - 30) + 'px';
-  document.querySelectorAll('.kanban-col-body').forEach(col => {
-    const r = col.getBoundingClientRect();
-    if (touch.clientX >= r.left && touch.clientX <= r.right && touch.clientY >= r.top && touch.clientY <= r.bottom) {
-      col.classList.add('drag-over');
-      touchTargetStatus = col.dataset.status;
-    } else {
-      col.classList.remove('drag-over');
-    }
-  });
-}, {passive: false});
-
-document.addEventListener('touchend', async () => {
-  if (!touchDragEl) return;
-  if (touchGhost) { touchGhost.remove(); touchGhost = null; }
-  touchDragEl.style.opacity = '';
-  document.querySelectorAll('.kanban-col-body').forEach(c => c.classList.remove('drag-over'));
-  if (touchTargetStatus && touchTargetStatus !== touchDragEl.dataset.status) {
-    const task = await dbGet('tasks', touchDragEl.dataset.id);
-    if (task) {
-      task.status = touchTargetStatus;
-      task.updatedAt = Date.now();
-      await dbPut('tasks', task);
-      renderKanban();
-      triggerAutoSync();
-    }
-  }
-  touchDragEl = null;
-  touchTargetStatus = null;
-});
-
-async function openTaskModal(id) {
-  await loadCategories();
-  const task = id ? await dbGet('tasks', id) : null;
-  document.getElementById('task-modal-title').textContent = task ? 'Aufgabe bearbeiten' : 'Neue Aufgabe';
-  document.getElementById('task-id').value = task ? task.id : '';
-  document.getElementById('task-title').value = task ? task.title : '';
-  document.getElementById('task-due').value = task ? (task.dueDate||'') : '';
-  document.getElementById('task-time').value = task ? (task.scheduledTime||'') : '';
-  document.getElementById('task-notes').value = task ? (task.notes||'') : '';
-  document.getElementById('task-status').value = task ? task.status : 'open';
-  renderCatSelect('task-category', task ? task.category : '');
-  document.getElementById('task-delete-btn').style.display = task ? 'inline-flex' : 'none';
-  openModal('overlay-task');
-  document.getElementById('task-title').focus();
-}
-
-async function saveTask() {
-  const title = document.getElementById('task-title').value.trim();
-  if (!title) { toast('Bitte Titel eingeben'); return; }
-  const id = document.getElementById('task-id').value || uid();
-  const existing = id ? await dbGet('tasks', id) : null;
-  const task = {
-    id,
-    title,
-    category: document.getElementById('task-category').value,
-    status: document.getElementById('task-status').value,
-    dueDate: document.getElementById('task-due').value,
-    scheduledTime: document.getElementById('task-time').value,
-    notes: document.getElementById('task-notes').value.trim(),
-    createdAt: existing ? existing.createdAt : Date.now(),
-    updatedAt: Date.now(),
-  };
-  await dbPut('tasks', task);
-  closeModal('overlay-task');
-  renderKanban();
-  if (state.view === 'tagesplan') renderTagesplan();
-  triggerAutoSync();
-  toast('Gespeichert â');
-}
-
-async function deleteTask(id) {
-  if (!confirm('Aufgabe lÃ¶schen?')) return;
-  await dbDelete('tasks', id);
-  closeModal('overlay-task');
-  renderKanban();
-  triggerAutoSync();
-  toast('GelÃ¶scht');
-}
-
-// âââ TAGESPLAN âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function renderTagesplan() {
-  const today = new Date();
-  const todayStr = today.toISOString().slice(0,10);
-  const label = document.getElementById('agenda-date-label');
-  const days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-  label.textContent = `${days[today.getDay()]}, ${today.toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'})}`;
-
-  const tasks = await dbGet('tasks');
-  const todayTasks = tasks
-    .filter(t => t.scheduledTime && t.dueDate === todayStr)
-    .sort((a,b) => a.scheduledTime.localeCompare(b.scheduledTime));
-
-  const el = document.getElementById('tagesplan-content');
-  if (!todayTasks.length) {
-    el.innerHTML = '<div class="agenda-empty">ð­ Keine geplanten Aufgaben fÃ¼r heute.<br>FÃ¼ge einer Aufgabe eine Uhrzeit hinzu.</div>';
-    return;
-  }
-  el.innerHTML = `<div class="agenda-list">${todayTasks.map(t => {
-    const cat = getCategoryById(t.category);
-    return `<div class="agenda-item" data-id="${t.id}">
-      <div class="agenda-time">${t.scheduledTime}</div>
-      <div class="agenda-dot" style="background:${cat ? cat.color : '#94a3b8'}"></div>
-      <div class="agenda-content">
-        <div class="agenda-title">${esc(t.title)}</div>
-        ${cat ? `<div class="agenda-cat">${esc(cat.name)}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('')}</div>`;
-
-  document.querySelectorAll('.agenda-item').forEach(el => {
-    el.addEventListener('click', () => openTaskModal(el.dataset.id));
-  });
-}
-
-// âââ TAGEBUCH ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function renderDiary() {
-  const all = await dbGet('diary');
-  const mf = state.diaryMoodFilter;
-  const entries = all
-    .filter(e => !mf || String(e.mood) === mf)
-    .sort((a,b) => b.date.localeCompare(a.date));
-
-  const moodEmoji = {1:'ð',2:'ð',3:'ð'};
-  const el = document.getElementById('diary-list');
-  if (!entries.length) {
-    el.innerHTML = '<div class="diary-empty">ð Noch keine EintrÃ¤ge.</div>';
-    return;
-  }
-  el.innerHTML = entries.map(e => `
-    <div class="diary-card" data-id="${e.id}">
-      <div class="diary-card-head">
-        <div class="diary-card-date">${fmtDateLong(e.date)}</div>
-        <div class="diary-card-preview">${esc(e.text.slice(0,80))}</div>
-        <div class="diary-card-mood">${moodEmoji[e.mood]||'ð'}</div>
-      </div>
-      <div class="diary-card-body">${esc(e.text)}</div>
-      <div class="diary-card-footer">
-        <button class="btn btn-ghost btn-sm diary-edit-btn" data-id="${e.id}">âï¸ Bearbeiten</button>
-        <button class="btn btn-danger btn-sm diary-del-btn" data-id="${e.id}">ðï¸ LÃ¶schen</button>
-      </div>
-    </div>`).join('');
-
-  el.querySelectorAll('.diary-card-head').forEach(h => {
-    h.addEventListener('click', () => h.closest('.diary-card').classList.toggle('open'));
-  });
-  el.querySelectorAll('.diary-edit-btn').forEach(b => {
-    b.addEventListener('click', e => { e.stopPropagation(); openDiaryModal(b.dataset.id); });
-  });
-  el.querySelectorAll('.diary-del-btn').forEach(b => {
-    b.addEventListener('click', async e => {
-      e.stopPropagation();
-      if (!confirm('Eintrag lÃ¶schen?')) return;
-      await dbDelete('diary', b.dataset.id);
-      renderDiary();
-      triggerAutoSync();
-    });
-  });
-}
-
-async function openDiaryModal(id) {
-  const entry = id ? await dbGet('diary', id) : null;
-  document.getElementById('diary-modal-title').textContent = entry ? 'Eintrag bearbeiten' : 'Neuer Eintrag';
-  document.getElementById('diary-id').value = entry ? entry.id : '';
-  document.getElementById('diary-date').value = entry ? entry.date : new Date().toISOString().slice(0,10);
-  document.getElementById('diary-text').value = entry ? entry.text : '';
-  const mood = entry ? entry.mood : 1;
-  document.getElementById('diary-mood').value = mood;
-  document.querySelectorAll('[data-diary-mood]').forEach(b => b.classList.toggle('active', Number(b.dataset.diaryMood) === mood));
-  openModal('overlay-diary');
-  document.getElementById('diary-text').focus();
-}
-
-async function saveDiary() {
-  const text = document.getElementById('diary-text').value.trim();
-  if (!text) { toast('Bitte Text eingeben'); return; }
-  const id = document.getElementById('diary-id').value || uid();
-  const existing = id ? await dbGet('diary', id) : null;
-  await dbPut('diary', {
-    id,
-    date: document.getElementById('diary-date').value,
-    text,
-    mood: Number(document.getElementById('diary-mood').value) || 1,
-    createdAt: existing ? existing.createdAt : Date.now(),
-  });
-  closeModal('overlay-diary');
-  renderDiary();
-  triggerAutoSync();
-  toast('Gespeichert â');
-}
-
-// âââ PATIENTEN âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-const STATUS_KEYS = ['kogu','ambulant','wohn','tagessprache'];
-const STATUS_LABELS = {kogu:'Kogu bis',ambulant:'Ambulante Therapie',wohn:'Wohnsituation',tagessprache:'Tagessprache'};
-const STATUS_STATES = ['pending','ok','problem'];
-const STATUS_ICONS = {pending:'â³',ok:'â',problem:'â'};
-
-function showPatientList() {
-  document.getElementById('patient-list').style.display = '';
-  document.getElementById('patient-detail').classList.remove('active');
-  state.currentPatientId = null;
-}
-
-function showPatientDetail(id) {
-  state.currentPatientId = id;
-  document.getElementById('patient-list').style.display = 'none';
-  document.getElementById('patient-detail').classList.add('active');
-  renderPatientDetail(id);
-}
-
-async function renderPatients() {
-  const q = document.getElementById('patient-search-input').value.toLowerCase();
-  const patients = await dbGet('patients');
-  const filtered = patients.filter(p => !q || p.id.toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q));
-  const grid = document.getElementById('patient-grid');
-  if (!filtered.length) {
-    grid.innerHTML = '<div style="color:var(--text-3);font-size:14px;padding:20px 0">Keine Patienten gefunden.</div>';
-    return;
-  }
-  grid.innerHTML = filtered.map(p => {
-    const pills = STATUS_KEYS.map(k => {
-      const s = p.statuses?.[k] || 'pending';
-      return `<span class="ps-pill ps-${s}">${STATUS_LABELS[k]}: ${STATUS_ICONS[s]}</span>`;
-    }).join('');
-    return `<div class="patient-card" data-id="${p.id}">
-      <div class="patient-id">${esc(p.id)}</div>
-      <div class="patient-name">${esc(p.name||'â')}</div>
-      <div class="patient-statuses">${pills}</div>
-    </div>`;
-  }).join('');
-  grid.querySelectorAll('.patient-card').forEach(c => {
-    c.addEventListener('click', () => showPatientDetail(c.dataset.id));
-  });
-}
-
-async function renderPatientDetail(pid) {
-  const p = await dbGet('patients', pid);
-  if (!p) { showPatientList(); return; }
-  document.getElementById('pd-id').textContent = p.id;
-  document.getElementById('pd-name').textContent = p.name || 'â';
-
-  // Status buttons
-  const sb = document.getElementById('pd-status-btns');
-  sb.innerHTML = STATUS_KEYS.map(k => {
-    const s = p.statuses?.[k] || 'pending';
-    return `<button class="pd-status-btn s-${s}" data-key="${k}">
-      <span class="pd-status-label">${STATUS_LABELS[k]}</span>
-      <span class="pd-status-val">${STATUS_ICONS[s]} ${s==='pending'?'Offen':s==='ok'?'OK':'Problem'}</span>
-    </button>`;
-  }).join('');
-  sb.querySelectorAll('.pd-status-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const k = btn.dataset.key;
-      const cur = p.statuses?.[k] || 'pending';
-      const next = STATUS_STATES[(STATUS_STATES.indexOf(cur) + 1) % 3];
-      if (!p.statuses) p.statuses = {};
-      p.statuses[k] = next;
-      p.updatedAt = Date.now();
-      await dbPut('patients', p);
-      renderPatientDetail(pid);
-      triggerAutoSync();
-    });
-  });
-
-  // Notes
-  const nl = document.getElementById('pd-notes-list');
-  const notes = p.notes || [];
-  nl.innerHTML = notes.length ? notes.map((n, i) => `
-    <div class="pd-note-item">
-      <div class="pd-note-date">${fmtDateLong(n.date)}</div>
-      <div class="pd-note-text">${esc(n.text)}</div>
-      <div class="pd-note-actions">
-        <button class="btn btn-ghost btn-sm" data-note-edit="${i}">âï¸</button>
-        <button class="btn btn-danger btn-sm" data-note-del="${i}">ðï¸</button>
-      </div>
-    </div>`).join('') : '<div class="pd-notes-empty">Noch keine Notizen.</div>';
-
-  nl.querySelectorAll('[data-note-edit]').forEach(b => {
-    b.addEventListener('click', () => openNoteModal(pid, Number(b.dataset.noteEdit)));
-  });
-  nl.querySelectorAll('[data-note-del]').forEach(b => {
-    b.addEventListener('click', async () => {
-      if (!confirm('Notiz lÃ¶schen?')) return;
-      p.notes.splice(Number(b.dataset.noteDel), 1);
-      p.updatedAt = Date.now();
-      await dbPut('patients', p);
-      renderPatientDetail(pid);
-      triggerAutoSync();
-    });
-  });
-}
-
-function openPatientModal(id) {
-  document.getElementById('patient-edit-id').value = id || '';
-  document.getElementById('patient-modal-title').textContent = id ? 'Patient bearbeiten' : 'Neuer Patient';
-  document.getElementById('patient-pid').value = '';
-  document.getElementById('patient-name').value = '';
-  if (id) {
-    dbGet('patients', id).then(p => {
-      if (p) {
-        document.getElementById('patient-pid').value = p.id;
-        document.getElementById('patient-name').value = p.name || '';
-      }
-    });
-  }
-  openModal('overlay-patient');
-}
-
-async function savePatient() {
-  const pid = document.getElementById('patient-pid').value.toUpperCase().trim();
-  if (!/^[A-Z]{3}\d{4}$/.test(pid)) { toast('ID muss 3 GroÃbuchstaben + 4 Ziffern sein (z.B. MUS1234)'); return; }
-  const name = document.getElementById('patient-name').value.trim();
-  const editId = document.getElementById('patient-edit-id').value;
-  const existing = editId ? await dbGet('patients', editId) : null;
-  const patient = {
-    id: pid,
-    name,
-    statuses: existing ? (existing.statuses || {}) : {},
-    notes: existing ? (existing.notes || []) : [],
-    createdAt: existing ? existing.createdAt : Date.now(),
-    updatedAt: Date.now(),
-  };
-  if (editId && editId !== pid) await dbDelete('patients', editId);
-  await dbPut('patients', patient);
-  closeModal('overlay-patient');
-  renderPatients();
-  if (state.currentPatientId) renderPatientDetail(pid);
-  triggerAutoSync();
-  toast('Gespeichert â');
-}
-
-function openNoteModal(pid, idx) {
-  document.getElementById('note-patient-id').value = pid;
-  document.getElementById('note-index').value = idx !== undefined ? idx : -1;
-  document.getElementById('note-date').value = new Date().toISOString().slice(0,10);
-  document.getElementById('note-text').value = '';
-  if (idx !== undefined) {
-    dbGet('patients', pid).then(p => {
-      if (p && p.notes && p.notes[idx]) {
-        document.getElementById('note-date').value = p.notes[idx].date || '';
-        document.getElementById('note-text').value = p.notes[idx].text || '';
-      }
-    });
-  }
-  openModal('overlay-note');
-}
-
-async function saveNote() {
-  const pid = document.getElementById('note-patient-id').value;
-  const idx = Number(document.getElementById('note-index').value);
-  const text = document.getElementById('note-text').value.trim();
-  if (!text) { toast('Bitte Text eingeben'); return; }
-  const p = await dbGet('patients', pid);
-  if (!p) return;
-  if (!p.notes) p.notes = [];
-  const note = { date: document.getElementById('note-date').value, text };
-  if (idx >= 0) p.notes[idx] = note; else p.notes.push(note);
-  p.updatedAt = Date.now();
-  await dbPut('patients', p);
-  closeModal('overlay-note');
-  renderPatientDetail(pid);
-  triggerAutoSync();
-  toast('Notiz gespeichert â');
-}
-
-// âââ ROADMAP âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function renderRoadmap() {
-  const el = document.getElementById('roadmap-content');
-  el.innerHTML = '<div class="roadmap-loading">â³ Lade Roadmapâ¦</div>';
-  const token = await S.get('ghToken','');
-  const url = 'https://api.github.com/repos/ctmos/dispatch-memory/contents/BUILDBACKLOG.md';
-  try {
-    const headers = { 'Accept': 'application/vnd.github.v3.raw' };
-    if (token) headers['Authorization'] = 'token ' + token;
-    const res = await fetch(url, { headers });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const md = await res.text();
-    el.innerHTML = renderMarkdown(md);
-  } catch (e) {
-    el.innerHTML = `<div class="roadmap-error">â  Konnte Roadmap nicht laden: ${esc(e.message)}<br><small>Stelle sicher, dass ein GitHub-Token in den Einstellungen hinterlegt ist.</small></div>`;
-  }
-}
-
-function renderMarkdown(md) {
-  let html = md
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-  // Code blocks
-  html = html.replace(/```[\w]*\n([\s\S]*?)```/g, (_,c) => `<pre><code>${c}</code></pre>`);
-  // Inline code
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-  // Headings
-  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-  // Blockquote
-  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
-  // HR
-  html = html.replace(/^---+$/gm, '<hr>');
-  // Bold/italic
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-  // Checkboxes
-  html = html.replace(/^- \[x\] (.+)$/gm, '<li><input type="checkbox" checked disabled class="md-cb"> $1</li>');
-  html = html.replace(/^- \[ \] (.+)$/gm, '<li><input type="checkbox" disabled class="md-cb"> $1</li>');
-  // Lists
-  html = html.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>');
-  // Wrap consecutive li
-  html = html.replace(/(<li>[\s\S]*?<\/li>)(\n(?!<li>)|$)/g, '<ul>$1</ul>$2');
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-  // Paragraphs
-  html = html.split(/\n{2,}/).map(block => {
-    if (/^<(h[1-6]|ul|ol|pre|blockquote|hr)/.test(block.trim())) return block;
-    if (block.trim() === '') return '';
-    return '<p>' + block.replace(/\n/g,'<br>') + '</p>';
-  }).join('\n');
-  return html;
-}
-
-// âââ EINSTELLUNGEN âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function renderSettings() {
-  document.getElementById('s-gh-token').value = await S.get('ghToken','');
-  document.getElementById('s-gh-repo').value = await S.get('ghRepo','ctmos/CoworkKanban');
-  const autoSync = await S.get('autoSync', false);
-  state.autoSync = autoSync === true || autoSync === 'true';
-  document.getElementById('s-auto-sync').classList.toggle('on', state.autoSync);
-  // password lock â no toggle, always active
-}
-
-async function saveSettings() {
-  await S.set('ghToken', document.getElementById('s-gh-token').value.trim());
-  await S.set('ghRepo', document.getElementById('s-gh-repo').value.trim());
-  await S.set('autoSync', state.autoSync);
-  toast('Einstellungen gespeichert â');
-}
-
-// âââ CATEGORIES MODAL ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function renderCatModal() {
-  await loadCategories();
-  const tasks = await dbGet('tasks');
-  const el = document.getElementById('cat-list-modal');
-  if (!state.categories.length) { el.innerHTML = '<div style="padding:16px;color:var(--text-3);font-size:13px">Keine Kategorien</div>'; return; }
-  el.innerHTML = state.categories.map(c => {
-    const count = tasks.filter(t => t.category === c.id).length;
-    return `<div class="cat-row">
-      <div class="cat-color-swatch" style="background:${c.color}"></div>
-      <div class="cat-row-name">${esc(c.name)}</div>
-      <div class="cat-row-count">${count}</div>
-      <button class="btn btn-ghost btn-sm cat-del-btn" data-id="${c.id}">ðï¸</button>
-    </div>`;
-  }).join('');
-  el.querySelectorAll('.cat-del-btn').forEach(b => {
-    b.addEventListener('click', async () => {
-      if (!confirm('Kategorie lÃ¶schen?')) return;
-      await dbDelete('categories', b.dataset.id);
-      await loadCategories();
-      renderCatModal();
-      renderKanban();
-    });
-  });
-}
-
-// âââ GITHUB SYNC âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function getGhHeaders() {
-  const token = await S.get('ghToken','');
-  return { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' };
-}
-
-async function ghGet(repo, path) {
-  const url = `https://api.github.com/repos/${repo}/contents/${path}`;
-  const res = await fetch(url, { headers: await getGhHeaders() });
-  if (!res.ok) throw new Error('GH GET ' + res.status);
-  return res.json();
-}
-
-async function ghPut(repo, path, content, sha='') {
-  const url = `https://api.github.com/repos/${repo}/contents/${path}`;
-  const body = { message: 'sync: cowork data update', content: btoa(unescape(encodeURIComponent(JSON.stringify(content,null,2)))), ...(sha ? {sha} : {}) };
-  const res = await fetch(url, { method: 'PUT', headers: await getGhHeaders(), body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('GH PUT ' + res.status);
-  return res.json();
-}
-
-async function syncToGitHub() {
-  try {
-    const repo = await S.get('ghRepo', 'ctmos/CoworkKanban');
-    const [tasks, diary, patients, categories] = await Promise.all([
-      dbGet('tasks'), dbGet('diary'), dbGet('patients'), dbGet('categories')
-    ]);
-    const data = { tasks, diary, patients, categories, updatedAt: Date.now() };
-    let sha = '';
-    try { const r = await ghGet(repo, 'data/cowork.json'); sha = r.sha; } catch {}
-    await ghPut(repo, 'data/cowork.json', data, sha);
-    state.syncOk = true;
-    updateSyncUI('ok', 'Sync OK ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
-    toast('Synchronisiert â');
-  } catch (e) {
-    state.syncOk = false;
-    updateSyncUI('err', 'Sync fehlgeschlagen');
-    toast('Sync-Fehler: ' + e.message, 3500);
-  }
-}
-
-function updateSyncUI(status, label) {
-  const dot = document.getElementById('sync-dot');
-  const lbl = document.getElementById('sync-label');
-  if (dot) { dot.className = 'sync-dot ' + status; }
-  if (lbl) lbl.textContent = label;
-}
-
-async function triggerAutoSync() {
-  if (state.autoSync || (await S.get('autoSync',false)) === 'true') syncToGitHub();
-}
-
-// âââ PASSWORD LOCK ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-const PW_SESSION_KEY = 'pwUnlockTime';
-const PW_HASH_KEY    = 'pwHash';
-const PW_FAIL_KEY    = 'pwFailCount';
-const PW_FAIL_TS_KEY = 'pwFailTime';
-const SESSION_MS     = 24 * 60 * 60 * 1000;
-const LOCKOUT_MS     = 30 * 1000;
-const MAX_FAILS      = 3;
-const DEFAULT_PW     = 'cowork2026';
-
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
-async function initPin() {
-  let stored = await S.get(PW_HASH_KEY, null);
-  if (!stored) {
-    stored = await sha256(DEFAULT_PW);
-    await S.set(PW_HASH_KEY, stored);
-  }
-  const unlockTime = parseInt(await S.get(PW_SESSION_KEY, '0') || '0', 10);
-  if (Date.now() - unlockTime < SESSION_MS) { unlockApp(); return; }
-  document.getElementById('pin-overlay').style.display = 'flex';
-  document.getElementById('pw-input').focus();
-}
-
-function unlockApp() {
-  document.getElementById('pin-overlay').style.display = 'none';
-  document.getElementById('app').classList.add('ready');
-}
-
-function lockApp() {
-  S.set(PW_SESSION_KEY, '0');
-  document.getElementById('pin-overlay').style.display = 'flex';
-  document.getElementById('pw-input').value = '';
-  document.getElementById('pin-error').textContent = '';
-  document.getElementById('pw-input').focus();
-}
-
-async function handleUnlock() {
-  const errEl = document.getElementById('pin-error');
-  const failCount = parseInt(await S.get(PW_FAIL_KEY, '0') || '0', 10);
-  const failTime  = parseInt(await S.get(PW_FAIL_TS_KEY, '0') || '0', 10);
-  const elapsed   = Date.now() - failTime;
-  if (failCount >= MAX_FAILS && elapsed < LOCKOUT_MS) {
-    const secs = Math.ceil((LOCKOUT_MS - elapsed) / 1000);
-    errEl.textContent = 'Zu viele Versuche. Bitte ' + secs + 's warten.';
-    return;
-  }
-  if (failCount >= MAX_FAILS && elapsed >= LOCKOUT_MS) {
-    await S.set(PW_FAIL_KEY, '0'); await S.set(PW_FAIL_TS_KEY, '0');
-  }
-  const entered = document.getElementById('pw-input').value;
-  if (!entered) { errEl.textContent = 'Bitte Passwort eingeben.'; return; }
-  const enteredHash = await sha256(entered);
-  const storedHash  = await S.get(PW_HASH_KEY, await sha256(DEFAULT_PW));
-  if (enteredHash === storedHash) {
-    await S.set(PW_FAIL_KEY, '0'); await S.set(PW_FAIL_TS_KEY, '0');
-    await S.set(PW_SESSION_KEY, String(Date.now()));
-    document.getElementById('pw-input').value = '';
-    errEl.textContent = '';
-    unlockApp();
-  } else {
-    document.getElementById('pw-input').value = '';
-    const newFails = failCount + 1;
-    await S.set(PW_FAIL_KEY, String(newFails));
-    await S.set(PW_FAIL_TS_KEY, String(Date.now()));
-    if (newFails >= MAX_FAILS) {
-      errEl.textContent = 'Falsches Passwort. Bitte ' + (LOCKOUT_MS/1000) + 's warten.';
-    } else {
-      const left = MAX_FAILS - newFails;
-      errEl.textContent = 'Falsches Passwort. (' + left + ' Versuch' + (left !== 1 ? 'e' : '') + ' Ã¼brig)';
-      setTimeout(() => { errEl.textContent = ''; }, 2500);
-    }
-  }
-}
-
-async function savePinSetup() {
-  const oldPw = document.getElementById('old-pw').value;
-  const p1    = document.getElementById('new-pin').value;
-  const p2    = document.getElementById('new-pin-confirm').value;
-  if (!oldPw) { toast('Bitte aktuelles Passwort eingeben'); return; }
-  const oldHash    = await sha256(oldPw);
-  const storedHash = await S.get(PW_HASH_KEY, await sha256(DEFAULT_PW));
-  if (oldHash !== storedHash) { toast('Aktuelles Passwort falsch'); return; }
-  if (!p1 || p1.length < 4) { toast('Neues Passwort muss mind. 4 Zeichen haben'); return; }
-  if (p1 !== p2) { toast('PasswÃ¶rter stimmen nicht Ã¼berein'); return; }
-  await S.set(PW_HASH_KEY, await sha256(p1));
-  document.getElementById('old-pw').value = '';
-  document.getElementById('new-pin').value = '';
-  document.getElementById('new-pin-confirm').value = '';
-  closeModal('overlay-pin-setup');
-  toast('Passwort gespeichert â');
-}
-
-// âââ Utility âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function fmtDate(d) {
-  if (!d) return '';
-  const [y,m,dd] = d.split('-');
-  return `${dd}.${m}.${y}`;
-}
-
-function fmtDateLong(d) {
-  if (!d) return '';
-  try { return new Date(d + 'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'long',year:'numeric'}); } catch { return d; }
-}
-
-// âââ Event Listeners âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function attachListeners() {
-  // Nav items (sidebar + bottom)
-  document.querySelectorAll('.nav-item[data-view], .bn-item[data-view]').forEach(el => {
-    el.addEventListener('click', () => navigate(el.dataset.view));
-    el.addEventListener('touchend', e => { e.preventDefault(); navigate(el.dataset.view); });
-  });
-
-  // Burger menu
-  const burger = document.getElementById('burger-btn');
-  burger.addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('sidebar-overlay').classList.toggle('open');
-  });
-  burger.addEventListener('touchend', e => { e.preventDefault(); burger.click(); });
-
-  // Sidebar overlay close
-  const sidebarOverlay = document.getElementById('sidebar-overlay');
-  sidebarOverlay.addEventListener('click', closeSidebar);
-  sidebarOverlay.addEventListener('touchend', e => { e.preventDefault(); closeSidebar(); });
-
-  // Sync buttons
-  document.getElementById('header-sync-btn').addEventListener('click', syncToGitHub);
-  document.getElementById('sync-now-btn').addEventListener('click', syncToGitHub);
-
-  // FAB
-  const fab = document.getElementById('fab');
-  fab.addEventListener('click', () => {
-    if (state.view === 'kanban' || state.view === 'tagesplan') openTaskModal();
-    else if (state.view === 'tagebuch') openDiaryModal();
-    else if (state.view === 'patienten' && !state.currentPatientId) openPatientModal();
-    else if (state.view === 'patienten' && state.currentPatientId) openNoteModal(state.currentPatientId);
-  });
-  fab.addEventListener('touchend', e => { e.preventDefault(); fab.click(); });
-
-  // Kanban add buttons
-  document.getElementById('add-task-btn-desk').addEventListener('click', () => openTaskModal());
-  document.getElementById('add-task-tagesplan-btn').addEventListener('click', () => openTaskModal());
-  document.getElementById('manage-cats-btn').addEventListener('click', () => { renderCatModal(); openModal('overlay-category'); });
-
-  // Task modal save/delete
-  document.getElementById('task-save-btn').addEventListener('click', saveTask);
-  document.getElementById('task-delete-btn').addEventListener('click', () => {
-    const id = document.getElementById('task-id').value;
-    if (id) deleteTask(id);
-  });
-
-  // Diary
-  document.getElementById('add-diary-btn-desk').addEventListener('click', () => openDiaryModal());
-  document.getElementById('diary-save-btn').addEventListener('click', saveDiary);
-  document.querySelectorAll('[data-diary-mood]').forEach(b => {
-    b.addEventListener('click', () => {
-      const m = Number(b.dataset.diaryMood);
-      document.getElementById('diary-mood').value = m;
-      document.querySelectorAll('[data-diary-mood]').forEach(x => x.classList.toggle('active', Number(x.dataset.diaryMood) === m));
-    });
-  });
-  document.querySelectorAll('.mood-chip[data-mood]').forEach(c => {
-    c.addEventListener('click', () => {
-      state.diaryMoodFilter = c.dataset.mood;
-      document.querySelectorAll('.mood-chip[data-mood]').forEach(x => x.classList.toggle('active', x.dataset.mood === c.dataset.mood));
-      renderDiary();
-    });
-  });
-
-  // Patients
-  document.getElementById('add-patient-btn-desk').addEventListener('click', () => openPatientModal());
-  document.getElementById('patient-save-btn').addEventListener('click', savePatient);
-  document.getElementById('patient-search-input').addEventListener('input', renderPatients);
-  document.getElementById('pd-back-btn').addEventListener('click', () => { showPatientList(); renderPatients(); });
-  document.getElementById('pd-add-note-btn').addEventListener('click', () => openNoteModal(state.currentPatientId));
-  document.getElementById('pd-edit-btn').addEventListener('click', () => openPatientModal(state.currentPatientId));
-  document.getElementById('pd-delete-btn').addEventListener('click', async () => {
-    if (!confirm('Patient lÃ¶schen?')) return;
-    await dbDelete('patients', state.currentPatientId);
-    showPatientList();
-    renderPatients();
-    triggerAutoSync();
-  });
-  document.getElementById('note-save-btn').addEventListener('click', saveNote);
-
-  // Roadmap refresh
-  document.getElementById('roadmap-refresh-btn').addEventListener('click', renderRoadmap);
-
-  // Settings
-  document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
-  document.getElementById('s-auto-sync').addEventListener('click', function() {
-    state.autoSync = !state.autoSync;
-    this.classList.toggle('on', state.autoSync);
-    S.set('autoSync', state.autoSync);
-  });
-  document.getElementById('change-pin-btn').addEventListener('click', () => openModal('overlay-pin-setup'));
-  document.getElementById('pin-setup-save-btn').addEventListener('click', savePinSetup);
-  document.getElementById('lock-now-btn').addEventListener('click', () => { lockApp(); navigate('kanban'); });
-  document.getElementById('clear-data-btn').addEventListener('click', async () => {
-    if (!confirm('Alle Daten unwiderruflich lÃ¶schen?')) return;
-    for (const s of ['tasks','categories','diary','patients']) await dbClear(s);
-    await loadCategories();
-    renderKanban();
-    toast('Daten gelÃ¶scht');
-  });
-
-  // Category modal
-  document.getElementById('add-cat-btn').addEventListener('click', async () => {
-    const name = document.getElementById('new-cat-name').value.trim();
-    if (!name) { toast('Bitte Namen eingeben'); return; }
-    const color = document.getElementById('new-cat-color').value;
-    await dbPut('categories', {id: uid(), name, color});
-    document.getElementById('new-cat-name').value = '';
-    await loadCategories();
-    renderCatModal();
-  });
-
-  // Modal close buttons
-  document.querySelectorAll('[data-close]').forEach(btn => {
-    btn.addEventListener('click', () => closeModal(btn.dataset.close));
-    btn.addEventListener('touchend', e => { e.preventDefault(); closeModal(btn.dataset.close); });
-  });
-  // Click overlay backdrop to close
-  document.querySelectorAll('.overlay').forEach(ov => {
-    ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); });
-  });
-
-  // Password lock
-  document.getElementById('pw-unlock-btn').addEventListener('click', handleUnlock);
-  document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleUnlock(); });
-}
-
-// âââ Service Worker âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function registerSW() {
-  if (!('serviceWorker' in navigator)) return;
-  const swCode = `
-const CACHE='cowork-v8.3';
-self.addEventListener('install',e=>e.waitUntil(
-  caches.open(CACHE).then(c=>c.addAll(['/']))
-  .catch(()=>{})
-));
-self.addEventListener('activate',e=>e.waitUntil(
-  caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
-));
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
-});`;
-  try {
-    const blob = new Blob([swCode],{type:'application/javascript'});
-    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
-  } catch {}
-}
-
-// âââ INIT âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-async function init() {
-  await loadCategories();
-  attachListeners();
-  await initPin();
-  // If no PIN, app is shown; render initial view
-  if (document.getElementById('app').classList.contains('ready')) {
-    renderKanban();
-  }
-  registerSW();
-}
-
-document.addEventListener('DOMContentLoaded', init);
+const REPO='ctmos/CoworkKanban',DATA_FILE='cowork-data.json',DEFAULT_PIN='cowork2026',SESSION_KEY='cowork_session',PIN_KEY='cowork_pin_hash',TOKEN_KEY='cowork_token',SESSION_DURATION=86400000,LOCKOUT_KEY='cowork_lockout',ATTEMPTS_KEY='cowork_attempts',MAX_ATTEMPTS=5,LOCKOUT_DURATION=300000;
+const DEFAULT_DATA={version:1,lastUpdated:new Date().toISOString(),kanban:{columns:['Offen','In Arbeit','Erledigt'],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[{id:'1',name:'Klinik',color:'#22c55e'},{id:'2',name:'Allgemein',color:'#2563eb'},{id:'3',name:'Privat',color:'#f59e0b'}],einstellungen:{githubToken:'',theme:'light'}};
+let appData=null,currentTab='kanban',selectedMood=3,dragCard=null,fileSHA=null;
+function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36);}
+function formatDate(iso){return new Date(iso).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function showToast(msg,dur){dur=dur||2500;const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+async function sha256(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+let pinBuffer='';
+async function initPin(){let hash=localStorage.getItem(PIN_KEY);if(!hash){hash=await sha256(DEFAULT_PIN);localStorage.setItem(PIN_KEY,hash);}const session=localStorage.getItem(SESSION_KEY);if(session){try{const s=JSON.parse(session);if(Date.now()-s.ts<SESSION_DURATION){unlockApp();return;}}catch(e){}}updatePinDots();}
+function updatePinDots(){for(let i=0;i<4;i++){const d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<pinBuffer.length);}}
+function pinKey(k){const lo=localStorage.getItem(LOCKOUT_KEY);if(lo&&Date.now()<parseInt(lo)){const rem=Math.ceil((parseInt(lo)-Date.now())/1000);document.getElementById('pin-error').textContent='Gesperrt — noch '+rem+'s';return;}if(pinBuffer.length>=6)return;pinBuffer+=k;updatePinDots();if(pinBuffer.length>=4)setTimeout(checkPin,150);}
+function pinDelete(){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();document.getElementById('pin-error').textContent='';}
+async function checkPin(){const hash=await sha256(pinBuffer);const stored=localStorage.getItem(PIN_KEY);if(hash===stored){localStorage.setItem(SESSION_KEY,JSON.stringify({ts:Date.now()}));localStorage.removeItem(ATTEMPTS_KEY);localStorage.removeItem(LOCKOUT_KEY);unlockApp();}else{pinBuffer='';updatePinDots();let att=parseInt(localStorage.getItem(ATTEMPTS_KEY)||'0')+1;localStorage.setItem(ATTEMPTS_KEY,att);if(att>=MAX_ATTEMPTS){localStorage.setItem(LOCKOUT_KEY,Date.now()+LOCKOUT_DURATION);localStorage.removeItem(ATTEMPTS_KEY);document.getElementById('pin-error').textContent='Zu viele Versuche — 5 Minuten gesperrt';}else{document.getElementById('pin-error').textContent='Falscher PIN ('+att+'/'+MAX_ATTEMPTS+')';}}}
+function unlockApp(){document.getElementById('pin-screen').style.display='none';document.getElementById('app').classList.add('visible');initApp();}
+function getToken(){if(appData&&appData.einstellungen&&appData.einstellungen.githubToken)return appData.einstellungen.githubToken;return localStorage.getItem(TOKEN_KEY)||'';}
+async function githubGet(path){const tok=getToken();const h={'Accept':'application/vnd.github.v3+json'};if(tok)h['Authorization']='token '+tok;return fetch('https://api.github.com/repos/'+REPO+'/contents/'+path,{headers:h});}
+async function githubPut(path,content,message,sha){const tok=getToken();const h={'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};if(tok)h['Authorization']='token '+tok;const body={message,content};if(sha)body.sha=sha;return fetch('https://api.github.com/repos/'+REPO+'/contents/'+path,{method:'PUT',headers:h,body:JSON.stringify(body)});}
+function encodeForGitHub(str){return btoa(unescape(encodeURIComponent(str)));}
+async function loadData(){try{const resp=await githubGet(DATA_FILE);if(resp.status===404){appData=JSON.parse(JSON.stringify(DEFAULT_DATA));const lsTok=localStorage.getItem(TOKEN_KEY);if(lsTok)appData.einstellungen.githubToken=lsTok;await saveData('init: create cowork-data.json');}else if(resp.ok){const json=await resp.json();fileSHA=json.sha;const content=decodeURIComponent(escape(atob(json.content.replace(/
+/g,''))));appData=JSON.parse(content);if(!appData.kanban)appData.kanban=JSON.parse(JSON.stringify(DEFAULT_DATA.kanban));if(!appData.heute)appData.heute={tasks:{}};if(!appData.heute.tasks)appData.heute.tasks={};if(!appData.tagebuch)appData.tagebuch=[];if(!appData.patienten)appData.patienten=[];if(!appData.kategorien)appData.kategorien=JSON.parse(JSON.stringify(DEFAULT_DATA.kategorien));if(!appData.einstellungen)appData.einstellungen={githubToken:'',theme:'light'};if(!appData.einstellungen.githubToken){const lsTok=localStorage.getItem(TOKEN_KEY);if(lsTok)appData.einstellungen.githubToken=lsTok;}}else{throw new Error('HTTP '+resp.status);}}catch(e){console.warn('loadData:',e);if(!appData){appData=JSON.parse(JSON.stringify(DEFAULT_DATA));const lsTok=localStorage.getItem(TOKEN_KEY);if(lsTok)appData.einstellungen.githubToken=lsTok;}showToast('Offline-Modus',3000);}}
+async function saveData(msg){if(!appData)return;appData.lastUpdated=new Date().toISOString();if(appData.einstellungen&&appData.einstellungen.githubToken)localStorage.setItem(TOKEN_KEY,appData.einstellungen.githubToken);const content=encodeForGitHub(JSON.stringify(appData,null,2));try{const resp=await githubPut(DATA_FILE,content,msg||'update: cowork-data.json',fileSHA);if(resp.ok){const json=await resp.json();fileSHA=json.content.sha;}else{const err=await resp.json();console.error('saveData:',err);if(resp.status===409){showToast('Konflikt — lade neu...',2000);await loadData();}}}catch(e){console.warn('saveData:',e);}}
+async function syncData(){const ic=document.querySelector('#sync-btn svg');if(ic)ic.classList.add('syncing');showToast('Synchronisiere...');await loadData();renderAll();if(ic)ic.classList.remove('syncing');showToast('Synchronisiert');}
+async function initApp(){showToast('Lade Daten...',2000);await loadData();applyTheme();renderAll();checkMigration();document.getElementById('heute-date').textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});if(appData.einstellungen&&appData.einstellungen.githubToken)document.getElementById('github-token-input').value=appData.einstellungen.githubToken;showToast('Willkommen!',1500);}
+function renderAll(){renderKanban();renderHeute();renderTagebuch();renderPatienten();applyTheme();}
+function applyTheme(){if(!appData)return;const t=(appData.einstellungen&&appData.einstellungen.theme)||'light';document.documentElement.setAttribute('data-theme',t);const tg=document.getElementById('theme-toggle');if(tg)tg.classList.toggle('on',t==='dark');}
+function switchTab(tab){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');document.getElementById('nav-'+tab).classList.add('active');currentTab=tab;const fab=document.getElementById('fab');fab.style.display=['kanban','heute','tagebuch','patienten'].includes(tab)?'flex':'none';}
+function openAddModal(){if(currentTab==='kanban')openCardModal(null);else if(currentTab==='heute')openHeuteModal();else if(currentTab==='tagebuch')openEntryModal(null);else if(currentTab==='patienten')openPatientModal(null);}
+function renderKanban(){if(!appData)return;const scroll=document.getElementById('kanban-scroll');scroll.innerHTML='';appData.kanban.columns.forEach(col=>{const cards=appData.kanban.cards.filter(c=>c.column===col);const colEl=document.createElement('div');colEl.className='kanban-col';colEl.dataset.col=col;colEl.innerHTML='<div class="kanban-col-header"><span>'+escHtml(col)+'</span><span class="col-count">'+cards.length+'</span></div><div class="kanban-cards" id="col-'+col.replace(/s/g,'-')+'"></div>';const cd=colEl.querySelector('.kanban-cards');cd.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';});cd.addEventListener('drop',e=>{e.preventDefault();dropCard(col);});cd.addEventListener('touchend',e=>touchDrop(e,col));cards.forEach(card=>cd.appendChild(createKanbanCard(card)));scroll.appendChild(colEl);});}
+function createKanbanCard(card){const el=document.createElement('div');el.className='kanban-card';el.draggable=true;el.dataset.id=card.id;const cat=appData.kategorien.find(k=>k.id===card.categoryId);const prioClass={low:'priority-low',medium:'priority-medium',high:'priority-high'}[card.priority]||'';const prioLabel={low:'Niedrig',medium:'Mittel',high:'Hoch'}[card.priority]||'';let catBadge=cat?'<span class="badge"><span class="badge-dot" style="background:'+cat.color+'"></span>'+escHtml(cat.name)+'</span>':'';let dueStr=card.due?'<span class="badge" style="background:var(--surface);color:var(--muted);border:1px solid var(--border)">'+formatDate(card.due)+'</span>':'';el.innerHTML='<div class="kanban-card-title">'+escHtml(card.title)+'</div><div class="kanban-card-footer">'+catBadge+'<span class="badge '+prioClass+'">'+prioLabel+'</span>'+dueStr+'</div>';el.addEventListener('dragstart',e=>{dragCard=card;e.dataTransfer.effectAllowed='move';setTimeout(()=>el.classList.add('dragging'),0);});el.addEventListener('dragend',()=>el.classList.remove('dragging'));el.addEventListener('touchstart',touchStart,{passive:true});el.addEventListener('touchmove',touchMove,{passive:false});el.addEventListener('click',()=>openCardModal(card));return el;}
+let touchClone=null,touchOffX=0,touchOffY=0;
+function touchStart(e){const card=appData.kanban.cards.find(c=>c.id===e.currentTarget.dataset.id);if(!card)return;dragCard=card;const touch=e.touches[0];const rect=e.currentTarget.getBoundingClientRect();touchOffX=touch.clientX-rect.left;touchOffY=touch.clientY-rect.top;touchClone=e.currentTarget.cloneNode(true);touchClone.style.cssText='position:fixed;z-index:999;width:'+rect.width+'px;opacity:0.8;pointer-events:none;top:'+rect.top+'px;left:'+rect.left+'px;';document.body.appendChild(touchClone);}
+function touchMove(e){if(!touchClone)return;e.preventDefault();const touch=e.touches[0];touchClone.style.top=(touch.clientY-touchOffY)+'px';touchClone.style.left=(touch.clientX-touchOffX)+'px';}
+function touchDrop(e,col){if(!dragCard)return;dropCard(col);if(touchClone){touchClone.remove();touchClone=null;}dragCard=null;}
+function dropCard(targetCol){if(!dragCard||dragCard.column===targetCol){dragCard=null;return;}const idx=appData.kanban.cards.findIndex(c=>c.id===dragCard.id);if(idx!==-1){appData.kanban.cards[idx].column=targetCol;renderKanban();saveData('update: move card to '+targetCol);}dragCard=null;}
+function openCardModal(card){const catSel=document.getElementById('card-cat');catSel.innerHTML='<option value="">Keine Kategorie</option>';appData.kategorien.forEach(k=>{catSel.innerHTML+='<option value="'+k.id+'">'+escHtml(k.name)+'</option>';});const colSel=document.getElementById('card-col');colSel.innerHTML='';appData.kanban.columns.forEach(col=>{colSel.innerHTML+='<option value="'+escHtml(col)+'">'+escHtml(col)+'</option>';});if(card){document.getElementById('modal-card-title').textContent='Karte bearbeiten';document.getElementById('card-id').value=card.id;document.getElementById('card-title').value=card.title||'';document.getElementById('card-desc').value=card.description||'';document.getElementById('card-cat').value=card.categoryId||'';document.getElementById('card-prio').value=card.priority||'medium';document.getElementById('card-col').value=card.column||appData.kanban.columns[0];document.getElementById('card-due').value=card.due||'';document.getElementById('delete-card-btn').style.display='block';}else{document.getElementById('modal-card-title').textContent='Neue Karte';document.getElementById('card-id').value='';document.getElementById('card-title').value='';document.getElementById('card-desc').value='';document.getElementById('card-cat').value='';document.getElementById('card-prio').value='medium';document.getElementById('card-col').value=appData.kanban.columns[0];document.getElementById('card-due').value='';document.getElementById('delete-card-btn').style.display='none';}openModal('modal-card');}
+async function saveCard(){const title=document.getElementById('card-title').value.trim();if(!title){showToast('Titel erforderlich');return;}const id=document.getElementById('card-id').value;const card={id:id||uid(),title,description:document.getElementById('card-desc').value.trim(),categoryId:document.getElementById('card-cat').value,priority:document.getElementById('card-prio').value,column:document.getElementById('card-col').value,due:document.getElementById('card-due').value,createdAt:id?undefined:new Date().toISOString()};if(id){const idx=appData.kanban.cards.findIndex(c=>c.id===id);if(idx!==-1){card.createdAt=appData.kanban.cards[idx].createdAt;appData.kanban.cards[idx]=card;}}else{appData.kanban.cards.push(card);}closeModal('modal-card');renderKanban();await saveData('update: save kanban card');showToast('Gespeichert');}
+async function deleteCard(){const id=document.getElementById('card-id').value;appData.kanban.cards=appData.kanban.cards.filter(c=>c.id!==id);closeModal('modal-card');renderKanban();await saveData('update: delete kanban card');showToast('Gelöscht');}
+function renderHeute(){if(!appData)return;const key=todayKey();if(!appData.heute)appData.heute={tasks:{}};if(!appData.heute.tasks)appData.heute.tasks={};const tasks=appData.heute.tasks[key]||[];const total=tasks.length;const done=tasks.filter(t=>t.done).length;const pct=total?Math.round(done/total*100):0;document.getElementById('heute-progress').style.width=pct+'%';document.getElementById('heute-label').textContent=done+' von '+total+' erledigt';const list=document.getElementById('heute-tasks');if(!tasks.length){list.innerHTML='<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><p>Keine Aufgaben für heute.<br>Tippe + um eine hinzuzufügen.</p></div>';return;}list.innerHTML='';tasks.forEach((task,i)=>{const el=document.createElement('div');el.className='task-item'+(task.done?' done':'');el.innerHTML='<div class="task-check '+(task.done?'checked':'')+'" onclick="toggleTask(''+key+'','+i+')"></div><span class="task-text">'+escHtml(task.text)+'</span><button class="task-delete" onclick="deleteTask(''+key+'','+i+')" ><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';list.appendChild(el);});}
+function openHeuteModal(){document.getElementById('heute-task-input').value='';openModal('modal-heute');setTimeout(()=>document.getElementById('heute-task-input').focus(),300);}
+async function saveHeuteTask(){const text=document.getElementById('heute-task-input').value.trim();if(!text){showToast('Aufgabe eingeben');return;}const key=todayKey();if(!appData.heute.tasks[key])appData.heute.tasks[key]=[];appData.heute.tasks[key].push({text,done:false,createdAt:new Date().toISOString()});closeModal('modal-heute');renderHeute();await saveData('update: add heute task');}
+async function toggleTask(key,idx){appData.heute.tasks[key][idx].done=!appData.heute.tasks[key][idx].done;renderHeute();await saveData('update: toggle task');}
+async function deleteTask(key,idx){appData.heute.tasks[key].splice(idx,1);renderHeute();await saveData('update: delete task');}
+function renderTagebuch(){if(!appData)return;const list=document.getElementById('tagebuch-list');const entries=(appData.tagebuch||[]).slice().sort((a,b)=>new Date(b.date)-new Date(a.date));if(!entries.length){list.innerHTML='<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>Noch keine Einträge.<br>Tippe + um anzufangen.</p></div>';return;}list.innerHTML='';entries.forEach(entry=>{const el=document.createElement('div');el.className='entry-card';let dots='';for(let i=1;i<=5;i++)dots+='<div class="mood-dot'+(i<=entry.mood?' active':'')+'"></div>';el.innerHTML='<div class="entry-header"><span class="entry-date">'+formatDate(entry.date)+'</span><div class="mood-dots">'+dots+'</div></div><div class="entry-text">'+escHtml(entry.text)+'</div><div class="entry-actions"><button class="btn btn-secondary btn-sm" data-eid="'+entry.id+'" onclick="editEntry(this)">Bearbeiten</button></div>';list.appendChild(el);});}
+function editEntry(btn){const entry=appData.tagebuch.find(e=>e.id===btn.dataset.eid);if(entry)openEntryModal(entry);}
+function openEntryModal(entry){selectedMood=entry?entry.mood:3;document.getElementById('modal-entry-title').textContent=entry?'Eintrag bearbeiten':'Neuer Eintrag';document.getElementById('entry-id').value=entry?entry.id:'';document.getElementById('entry-text').value=entry?entry.text:'';document.getElementById('delete-entry-btn').style.display=entry?'block':'none';updateMoodButtons(selectedMood);openModal('modal-entry');setTimeout(()=>document.getElementById('entry-text').focus(),300);}
+function selectMood(m){selectedMood=m;updateMoodButtons(m);}
+function updateMoodButtons(m){document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===m));}
+async function saveEntry(){const text=document.getElementById('entry-text').value.trim();if(!text){showToast('Eintrag eingeben');return;}const id=document.getElementById('entry-id').value;const entry={id:id||uid(),date:new Date().toISOString(),mood:selectedMood,text};if(id){const idx=appData.tagebuch.findIndex(e=>e.id===id);if(idx!==-1){entry.date=appData.tagebuch[idx].date;appData.tagebuch[idx]=entry;}}else{appData.tagebuch.push(entry);}closeModal('modal-entry');renderTagebuch();await saveData('update: save entry');showToast('Gespeichert');}
+async function deleteEntry(){const id=document.getElementById('entry-id').value;appData.tagebuch=appData.tagebuch.filter(e=>e.id!==id);closeModal('modal-entry');renderTagebuch();await saveData('update: delete entry');showToast('Gelöscht');}
+function renderPatienten(){if(!appData)return;const list=document.getElementById('patienten-list');const pats=appData.patienten||[];if(!pats.length){list.innerHTML='<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>Keine Patienten.<br>Tippe + um hinzuzufügen.</p></div>';return;}list.innerHTML='';pats.forEach(pat=>{const el=document.createElement('div');el.className='patient-card';el.onclick=()=>openPatientModal(pat);let tags='';if(pat.kogu)tags+='<span class="patient-tag">Kogu: '+escHtml(pat.kogu)+'</span>';if(pat.ambulant)tags+='<span class="patient-tag">Amb: '+escHtml(pat.ambulant)+'</span>';if(pat.wohnsituation)tags+='<span class="patient-tag">'+escHtml(pat.wohnsituation)+'</span>';if(pat.sprache)tags+='<span class="patient-tag">'+escHtml(pat.sprache)+'</span>';el.innerHTML='<div class="patient-name">'+escHtml(pat.name)+'</div><div class="patient-tags">'+tags+'</div>'+(pat.notes?'<div class="patient-notes">'+escHtml(pat.notes)+'</div>':'');list.appendChild(el);});}
+function openPatientModal(pat){document.getElementById('modal-patient-title').textContent=pat?'Patient bearbeiten':'Neuer Patient';document.getElementById('patient-id').value=pat?pat.id:'';document.getElementById('patient-name').value=pat?pat.name:'';document.getElementById('patient-kogu').value=pat?(pat.kogu||')':'';document.getElementById('patient-ambulant').value=pat?(pat.ambulant||'):'';document.getElementById('patient-wohn').value=pat?(pat.wohnsituation||'):'';document.getElementById('patient-sprache').value=pat?(pat.sprache||'):'';document.getElementById('patient-notes').value=pat?(pat.notes||'):'';document.getElementById('delete-patient-btn').style.display=pat?'block':'none';openModal('modal-patient');}
+async function savePatient(){const name=document.getElementById('patient-name').value.trim();if(!name){showToast('Name erforderlich');return;}const id=document.getElementById('patient-id').value;const pat={id:id||uid(),name,kogu:document.getElementById('patient-kogu').value.trim(),ambulant:document.getElementById('patient-ambulant').value.trim(),wohnsituation:document.getElementById('patient-wohn').value.trim(),sprache:document.getElementById('patient-sprache').value.trim(),notes:document.getElementById('patient-notes').value.trim(),createdAt:id?undefined:new Date().toISOString()};if(id){const idx=appData.patienten.findIndex(p=>p.id===id);if(idx!==-1){pat.createdAt=appData.patienten[idx].createdAt;appData.patienten[idx]=pat;}}else{appData.patienten.push(pat);}closeModal('modal-patient');renderPatienten();await saveData('update: save patient');showToast('Gespeichert');}
+async function deletePatient(){const id=document.getElementById('patient-id').value;appData.patienten=appData.patienten.filter(p=>p.id!==id);closeModal('modal-patient');renderPatienten();await saveData('update: delete patient');showToast('Gelöscht');}
+async function saveToken(){const val=document.getElementById('github-token-input').value.trim();if(!val){showToast('Token eingeben');return;}if(!appData.einstellungen)appData.einstellungen={};appData.einstellungen.githubToken=val;localStorage.setItem(TOKEN_KEY,val);await saveData('update: save github token');showToast('Token gespeichert');}
+async function toggleTheme(){if(!appData.einstellungen)appData.einstellungen={};appData.einstellungen.theme=appData.einstellungen.theme==='dark'?'light':'dark';applyTheme();await saveData('update: toggle theme');}
+async function loadRoadmap(){const el=document.getElementById('roadmap-content');el.style.display='block';el.textContent='Lade Roadmap...';try{const h={'Accept':'application/vnd.github.v3+json'};const tok=getToken();if(tok)h['Authorization']='token '+tok;const resp=await fetch('https://api.github.com/repos/ctmos/dispatch-memory/contents/BUILDBACKLOG.md',{headers:h});if(resp.ok){const json=await resp.json();el.textContent=decodeURIComponent(escape(atob(json.content.replace(/
+/g,''))));}else{el.textContent='Roadmap nicht gefunden (HTTP '+resp.status+')';}}catch(e){el.textContent='Fehler: '+e.message;}}
+function checkMigration(){const keys=['cowork_tasks','cowork_diary','cowork_patients','coworkKanbanCards'];const found=keys.filter(k=>localStorage.getItem(k));if(!found.length)return;const notice=document.getElementById('migration-notice');notice.style.display='block';notice.innerHTML='<div class="migration-notice"><p>Alte Daten gefunden ('+found.join(', ')+').</p><div style="display:flex;gap:8px"><button class="btn btn-primary btn-sm" onclick="migrateOldData()">Ja, migrieren</button><button class="btn btn-secondary btn-sm" onclick="document.getElementById('migration-notice').style.display='none'">Nein</button></div></div>';}
+async function migrateOldData(){let migrated=false;const oldCards=localStorage.getItem('coworkKanbanCards');if(oldCards){try{JSON.parse(oldCards).forEach(c=>{if(!appData.kanban.cards.find(x=>x.title===(c.title||c.Titel))){appData.kanban.cards.push({id:uid(),title:c.title||c.Titel||'Karte',description:c.description||'',column:c.column||appData.kanban.columns[0],priority:c.priority||'medium',categoryId:'',createdAt:new Date().toISOString()});}});migrated=true;}catch(e){}}const oldTasks=localStorage.getItem('cowork_tasks');if(oldTasks){try{const key=todayKey();if(!appData.heute.tasks[key])appData.heute.tasks[key]=[];JSON.parse(oldTasks).forEach(t=>appData.heute.tasks[key].push({text:t.text||t,done:t.done||false,createdAt:new Date().toISOString()}));migrated=true;}catch(e){}}const oldDiary=localStorage.getItem('cowork_diary');if(oldDiary){try{JSON.parse(oldDiary).forEach(e=>appData.tagebuch.push({id:uid(),date:e.date||new Date().toISOString(),mood:e.mood||3,text:e.text||e.content||''}));migrated=true;}catch(e){}}const oldPats=localStorage.getItem('cowork_patients');if(oldPats){try{JSON.parse(oldPats).forEach(p=>{if(!appData.patienten.find(x=>x.name===(p.name||p.Name))){appData.patienten.push({id:uid(),name:p.name||p.Name||'Patient',kogu:p.kogu||'',ambulant:p.ambulant||'',wohnsituation:p.wohnsituation||'',sprache:p.sprache||'',notes:p.notes||p.notizen||'',createdAt:new Date().toISOString()});}});migrated=true;}catch(e){}}if(migrated){renderAll();await saveData('migrate: import old data');showToast('Migration abgeschlossen!',3000);document.getElementById('migration-notice').style.display='none';}else{showToast('Keine alten Daten gefunden');}}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+document.getElementById('heute-task-input').addEventListener('keydown',e=>{if(e.key==='Enter')saveHeuteTask();});
+document.getElementById('card-title').addEventListener('keydown',e=>{if(e.key==='Enter')saveCard();});
+document.getElementById('patient-name').addEventListener('keydown',e=>{if(e.key==='Enter')savePatient();});
+initPin();
 </script>
 </body>
 </html>
