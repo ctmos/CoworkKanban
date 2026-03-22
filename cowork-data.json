@@ -1,37 +1,15 @@
 {
-  "version": 1,
-  "lastUpdated": "2026-03-22T21:23:06.393Z",
-  "kanban": {
-    "columns": [
-      "Offen",
-      "In Arbeit",
-      "Erledigt"
-    ],
-    "cards": []
+  "version": "1.0",
+  "lastUpdated": "2026-03-22T00:00:00.000Z",
+  "tasks": {
+    "offen": [],
+    "in_arbeit": [],
+    "erledigt": []
   },
-  "heute": {
-    "tasks": {}
-  },
-  "tagebuch": [],
+  "heute": [],
   "patienten": [],
-  "kategorien": [
-    {
-      "id": "1",
-      "name": "Klinik",
-      "color": "#22c55e"
-    },
-    {
-      "id": "2",
-      "name": "Allgemein",
-      "color": "#2563eb"
-    },
-    {
-      "id": "3",
-      "name": "Privat",
-      "color": "#f59e0b"
-    }
-  ],
-  "einstellungen": {
+  "tagebuch": [],
+  "settings": {
     "githubToken": "",
     "theme": "light"
   }
