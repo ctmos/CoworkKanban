@@ -3,458 +3,497 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Cowork v9.0</title>
+  <title>CoworkKanban v9</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #ffffff;
-      --surface: #f9fafb;
-      --border: #e5e7eb;
-      --text: #111827;
-      --muted: #6b7280;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --accent-light: #eff6ff;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      --nav-height: 64px;
-    }
-    [data-theme="dark"] {
-      --bg: #0f0f0f;
-      --surface: #1a1a1a;
-      --border: #2a2a2a;
-      --text: #f9fafb;
-      --muted: #9ca3af;
-      --accent-light: #1e3a5f;
-      --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      height: 100%;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      font-size: 15px;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-    }
-    #pin-screen {
-      position: fixed; inset: 0;
-      background: var(--bg);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 1000; padding: 24px;
-    }
-    #pin-screen .logo { font-size: 28px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
-    #pin-screen .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
-    #pin-dots { display: flex; gap: 12px; margin-bottom: 32px; }
-    .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--border); border: 2px solid var(--border); transition: background 0.15s; }
-    .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
-    #pin-error { color: var(--danger); font-size: 13px; margin-bottom: 16px; min-height: 20px; text-align: center; }
-    #pin-keypad { display: grid; grid-template-columns: repeat(3, 72px); gap: 12px; }
-    .key-btn { height: 72px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); font-size: 22px; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.1s; display: flex; align-items: center; justify-content: center; }
-    .key-btn:active { transform: scale(0.95); background: var(--accent-light); }
-    .key-btn.delete { font-size: 16px; color: var(--muted); }
-    .key-btn.empty { background: transparent; border: none; cursor: default; }
-    #app { display: none; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; position: relative; }
-    #app.visible { display: flex; }
-    #header { padding: 14px 16px 12px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-    #header h1 { font-size: 18px; font-weight: 700; color: var(--accent); }
-    #header .header-actions { display: flex; gap: 8px; }
-    .icon-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-    .icon-btn:hover { color: var(--text); border-color: var(--accent); }
-    #content { flex: 1; overflow-y: auto; padding-bottom: calc(var(--nav-height) + 16px); }
-    .tab-panel { display: none; padding: 16px; }
-    .tab-panel.active { display: block; }
-    #bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; height: var(--nav-height); background: var(--bg); border-top: 1px solid var(--border); display: flex; align-items: center; z-index: 100; }
-    .nav-btn { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; border: none; background: transparent; color: var(--muted); font-size: 10px; font-weight: 500; transition: color 0.15s; }
-    .nav-btn.active { color: var(--accent); }
-    .nav-btn svg { display: block; }
-    #fab { position: fixed; bottom: calc(var(--nav-height) + 16px); right: calc(50% - 232px); width: 52px; height: 52px; border-radius: 50%; background: var(--accent); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37,99,235,0.4); transition: all 0.15s; z-index: 99; }
-    #fab:hover { background: var(--accent-hover); transform: scale(1.05); }
-    @media (max-width: 480px) { #fab { right: 16px; } }
-    .card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; box-shadow: var(--card-shadow); margin-bottom: 10px; }
-    .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; }
-    .badge-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .priority-low { background: #dcfce7; color: #166534; }
-    .priority-medium { background: #fef9c3; color: #854d0e; }
-    .priority-high { background: #fee2e2; color: #991b1b; }
-    [data-theme="dark"] .priority-low { background: #14532d; color: #86efac; }
-    [data-theme="dark"] .priority-medium { background: #451a03; color: #fde68a; }
-    [data-theme="dark"] .priority-high { background: #450a0a; color: #fca5a5; }
-    #kanban-view { padding: 0; }
-    .kanban-scroll { overflow-x: auto; display: flex; gap: 12px; padding: 16px; min-height: calc(100vh - 140px); }
-    .kanban-col { min-width: 280px; flex-shrink: 0; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; }
-    .kanban-col-header { font-weight: 600; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
-    .col-count { background: var(--border); color: var(--muted); font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 20px; }
-    .kanban-cards { flex: 1; min-height: 60px; }
-    .kanban-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: grab; box-shadow: var(--card-shadow); transition: box-shadow 0.15s, opacity 0.15s; }
-    .kanban-card.dragging { opacity: 0.5; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-    .kanban-card-title { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
-    .kanban-card-footer { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-    .heute-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .heute-date { font-size: 15px; font-weight: 600; }
-    .progress-bar-wrap { background: var(--border); border-radius: 99px; height: 6px; margin-bottom: 16px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
-    .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
-    .task-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; box-shadow: var(--card-shadow); }
-    .task-item.done .task-text { text-decoration: line-through; color: var(--muted); }
-    .task-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-    .task-check.checked { background: var(--accent); border-color: var(--accent); }
-    .task-check.checked::after { content: ''; display: block; width: 5px; height: 9px; border: 2px solid white; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px,-1px); }
-    .task-text { flex: 1; font-size: 14px; }
-    .task-delete { color: var(--muted); cursor: pointer; padding: 4px; border-radius: 4px; background: none; border: none; }
-    .task-delete:hover { color: var(--danger); }
-    .entry-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; box-shadow: var(--card-shadow); }
-    .entry-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-    .entry-date { font-size: 13px; color: var(--muted); font-weight: 500; }
-    .mood-dots { display: flex; gap: 4px; }
-    .mood-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
-    .mood-dot.active { background: var(--warning); }
-    .entry-text { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
-    .entry-actions { margin-top: 10px; }
-    .patient-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; box-shadow: var(--card-shadow); cursor: pointer; }
-    .patient-card:hover { border-color: var(--accent); }
-    .patient-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-    .patient-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-    .patient-tag { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; font-size: 11px; color: var(--muted); font-weight: 500; }
-    .patient-notes { font-size: 13px; color: var(--muted); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .settings-section { margin-bottom: 24px; }
-    .settings-section h3 { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
-    .settings-row { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; box-shadow: var(--card-shadow); }
-    .settings-row label { font-size: 14px; font-weight: 500; }
-    .settings-row span { font-size: 13px; color: var(--muted); }
-    .toggle { width: 44px; height: 26px; border-radius: 13px; background: var(--border); border: none; cursor: pointer; position: relative; transition: background 0.2s; }
-    .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform 0.2s; }
-    .toggle.on { background: var(--accent); }
-    .toggle.on::after { transform: translateX(18px); }
-    .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
-    .form-input, .form-textarea, .form-select { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 14px; transition: border-color 0.15s; outline: none; }
-    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
-    .form-textarea { resize: vertical; min-height: 80px; }
-    .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px; }
-    .btn { padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-danger { background: #fee2e2; color: var(--danger); }
-    .btn-danger:hover { background: var(--danger); color: white; }
-    .btn-sm { padding: 6px 12px; font-size: 13px; }
-    .btn-block { width: 100%; justify-content: center; margin-bottom: 8px; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
-    .modal { background: var(--bg); border-radius: 16px 16px 0 0; padding: 24px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
-    .modal-overlay.open .modal { transform: translateY(0); }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    .modal-title { font-size: 16px; font-weight: 700; }
-    .modal-close { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; color: var(--muted); font-size: 13px; }
-    .modal-close:hover { color: var(--text); }
-    .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
-    .modal-actions .btn { flex: 1; }
-    .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); }
-    .empty-state svg { margin: 0 auto 16px; opacity: 0.4; }
-    .empty-state p { font-size: 14px; }
-    #roadmap-content { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; max-height: 300px; overflow-y: auto; color: var(--text); }
-    #toast { position: fixed; bottom: calc(var(--nav-height) + 80px); left: 50%; transform: translateX(-50%) translateY(20px); background: #111; color: white; padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 500; opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap; }
-    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .syncing { animation: spin 1s linear infinite; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-    .mood-selector { display: flex; gap: 8px; }
-    .mood-btn { flex: 1; padding: 8px; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); cursor: pointer; text-align: center; font-size: 11px; font-weight: 500; transition: all 0.15s; color: var(--muted); }
-    .mood-btn.selected { border-color: var(--warning); background: #fef3c7; color: #92400e; }
-    [data-theme="dark"] .mood-btn.selected { background: #451a03; color: #fde68a; }
-    .migration-notice { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
-    [data-theme="dark"] .migration-notice { background: #451a03; border-color: #92400e; }
-    .migration-notice p { font-size: 13px; color: #92400e; margin-bottom: 10px; }
-    [data-theme="dark"] .migration-notice p { color: #fde68a; }
-    .token-row { display: flex; gap: 8px; }
-    .token-row .form-input { flex: 1; }
+    :root{--bg:#F5F4EF;--surface:#FFFFFF;--border:#E5E3DD;--text:#1A1A1A;--text-muted:#6B6B6B;--accent:#CC785C;--accent-hover:#B5684E;--accent-light:#F5EDE8;--success:#4A7C59;--warning:#C8922A;--danger:#C0392B;--danger-light:#FDECEA;--radius:8px;--nav-height:64px;--card-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);--modal-shadow:0 20px 60px rgba(0,0,0,0.15);}
+    [data-theme="dark"]{--bg:#1A1916;--surface:#242320;--border:#38362F;--text:#F0EDE6;--text-muted:#9A9488;--accent:#D4896B;--accent-hover:#C07455;--accent-light:#2E231D;--card-shadow:0 1px 3px rgba(0,0,0,0.3);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+    #pin-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:24px;padding:24px;}
+    .pin-logo{width:64px;height:64px;background:var(--accent);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:700;letter-spacing:-1px;}
+    .pin-title{font-size:22px;font-weight:700;text-align:center;}
+    .pin-subtitle{font-size:14px;color:var(--text-muted);text-align:center;}
+    .pin-dots{display:flex;gap:12px;}
+    .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:all 0.15s;}
+    .pin-dot.filled{background:var(--accent);border-color:var(--accent);}
+    .pin-dot.error{background:var(--danger);border-color:var(--danger);}
+    .pin-keypad{display:grid;grid-template-columns:repeat(3,72px);gap:12px;}
+    .pin-key{width:72px;height:72px;border-radius:50%;border:1px solid var(--border);background:var(--surface);font-size:22px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow);transition:all 0.1s;-webkit-tap-highlight-color:transparent;}
+    .pin-key:active{transform:scale(0.93);background:var(--accent-light);}
+    .pin-error{color:var(--danger);font-size:13px;text-align:center;min-height:20px;}
+    #app{display:none;flex-direction:column;height:100%;max-width:600px;margin:0 auto;position:relative;}
+    #app.visible{display:flex;}
+    .app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:10;}
+    .header-title{font-size:17px;font-weight:700;}
+    .sync-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:6px;border-radius:var(--radius);display:flex;align-items:center;gap:6px;font-size:13px;transition:all 0.15s;}
+    .sync-btn:hover{color:var(--accent);background:var(--accent-light);}
+    .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success);}
+    .sync-dot.syncing{background:var(--warning);animation:pulse 1s infinite;}
+    .sync-dot.error{background:var(--danger);}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    .app-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:80px;}
+    .tab-panel{display:none;padding:16px;}
+    .tab-panel.active{display:block;}
+    .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:600px;height:var(--nav-height);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:10;padding-bottom:env(safe-area-inset-bottom);}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;cursor:pointer;color:var(--text-muted);font-size:10px;font-weight:500;border:none;background:none;-webkit-tap-highlight-color:transparent;transition:color 0.15s;letter-spacing:0.3px;text-transform:uppercase;}
+    .nav-item svg{width:22px;height:22px;}
+    .nav-item.active{color:var(--accent);}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .section-title{font-size:18px;font-weight:700;}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+    .btn-primary{background:var(--accent);color:#fff;}
+    .btn-primary:hover{background:var(--accent-hover);}
+    .btn-ghost{background:none;color:var(--accent);border:1px solid var(--border);}
+    .btn-ghost:hover{background:var(--accent-light);}
+    .btn-icon{width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);background:none;border:1px solid var(--border);cursor:pointer;color:var(--text-muted);transition:all 0.15s;}
+    .btn-icon:hover{color:var(--accent);background:var(--accent-light);border-color:var(--accent);}
+    .btn-icon svg{width:16px;height:16px;}
+    .kanban-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;}
+    .kanban-col{min-width:260px;flex-shrink:0;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+    .kanban-col-header{padding:10px 14px;font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface);}
+    .col-count{background:var(--border);color:var(--text-muted);border-radius:10px;padding:2px 7px;font-size:11px;font-weight:600;}
+    .kanban-cards{padding:10px;min-height:80px;display:flex;flex-direction:column;gap:8px;}
+    .kanban-cards.drag-over{background:var(--accent-light);}
+    .kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:grab;box-shadow:var(--card-shadow);transition:box-shadow 0.15s,transform 0.15s;user-select:none;}
+    .kanban-card.dragging{opacity:0.5;transform:scale(0.97);}
+    .card-title{font-size:14px;font-weight:500;margin-bottom:6px;}
+    .card-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500;background:var(--accent-light);color:var(--accent);}
+    .prio-high{background:#FDECEA;color:var(--danger);}
+    .prio-medium{background:#FEF3E2;color:var(--warning);}
+    .prio-low{background:#E8F5E9;color:var(--success);}
+    .kanban-add-btn{width:100%;padding:10px;background:none;border:none;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s;}
+    .kanban-add-btn:hover{color:var(--accent);background:var(--accent-light);}
+    .heute-date{font-size:13px;color:var(--text-muted);margin-bottom:12px;}
+    .task-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--card-shadow);}
+    .task-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+    .task-check.done{background:var(--success);border-color:var(--success);color:#fff;}
+    .task-text{flex:1;font-size:14px;}
+    .task-text.done{text-decoration:line-through;color:var(--text-muted);}
+    .task-del{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;opacity:0.4;transition:opacity 0.15s;}
+    .task-del:hover{opacity:1;color:var(--danger);}
+    .add-task-row{display:flex;gap:8px;margin-top:12px;}
+    .input{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color 0.15s;}
+    .input:focus{border-color:var(--accent);}
+    textarea.input{resize:vertical;min-height:80px;}
+    .diary-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:var(--card-shadow);}
+    .diary-date{font-size:12px;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
+    .diary-text{font-size:14px;line-height:1.6;}
+    .mood-picker{display:flex;gap:8px;margin-bottom:12px;}
+    .mood-btn{font-size:24px;background:none;border:2px solid transparent;border-radius:var(--radius);cursor:pointer;padding:4px 8px;transition:all 0.15s;}
+    .mood-btn.selected{border-color:var(--accent);background:var(--accent-light);}
+    .search-bar{position:relative;margin-bottom:16px;}
+    .search-bar svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:16px;height:16px;}
+    .search-bar input{padding-left:34px;}
+    .patient-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:var(--card-shadow);cursor:pointer;transition:border-color 0.15s;}
+    .patient-card:hover{border-color:var(--accent);}
+    .patient-name{font-weight:600;font-size:15px;margin-bottom:4px;}
+    .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:500;background:var(--accent-light);color:var(--accent);margin-right:4px;}
+    .settings-section{margin-bottom:24px;}
+    .settings-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:10px;}
+    .settings-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--card-shadow);}
+    .settings-item{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}
+    .settings-item:last-child{border-bottom:none;}
+    .settings-item:hover{background:var(--bg);}
+    .settings-item-label{font-size:14px;font-weight:500;}
+    .settings-item-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
+    .toggle{width:44px;height:24px;background:var(--border);border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+    .toggle.on{background:var(--accent);}
+    .toggle::after{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+    .toggle.on::after{left:23px;}
+    .roadmap-timeline{position:relative;padding-left:24px;}
+    .roadmap-timeline::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--border);}
+    .roadmap-item{position:relative;margin-bottom:20px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--card-shadow);}
+    .roadmap-item::before{content:'';position:absolute;left:-20px;top:16px;width:10px;height:10px;border-radius:50%;background:var(--border);border:2px solid var(--surface);}
+    .roadmap-item.done::before{background:var(--success);}
+    .roadmap-item.active::before{background:var(--accent);}
+    .roadmap-version{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent);margin-bottom:4px;}
+    .roadmap-title{font-size:14px;font-weight:600;margin-bottom:6px;}
+    .roadmap-features{font-size:12px;color:var(--text-muted);line-height:1.6;}
+    .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-end;justify-content:center;}
+    .modal-backdrop.open{display:flex;}
+    .modal{background:var(--surface);border-radius:16px 16px 0 0;padding:20px 20px 32px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;animation:slideUp 0.25s ease-out;}
+    @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+    .modal-title{font-size:17px;font-weight:700;margin-bottom:20px;}
+    .form-group{margin-bottom:16px;}
+    .form-label{display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:6px;}
+    .form-actions{display:flex;gap:10px;margin-top:20px;}
+    .form-actions .btn{flex:1;justify-content:center;}
+    .empty-state{text-align:center;padding:48px 24px;color:var(--text-muted);}
+    .empty-state svg{width:48px;height:48px;margin-bottom:12px;opacity:0.3;}
+    .empty-state p{font-size:14px;}
+    #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all 0.25s;z-index:200;pointer-events:none;white-space:nowrap;max-width:90vw;}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    ::-webkit-scrollbar{width:4px;height:4px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+    select.input{-webkit-appearance:none;appearance:none;padding-right:32px;}
   </style>
 </head>
 <body>
-
 <div id="pin-screen">
-  <div class="logo">Cowork</div>
-  <div class="subtitle">v9.0 &mdash; Sicher &amp; verschl&uuml;sselt</div>
-  <div id="pin-dots">
-    <div class="pin-dot" id="d0"></div>
-    <div class="pin-dot" id="d1"></div>
-    <div class="pin-dot" id="d2"></div>
-    <div class="pin-dot" id="d3"></div>
-  </div>
-  <div id="pin-error"></div>
-  <div id="pin-keypad">
-    <button class="key-btn" onclick="pinKey('1')">1</button>
-    <button class="key-btn" onclick="pinKey('2')">2</button>
-    <button class="key-btn" onclick="pinKey('3')">3</button>
-    <button class="key-btn" onclick="pinKey('4')">4</button>
-    <button class="key-btn" onclick="pinKey('5')">5</button>
-    <button class="key-btn" onclick="pinKey('6')">6</button>
-    <button class="key-btn" onclick="pinKey('7')">7</button>
-    <button class="key-btn" onclick="pinKey('8')">8</button>
-    <button class="key-btn" onclick="pinKey('9')">9</button>
-    <button class="key-btn empty"></button>
-    <button class="key-btn" onclick="pinKey('0')">0</button>
-    <button class="key-btn delete" onclick="pinDelete()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
-    </button>
+  <div class="pin-logo">CK</div>
+  <div><div class="pin-title">CoworkKanban</div><div class="pin-subtitle" style="margin-top:4px">Version 9</div></div>
+  <div class="pin-dots" id="pin-dots"><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div></div>
+  <div class="pin-error" id="pin-error"></div>
+  <div class="pin-keypad">
+    <button class="pin-key" onclick="pinInput('1')">1</button><button class="pin-key" onclick="pinInput('2')">2</button><button class="pin-key" onclick="pinInput('3')">3</button>
+    <button class="pin-key" onclick="pinInput('4')">4</button><button class="pin-key" onclick="pinInput('5')">5</button><button class="pin-key" onclick="pinInput('6')">6</button>
+    <button class="pin-key" onclick="pinInput('7')">7</button><button class="pin-key" onclick="pinInput('8')">8</button><button class="pin-key" onclick="pinInput('9')">9</button>
+    <button class="pin-key" style="opacity:0.2" disabled></button><button class="pin-key" onclick="pinInput('0')">0</button><button class="pin-key" onclick="pinDelete()">&#8592;</button>
   </div>
 </div>
-
 <div id="app">
-  <div id="header">
-    <h1>Cowork</h1>
-    <div class="header-actions">
-      <button class="icon-btn" id="sync-btn" onclick="syncData()" title="Synchronisieren">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-      </button>
+  <header class="app-header">
+    <div class="header-title" id="header-title">Kanban</div>
+    <button class="sync-btn" onclick="syncData()"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Sync</span></button>
+  </header>
+  <div class="app-content">
+    <div class="tab-panel active" id="tab-kanban">
+      <div class="section-header">
+        <div class="section-title">Aufgaben</div>
+        <button class="btn btn-primary" onclick="openCardModal()" style="padding:8px 14px;font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Neue Karte</button>
+      </div>
+      <div class="kanban-board" id="kanban-board"></div>
     </div>
-  </div>
-  <div id="content">
-    <div id="tab-kanban" class="tab-panel active" style="padding:0;">
-      <div id="kanban-view"><div class="kanban-scroll" id="kanban-scroll"></div></div>
-    </div>
-    <div id="tab-heute" class="tab-panel">
-      <div class="heute-header"><div class="heute-date" id="heute-date"></div></div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="heute-progress" style="width:0%"></div></div>
-      <div class="progress-label" id="heute-label">0 von 0 erledigt</div>
+    <div class="tab-panel" id="tab-heute">
+      <div class="heute-date" id="heute-date"></div>
+      <div class="section-header"><div class="section-title">Heute</div></div>
       <div id="heute-tasks"></div>
+      <div class="add-task-row">
+        <input type="text" class="input" id="heute-input" placeholder="Neue Aufgabe...">
+        <button class="btn btn-primary" onclick="addHeuteTask()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
     </div>
-    <div id="tab-tagebuch" class="tab-panel"><div id="tagebuch-list"></div></div>
-    <div id="tab-patienten" class="tab-panel"><div id="patienten-list"></div></div>
-    <div id="tab-einstellungen" class="tab-panel">
-      <div id="migration-notice" style="display:none"></div>
-      <div class="settings-section">
-        <h3>GitHub Verbindung</h3>
-        <div class="card">
-          <div class="form-group">
-            <label class="form-label">Personal Access Token</label>
-            <div class="token-row">
-              <input type="password" id="github-token-input" class="form-input" placeholder="ghp_...">
-              <button class="btn btn-primary" onclick="saveToken()">Speichern</button>
-            </div>
-          </div>
-          <div style="font-size:12px;color:var(--muted)">Ben&ouml;tigt repo Berechtigung f&uuml;r ctmos/CoworkKanban</div>
-        </div>
+    <div class="tab-panel" id="tab-tagebuch">
+      <div class="section-header">
+        <div class="section-title">Tagebuch</div>
+        <button class="btn btn-primary" onclick="openDiaryModal()" style="padding:8px 14px;font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Eintrag</button>
       </div>
+      <div id="tagebuch-list"></div>
+    </div>
+    <div class="tab-panel" id="tab-patienten">
+      <div class="section-header">
+        <div class="section-title">Patienten</div>
+        <button class="btn btn-primary" onclick="openPatientModal()" style="padding:8px 14px;font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Neu</button>
+      </div>
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="input" id="patient-search" placeholder="Suche..." oninput="renderPatienten()">
+      </div>
+      <div id="patienten-list"></div>
+    </div>
+    <div class="tab-panel" id="tab-einstellungen">
+      <div class="section-title" style="margin-bottom:20px">Einstellungen</div>
       <div class="settings-section">
-        <h3>Darstellung</h3>
+        <div class="settings-section-title">GitHub Sync</div>
         <div class="settings-row">
-          <label>Dunkles Design</label>
-          <button class="toggle" id="theme-toggle" onclick="toggleTheme()"></button>
+          <div class="settings-item" onclick="openTokenModal()">
+            <div><div class="settings-item-label">GitHub Token</div><div class="settings-item-sub" id="token-status">Nicht konfiguriert</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+          <div class="settings-item" onclick="syncData()">
+            <div><div class="settings-item-label">Jetzt synchronisieren</div><div class="settings-item-sub" id="last-sync-label">Noch nicht synchronisiert</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          </div>
         </div>
       </div>
       <div class="settings-section">
-        <h3>Synchronisation</h3>
-        <button class="btn btn-secondary btn-block" onclick="syncData()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-          Jetzt synchronisieren
-        </button>
-        <button class="btn btn-secondary btn-block" onclick="migrateOldData()">Daten migrieren (alt &rarr; neu)</button>
+        <div class="settings-section-title">Darstellung</div>
+        <div class="settings-row">
+          <div class="settings-item">
+            <div><div class="settings-item-label">Dunkles Design</div><div class="settings-item-sub">Augenschonendes dunkles Theme</div></div>
+            <div class="toggle" id="theme-toggle" onclick="toggleTheme()"></div>
+          </div>
+        </div>
       </div>
       <div class="settings-section">
-        <h3>Roadmap</h3>
-        <button class="btn btn-secondary btn-block" onclick="loadRoadmap()">Roadmap anzeigen</button>
-        <div id="roadmap-content" style="display:none"></div>
+        <div class="settings-section-title">Sicherheit</div>
+        <div class="settings-row">
+          <div class="settings-item" onclick="openPinChangeModal()">
+            <div><div class="settings-item-label">PIN &auml;ndern</div><div class="settings-item-sub">4-stelliger Zugangscode</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
       </div>
       <div class="settings-section">
-        <h3>Info</h3>
-        <div class="settings-row"><label>Version</label><span>v9.0</span></div>
-        <div class="settings-row"><label>Datenspeicher</label><span>GitHub API</span></div>
+        <div class="settings-section-title">Daten</div>
+        <div class="settings-row">
+          <div class="settings-item" onclick="exportData()">
+            <div><div class="settings-item-label">Daten exportieren</div><div class="settings-item-sub">JSON-Datei herunterladen</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <div class="settings-item" onclick="if(confirm('Alle Daten wirklich loeschen?'))clearData()">
+            <div><div class="settings-item-label" style="color:var(--danger)">Daten loeschen</div><div class="settings-item-sub">Lokale Daten zur&uuml;cksetzen</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--danger)"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </div>
+        </div>
       </div>
+      <div class="settings-section">
+        <div class="settings-section-title">Roadmap</div>
+        <div class="roadmap-timeline">
+          <div class="roadmap-item done"><div class="roadmap-version">v1 - v7</div><div class="roadmap-title">Grundfunktionen</div><div class="roadmap-features">Kanban Board, Heute-Ansicht, Patienten, Tagebuch, PIN-Schutz, GitHub Sync</div></div>
+          <div class="roadmap-item done"><div class="roadmap-version">v8</div><div class="roadmap-title">Design-Refresh</div><div class="roadmap-features">Verbesserte Kategorien, Drag &amp; Drop, Touch-Support, Dark Mode</div></div>
+          <div class="roadmap-item active"><div class="roadmap-version">v9 (aktuell)</div><div class="roadmap-title">Anthropic Cowork Aesthetic</div><div class="roadmap-features">Neues Design-System, verbesserte Navigation, Sync-Indikator, Modal-System, Roadmap</div></div>
+          <div class="roadmap-item"><div class="roadmap-version">v10</div><div class="roadmap-title">Kollaboration</div><div class="roadmap-features">Mehrbenutzer-Sync, Kommentare, Benachrichtigungen, Kalender-Integration</div></div>
+        </div>
+      </div>
+      <div style="text-align:center;padding:16px 0 8px;color:var(--text-muted);font-size:12px">CoworkKanban v9 &bull; Anthropic Cowork Aesthetic</div>
     </div>
   </div>
-  <nav id="bottom-nav">
-    <button class="nav-btn active" id="nav-kanban" onclick="switchTab('kanban')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-      Kanban
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="kanban" onclick="switchTab('kanban')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/><rect x="14" y="17" width="7" height="4" rx="1"/></svg>Kanban
     </button>
-    <button class="nav-btn" id="nav-heute" onclick="switchTab('heute')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Heute
+    <button class="nav-item" data-tab="heute" onclick="switchTab('heute')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>Heute
     </button>
-    <button class="nav-btn" id="nav-tagebuch" onclick="switchTab('tagebuch')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      Tagebuch
+    <button class="nav-item" data-tab="tagebuch" onclick="switchTab('tagebuch')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Tagebuch
     </button>
-    <button class="nav-btn" id="nav-patienten" onclick="switchTab('patienten')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Patienten
+    <button class="nav-item" data-tab="patienten" onclick="switchTab('patienten')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Patienten
     </button>
-    <button class="nav-btn" id="nav-einstellungen" onclick="switchTab('einstellungen')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Einstellungen
+    <button class="nav-item" data-tab="einstellungen" onclick="switchTab('einstellungen')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Einst.
     </button>
   </nav>
-  <button id="fab" onclick="openAddModal()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-  </button>
 </div>
-
-<div class="modal-overlay" id="modal-card">
+<div class="modal-backdrop" id="card-modal" onclick="closeModalOnBackdrop(event,'card-modal')">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-card-title">Neue Karte</div>
-      <button class="modal-close" onclick="closeModal('modal-card')">Schlie&szlig;en</button>
-    </div>
-    <div class="form-group"><label class="form-label">Titel *</label><input type="text" id="card-title" class="form-input" placeholder="Aufgabentitel..."></div>
-    <div class="form-group"><label class="form-label">Beschreibung</label><textarea id="card-desc" class="form-textarea" placeholder="Details..."></textarea></div>
-    <div class="form-group"><label class="form-label">Kategorie</label><select id="card-cat" class="form-select"><option value="">Keine Kategorie</option></select></div>
-    <div class="form-group"><label class="form-label">Priorit&auml;t</label><select id="card-prio" class="form-select"><option value="low">Niedrig</option><option value="medium" selected>Mittel</option><option value="high">Hoch</option></select></div>
-    <div class="form-group"><label class="form-label">Spalte</label><select id="card-col" class="form-select"></select></div>
-    <div class="form-group"><label class="form-label">F&auml;lligkeit</label><input type="date" id="card-due" class="form-input"></div>
-    <input type="hidden" id="card-id">
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-card')">Abbrechen</button>
-      <button class="btn btn-primary" onclick="saveCard()">Speichern</button>
-    </div>
-    <div style="margin-top:8px"><button class="btn btn-danger btn-sm" id="delete-card-btn" onclick="deleteCard()" style="display:none;width:100%;justify-content:center">Karte l&ouml;schen</button></div>
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="card-modal-title">Neue Karte</div>
+    <input type="hidden" id="card-edit-id">
+    <div class="form-group"><label class="form-label">Titel *</label><input type="text" class="input" id="card-title-input" placeholder="Aufgabe beschreiben..."></div>
+    <div class="form-group"><label class="form-label">Beschreibung</label><textarea class="input" id="card-desc-input" placeholder="Details..."></textarea></div>
+    <div class="form-group"><label class="form-label">Spalte</label><select class="input" id="card-col-input"><option value="offen">Offen</option><option value="in_arbeit">In Arbeit</option><option value="erledigt">Erledigt</option></select></div>
+    <div class="form-group"><label class="form-label">Priorit&auml;t</label><select class="input" id="card-prio-input"><option value="">Keine</option><option value="high">Hoch</option><option value="medium">Mittel</option><option value="low">Niedrig</option></select></div>
+    <div class="form-group"><label class="form-label">Kategorie</label><input type="text" class="input" id="card-cat-input" placeholder="z.B. Klinik, Ambulanz..."></div>
+    <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('card-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveCard()">Speichern</button></div>
   </div>
 </div>
-
-<div class="modal-overlay" id="modal-heute">
+<div class="modal-backdrop" id="diary-modal" onclick="closeModalOnBackdrop(event,'diary-modal')">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Aufgabe hinzuf&uuml;gen</div>
-      <button class="modal-close" onclick="closeModal('modal-heute')">Schlie&szlig;en</button>
-    </div>
-    <div class="form-group"><label class="form-label">Aufgabe *</label><input type="text" id="heute-task-input" class="form-input" placeholder="Was steht heute an?"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-heute')">Abbrechen</button>
-      <button class="btn btn-primary" onclick="saveHeuteTask()">Hinzuf&uuml;gen</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-entry">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-entry-title">Neuer Eintrag</div>
-      <button class="modal-close" onclick="closeModal('modal-entry')">Schlie&szlig;en</button>
-    </div>
+    <div class="modal-handle"></div>
+    <div class="modal-title">Tagebucheintrag</div>
     <div class="form-group">
       <label class="form-label">Stimmung</label>
-      <div class="mood-selector">
-        <button class="mood-btn" data-mood="1" onclick="selectMood(1)">&#128542;<br>Schlecht</button>
-        <button class="mood-btn" data-mood="2" onclick="selectMood(2)">&#128533;<br>M&auml;&szlig;ig</button>
-        <button class="mood-btn" data-mood="3" onclick="selectMood(3)">&#128528;<br>Ok</button>
-        <button class="mood-btn" data-mood="4" onclick="selectMood(4)">&#128522;<br>Gut</button>
-        <button class="mood-btn" data-mood="5" onclick="selectMood(5)">&#128516;<br>Super</button>
+      <div class="mood-picker" id="mood-picker">
+        <button class="mood-btn" data-mood="1" onclick="selectMood(1)">&#128542;</button>
+        <button class="mood-btn" data-mood="2" onclick="selectMood(2)">&#128533;</button>
+        <button class="mood-btn" data-mood="3" onclick="selectMood(3)">&#128528;</button>
+        <button class="mood-btn" data-mood="4" onclick="selectMood(4)">&#128522;</button>
+        <button class="mood-btn" data-mood="5" onclick="selectMood(5)">&#128516;</button>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Eintrag *</label><textarea id="entry-text" class="form-textarea" rows="5" placeholder="Was bewegt dich heute?"></textarea></div>
-    <input type="hidden" id="entry-id">
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-entry')">Abbrechen</button>
-      <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
-    </div>
-    <div style="margin-top:8px"><button class="btn btn-danger btn-sm" id="delete-entry-btn" onclick="deleteEntry()" style="display:none;width:100%;justify-content:center">Eintrag l&ouml;schen</button></div>
+    <div class="form-group"><label class="form-label">Eintrag *</label><textarea class="input" id="diary-text-input" placeholder="Wie war heute..." style="min-height:120px"></textarea></div>
+    <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('diary-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveDiary()">Speichern</button></div>
   </div>
 </div>
-
-<div class="modal-overlay" id="modal-patient">
+<div class="modal-backdrop" id="patient-modal" onclick="closeModalOnBackdrop(event,'patient-modal')">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-patient-title">Neuer Patient</div>
-      <button class="modal-close" onclick="closeModal('modal-patient')">Schlie&szlig;en</button>
-    </div>
-    <div class="form-group"><label class="form-label">Name *</label><input type="text" id="patient-name" class="form-input" placeholder="Vor- und Nachname"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="form-group"><label class="form-label">Kogu-Status</label><input type="text" id="patient-kogu" class="form-input" placeholder="z.B. A3"></div>
-      <div class="form-group"><label class="form-label">Ambulant</label><input type="text" id="patient-ambulant" class="form-input" placeholder="z.B. 2x/Woche"></div>
-      <div class="form-group"><label class="form-label">Wohnsituation</label><input type="text" id="patient-wohn" class="form-input" placeholder="z.B. WG"></div>
-      <div class="form-group"><label class="form-label">Tagessprache</label><input type="text" id="patient-sprache" class="form-input" placeholder="z.B. Arabisch"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Notizen</label><textarea id="patient-notes" class="form-textarea" placeholder="Klinische Notizen..."></textarea></div>
-    <input type="hidden" id="patient-id">
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-patient')">Abbrechen</button>
-      <button class="btn btn-primary" onclick="savePatient()">Speichern</button>
-    </div>
-    <div style="margin-top:8px"><button class="btn btn-danger btn-sm" id="delete-patient-btn" onclick="deletePatient()" style="display:none;width:100%;justify-content:center">Patient l&ouml;schen</button></div>
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="patient-modal-title">Neuer Patient</div>
+    <input type="hidden" id="patient-edit-id">
+    <div class="form-group"><label class="form-label">Name *</label><input type="text" class="input" id="patient-name-input" placeholder="Vor- und Nachname"></div>
+    <div class="form-group"><label class="form-label">Behandlungsart</label><select class="input" id="patient-kogu-input"><option value="">Ausw&auml;hlen...</option><option value="kogu">KoGu</option><option value="ambulant">Ambulant</option><option value="station&auml;r">Station&auml;r</option><option value="tagesklinik">Tagesklinik</option></select></div>
+    <div class="form-group"><label class="form-label">Wohnsituation</label><input type="text" class="input" id="patient-wohn-input" placeholder="z.B. allein, Familie, WG..."></div>
+    <div class="form-group"><label class="form-label">Sprache</label><input type="text" class="input" id="patient-sprache-input" placeholder="z.B. Deutsch, Englisch..."></div>
+    <div class="form-group"><label class="form-label">Notizen</label><textarea class="input" id="patient-notes-input" placeholder="Weitere Informationen..."></textarea></div>
+    <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('patient-modal')">Abbrechen</button><button class="btn btn-primary" onclick="savePatient()">Speichern</button></div>
   </div>
 </div>
-
+<div class="modal-backdrop" id="token-modal" onclick="closeModalOnBackdrop(event,'token-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">GitHub Token</div>
+    <div class="form-group"><label class="form-label">Personal Access Token</label><input type="password" class="input" id="token-input" placeholder="ghp_..."><div style="font-size:12px;color:var(--text-muted);margin-top:6px">Benoetigt: repo Schreibzugriff auf ctmos/CoworkKanban</div></div>
+    <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('token-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveToken()">Speichern</button></div>
+  </div>
+</div>
+<div class="modal-backdrop" id="pin-change-modal" onclick="closeModalOnBackdrop(event,'pin-change-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">PIN &auml;ndern</div>
+    <div class="form-group"><label class="form-label">Neuer PIN (4-stellig)</label><input type="password" class="input" id="new-pin-input" placeholder="0000" maxlength="4"></div>
+    <div class="form-group"><label class="form-label">PIN best&auml;tigen</label><input type="password" class="input" id="confirm-pin-input" placeholder="0000" maxlength="4"></div>
+    <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('pin-change-modal')">Abbrechen</button><button class="btn btn-primary" onclick="changePIN()">Speichern</button></div>
+  </div>
+</div>
+<div class="modal-backdrop" id="patient-detail-modal" onclick="closeModalOnBackdrop(event,'patient-detail-modal')"><div class="modal" id="patient-detail-content"></div></div>
 <div id="toast"></div>
-
 <script>
-const REPO='ctmos/CoworkKanban',DATA_FILE='cowork-data.json',DEFAULT_PIN='cowork2026',SESSION_KEY='cowork_session',PIN_KEY='cowork_pin_hash',TOKEN_KEY='cowork_token',SESSION_DURATION=86400000,LOCKOUT_KEY='cowork_lockout',ATTEMPTS_KEY='cowork_attempts',MAX_ATTEMPTS=5,LOCKOUT_DURATION=300000;
-const DEFAULT_DATA={version:1,lastUpdated:new Date().toISOString(),kanban:{columns:['Offen','In Arbeit','Erledigt'],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[{id:'1',name:'Klinik',color:'#22c55e'},{id:'2',name:'Allgemein',color:'#2563eb'},{id:'3',name:'Privat',color:'#f59e0b'}],einstellungen:{githubToken:'',theme:'light'}};
-let appData=null,currentTab='kanban',selectedMood=3,dragCard=null,fileSHA=null;
-function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36);}
-function formatDate(iso){return new Date(iso).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});}
+const GITHUB_OWNER="ctmos",GITHUB_REPO="CoworkKanban",GITHUB_FILE="cowork-data.json",BRANCH="main";
+const SESSION_KEY="cw_session",PIN_KEY="cw_pin_hash",DATA_KEY="cw_data";
+const DEFAULT_PIN="cowork2026",SESSION_TTL=864e5;
+let appData={version:"1.0",lastUpdated:new Date().toISOString(),kanban:{columns:["offen","in_arbeit","erledigt"],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[],einstellungen:{githubToken:"",theme:"light"}};
+let currentMood=3,dragCard=null,dragCol=null;
+
+async function sha256(t){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
+async function initPIN(){if(!localStorage.getItem(PIN_KEY)){localStorage.setItem(PIN_KEY,await sha256(DEFAULT_PIN));}}
+async function checkSession(){const s=localStorage.getItem(SESSION_KEY);if(s){try{const{ts}=JSON.parse(s);if(Date.now()-ts<SESSION_TTL)return true;}catch(e){}}return false;}
+function setSession(){localStorage.setItem(SESSION_KEY,JSON.stringify({ts:Date.now()}));}
+
+let pinBuffer="",pinAttempts=0,pinLocked=false;
+async function pinInput(d){if(pinLocked)return;pinBuffer+=d;updatePinDots();if(pinBuffer.length===4)await verifyPIN();}
+function pinDelete(){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();}
+function updatePinDots(error){document.querySelectorAll(".pin-dot").forEach((dot,i)=>{dot.classList.toggle("filled",i<pinBuffer.length&&!error);dot.classList.toggle("error",!!error&&i<4);});}
+async function verifyPIN(){const h=await sha256(pinBuffer),stored=localStorage.getItem(PIN_KEY);
+  if(h===stored){setSession();document.getElementById("pin-screen").style.display="none";document.getElementById("app").classList.add("visible");pinBuffer="";initApp();}
+  else{pinAttempts++;updatePinDots(true);document.getElementById("pin-error").textContent=pinAttempts>=5?"Zu viele Versuche. Warte 5 Minuten.":"Falscher PIN";
+    if(pinAttempts>=5){pinLocked=true;setTimeout(()=>{pinLocked=false;pinAttempts=0;document.getElementById("pin-error").textContent="";},3e5);}
+    setTimeout(()=>{pinBuffer="";updatePinDots(false);},600);}}
+async function changePIN(){const np=document.getElementById("new-pin-input").value.trim(),cp=document.getElementById("confirm-pin-input").value.trim();
+  if(np.length!==4||!/^\d{4}$/.test(np))return toast("PIN muss 4-stellig sein");
+  if(np!==cp)return toast("PINs stimmen nicht ueberein");
+  localStorage.setItem(PIN_KEY,await sha256(np));closeModal("pin-change-modal");toast("PIN geaendert");}
+
+async function boot(){await initPIN();if(await checkSession()){document.getElementById("pin-screen").style.display="none";document.getElementById("app").classList.add("visible");initApp();}}
+function initApp(){loadData();migrateData();applyTheme();updateTokenStatus();renderAll();renderHeuteDate();loadFromGitHub();}
+function renderAll(){renderKanban();renderHeute();renderTagebuch();renderPatienten();}
+
+function migrateData(){
+  let migrated=false;
+  const oldCards=localStorage.getItem("coworkKanbanCards");
+  if(oldCards&&!appData.kanban.cards.length){try{const cards=JSON.parse(oldCards);appData.kanban.cards=cards.map(c=>({id:c.id||genId(),title:c.title||c.text||"",description:c.desc||c.description||"",column:c.column||c.status||"offen",priority:c.priority||"",category:c.category||""}));migrated=true;}catch(e){}}
+  const oldTasks=localStorage.getItem("cowork_tasks");
+  if(oldTasks&&!Object.keys(appData.heute.tasks).length){try{const t=JSON.parse(oldTasks),today=todayKey();if(Array.isArray(t)){appData.heute.tasks[today]=t.map(i=>({id:genId(),text:typeof i==="string"?i:i.text,done:i.done||false}));migrated=true;}}catch(e){}}
+  const oldDiary=localStorage.getItem("cowork_diary");
+  if(oldDiary&&!appData.tagebuch.length){try{const d=JSON.parse(oldDiary);if(Array.isArray(d)){appData.tagebuch=d.map(e=>({id:genId(),date:e.date||new Date().toISOString(),text:e.text||e.content||"",mood:e.mood||3}));migrated=true;}}catch(e){}}
+  const oldPat=localStorage.getItem("cowork_patients");
+  if(oldPat&&!appData.patienten.length){try{const p=JSON.parse(oldPat);if(Array.isArray(p)){appData.patienten=p.map(pt=>({id:genId(),name:pt.name||"",kogu:pt.kogu||pt.behandlung||"",wohnsituation:pt.wohnsituation||"",sprache:pt.sprache||"",notes:pt.notes||pt.notizen||""}));migrated=true;}}catch(e){}}
+  if(migrated)saveData();}
+
+function saveData(){appData.lastUpdated=new Date().toISOString();localStorage.setItem(DATA_KEY,JSON.stringify(appData));}
+function loadData(){const raw=localStorage.getItem(DATA_KEY);if(raw){try{const d=JSON.parse(raw);appData=Object.assign(appData,d);if(!appData.kanban)appData.kanban={columns:["offen","in_arbeit","erledigt"],cards:[]};if(!appData.heute)appData.heute={tasks:{}};if(!appData.tagebuch)appData.tagebuch=[];if(!appData.patienten)appData.patienten=[];if(!appData.einstellungen)appData.einstellungen={githubToken:"",theme:"light"};}catch(e){}}}
+
+function getToken(){return appData.einstellungen.githubToken||"";}
+function setSyncState(s){const dot=document.getElementById("sync-dot"),lbl=document.getElementById("sync-label");dot.className="sync-dot"+(s==="syncing"?" syncing":s==="error"?" error":"");lbl.textContent=s==="syncing"?"Sync...":"Sync";}
+
+async function loadFromGitHub(){const token=getToken();if(!token)return;setSyncState("syncing");
+  try{const resp=await fetch("https://api.github.com/repos/"+GITHUB_OWNER+"/"+GITHUB_REPO+"/contents/"+GITHUB_FILE+"?ref="+BRANCH,{headers:{Authorization:"token "+token,Accept:"application/vnd.github.v3+json"}});
+    if(!resp.ok)throw new Error("HTTP "+resp.status);
+    const json=await resp.json(),content=decodeURIComponent(escape(atob(json.content.replace(/\n/g,""))));
+    const remote=JSON.parse(content);
+    if(!appData.lastUpdated||new Date(remote.lastUpdated)>new Date(appData.lastUpdated)){
+      if(remote.kanban&&remote.kanban.cards)appData.kanban=remote.kanban;
+      else if(remote.tasks){const cols=["offen","in_arbeit","erledigt"],cards=[];cols.forEach(col=>{(remote.tasks[col]||[]).forEach(t=>{cards.push({id:t.id||genId(),title:t.title||t.text||"",description:t.desc||"",column:col,priority:t.priority||"",category:t.category||""});});});appData.kanban.cards=cards;}
+      if(remote.heute){if(Array.isArray(remote.heute))appData.heute.tasks[todayKey()]=remote.heute;else appData.heute=remote.heute;}
+      if(remote.tagebuch)appData.tagebuch=remote.tagebuch;
+      if(remote.patienten)appData.patienten=remote.patienten;
+      if(remote.settings&&remote.settings.theme)appData.einstellungen.theme=remote.settings.theme;
+      saveData();renderAll();applyTheme();}
+    setSyncState("ok");updateLastSync();
+  }catch(e){setSyncState("error");console.error("GitHub load:",e);}}
+
+async function saveToGitHub(){const token=getToken();if(!token){toast("Kein GitHub Token");return;}setSyncState("syncing");
+  try{const getR=await fetch("https://api.github.com/repos/"+GITHUB_OWNER+"/"+GITHUB_REPO+"/contents/"+GITHUB_FILE+"?ref="+BRANCH,{headers:{Authorization:"token "+token,Accept:"application/vnd.github.v3+json"}});
+    let sha=null;if(getR.ok){sha=(await getR.json()).sha;}
+    const payload={version:"1.0",lastUpdated:new Date().toISOString(),kanban:appData.kanban,heute:appData.heute,tagebuch:appData.tagebuch,patienten:appData.patienten,settings:{theme:appData.einstellungen.theme}};
+    const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2))));
+    const body={message:"CoworkKanban v9: sync "+new Date().toISOString(),content:encoded,branch:BRANCH};
+    if(sha)body.sha=sha;
+    const putR=await fetch("https://api.github.com/repos/"+GITHUB_OWNER+"/"+GITHUB_REPO+"/contents/"+GITHUB_FILE,{method:"PUT",headers:{Authorization:"token "+token,Accept:"application/vnd.github.v3+json","Content-Type":"application/json"},body:JSON.stringify(body)});
+    if(!putR.ok)throw new Error("HTTP "+putR.status);
+    setSyncState("ok");updateLastSync();toast("Gespeichert");
+  }catch(e){setSyncState("error");toast("Sync fehlgeschlagen: "+e.message);}}
+
+async function syncData(){await loadFromGitHub();await saveToGitHub();}
+function updateLastSync(){const now=new Date(),t=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");const el=document.getElementById("last-sync-label");if(el)el.textContent="Zuletzt: "+t+" Uhr";}
+
+const COL_LABELS={offen:"Offen",in_arbeit:"In Arbeit",erledigt:"Erledigt"};
+function renderKanban(){const board=document.getElementById("kanban-board"),cols=appData.kanban.columns||["offen","in_arbeit","erledigt"];
+  board.innerHTML=cols.map(col=>{const cards=(appData.kanban.cards||[]).filter(c=>c.column===col);
+    return `<div class="kanban-col" id="col-${col}"><div class="kanban-col-header"><span>${COL_LABELS[col]||col}</span><span class="col-count">${cards.length}</span></div><div class="kanban-cards" id="cards-${col}" ondragover="dragOver(event)" ondrop="drop(event,'${col}')" ondragenter="this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">${cards.length?cards.map(c=>renderCard(c)).join(''):'<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px">Leer</div>'}</div><button class="kanban-add-btn" onclick="openCardModal('${col}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Hinzuf\u00fcgen</button></div>`;
+  }).join('');}
+
+function renderCard(c){const prioClass=c.priority?`prio-${c.priority}`:"",prioLabel=c.priority==="high"?"Hoch":c.priority==="medium"?"Mittel":c.priority==="low"?"Niedrig":"";
+  return `<div class="kanban-card" id="card-${c.id}" draggable="true" ondragstart="dragStart(event,'${c.id}','${c.column}')" ondragend="dragEnd(event)" onclick="openCardModal('${c.column}','${c.id}')"><div class="card-title">${escHtml(c.title)}</div>${c.description?`<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${escHtml(c.description).substring(0,80)}${c.description.length>80?"...":""}</div>`:""}<div class="card-meta">${c.category?`<span class="tag">${escHtml(c.category)}</span>`:""}${prioLabel?`<span class="tag ${prioClass}">${prioLabel}</span>`:""}</div></div>`;}
+
+function openCardModal(col,cardId){document.getElementById("card-modal-title").textContent=cardId?"Karte bearbeiten":"Neue Karte";document.getElementById("card-edit-id").value=cardId||"";
+  if(cardId){const c=appData.kanban.cards.find(x=>x.id===cardId);if(c){document.getElementById("card-title-input").value=c.title;document.getElementById("card-desc-input").value=c.description||"";document.getElementById("card-col-input").value=c.column;document.getElementById("card-prio-input").value=c.priority||"";document.getElementById("card-cat-input").value=c.category||"";}}
+  else{document.getElementById("card-title-input").value="";document.getElementById("card-desc-input").value="";document.getElementById("card-col-input").value=col||"offen";document.getElementById("card-prio-input").value="";document.getElementById("card-cat-input").value="";}
+  openModal("card-modal");setTimeout(()=>document.getElementById("card-title-input").focus(),200);}
+
+function saveCard(){const title=document.getElementById("card-title-input").value.trim();if(!title)return toast("Titel ist erforderlich");
+  const editId=document.getElementById("card-edit-id").value;
+  const data={id:editId||genId(),title,description:document.getElementById("card-desc-input").value.trim(),column:document.getElementById("card-col-input").value,priority:document.getElementById("card-prio-input").value,category:document.getElementById("card-cat-input").value.trim()};
+  if(editId){const idx=appData.kanban.cards.findIndex(c=>c.id===editId);if(idx>=0)appData.kanban.cards[idx]=data;}else{appData.kanban.cards.push(data);}
+  saveData();renderKanban();closeModal("card-modal");toast(editId?"Karte aktualisiert":"Karte erstellt");}
+
+function dragStart(e,cardId,col){dragCard=cardId;dragCol=col;setTimeout(()=>{const el=document.getElementById("card-"+cardId);if(el)el.classList.add("dragging");},0);}
+function dragEnd(e){const el=document.getElementById("card-"+dragCard);if(el)el.classList.remove("dragging");document.querySelectorAll(".kanban-cards").forEach(c=>c.classList.remove("drag-over"));}
+function dragOver(e){e.preventDefault();}
+function drop(e,col){e.preventDefault();document.querySelectorAll(".kanban-cards").forEach(c=>c.classList.remove("drag-over"));if(dragCard&&dragCol!==col){const card=appData.kanban.cards.find(c=>c.id===dragCard);if(card){card.column=col;saveData();renderKanban();toast("Verschoben nach "+(COL_LABELS[col]||col));}}dragCard=null;}
+
 function todayKey(){return new Date().toISOString().slice(0,10);}
-function showToast(msg,dur){dur=dur||2500;const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-async function sha256(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
-let pinBuffer='';
-async function initPin(){let hash=localStorage.getItem(PIN_KEY);if(!hash){hash=await sha256(DEFAULT_PIN);localStorage.setItem(PIN_KEY,hash);}const session=localStorage.getItem(SESSION_KEY);if(session){try{const s=JSON.parse(session);if(Date.now()-s.ts<SESSION_DURATION){unlockApp();return;}}catch(e){}}updatePinDots();}
-function updatePinDots(){for(let i=0;i<4;i++){const d=document.getElementById('d'+i);if(d)d.classList.toggle('filled',i<pinBuffer.length);}}
-function pinKey(k){const lo=localStorage.getItem(LOCKOUT_KEY);if(lo&&Date.now()<parseInt(lo)){const rem=Math.ceil((parseInt(lo)-Date.now())/1000);document.getElementById('pin-error').textContent='Gesperrt — noch '+rem+'s';return;}if(pinBuffer.length>=6)return;pinBuffer+=k;updatePinDots();if(pinBuffer.length>=4)setTimeout(checkPin,150);}
-function pinDelete(){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();document.getElementById('pin-error').textContent='';}
-async function checkPin(){const hash=await sha256(pinBuffer);const stored=localStorage.getItem(PIN_KEY);if(hash===stored){localStorage.setItem(SESSION_KEY,JSON.stringify({ts:Date.now()}));localStorage.removeItem(ATTEMPTS_KEY);localStorage.removeItem(LOCKOUT_KEY);unlockApp();}else{pinBuffer='';updatePinDots();let att=parseInt(localStorage.getItem(ATTEMPTS_KEY)||'0')+1;localStorage.setItem(ATTEMPTS_KEY,att);if(att>=MAX_ATTEMPTS){localStorage.setItem(LOCKOUT_KEY,Date.now()+LOCKOUT_DURATION);localStorage.removeItem(ATTEMPTS_KEY);document.getElementById('pin-error').textContent='Zu viele Versuche — 5 Minuten gesperrt';}else{document.getElementById('pin-error').textContent='Falscher PIN ('+att+'/'+MAX_ATTEMPTS+')';}}}
-function unlockApp(){document.getElementById('pin-screen').style.display='none';document.getElementById('app').classList.add('visible');initApp();}
-function getToken(){if(appData&&appData.einstellungen&&appData.einstellungen.githubToken)return appData.einstellungen.githubToken;return localStorage.getItem(TOKEN_KEY)||'';}
-async function githubGet(path){const tok=getToken();const h={'Accept':'application/vnd.github.v3+json'};if(tok)h['Authorization']='token '+tok;return fetch('https://api.github.com/repos/'+REPO+'/contents/'+path,{headers:h});}
-async function githubPut(path,content,message,sha){const tok=getToken();const h={'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'};if(tok)h['Authorization']='token '+tok;const body={message,content};if(sha)body.sha=sha;return fetch('https://api.github.com/repos/'+REPO+'/contents/'+path,{method:'PUT',headers:h,body:JSON.stringify(body)});}
-function encodeForGitHub(str){return btoa(unescape(encodeURIComponent(str)));}
-async function loadData(){try{const resp=await githubGet(DATA_FILE);if(resp.status===404){appData=JSON.parse(JSON.stringify(DEFAULT_DATA));const lsTok=localStorage.getItem(TOKEN_KEY);if(lsTok)appData.einstellungen.githubToken=lsTok;await saveData('init: create cowork-data.json');}else if(resp.ok){const json=await resp.json();fileSHA=json.sha;const content=decodeURIComponent(escape(atob(json.content.replace(/
-/g,''))));appData=JSON.parse(content);if(!appData.kanban)appData.kanban=JSON.parse(JSON.stringify(DEFAULT_DATA.kanban));if(!appData.heute)appData.heute={tasks:{}};if(!appData.heute.tasks)appData.heute.tasks={};if(!appData.tagebuch)appData.tagebuch=[];if(!appData.patienten)appData.patienten=[];if(!appData.kategorien)appData.kategorien=JSON.parse(JSON.stringify(DEFAULT_DATA.kategorien));if(!appData.einstellungen)appData.einstellungen={githubToken:'',theme:'light'};if(!appData.einstellungen.githubToken){const lsTok=localStorage.getItem(TOKEN_KEY);if(lsTok)appData.einstellungen.githubToken=lsTok;}}else{throw new Error('HTTP '+resp.status);}}catch(e){console.warn('loadData:',e);if(!appData){appData=JSON.parse(JSON.stringify(DEFAULT_DATA));const lsTok=localStorage.getItem(TOKEN_KEY);if(lsTok)appData.einstellungen.githubToken=lsTok;}showToast('Offline-Modus',3000);}}
-async function saveData(msg){if(!appData)return;appData.lastUpdated=new Date().toISOString();if(appData.einstellungen&&appData.einstellungen.githubToken)localStorage.setItem(TOKEN_KEY,appData.einstellungen.githubToken);const content=encodeForGitHub(JSON.stringify(appData,null,2));try{const resp=await githubPut(DATA_FILE,content,msg||'update: cowork-data.json',fileSHA);if(resp.ok){const json=await resp.json();fileSHA=json.content.sha;}else{const err=await resp.json();console.error('saveData:',err);if(resp.status===409){showToast('Konflikt — lade neu...',2000);await loadData();}}}catch(e){console.warn('saveData:',e);}}
-async function syncData(){const ic=document.querySelector('#sync-btn svg');if(ic)ic.classList.add('syncing');showToast('Synchronisiere...');await loadData();renderAll();if(ic)ic.classList.remove('syncing');showToast('Synchronisiert');}
-async function initApp(){showToast('Lade Daten...',2000);await loadData();applyTheme();renderAll();checkMigration();document.getElementById('heute-date').textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});if(appData.einstellungen&&appData.einstellungen.githubToken)document.getElementById('github-token-input').value=appData.einstellungen.githubToken;showToast('Willkommen!',1500);}
-function renderAll(){renderKanban();renderHeute();renderTagebuch();renderPatienten();applyTheme();}
-function applyTheme(){if(!appData)return;const t=(appData.einstellungen&&appData.einstellungen.theme)||'light';document.documentElement.setAttribute('data-theme',t);const tg=document.getElementById('theme-toggle');if(tg)tg.classList.toggle('on',t==='dark');}
-function switchTab(tab){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');document.getElementById('nav-'+tab).classList.add('active');currentTab=tab;const fab=document.getElementById('fab');fab.style.display=['kanban','heute','tagebuch','patienten'].includes(tab)?'flex':'none';}
-function openAddModal(){if(currentTab==='kanban')openCardModal(null);else if(currentTab==='heute')openHeuteModal();else if(currentTab==='tagebuch')openEntryModal(null);else if(currentTab==='patienten')openPatientModal(null);}
-function renderKanban(){if(!appData)return;const scroll=document.getElementById('kanban-scroll');scroll.innerHTML='';appData.kanban.columns.forEach(col=>{const cards=appData.kanban.cards.filter(c=>c.column===col);const colEl=document.createElement('div');colEl.className='kanban-col';colEl.dataset.col=col;colEl.innerHTML='<div class="kanban-col-header"><span>'+escHtml(col)+'</span><span class="col-count">'+cards.length+'</span></div><div class="kanban-cards" id="col-'+col.replace(/s/g,'-')+'"></div>';const cd=colEl.querySelector('.kanban-cards');cd.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';});cd.addEventListener('drop',e=>{e.preventDefault();dropCard(col);});cd.addEventListener('touchend',e=>touchDrop(e,col));cards.forEach(card=>cd.appendChild(createKanbanCard(card)));scroll.appendChild(colEl);});}
-function createKanbanCard(card){const el=document.createElement('div');el.className='kanban-card';el.draggable=true;el.dataset.id=card.id;const cat=appData.kategorien.find(k=>k.id===card.categoryId);const prioClass={low:'priority-low',medium:'priority-medium',high:'priority-high'}[card.priority]||'';const prioLabel={low:'Niedrig',medium:'Mittel',high:'Hoch'}[card.priority]||'';let catBadge=cat?'<span class="badge"><span class="badge-dot" style="background:'+cat.color+'"></span>'+escHtml(cat.name)+'</span>':'';let dueStr=card.due?'<span class="badge" style="background:var(--surface);color:var(--muted);border:1px solid var(--border)">'+formatDate(card.due)+'</span>':'';el.innerHTML='<div class="kanban-card-title">'+escHtml(card.title)+'</div><div class="kanban-card-footer">'+catBadge+'<span class="badge '+prioClass+'">'+prioLabel+'</span>'+dueStr+'</div>';el.addEventListener('dragstart',e=>{dragCard=card;e.dataTransfer.effectAllowed='move';setTimeout(()=>el.classList.add('dragging'),0);});el.addEventListener('dragend',()=>el.classList.remove('dragging'));el.addEventListener('touchstart',touchStart,{passive:true});el.addEventListener('touchmove',touchMove,{passive:false});el.addEventListener('click',()=>openCardModal(card));return el;}
-let touchClone=null,touchOffX=0,touchOffY=0;
-function touchStart(e){const card=appData.kanban.cards.find(c=>c.id===e.currentTarget.dataset.id);if(!card)return;dragCard=card;const touch=e.touches[0];const rect=e.currentTarget.getBoundingClientRect();touchOffX=touch.clientX-rect.left;touchOffY=touch.clientY-rect.top;touchClone=e.currentTarget.cloneNode(true);touchClone.style.cssText='position:fixed;z-index:999;width:'+rect.width+'px;opacity:0.8;pointer-events:none;top:'+rect.top+'px;left:'+rect.left+'px;';document.body.appendChild(touchClone);}
-function touchMove(e){if(!touchClone)return;e.preventDefault();const touch=e.touches[0];touchClone.style.top=(touch.clientY-touchOffY)+'px';touchClone.style.left=(touch.clientX-touchOffX)+'px';}
-function touchDrop(e,col){if(!dragCard)return;dropCard(col);if(touchClone){touchClone.remove();touchClone=null;}dragCard=null;}
-function dropCard(targetCol){if(!dragCard||dragCard.column===targetCol){dragCard=null;return;}const idx=appData.kanban.cards.findIndex(c=>c.id===dragCard.id);if(idx!==-1){appData.kanban.cards[idx].column=targetCol;renderKanban();saveData('update: move card to '+targetCol);}dragCard=null;}
-function openCardModal(card){const catSel=document.getElementById('card-cat');catSel.innerHTML='<option value="">Keine Kategorie</option>';appData.kategorien.forEach(k=>{catSel.innerHTML+='<option value="'+k.id+'">'+escHtml(k.name)+'</option>';});const colSel=document.getElementById('card-col');colSel.innerHTML='';appData.kanban.columns.forEach(col=>{colSel.innerHTML+='<option value="'+escHtml(col)+'">'+escHtml(col)+'</option>';});if(card){document.getElementById('modal-card-title').textContent='Karte bearbeiten';document.getElementById('card-id').value=card.id;document.getElementById('card-title').value=card.title||'';document.getElementById('card-desc').value=card.description||'';document.getElementById('card-cat').value=card.categoryId||'';document.getElementById('card-prio').value=card.priority||'medium';document.getElementById('card-col').value=card.column||appData.kanban.columns[0];document.getElementById('card-due').value=card.due||'';document.getElementById('delete-card-btn').style.display='block';}else{document.getElementById('modal-card-title').textContent='Neue Karte';document.getElementById('card-id').value='';document.getElementById('card-title').value='';document.getElementById('card-desc').value='';document.getElementById('card-cat').value='';document.getElementById('card-prio').value='medium';document.getElementById('card-col').value=appData.kanban.columns[0];document.getElementById('card-due').value='';document.getElementById('delete-card-btn').style.display='none';}openModal('modal-card');}
-async function saveCard(){const title=document.getElementById('card-title').value.trim();if(!title){showToast('Titel erforderlich');return;}const id=document.getElementById('card-id').value;const card={id:id||uid(),title,description:document.getElementById('card-desc').value.trim(),categoryId:document.getElementById('card-cat').value,priority:document.getElementById('card-prio').value,column:document.getElementById('card-col').value,due:document.getElementById('card-due').value,createdAt:id?undefined:new Date().toISOString()};if(id){const idx=appData.kanban.cards.findIndex(c=>c.id===id);if(idx!==-1){card.createdAt=appData.kanban.cards[idx].createdAt;appData.kanban.cards[idx]=card;}}else{appData.kanban.cards.push(card);}closeModal('modal-card');renderKanban();await saveData('update: save kanban card');showToast('Gespeichert');}
-async function deleteCard(){const id=document.getElementById('card-id').value;appData.kanban.cards=appData.kanban.cards.filter(c=>c.id!==id);closeModal('modal-card');renderKanban();await saveData('update: delete kanban card');showToast('Gelöscht');}
-function renderHeute(){if(!appData)return;const key=todayKey();if(!appData.heute)appData.heute={tasks:{}};if(!appData.heute.tasks)appData.heute.tasks={};const tasks=appData.heute.tasks[key]||[];const total=tasks.length;const done=tasks.filter(t=>t.done).length;const pct=total?Math.round(done/total*100):0;document.getElementById('heute-progress').style.width=pct+'%';document.getElementById('heute-label').textContent=done+' von '+total+' erledigt';const list=document.getElementById('heute-tasks');if(!tasks.length){list.innerHTML='<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><p>Keine Aufgaben für heute.<br>Tippe + um eine hinzuzufügen.</p></div>';return;}list.innerHTML='';tasks.forEach((task,i)=>{const el=document.createElement('div');el.className='task-item'+(task.done?' done':'');el.innerHTML='<div class="task-check '+(task.done?'checked':'')+'" onclick="toggleTask(''+key+'','+i+')"></div><span class="task-text">'+escHtml(task.text)+'</span><button class="task-delete" onclick="deleteTask(''+key+'','+i+')" ><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';list.appendChild(el);});}
-function openHeuteModal(){document.getElementById('heute-task-input').value='';openModal('modal-heute');setTimeout(()=>document.getElementById('heute-task-input').focus(),300);}
-async function saveHeuteTask(){const text=document.getElementById('heute-task-input').value.trim();if(!text){showToast('Aufgabe eingeben');return;}const key=todayKey();if(!appData.heute.tasks[key])appData.heute.tasks[key]=[];appData.heute.tasks[key].push({text,done:false,createdAt:new Date().toISOString()});closeModal('modal-heute');renderHeute();await saveData('update: add heute task');}
-async function toggleTask(key,idx){appData.heute.tasks[key][idx].done=!appData.heute.tasks[key][idx].done;renderHeute();await saveData('update: toggle task');}
-async function deleteTask(key,idx){appData.heute.tasks[key].splice(idx,1);renderHeute();await saveData('update: delete task');}
-function renderTagebuch(){if(!appData)return;const list=document.getElementById('tagebuch-list');const entries=(appData.tagebuch||[]).slice().sort((a,b)=>new Date(b.date)-new Date(a.date));if(!entries.length){list.innerHTML='<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>Noch keine Einträge.<br>Tippe + um anzufangen.</p></div>';return;}list.innerHTML='';entries.forEach(entry=>{const el=document.createElement('div');el.className='entry-card';let dots='';for(let i=1;i<=5;i++)dots+='<div class="mood-dot'+(i<=entry.mood?' active':'')+'"></div>';el.innerHTML='<div class="entry-header"><span class="entry-date">'+formatDate(entry.date)+'</span><div class="mood-dots">'+dots+'</div></div><div class="entry-text">'+escHtml(entry.text)+'</div><div class="entry-actions"><button class="btn btn-secondary btn-sm" data-eid="'+entry.id+'" onclick="editEntry(this)">Bearbeiten</button></div>';list.appendChild(el);});}
-function editEntry(btn){const entry=appData.tagebuch.find(e=>e.id===btn.dataset.eid);if(entry)openEntryModal(entry);}
-function openEntryModal(entry){selectedMood=entry?entry.mood:3;document.getElementById('modal-entry-title').textContent=entry?'Eintrag bearbeiten':'Neuer Eintrag';document.getElementById('entry-id').value=entry?entry.id:'';document.getElementById('entry-text').value=entry?entry.text:'';document.getElementById('delete-entry-btn').style.display=entry?'block':'none';updateMoodButtons(selectedMood);openModal('modal-entry');setTimeout(()=>document.getElementById('entry-text').focus(),300);}
-function selectMood(m){selectedMood=m;updateMoodButtons(m);}
-function updateMoodButtons(m){document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===m));}
-async function saveEntry(){const text=document.getElementById('entry-text').value.trim();if(!text){showToast('Eintrag eingeben');return;}const id=document.getElementById('entry-id').value;const entry={id:id||uid(),date:new Date().toISOString(),mood:selectedMood,text};if(id){const idx=appData.tagebuch.findIndex(e=>e.id===id);if(idx!==-1){entry.date=appData.tagebuch[idx].date;appData.tagebuch[idx]=entry;}}else{appData.tagebuch.push(entry);}closeModal('modal-entry');renderTagebuch();await saveData('update: save entry');showToast('Gespeichert');}
-async function deleteEntry(){const id=document.getElementById('entry-id').value;appData.tagebuch=appData.tagebuch.filter(e=>e.id!==id);closeModal('modal-entry');renderTagebuch();await saveData('update: delete entry');showToast('Gelöscht');}
-function renderPatienten(){if(!appData)return;const list=document.getElementById('patienten-list');const pats=appData.patienten||[];if(!pats.length){list.innerHTML='<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>Keine Patienten.<br>Tippe + um hinzuzufügen.</p></div>';return;}list.innerHTML='';pats.forEach(pat=>{const el=document.createElement('div');el.className='patient-card';el.onclick=()=>openPatientModal(pat);let tags='';if(pat.kogu)tags+='<span class="patient-tag">Kogu: '+escHtml(pat.kogu)+'</span>';if(pat.ambulant)tags+='<span class="patient-tag">Amb: '+escHtml(pat.ambulant)+'</span>';if(pat.wohnsituation)tags+='<span class="patient-tag">'+escHtml(pat.wohnsituation)+'</span>';if(pat.sprache)tags+='<span class="patient-tag">'+escHtml(pat.sprache)+'</span>';el.innerHTML='<div class="patient-name">'+escHtml(pat.name)+'</div><div class="patient-tags">'+tags+'</div>'+(pat.notes?'<div class="patient-notes">'+escHtml(pat.notes)+'</div>':'');list.appendChild(el);});}
-function openPatientModal(pat){document.getElementById('modal-patient-title').textContent=pat?'Patient bearbeiten':'Neuer Patient';document.getElementById('patient-id').value=pat?pat.id:'';document.getElementById('patient-name').value=pat?pat.name:'';document.getElementById('patient-kogu').value=pat?(pat.kogu||')':'';document.getElementById('patient-ambulant').value=pat?(pat.ambulant||'):'';document.getElementById('patient-wohn').value=pat?(pat.wohnsituation||'):'';document.getElementById('patient-sprache').value=pat?(pat.sprache||'):'';document.getElementById('patient-notes').value=pat?(pat.notes||'):'';document.getElementById('delete-patient-btn').style.display=pat?'block':'none';openModal('modal-patient');}
-async function savePatient(){const name=document.getElementById('patient-name').value.trim();if(!name){showToast('Name erforderlich');return;}const id=document.getElementById('patient-id').value;const pat={id:id||uid(),name,kogu:document.getElementById('patient-kogu').value.trim(),ambulant:document.getElementById('patient-ambulant').value.trim(),wohnsituation:document.getElementById('patient-wohn').value.trim(),sprache:document.getElementById('patient-sprache').value.trim(),notes:document.getElementById('patient-notes').value.trim(),createdAt:id?undefined:new Date().toISOString()};if(id){const idx=appData.patienten.findIndex(p=>p.id===id);if(idx!==-1){pat.createdAt=appData.patienten[idx].createdAt;appData.patienten[idx]=pat;}}else{appData.patienten.push(pat);}closeModal('modal-patient');renderPatienten();await saveData('update: save patient');showToast('Gespeichert');}
-async function deletePatient(){const id=document.getElementById('patient-id').value;appData.patienten=appData.patienten.filter(p=>p.id!==id);closeModal('modal-patient');renderPatienten();await saveData('update: delete patient');showToast('Gelöscht');}
-async function saveToken(){const val=document.getElementById('github-token-input').value.trim();if(!val){showToast('Token eingeben');return;}if(!appData.einstellungen)appData.einstellungen={};appData.einstellungen.githubToken=val;localStorage.setItem(TOKEN_KEY,val);await saveData('update: save github token');showToast('Token gespeichert');}
-async function toggleTheme(){if(!appData.einstellungen)appData.einstellungen={};appData.einstellungen.theme=appData.einstellungen.theme==='dark'?'light':'dark';applyTheme();await saveData('update: toggle theme');}
-async function loadRoadmap(){const el=document.getElementById('roadmap-content');el.style.display='block';el.textContent='Lade Roadmap...';try{const h={'Accept':'application/vnd.github.v3+json'};const tok=getToken();if(tok)h['Authorization']='token '+tok;const resp=await fetch('https://api.github.com/repos/ctmos/dispatch-memory/contents/BUILDBACKLOG.md',{headers:h});if(resp.ok){const json=await resp.json();el.textContent=decodeURIComponent(escape(atob(json.content.replace(/
-/g,''))));}else{el.textContent='Roadmap nicht gefunden (HTTP '+resp.status+')';}}catch(e){el.textContent='Fehler: '+e.message;}}
-function checkMigration(){const keys=['cowork_tasks','cowork_diary','cowork_patients','coworkKanbanCards'];const found=keys.filter(k=>localStorage.getItem(k));if(!found.length)return;const notice=document.getElementById('migration-notice');notice.style.display='block';notice.innerHTML='<div class="migration-notice"><p>Alte Daten gefunden ('+found.join(', ')+').</p><div style="display:flex;gap:8px"><button class="btn btn-primary btn-sm" onclick="migrateOldData()">Ja, migrieren</button><button class="btn btn-secondary btn-sm" onclick="document.getElementById('migration-notice').style.display='none'">Nein</button></div></div>';}
-async function migrateOldData(){let migrated=false;const oldCards=localStorage.getItem('coworkKanbanCards');if(oldCards){try{JSON.parse(oldCards).forEach(c=>{if(!appData.kanban.cards.find(x=>x.title===(c.title||c.Titel))){appData.kanban.cards.push({id:uid(),title:c.title||c.Titel||'Karte',description:c.description||'',column:c.column||appData.kanban.columns[0],priority:c.priority||'medium',categoryId:'',createdAt:new Date().toISOString()});}});migrated=true;}catch(e){}}const oldTasks=localStorage.getItem('cowork_tasks');if(oldTasks){try{const key=todayKey();if(!appData.heute.tasks[key])appData.heute.tasks[key]=[];JSON.parse(oldTasks).forEach(t=>appData.heute.tasks[key].push({text:t.text||t,done:t.done||false,createdAt:new Date().toISOString()}));migrated=true;}catch(e){}}const oldDiary=localStorage.getItem('cowork_diary');if(oldDiary){try{JSON.parse(oldDiary).forEach(e=>appData.tagebuch.push({id:uid(),date:e.date||new Date().toISOString(),mood:e.mood||3,text:e.text||e.content||''}));migrated=true;}catch(e){}}const oldPats=localStorage.getItem('cowork_patients');if(oldPats){try{JSON.parse(oldPats).forEach(p=>{if(!appData.patienten.find(x=>x.name===(p.name||p.Name))){appData.patienten.push({id:uid(),name:p.name||p.Name||'Patient',kogu:p.kogu||'',ambulant:p.ambulant||'',wohnsituation:p.wohnsituation||'',sprache:p.sprache||'',notes:p.notes||p.notizen||'',createdAt:new Date().toISOString()});}});migrated=true;}catch(e){}}if(migrated){renderAll();await saveData('migrate: import old data');showToast('Migration abgeschlossen!',3000);document.getElementById('migration-notice').style.display='none';}else{showToast('Keine alten Daten gefunden');}}
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-document.getElementById('heute-task-input').addEventListener('keydown',e=>{if(e.key==='Enter')saveHeuteTask();});
-document.getElementById('card-title').addEventListener('keydown',e=>{if(e.key==='Enter')saveCard();});
-document.getElementById('patient-name').addEventListener('keydown',e=>{if(e.key==='Enter')savePatient();});
-initPin();
+function renderHeuteDate(){const el=document.getElementById("heute-date"),d=new Date();const days=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];const months=["Januar","Februar","M\u00e4rz","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];el.textContent=days[d.getDay()]+", "+d.getDate()+". "+months[d.getMonth()]+" "+d.getFullYear();}
+
+function renderHeute(){const today=todayKey(),tasks=(appData.heute.tasks&&appData.heute.tasks[today])||[],container=document.getElementById("heute-tasks");
+  if(!tasks.length){container.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><p>Keine Aufgaben heute</p></div>';return;}
+  container.innerHTML=tasks.map(t=>`<div class="task-item"><div class="task-check ${t.done?"done":""}" onclick="toggleTask('${today}','${t.id}')">${t.done?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':""}</div><span class="task-text ${t.done?"done":""}">${escHtml(t.text)}</span><button class="task-del" onclick="deleteTask('${today}','${t.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div>`).join('');}
+
+function addHeuteTask(){const input=document.getElementById("heute-input"),text=input.value.trim();if(!text)return;const today=todayKey();if(!appData.heute.tasks[today])appData.heute.tasks[today]=[];appData.heute.tasks[today].push({id:genId(),text,done:false});saveData();renderHeute();input.value="";input.focus();}
+document.addEventListener("DOMContentLoaded",()=>{document.getElementById("heute-input").addEventListener("keydown",e=>{if(e.key==="Enter")addHeuteTask();});});
+function toggleTask(date,id){const tasks=appData.heute.tasks[date]||[],t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;saveData();renderHeute();}}
+function deleteTask(date,id){if(!appData.heute.tasks[date])return;appData.heute.tasks[date]=appData.heute.tasks[date].filter(t=>t.id!==id);saveData();renderHeute();}
+
+const MOODS=["","&#128542;","&#128533;","&#128528;","&#128522;","&#128516;"];
+function renderTagebuch(){const list=document.getElementById("tagebuch-list"),entries=[...appData.tagebuch].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!entries.length){list.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><p>Noch keine Eintr\u00e4ge</p></div>';return;}
+  list.innerHTML=entries.map(e=>{const d=new Date(e.date),dateStr=d.toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    return `<div class="diary-entry"><div class="diary-date"><span>${dateStr}</span><div style="display:flex;gap:8px;align-items:center"><span class="diary-mood">${MOODS[e.mood]||""}</span><button class="btn-icon" style="width:28px;height:28px" onclick="deleteDiary('${e.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div></div><div class="diary-text">${escHtml(e.text)}</div></div>`;}).join('');}
+
+function selectMood(m){currentMood=m;document.querySelectorAll(".mood-btn").forEach(btn=>btn.classList.toggle("selected",parseInt(btn.dataset.mood)===m));}
+function openDiaryModal(){currentMood=3;selectMood(3);document.getElementById("diary-text-input").value="";openModal("diary-modal");setTimeout(()=>document.getElementById("diary-text-input").focus(),200);}
+function saveDiary(){const text=document.getElementById("diary-text-input").value.trim();if(!text)return toast("Bitte Text eingeben");appData.tagebuch.push({id:genId(),date:new Date().toISOString(),text,mood:currentMood});saveData();renderTagebuch();closeModal("diary-modal");toast("Eintrag gespeichert");}
+function deleteDiary(id){if(!confirm("Eintrag loeschen?"))return;appData.tagebuch=appData.tagebuch.filter(e=>e.id!==id);saveData();renderTagebuch();}
+
+function renderPatienten(){const q=(document.getElementById("patient-search").value||"").toLowerCase(),list=document.getElementById("patienten-list");
+  let patients=appData.patienten||[];if(q)patients=patients.filter(p=>p.name.toLowerCase().includes(q)||(p.notes||"").toLowerCase().includes(q)||(p.kogu||"").toLowerCase().includes(q));
+  if(!patients.length){list.innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>${q?"Keine Ergebnisse":"Keine Patienten"}</p></div>`;return;}
+  list.innerHTML=patients.map(p=>`<div class="patient-card" onclick="showPatient('${p.id}')"><div class="patient-name">${escHtml(p.name)}</div><div class="patient-meta">${p.kogu?`<span class="badge">${escHtml(p.kogu)}</span>`:""}${p.sprache?`<span class="badge">${escHtml(p.sprache)}</span>`:""}${p.wohnsituation?`<span style="font-size:11px;color:var(--text-muted)">${escHtml(p.wohnsituation)}</span>`:""}</div></div>`).join('');}
+
+function showPatient(id){const p=appData.patienten.find(x=>x.id===id);if(!p)return;
+  document.getElementById("patient-detail-content").innerHTML=`<div class="modal-handle"></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px"><div class="modal-title" style="margin-bottom:0">${escHtml(p.name)}</div><div style="display:flex;gap:8px"><button class="btn-icon" onclick="editPatient('${p.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="btn-icon" style="color:var(--danger);border-color:var(--danger)" onclick="deletePatient('${p.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div></div>${p.kogu?`<div style="margin-bottom:12px"><div class="form-label">Behandlungsart</div><div>${escHtml(p.kogu)}</div></div>`:""}${p.wohnsituation?`<div style="margin-bottom:12px"><div class="form-label">Wohnsituation</div><div>${escHtml(p.wohnsituation)}</div></div>`:""}${p.sprache?`<div style="margin-bottom:12px"><div class="form-label">Sprache</div><div>${escHtml(p.sprache)}</div></div>`:""}${p.notes?`<div style="margin-bottom:12px"><div class="form-label">Notizen</div><div style="font-size:14px;line-height:1.6">${escHtml(p.notes)}</div></div>`:""}<div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('patient-detail-modal')">Schliessen</button></div>`;
+  openModal("patient-detail-modal");}
+
+function openPatientModal(id){document.getElementById("patient-modal-title").textContent=id?"Patient bearbeiten":"Neuer Patient";document.getElementById("patient-edit-id").value=id||"";
+  if(id){const p=appData.patienten.find(x=>x.id===id);if(p){document.getElementById("patient-name-input").value=p.name;document.getElementById("patient-kogu-input").value=p.kogu||"";document.getElementById("patient-wohn-input").value=p.wohnsituation||"";document.getElementById("patient-sprache-input").value=p.sprache||"";document.getElementById("patient-notes-input").value=p.notes||"";}}
+  else{["patient-name-input","patient-wohn-input","patient-sprache-input","patient-notes-input"].forEach(id=>document.getElementById(id).value="");document.getElementById("patient-kogu-input").value="";}
+  openModal("patient-modal");setTimeout(()=>document.getElementById("patient-name-input").focus(),200);}
+function editPatient(id){closeModal("patient-detail-modal");setTimeout(()=>openPatientModal(id),300);}
+function savePatient(){const name=document.getElementById("patient-name-input").value.trim();if(!name)return toast("Name ist erforderlich");
+  const editId=document.getElementById("patient-edit-id").value;
+  const data={id:editId||genId(),name,kogu:document.getElementById("patient-kogu-input").value,wohnsituation:document.getElementById("patient-wohn-input").value.trim(),sprache:document.getElementById("patient-sprache-input").value.trim(),notes:document.getElementById("patient-notes-input").value.trim()};
+  if(editId){const idx=appData.patienten.findIndex(p=>p.id===editId);if(idx>=0)appData.patienten[idx]=data;}else{appData.patienten.push(data);}
+  saveData();renderPatienten();closeModal("patient-modal");toast(editId?"Patient aktualisiert":"Patient gespeichert");}
+function deletePatient(id){if(!confirm("Patient loeschen?"))return;appData.patienten=appData.patienten.filter(p=>p.id!==id);saveData();renderPatienten();closeModal("patient-detail-modal");toast("Patient geloescht");}
+
+function toggleTheme(){appData.einstellungen.theme=appData.einstellungen.theme==="dark"?"light":"dark";saveData();applyTheme();}
+function applyTheme(){const theme=appData.einstellungen.theme;document.documentElement.setAttribute("data-theme",theme);const toggle=document.getElementById("theme-toggle");if(toggle)toggle.classList.toggle("on",theme==="dark");}
+function openTokenModal(){document.getElementById("token-input").value=appData.einstellungen.githubToken||"";openModal("token-modal");setTimeout(()=>document.getElementById("token-input").focus(),200);}
+function saveToken(){const token=document.getElementById("token-input").value.trim();appData.einstellungen.githubToken=token;saveData();updateTokenStatus();closeModal("token-modal");toast("Token gespeichert");if(token)loadFromGitHub();}
+function updateTokenStatus(){const el=document.getElementById("token-status");if(!el)return;const t=appData.einstellungen.githubToken;el.textContent=t?"Konfiguriert ("+t.slice(0,8)+"...)":"Nicht konfiguriert";}
+function openPinChangeModal(){document.getElementById("new-pin-input").value="";document.getElementById("confirm-pin-input").value="";openModal("pin-change-modal");setTimeout(()=>document.getElementById("new-pin-input").focus(),200);}
+function exportData(){const blob=new Blob([JSON.stringify(appData,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cowork-data-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url);toast("Export gestartet");}
+function clearData(){localStorage.removeItem(DATA_KEY);appData={version:"1.0",lastUpdated:new Date().toISOString(),kanban:{columns:["offen","in_arbeit","erledigt"],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[],einstellungen:{githubToken:"",theme:"light"}};renderAll();applyTheme();toast("Daten geloescht");}
+
+const TAB_TITLES={kanban:"Kanban",heute:"Heute",tagebuch:"Tagebuch",patienten:"Patienten",einstellungen:"Einstellungen"};
+function switchTab(tab){document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));document.getElementById("tab-"+tab).classList.add("active");document.querySelector(`[data-tab="${tab}"]`).classList.add("active");document.getElementById("header-title").textContent=TAB_TITLES[tab]||tab;}
+function openModal(id){document.getElementById(id).classList.add("open");}
+function closeModal(id){document.getElementById(id).classList.remove("open");}
+function closeModalOnBackdrop(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal-backdrop.open").forEach(m=>m.classList.remove("open"));});
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function escHtml(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+let toastTimer=null;
+function toast(msg,dur){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),dur||2500);}
+boot();
 </script>
 </body>
 </html>
