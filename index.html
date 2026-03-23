@@ -333,7 +333,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">GitHub Token</div>
-    <div class="form-group"><label class="form-label">Personal Access Token</label><input type="password" class="input" id="token-input" placeholder="ghp_..."><div style="font-size:12px;color:var(--text-muted);margin-top:6px">Benoetigt: repo Schreibzugriff auf ctmos/CoworkKanban</div></div>
+    <div class="form-group"><label class="form-label">Personal Access Token</label><input type="password" class="input" id="token-input" placeholder="ghp_..."><div style="font-size:12px;color:var(--text-muted);margin-top:6px">Benoetigt: repo Schreibzugriff auf ctmos/cowork-data</div></div>
     <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('token-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveToken()">Speichern</button></div>
   </div>
 </div>
@@ -349,7 +349,7 @@
 <div class="modal-backdrop" id="patient-detail-modal" onclick="closeModalOnBackdrop(event,'patient-detail-modal')"><div class="modal" id="patient-detail-content"></div></div>
 <div id="toast"></div>
 <script>
-const GITHUB_OWNER="ctmos",GITHUB_REPO="CoworkKanban",GITHUB_FILE="cowork-data.json",BRANCH="main";
+const GITHUB_OWNER="ctmos",GITHUB_REPO="cowork-data",GITHUB_FILE="cowork-data.json",BRANCH="main";
 const SESSION_KEY="cw_session",PIN_KEY="cw_pin_hash",DATA_KEY="cw_data";
 const DEFAULT_PIN="cowork2026",SESSION_TTL=864e5;
 let appData={version:"1.0",lastUpdated:new Date().toISOString(),kanban:{columns:["offen","in_arbeit","erledigt"],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[],einstellungen:{githubToken:"",theme:"light"}};
