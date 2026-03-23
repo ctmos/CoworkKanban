@@ -135,6 +135,15 @@
   </style>
 </head>
 <body>
+<div id="loginScreen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#F5F4EF;z-index:9999;align-items:center;justify-content:center;font-family:'Inter',sans-serif;">
+  <div style="background:#FFFFFF;border-radius:8px;padding:32px;max-width:360px;width:90%;box-sizing:border-box;">
+    <h1 style="font-size:20px;font-weight:600;color:#1a1a1a;margin:0 0 8px 0;">CoworkKanban</h1>
+    <p style="font-size:14px;color:#6b6b6b;margin:0 0 24px 0;">Bitte anmelden</p>
+    <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Passwort eingeben" style="width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:12px;">
+    <button id="loginBtn" style="width:100%;background:#1a1a1a;color:#ffffff;border:none;border-radius:8px;padding:10px;font-size:15px;font-family:inherit;cursor:pointer;">Anmelden</button>
+    <div id="loginError" style="display:none;color:#c0392b;font-size:13px;margin-top:8px;text-align:center;"></div>
+  </div>
+</div>
 <div id="pin-screen">
   <div class="pin-logo">CK</div>
   <div><div class="pin-title">CoworkKanban</div><div class="pin-subtitle" style="margin-top:4px">Version 9</div></div>
@@ -217,6 +226,19 @@
           <div class="settings-item" onclick="openPinChangeModal()">
             <div><div class="settings-item-label">PIN &auml;ndern</div><div class="settings-item-sub">4-stelliger Zugangscode</div></div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted)"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">Passwort</div>
+        <div class="settings-row" style="padding:14px 16px;">
+          <div style="width:100%;">
+            <h3 style="font-size:15px;font-weight:600;color:#1a1a1a;margin:0 0 12px 0;">Passwort andern</h3>
+            <input type="password" id="currentPassword" autocomplete="current-password" placeholder="Aktuelles Passwort" style="width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-bottom:8px;display:block;">
+            <input type="password" id="newPassword" autocomplete="new-password" placeholder="Neues Passwort" style="width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-bottom:8px;display:block;">
+            <input type="password" id="confirmPassword" autocomplete="new-password" placeholder="Passwort bestatigen" style="width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-bottom:8px;display:block;">
+            <button id="savePasswordBtn" style="width:100%;background:#1a1a1a;color:#ffffff;border:none;border-radius:8px;padding:10px;font-size:14px;font-family:inherit;cursor:pointer;">Passwort speichern</button>
+            <div id="passwordChangeStatus" style="display:none;font-size:13px;margin-top:8px;text-align:center;"></div>
           </div>
         </div>
       </div>
@@ -494,6 +516,136 @@ function escHtml(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replac
 let toastTimer=null;
 function toast(msg,dur){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),dur||2500);}
 boot();
+</script>
+<script>
+// === PASSWORD AUTH ===
+(function() {
+  async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function getStoredHash() {
+    const lsHash = localStorage.getItem('cowork-password-hash');
+    if (lsHash) return lsHash;
+    const defaultHash = await sha256('cowork2026');
+    return defaultHash;
+  }
+
+  function isSessionValid() {
+    const sessionStart = localStorage.getItem('cowork-session-start');
+    if (!sessionStart) return false;
+    const elapsed = Date.now() - parseInt(sessionStart, 10);
+    return elapsed < 24 * 60 * 60 * 1000;
+  }
+
+  function startSession() {
+    localStorage.setItem('cowork-session-start', Date.now().toString());
+  }
+
+  async function checkLogin() {
+    if (isSessionValid()) {
+      document.getElementById('loginScreen').style.display = 'none';
+      return;
+    }
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+
+  async function handleLogin() {
+    const input = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    if (!input) {
+      errorEl.textContent = 'Bitte Passwort eingeben.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    const inputHash = await sha256(input);
+    const storedHash = await getStoredHash();
+    if (inputHash === storedHash) {
+      startSession();
+      document.getElementById('loginScreen').style.display = 'none';
+      errorEl.style.display = 'none';
+    } else {
+      errorEl.textContent = 'Falsches Passwort.';
+      errorEl.style.display = 'block';
+    }
+  }
+
+  async function handlePasswordChange() {
+    const current = document.getElementById('currentPassword').value;
+    const newPw = document.getElementById('newPassword').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    const statusEl = document.getElementById('passwordChangeStatus');
+
+    if (!current || !newPw || !confirm) {
+      statusEl.textContent = 'Alle Felder ausfullen.';
+      statusEl.style.color = '#c0392b';
+      statusEl.style.display = 'block';
+      return;
+    }
+    if (newPw !== confirm) {
+      statusEl.textContent = 'Neue Passworter stimmen nicht uberein.';
+      statusEl.style.color = '#c0392b';
+      statusEl.style.display = 'block';
+      return;
+    }
+    if (newPw.length < 6) {
+      statusEl.textContent = 'Passwort muss mindestens 6 Zeichen haben.';
+      statusEl.style.color = '#c0392b';
+      statusEl.style.display = 'block';
+      return;
+    }
+
+    const currentHash = await sha256(current);
+    const storedHash = await getStoredHash();
+    if (currentHash !== storedHash) {
+      statusEl.textContent = 'Aktuelles Passwort falsch.';
+      statusEl.style.color = '#c0392b';
+      statusEl.style.display = 'block';
+      return;
+    }
+
+    const newHash = await sha256(newPw);
+    localStorage.setItem('cowork-password-hash', newHash);
+
+    if (window.appData && window.appData.settings) {
+      window.appData.settings.passwordHash = newHash;
+      if (typeof window.saveData === 'function') window.saveData();
+    }
+
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    statusEl.textContent = 'Passwort erfolgreich gespeichert.';
+    statusEl.style.color = '#2ecc71';
+    statusEl.style.display = 'block';
+    setTimeout(function() { statusEl.style.display = 'none'; }, 3000);
+  }
+
+  function syncHashFromAppData() {
+    if (window.appData && window.appData.settings && window.appData.settings.passwordHash) {
+      localStorage.setItem('cowork-password-hash', window.appData.settings.passwordHash);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    syncHashFromAppData();
+    checkLogin();
+
+    var loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) loginBtn.addEventListener('click', handleLogin);
+
+    var loginPw = document.getElementById('loginPassword');
+    if (loginPw) loginPw.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    var savePwBtn = document.getElementById('savePasswordBtn');
+    if (savePwBtn) savePwBtn.addEventListener('click', handlePasswordChange);
+  });
+})();
 </script>
 </body>
 </html>
