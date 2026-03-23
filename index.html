@@ -181,19 +181,19 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 <div class="tab" id="tab-tagebuch">
   <div class="tb-container">
     <div class="tb-nav">
-      <button id="tbPrev"> Vorheriger Tag</button>
+      <button id="tbPrev">← Vorheriger Tag</button>
       <span id="tbDate"></span>
-      <button id="tbNext">N�chster Tag </button>
+      <button id="tbNext">Nächster Tag →</button>
     </div>
     <h2 id="tbHeading"></h2>
-    <textarea id="tbText" placeholder="Tagebucheintrag f�r heute..."></textarea>
+    <textarea id="tbText" placeholder="Tagebucheintrag für heute..."></textarea>
   </div>
 </div>
 
 <div class="tab" id="tab-patienten">
   <div class="pat-container">
     <h2>Patienten</h2>
-    <button class="btn-add-card" id="addPatient" style="margin-bottom:12px;">+ Patient hinzuf�gen</button>
+    <button class="btn-add-card" id="addPatient" style="margin-bottom:12px;">+ Patient hinzufügen</button>
     <div id="patList"></div>
   </div>
 </div>
@@ -205,7 +205,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     <button class="export-btn" id="exportBtn">Daten exportieren</button>
     <button class="import-btn" id="importBtn">Daten importieren</button>
     <input type="file" id="importFile" accept=".json" style="display:none;">
-    <button class="delete-btn" id="deleteBtn">Alle Daten l�schen</button>
+    <button class="delete-btn" id="deleteBtn">Alle Daten löschen</button>
   </div>
 </div>
 
@@ -213,16 +213,16 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 <div class="modal-overlay" id="createModal">
   <div class="modal">
     <h3 id="createModalTitle">Neue Karte</h3>
-    <label>Pr�fix</label>
+    <label>Präfix</label>
     <input type="text" id="cmPrefix" maxlength="6">
-    <label>�berschrift *</label>
+    <label>Überschrift *</label>
     <input type="text" id="cmTitle" required>
     <label>Status</label>
     <div class="status-selector" id="cmStatus">
       <div class="status-option selected" data-val="gray"><span class="dot" style="background:var(--dot-gray)"></span>grau</div>
       <div class="status-option" data-val="red"><span class="dot" style="background:var(--dot-red)"></span>rot</div>
       <div class="status-option" data-val="yellow"><span class="dot" style="background:var(--dot-yellow)"></span>gelb</div>
-      <div class="status-option" data-val="green"><span class="dot" style="background:var(--dot-green)"></span>gr�n</div>
+      <div class="status-option" data-val="green"><span class="dot" style="background:var(--dot-green)"></span>grün</div>
     </div>
     <label>Deadline</label>
     <input type="date" id="cmDeadline">
@@ -242,7 +242,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     <p id="dmStatus" style="margin:8px 0;"></p>
     <p id="dmDeadline" style="font-size:14px;color:#64748b;"></p>
     <p id="dmDesc" style="margin-top:12px;white-space:pre-wrap;"></p>
-    <div class="modal-btns"><button class="btn-cancel" id="dmClose">Schlie�en</button></div>
+    <div class="modal-btns"><button class="btn-cancel" id="dmClose">Schließen</button></div>
   </div>
 </div>
 
@@ -264,7 +264,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 <script>
 (function(){
   const LANES = [
-    {id:'heute',name:'?? Heute',prefix:'HE',special:true},
+    {id:'heute',name:'📌 Heute',prefix:'HE',special:true},
     {id:'barmelweid',name:'Barmelweid',prefix:'BA'},
     {id:'patienten_lane',name:'Patienten',prefix:'PA'},
     {id:'psp_wb',name:'PSP WB',prefix:'WB'},
@@ -373,7 +373,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
           <div class="lane-cards" data-lane="${lane.id}"></div>
           ${archived.length||cards.length>=0?`
           <div class="archive-section">
-            <button class="archive-toggle" data-lane="${lane.id}">Archiv (${archived.length}) ?</button>
+            <button class="archive-toggle" data-lane="${lane.id}">Archiv (${archived.length}) ▶</button>
             <div class="archive-body" data-lane="${lane.id}"></div>
           </div>`:''}
         </div>`;
@@ -429,22 +429,22 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     let actions='';
     if(!isArchived){
       if(hasDesc) actions+=`<button class="btn-detail" data-id="${card.id}" title="Details">...</button>`;
-      if(!isHeuteLane) actions+=`<button class="btn-to-heute" data-id="${card.id}" title="Zu Heute"></button>`;
-      if(isHeuteLane) actions+=`<button class="btn-from-heute" data-id="${card.id}" title="Zur�ck"></button>`;
-      actions+=`<button class="btn-archive" data-id="${card.id}" title="Archivieren">??</button>`;
-      actions+=`<button class="btn-delete" data-id="${card.id}" title="L�schen">??</button>`;
+      if(!isHeuteLane) actions+=`<button class="btn-to-heute" data-id="${card.id}" title="Zu Heute">→</button>`;
+      if(isHeuteLane) actions+=`<button class="btn-from-heute" data-id="${card.id}" title="Zurück">←</button>`;
+      actions+=`<button class="btn-archive" data-id="${card.id}" title="Archivieren">📥</button>`;
+      actions+=`<button class="btn-delete" data-id="${card.id}" title="Löschen">🗑</button>`;
     } else {
       actions+=`<button class="btn-unarchive" data-id="${card.id}" title="Reaktivieren">reaktivieren</button>`;
-      actions+=`<button class="btn-delete" data-id="${card.id}" title="L�schen">??</button>`;
+      actions+=`<button class="btn-delete" data-id="${card.id}" title="Löschen">🗑</button>`;
     }
     div.innerHTML=`
       <div class="card-top">
         <span class="status-dot ${card.status}"></span>
         <span class="card-prefix">${card.id}</span>
-        <span class="card-title">� ${esc(card.title)}</span>
+        <span class="card-title">· ${esc(card.title)}</span>
         <div class="card-actions">${actions}</div>
       </div>
-      ${card.deadline?`<div class="card-date">?? ${formatDate(card.deadline)}</div>`:''}`;
+      ${card.deadline?`<div class="card-date">📅 ${formatDate(card.deadline)}</div>`:''}`;
     // events
     div.querySelector('.btn-detail')?.addEventListener('click',()=>openDetail(card));
     div.querySelector('.btn-to-heute')?.addEventListener('click',()=>{moveToHeute(card.id);});
@@ -473,7 +473,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
   function archiveCard(id){data.cards[id].archived=true;saveData();renderLanes();renderHeute();}
   function unarchiveCard(id){data.cards[id].archived=false;saveData();renderLanes();renderHeute();}
   function deleteCard(id){
-    if(!confirm('Karte "'+id+'" wirklich l�schen?')) return;
+    if(!confirm('Karte "'+id+'" wirklich löschen?')) return;
     delete data.cards[id];saveData();renderLanes();renderHeute();
   }
 
@@ -523,9 +523,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
   document.getElementById('cmSave').addEventListener('click',()=>{
     const prefix=document.getElementById('cmPrefix').value.trim();
     const title=document.getElementById('cmTitle').value.trim();
-    if(!title){alert('�berschrift ist erforderlich.');return;}
-    if(!prefix){alert('Pr�fix ist erforderlich.');return;}
-    if(data.cards[prefix]){alert('Karte mit diesem Pr�fix existiert bereits.');return;}
+    if(!title){alert('Überschrift ist erforderlich.');return;}
+    if(!prefix){alert('Präfix ist erforderlich.');return;}
+    if(data.cards[prefix]){alert('Karte mit diesem Präfix existiert bereits.');return;}
     const status=document.querySelector('#cmStatus .status-option.selected').dataset.val;
     const deadline=document.getElementById('cmDeadline').value||null;
     const desc=document.getElementById('cmDesc').value;
@@ -550,8 +550,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 
   // DETAIL MODAL
   function openDetail(card){
-    document.getElementById('dmTitle').textContent=card.id+' � '+card.title;
-    const statusMap={gray:'? grau',red:'?? rot',yellow:'?? gelb',green:'?? gr�n'};
+    document.getElementById('dmTitle').textContent=card.id+' · '+card.title;
+    const statusMap={gray:'⚪ grau',red:'🔴 rot',yellow:'🟡 gelb',green:'🟢 grün'};
     document.getElementById('dmStatus').textContent='Status: '+(statusMap[card.status]||card.status);
     document.getElementById('dmDeadline').textContent=card.deadline?'Deadline: '+formatDate(card.deadline):'';
     document.getElementById('dmDesc').textContent=card.description||'Keine Beschreibung.';
@@ -573,9 +573,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     if(cards.length===0){
       container.innerHTML=`
         <div class="tp-empty">
-          <p style="font-size:40px;margin-bottom:12px;">??</p>
-          <p>Kein Plan f�r heute - zieh Aufgaben aus dem Kanban in die Heute-Lane</p>
-          <button id="tpGoKanban"> Zum Kanban</button>
+          <p style="font-size:40px;margin-bottom:12px;">📋</p>
+          <p>Kein Plan für heute — zieh Aufgaben aus dem Kanban in die Heute-Lane</p>
+          <button id="tpGoKanban">→ Zum Kanban</button>
         </div>`;
       document.getElementById('tpGoKanban').addEventListener('click',()=>switchTab('projekte'));
       return;
@@ -584,11 +584,11 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     let html=`
       <div class="tp-header">
         <div class="tp-date">${dateStr}</div>
-        <div class="tp-summary">${cards.length} Aufgabe${cards.length!==1?'n':''} heute � ${openCount} offen � ${doneCount} erledigt</div>
+        <div class="tp-summary">${cards.length} Aufgabe${cards.length!==1?'n':''} heute · ${openCount} offen · ${doneCount} erledigt</div>
       </div>
       <div id="tpCardList"></div>
       <div class="tp-footer">
-        <button class="tp-btn-back" id="tpBackAll"> Alles zur�ckschieben</button>
+        <button class="tp-btn-back" id="tpBackAll">← Alles zurückschieben</button>
         <button class="tp-btn-add" id="tpAddNew">+ Neue Aufgabe heute</button>
       </div>`;
     container.innerHTML=html;
@@ -608,11 +608,11 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
         <div class="tp-checkbox${isDone?' checked':''}" data-id="${card.id}">${isDone?'V':''}</div>
         <div class="tp-body">
           <div class="tp-title-row">
-            <span class="tp-title${isDone?' strikethrough':''}">${esc(card.id)} � ${esc(card.title)}</span>
-            ${originLane&&originLane!=='heute'?`<span class="tp-lane-badge" style="background:${laneColor}">aus ${esc(laneName.replace(/??\s*/,''))}</span>`:''}
+            <span class="tp-title${isDone?' strikethrough':''}">${esc(card.id)} · ${esc(card.title)}</span>
+            ${originLane&&originLane!=='heute'?`<span class="tp-lane-badge" style="background:${laneColor}">aus ${esc(laneName.replace(/📌\s*/,''))}</span>`:''}
             <span class="tp-dot status-dot ${card.status}"></span>
           </div>
-          ${card.deadline?`<div class="tp-deadline${isOverdue?' overdue':''}">?? ${formatDate(card.deadline)}${isOverdue?' - �berf�llig':''}</div>`:''}
+          ${card.deadline?`<div class="tp-deadline${isOverdue?' overdue':''}">📅 ${formatDate(card.deadline)}${isOverdue?'— überfällig':''}</div>`:''}
           ${descSnippet?`<div class="tp-desc">${esc(descSnippet)}</div>`:''}
         </div>`;
 
@@ -639,7 +639,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     document.getElementById('tpBackAll').addEventListener('click',()=>{
       const heuteCards=Object.values(data.cards).filter(c=>c.inHeute&&!c.archived);
       if(!heuteCards.length) return;
-      if(!confirm(heuteCards.length+' Karte'+(heuteCards.length!==1?'n':'')+' zur�ckschieben?')) return;
+      if(!confirm(heuteCards.length+' Karte'+(heuteCards.length!==1?'n':'')+' zurückschieben?')) return;
       heuteCards.forEach(c=>{
         c.inHeute=false;
         if(c.originalLane){
@@ -688,10 +688,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
       const div=document.createElement('div');
       div.className='pat-item';
       div.innerHTML=`<div class="pat-info"><div class="pat-name">${esc(p.name)}</div>${p.notes?'<div class="pat-notes">'+esc(p.notes)+'</div>':''}</div>
-        <div class="pat-actions"><button class="pat-edit" data-idx="${i}">??</button><button class="pat-del" data-idx="${i}">??</button></div>`;
+        <div class="pat-actions"><button class="pat-edit" data-idx="${i}">✏️</button><button class="pat-del" data-idx="${i}">🗑</button></div>`;
       div.querySelector('.pat-edit').addEventListener('click',()=>openPatModal(i));
       div.querySelector('.pat-del').addEventListener('click',()=>{
-        if(!confirm('Patient "'+p.name+'" l�schen?')) return;
+        if(!confirm('Patient "'+p.name+'" löschen?')) return;
         data.patienten.splice(i,1);saveData();renderPatienten();
       });
       list.appendChild(div);
@@ -746,10 +746,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     e.target.value='';
   });
   document.getElementById('deleteBtn').addEventListener('click',()=>{
-    if(!confirm('Wirklich ALLE Daten l�schen? Dies kann nicht r�ckg�ngig gemacht werden.')) return;
+    if(!confirm('Wirklich ALLE Daten löschen? Dies kann nicht rückgängig gemacht werden.')) return;
     localStorage.removeItem(STORAGE_KEY);
     loadData();renderLanes();renderHeute();renderPatienten();renderTagebuch();
-    alert('Alle Daten gel�scht.');
+    alert('Alle Daten gelöscht.');
   });
 
   // MOBILE SWIPE
