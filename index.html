@@ -154,6 +154,31 @@
     ::-webkit-scrollbar-track{background:transparent;}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
     select.input{-webkit-appearance:none;appearance:none;padding-right:32px;}
+    .heute-hero{margin-bottom:20px;}
+    .heute-hero-date{font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px;line-height:1.3;}
+    .heute-widget{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--card-shadow);}
+    .heute-widget-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .heute-widget-icon{font-size:18px;line-height:1;flex-shrink:0;}
+    .heute-widget-title{font-size:15px;font-weight:600;flex:1;color:var(--text);}
+    .heute-widget-chevron{color:var(--text-muted);flex-shrink:0;}
+    .heute-widget-link{cursor:pointer;transition:border-color 0.15s;}
+    .heute-widget-link:hover{border-color:var(--accent);}
+    .heute-widget-empty{font-size:13px;color:var(--text-muted);padding:4px 0 2px;}
+    .heute-loading{font-size:13px;color:var(--text-muted);}
+    .process-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .process-item:last-child{border-bottom:none;padding-bottom:0;}
+    .process-item:first-child{padding-top:0;}
+    .process-info{flex:1;min-width:0;}
+    .process-title{font-size:14px;font-weight:500;color:var(--text);}
+    .process-note{font-size:12px;color:var(--text-muted);margin-top:2px;}
+    .process-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600;flex-shrink:0;margin-top:1px;}
+    .process-badge-active{background:var(--accent-light);color:var(--accent);}
+    .process-badge-done{background:#E8F5E9;color:#27ae60;}
+    .process-badge-paused{background:#FEF3E2;color:var(--warning);}
+    .kanban-summary-stats{display:flex;gap:24px;flex-wrap:wrap;}
+    .kanban-stat{display:flex;flex-direction:column;gap:2px;}
+    .kanban-stat-num{font-size:22px;font-weight:700;color:var(--text);line-height:1;}
+    .kanban-stat-label{font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;}
     .desktop-sidebar{display:none;}
     @media(min-width:768px){
       .bottom-nav{display:none!important;}
@@ -232,12 +257,37 @@
       <div class="kanban-board" id="kanban-board"></div>
     </div>
     <div class="tab-panel" id="tab-heute">
-      <div class="heute-date" id="heute-date"></div>
-      <div class="section-header"><div class="section-title">Heute</div></div>
-      <div id="heute-tasks"></div>
-      <div class="add-task-row">
-        <input type="text" class="input" id="heute-input" placeholder="Neue Aufgabe...">
-        <button class="btn btn-primary" onclick="addHeuteTask()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></button>
+      <div class="heute-hero">
+        <div class="heute-hero-date" id="heute-date"></div>
+      </div>
+      <div class="heute-widget">
+        <div class="heute-widget-header">
+          <span class="heute-widget-icon">⚡</span>
+          <div class="heute-widget-title">Laufende Prozesse</div>
+        </div>
+        <div id="active-tasks-list"><div class="heute-loading">Lade...</div></div>
+      </div>
+      <div class="heute-widget">
+        <div class="heute-widget-header">
+          <span class="heute-widget-icon">📅</span>
+          <div class="heute-widget-title">Heutige Termine</div>
+        </div>
+        <div class="heute-widget-empty">Kalender-Integration folgt in v10</div>
+      </div>
+      <div class="heute-widget heute-widget-link" onclick="switchTab('kanban')">
+        <div class="heute-widget-header">
+          <span class="heute-widget-icon">📋</span>
+          <div class="heute-widget-title">Kanban</div>
+          <svg class="heute-widget-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div id="kanban-summary"></div>
+      </div>
+      <div class="heute-widget">
+        <div class="heute-widget-header">
+          <span class="heute-widget-icon">👥</span>
+          <div class="heute-widget-title">Patienten-Schnellzugriff</div>
+        </div>
+        <div class="heute-widget-empty">Kommt bald</div>
       </div>
     </div>
     <div class="tab-panel" id="tab-tagebuch">
@@ -437,7 +487,7 @@ async function changePIN(){const np=document.getElementById("new-pin-input").val
   localStorage.setItem(PIN_KEY,await sha256(np));closeModal("pin-change-modal");toast("PIN geändert");}
 
 async function boot(){document.getElementById("pin-screen").style.display="none";document.getElementById("app").classList.add("visible");initApp();}
-function initApp(){loadData();migrateData();applyTheme();updateTokenStatus();renderAll();renderHeuteDate();loadFromGitHub();}
+function initApp(){loadData();migrateData();applyTheme();updateTokenStatus();renderAll();renderHeuteDate();loadFromGitHub();loadActiveTasks();}
 function renderAll(){renderKanban();renderHeute();renderTagebuch();renderPatienten();}
 
 function migrateData(){
@@ -526,12 +576,13 @@ function toggleColArchive(col){if(!window._arcOpen)window._arcOpen={};window._ar
 function todayKey(){return new Date().toISOString().slice(0,10);}
 function renderHeuteDate(){const el=document.getElementById("heute-date"),d=new Date();const days=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];const months=["Januar","Februar","M\u00e4rz","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];el.textContent=days[d.getDay()]+", "+d.getDate()+". "+months[d.getMonth()]+" "+d.getFullYear();}
 
-function renderHeute(){const today=todayKey(),tasks=(appData.heute.tasks&&appData.heute.tasks[today])||[],container=document.getElementById("heute-tasks");
+function renderHeute(){renderKanbanSummary();const today=todayKey(),tasks=(appData.heute.tasks&&appData.heute.tasks[today])||[],container=document.getElementById("heute-tasks");
+  if(!container)return;
   if(!tasks.length){container.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><p>Keine Aufgaben heute</p></div>';return;}
   container.innerHTML=tasks.map(t=>`<div class="task-item"><div class="task-check ${t.done?"done":""}" onclick="toggleTask('${today}','${t.id}')">${t.done?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':""}</div><span class="task-text ${t.done?"done":""}">${escHtml(t.text)}</span><button class="task-del" onclick="deleteTask('${today}','${t.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div>`).join('');}
 
 function addHeuteTask(){const input=document.getElementById("heute-input"),text=input.value.trim();if(!text)return;const today=todayKey();if(!appData.heute.tasks[today])appData.heute.tasks[today]=[];appData.heute.tasks[today].push({id:genId(),text,done:false});saveData();renderHeute();input.value="";input.focus();}
-document.addEventListener("DOMContentLoaded",()=>{document.getElementById("heute-input").addEventListener("keydown",e=>{if(e.key==="Enter")addHeuteTask();});document.addEventListener("click",()=>document.querySelectorAll(".status-dd.open").forEach(d=>d.classList.remove("open")));});
+document.addEventListener("DOMContentLoaded",()=>{const _hi=document.getElementById("heute-input");if(_hi)_hi.addEventListener("keydown",e=>{if(e.key==="Enter")addHeuteTask();});document.addEventListener("click",()=>document.querySelectorAll(".status-dd.open").forEach(d=>d.classList.remove("open")));});
 function toggleTask(date,id){const tasks=appData.heute.tasks[date]||[],t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;saveData();renderHeute();}}
 function deleteTask(date,id){if(!appData.heute.tasks[date])return;appData.heute.tasks[date]=appData.heute.tasks[date].filter(t=>t.id!==id);saveData();renderHeute();}
 
@@ -586,6 +637,9 @@ function genId(){return Date.now().toString(36)+Math.random().toString(36).slice
 function escHtml(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 let toastTimer=null;
 function toast(msg,dur){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),dur||2500);}
+function renderKanbanSummary(){const el=document.getElementById("kanban-summary");if(!el)return;const cards=appData.kanban.cards||[];const offen=cards.filter(c=>!c.archived&&c.column==="offen").length;const inArbeit=cards.filter(c=>!c.archived&&c.column==="in_arbeit").length;const erledigt=cards.filter(c=>!c.archived&&c.column==="erledigt").length;el.innerHTML=`<div class="kanban-summary-stats"><div class="kanban-stat"><span class="kanban-stat-num">${offen}</span><span class="kanban-stat-label">Offen</span></div><div class="kanban-stat"><span class="kanban-stat-num">${inArbeit}</span><span class="kanban-stat-label">In Arbeit</span></div><div class="kanban-stat"><span class="kanban-stat-num">${erledigt}</span><span class="kanban-stat-label">Erledigt</span></div></div>`;}
+async function loadActiveTasks(){const el=document.getElementById("active-tasks-list");if(!el)return;const token=getToken();if(!token){el.innerHTML='<div class="heute-widget-empty">GitHub Token erforderlich</div>';return;}try{const resp=await fetch("https://api.github.com/repos/ctmos/cowork-data/contents/active_tasks.json?ref=main",{headers:{Authorization:"token "+token,Accept:"application/vnd.github.v3+json"}});if(!resp.ok)throw new Error("HTTP "+resp.status);const json=await resp.json();const data=JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g,"")))));renderActiveTasks(data);}catch(e){el.innerHTML='<div class="heute-widget-empty">Keine laufenden Prozesse</div>';}}
+function renderActiveTasks(data){const el=document.getElementById("active-tasks-list");if(!el)return;const tasks=data&&data.tasks;if(!tasks||!tasks.length){el.innerHTML='<div class="heute-widget-empty">Keine laufenden Prozesse</div>';return;}const badges={active:'<span class="process-badge process-badge-active">🟢 aktiv</span>',done:'<span class="process-badge process-badge-done">✅ erledigt</span>',paused:'<span class="process-badge process-badge-paused">⏸ pausiert</span>'};el.innerHTML=tasks.map(t=>`<div class="process-item"><div class="process-info"><div class="process-title">${escHtml(t.title)}</div>${t.note?`<div class="process-note">${escHtml(t.note)}</div>`:""}</div>${badges[t.status]||""}</div>`).join('');}
 boot();
 document.addEventListener("DOMContentLoaded",function(){var nav=document.querySelector(".bottom-nav");if(nav){nav.addEventListener("click",function(e){var btn=e.target.closest(".nav-item");if(btn&&btn.dataset.tab){e.preventDefault();e.stopPropagation();switchTab(btn.dataset.tab);}});}});
 </script>
