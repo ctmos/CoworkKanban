@@ -633,7 +633,7 @@ nav::-webkit-scrollbar { display: none; }
   .modal-overlay { align-items: flex-end; padding: 0; }
 }
 
-/* Ã¢ÂÂÃ¢ÂÂ DESKTOP LAYOUT Ã¢ÂÂÃ¢ÂÂ */
+/* âÂÂâÂÂ DESKTOP LAYOUT âÂÂâÂÂ */
 @media (min-width: 769px) {
   nav { justify-content: center; }
   #tab-heute, #tab-patienten, #tab-autonomy, #tab-settings {
@@ -710,7 +710,7 @@ nav::-webkit-scrollbar { display: none; }
     <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
     <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="â¢â¢â¢â¢â¢â¢" autocomplete="off" inputmode="numeric">
     <div id="pin-confirm-group" style="display:none">
-      <input type="password" id="pin-confirm" class="pin-input" maxlength="6" placeholder="PIN bestÃ¤tigen" autocomplete="off" inputmode="numeric">
+      <input type="password" id="pin-confirm" class="pin-input" maxlength="6" placeholder="PIN bestätigen" autocomplete="off" inputmode="numeric">
     </div>
     <button class="pin-btn" id="pin-btn">Entsperren</button>
     <div class="pin-error" id="pin-error"></div>
@@ -746,7 +746,7 @@ nav::-webkit-scrollbar { display: none; }
       </div>
       <!-- Column 3: Weitere Plaene -->
       <div class="status-col" id="status-weitere">
-        <div class="status-col-header">Weitere PlÃ¤ne</div>
+        <div class="status-col-header">Weitere Pläne</div>
         <div id="weitere-list" class="status-list"></div>
       </div>
     </div>
@@ -782,7 +782,7 @@ nav::-webkit-scrollbar { display: none; }
       <h2 style="font-size:16px;font-weight:600">Build-Backlog</h2>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <select id="bl-filter" class="form-select" style="width:auto;padding:7px 10px;font-size:13px;">
-          <option value="">Alle PrioritÃ¤ten</option>
+          <option value="">Alle Prioritäten</option>
           <option value="hoch">ð´ Hoch</option>
           <option value="mittel">ð¡ Mittel</option>
           <option value="niedrig">ð¢ Niedrig</option>
@@ -805,7 +805,7 @@ nav::-webkit-scrollbar { display: none; }
           <input type="password" class="settings-input" id="gh-token-input" placeholder="ghp_...">
           <button class="btn-primary" id="btn-gh-save">Speichern</button>
         </div>
-        <p class="settings-desc">FÃ¼r GitHub-Sync (optional)</p>
+        <p class="settings-desc">Für GitHub-Sync (optional)</p>
       </div>
     </div>
 
@@ -815,7 +815,7 @@ nav::-webkit-scrollbar { display: none; }
         <label class="settings-label">Neuen PIN setzen</label>
         <div class="settings-input-row">
           <input type="password" class="settings-input" id="new-pin-input" maxlength="6" placeholder="Neuer PIN (4â6 Ziffern)" inputmode="numeric">
-          <button class="btn-primary" id="btn-pin-change">Ãndern</button>
+          <button class="btn-primary" id="btn-pin-change">Ändern</button>
         </div>
       </div>
     </div>
@@ -843,8 +843,8 @@ nav::-webkit-scrollbar { display: none; }
     <div class="settings-section danger-zone">
       <h3>Danger Zone</h3>
       <div class="settings-row">
-        <button class="btn-danger" id="btn-reset" style="width:100%">Alle Daten lÃ¶schen</button>
-        <p class="settings-desc">LÃ¶scht alle Karten, Patienten und Logs unwiderruflich.</p>
+        <button class="btn-danger" id="btn-reset" style="width:100%">Alle Daten löschen</button>
+        <p class="settings-desc">Löscht alle Karten, Patienten und Logs unwiderruflich.</p>
       </div>
     </div>
   </div>
@@ -859,7 +859,7 @@ nav::-webkit-scrollbar { display: none; }
       <input type="text" class="form-input" id="blm-title" placeholder="Feature oder Projektâ¦">
     </div>
     <div class="form-group">
-      <label class="form-label">PrioritÃ¤t</label>
+      <label class="form-label">Priorität</label>
       <select class="form-select" id="blm-prio">
         <option value="hoch">ð´ Hoch</option>
         <option value="mittel">ð¡ Mittel</option>
@@ -883,7 +883,7 @@ nav::-webkit-scrollbar { display: none; }
       <textarea class="form-textarea" id="blm-desc" placeholder="Detailsâ¦"></textarea>
     </div>
     <div class="modal-footer">
-      <button class="btn-danger" id="blm-delete" style="margin-right:auto">LÃ¶schen</button>
+      <button class="btn-danger" id="blm-delete" style="margin-right:auto">Löschen</button>
       <button class="btn-secondary" id="blm-cancel">Abbrechen</button>
       <button class="btn-primary" id="blm-save">Speichern</button>
     </div>
@@ -916,7 +916,7 @@ nav::-webkit-scrollbar { display: none; }
       <textarea class="form-textarea" id="cm-desc" placeholder="Detailsâ¦"></textarea>
     </div>
     <div class="modal-footer">
-      <button class="btn-danger" id="cm-delete" style="margin-right:auto">LÃ¶schen</button>
+      <button class="btn-danger" id="cm-delete" style="margin-right:auto">Löschen</button>
       <button class="btn-secondary" id="cm-heute" style="display:none">â Heute</button>
       <button class="btn-secondary" id="cm-cancel">Abbrechen</button>
       <button class="btn-primary" id="cm-save">Speichern</button>
@@ -949,7 +949,7 @@ nav::-webkit-scrollbar { display: none; }
       <textarea class="form-textarea" id="pm-notizen" placeholder="Klinische Notizenâ¦"></textarea>
     </div>
     <div class="modal-footer">
-      <button class="btn-danger" id="pm-delete" style="margin-right:auto">LÃ¶schen</button>
+      <button class="btn-danger" id="pm-delete" style="margin-right:auto">Löschen</button>
       <button class="btn-secondary" id="pm-cancel">Abbrechen</button>
       <button class="btn-primary" id="pm-save">Speichern</button>
     </div>
@@ -959,18 +959,18 @@ nav::-webkit-scrollbar { display: none; }
 <!-- CONFIRM MODAL -->
 <div id="confirm-overlay">
   <div class="confirm-modal">
-    <h3 id="confirm-title">BestÃ¤tigen</h3>
+    <h3 id="confirm-title">Bestätigen</h3>
     <p id="confirm-msg"></p>
     <div class="confirm-btns">
       <button class="btn-secondary" id="confirm-no">Abbrechen</button>
-      <button class="btn-danger" id="confirm-yes">LÃ¶schen</button>
+      <button class="btn-danger" id="confirm-yes">Löschen</button>
     </div>
   </div>
 </div>
 
 <script>
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ GITHUB HELPERS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âÂÂâÂÂâÂÂ GITHUB HELPERS âÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂ
 const GH_DATA_REPO = 'ctmos/cowork-data';
 const GH_API_BASE  = 'https://api.github.com';
 
@@ -1022,7 +1022,7 @@ const LANES = [
   {id:'BA', name:'Barmelweid', isBA:true},
   {id:'PA', name:'Patienten-Admin'},
   {id:'WB', name:'Weiterbildung'},
-  {id:'SI', name:'Selbst & IdentitÃ¤t'},
+  {id:'SI', name:'Selbst & Identität'},
   {id:'FI', name:'Finanzen'},
   {id:'FR', name:'Freizeit & Familie'},
   {id:'EV', name:'Events & Termine'},
@@ -1030,14 +1030,14 @@ const LANES = [
   {id:'KI', name:'KI & Tech'},
   {id:'CO', name:'Coaching'},
   {id:'IK', name:'Interkantonales'},
-  {id:'ER', name:'ErnÃ¤hrung & Sport'},
+  {id:'ER', name:'Ernährung & Sport'},
   {id:'TA', name:'Tagesstruktur'},
   {id:'HE', name:'Heute', isHeute:true}
 ];
 
 const BA_TPLS = [
   'Verlaufsbericht',
-  'ErstgesprÃ¤ch-Bericht',
+  'Erstgespräch-Bericht',
   'Austrittsbericht',
   'Verlaufs-/Austrittsbericht',
   'Gruppen-Verlaufsbericht',
@@ -1085,14 +1085,14 @@ function showPinUnlockUI(stored) {
 
 function showPinSetupUI() {
   document.getElementById('pin-title').textContent = 'PIN einrichten';
-  document.getElementById('pin-subtitle').textContent = 'WÃ¤hle einen PIN (4â6 Stellen)';
+  document.getElementById('pin-subtitle').textContent = 'Wähle einen PIN (4â6 Stellen)';
   document.getElementById('pin-confirm-group').style.display = 'block';
   document.getElementById('pin-btn').textContent = 'PIN einrichten';
   document.getElementById('pin-btn').addEventListener('click', async function() {
     const p1 = document.getElementById('pin-input').value;
     const p2 = document.getElementById('pin-confirm').value;
     if (p1.length < 4) { showPinError('Mindestens 4 Stellen'); return; }
-    if (p1 !== p2) { showPinError('PINs stimmen nicht Ã¼berein'); return; }
+    if (p1 !== p2) { showPinError('PINs stimmen nicht überein'); return; }
     const pinHash = btoa(p1 + 'cowork');
     localStorage.setItem('cowork_pin', pinHash);
     localStorage.setItem('cowork_pin_set', 'true');
@@ -1108,7 +1108,7 @@ async function initPinScreen() {
   if (stored) {
     showPinUnlockUI(stored);
   } else {
-    document.getElementById('pin-subtitle').textContent = 'PrÃ¼fe GitHubâ¦';
+    document.getElementById('pin-subtitle').textContent = 'Prüfe GitHubâ¦';
     document.getElementById('pin-btn').disabled = true;
     const remote = await fetchFromGitHub('settings/pin.json');
     document.getElementById('pin-btn').disabled = false;
@@ -1224,7 +1224,7 @@ function renderStatusTab() {
           + '</div>'
           + origLaneMeta
           + '</div>'
-          + '<button class="today-btn is-today" onclick="moveFromToday(\"' + esc(c.id) + '\")" title="ZurÃ¼ck">â©</button>'
+          + '<button class="today-btn is-today" onclick="moveFromToday(\'' + esc(c.id) + '\')" title="Zurück">↩</button>'
           + '</div>';
       }).join('');
   }
@@ -1357,8 +1357,8 @@ function renderCardItem(card) {
   const isHE = card.todayFlag || card.lane === 'HE';
   const cardId = esc(card.id);
   const onclickFn = isHE ? 'moveFromToday(\"' + cardId + '\")' : 'moveToToday(\"' + cardId + '\")';
-  const titleAttr = isHE ? 'ZurÃ¼ck' : 'Heute';
-  const btnIcon = isHE ? 'â©' : 'â';
+  const titleAttr = isHE ? 'Zurück' : 'Heute';
+  const btnIcon = isHE ? '↩' : 'â';
   const todayCls = isHE ? ' is-today' : '';
   return '<div class="card-item" data-id="' + cardId + '" style="position:relative;">'
     + '<span class="card-prefix">' + esc(card.id) + '</span>'
@@ -1504,7 +1504,7 @@ document.getElementById('cm-save').addEventListener('click', () => {
 });
 
 document.getElementById('cm-delete').addEventListener('click', () => {
-  confirmAction('Karte lÃ¶schen?', 'Diese Karte wird unwiderruflich gelÃ¶scht.', () => {
+  confirmAction('Karte löschen?', 'Diese Karte wird unwiderruflich gelöscht.', () => {
     const cards = getCards();
     if (cmCardId) { cards[cmCardId].archived = true; saveCards(cards); }
     closeCardModal();
@@ -1597,7 +1597,7 @@ document.getElementById('pm-save').addEventListener('click', () => {
 });
 
 document.getElementById('pm-delete').addEventListener('click', () => {
-  confirmAction('Patient lÃ¶schen?', 'Dieser Patient wird unwiderruflich gelÃ¶scht.', () => {
+  confirmAction('Patient löschen?', 'Dieser Patient wird unwiderruflich gelöscht.', () => {
     let patients = getPatients();
     patients = patients.filter(p => p.id !== pmPatId);
     savePatients(patients);
@@ -1635,7 +1635,7 @@ function renderAL() {
   }
 
   if (log.length === 0) {
-    list.innerHTML = '<div class="empty-state">Keine EintrÃ¤ge.</div>';
+    list.innerHTML = '<div class="empty-state">Keine Einträge.</div>';
     return;
   }
 
@@ -1675,8 +1675,8 @@ const BL_DEMOS = [
   { id:'bl001', title:'Nacht-Autopilot aktivieren',       prio:'hoch',    cat:'KI',          status:'geplant',    desc:'Automatische Aufgaben-Priorisierung nach 22 Uhr basierend auf Kalender.' },
   { id:'bl002', title:'Google Drive Integration',         prio:'mittel',  cat:'Integration', status:'geplant',    desc:'Berichte direkt in Drive-Ordner speichern und teilen.' },
   { id:'bl003', title:'Patienten-Timeline Variante C',    prio:'hoch',    cat:'Patienten',   status:'in-arbeit',  desc:'Chronologische Verlaufsansicht pro Patient mit Meilensteinen.' },
-  { id:'bl004', title:'Offline-Modus & PWA-Install',     prio:'mittel',  cat:'Tech',        status:'geplant',    desc:'Service Worker fÃ¼r Offline-Nutzung und App-Installation auf Homescreen.' },
-  { id:'bl005', title:'WochenrÃ¼ckblick-Report (PDF)',     prio:'niedrig', cat:'Reporting',   status:'geplant',    desc:'Automatisch generierter PDF-Report aller erledigten Aufgaben pro Woche.' }
+  { id:'bl004', title:'Offline-Modus & PWA-Install',     prio:'mittel',  cat:'Tech',        status:'geplant',    desc:'Service Worker für Offline-Nutzung und App-Installation auf Homescreen.' },
+  { id:'bl005', title:'Wochenrückblick-Report (PDF)',     prio:'niedrig', cat:'Reporting',   status:'geplant',    desc:'Automatisch generierter PDF-Report aller erledigten Aufgaben pro Woche.' }
 ];
 
 function getBacklog() {
@@ -1703,7 +1703,7 @@ function renderBacklog() {
 
   const list = document.getElementById('bl-list');
   if (bl.length === 0) {
-    list.innerHTML = '<div class="empty-state">Keine EintrÃ¤ge.</div>'; return;
+    list.innerHTML = '<div class="empty-state">Keine Einträge.</div>'; return;
   }
   list.innerHTML = bl.map(e => `
     <div class="bl-card" onclick="openBLModal('${esc(e.id)}')">
@@ -1774,7 +1774,7 @@ document.getElementById('blm-save').addEventListener('click', () => {
 });
 
 document.getElementById('blm-delete').addEventListener('click', () => {
-  confirmAction('Eintrag lÃ¶schen?', 'Dieser Backlog-Eintrag wird unwiderruflich gelÃ¶scht.', () => {
+  confirmAction('Eintrag löschen?', 'Dieser Backlog-Eintrag wird unwiderruflich gelöscht.', () => {
     let bl = getBacklog() || [];
     bl = bl.filter(e => e.id !== blEntryId);
     saveBacklog(bl);
@@ -1830,9 +1830,9 @@ document.getElementById('btn-pin-change').addEventListener('click', async () => 
   document.getElementById('new-pin-input').value = '';
   try {
     await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: hashPin(val) }, null, 2), 'sync: update PIN');
-    showToast('â PIN geÃ¤ndert & synchronisiert');
+    showToast('â PIN geändert & synchronisiert');
   } catch(e) {
-    showToast('â PIN lokal geÃ¤ndert');
+    showToast('â PIN lokal geändert');
   }
 });
 
@@ -1881,11 +1881,11 @@ document.getElementById('import-file').addEventListener('change', (e) => {
 });
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-  confirmAction('Alle Daten lÃ¶schen?', 'ALLE Karten, Patienten und Logs werden unwiderruflich gelÃ¶scht.', () => {
+  confirmAction('Alle Daten löschen?', 'ALLE Karten, Patienten und Logs werden unwiderruflich gelöscht.', () => {
     ['cowork_cards','cowork_patients','cowork_autonomy_log','cowork_backlog','cowork_collapsed','cowork_budget']
       .forEach(k => localStorage.removeItem(k));
     LANES.forEach(l => localStorage.removeItem('cowork_seq_' + l.id));
-    showToast('Alle Daten gelÃ¶scht');
+    showToast('Alle Daten gelöscht');
     switchTab('heute');
   });
 });
