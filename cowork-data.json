@@ -1,16 +1,20 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-03-22T00:00:00.000Z",
-  "tasks": {
-    "offen": [],
-    "in_arbeit": [],
-    "erledigt": []
+  "lastUpdated": "2026-03-23T04:53:22.667Z",
+  "kanban": {
+    "columns": [
+      "offen",
+      "in_arbeit",
+      "erledigt"
+    ],
+    "cards": []
   },
-  "heute": [],
-  "patienten": [],
+  "heute": {
+    "tasks": {}
+  },
   "tagebuch": [],
+  "patienten": [],
   "settings": {
-    "githubToken": "",
     "theme": "light"
   }
 }
