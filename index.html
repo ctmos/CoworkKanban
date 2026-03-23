@@ -129,6 +129,16 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 #tab-einstellungen .export-btn{background:var(--primary);color:#fff;border:none;}
 #tab-einstellungen .import-btn{background:#fff;}
 #tab-einstellungen .delete-btn{background:var(--danger);color:#fff;border:none;}
+/* VORLAGEN DROPDOWN */
+.vorlagen-wrapper{position:relative;display:inline-block;}
+.btn-vorlagen{background:#2563eb;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;margin-right:4px;}
+.btn-vorlagen:hover{background:#1d4ed8;}
+.vorlagen-dropdown{display:none;position:absolute;top:100%;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:50;min-width:260px;padding:4px 0;margin-top:4px;}
+.vorlagen-dropdown.open{display:block;}
+.vorlagen-dropdown button{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 14px;font-size:13px;cursor:pointer;color:#1e293b;}
+.vorlagen-dropdown button:hover{background:#f1f5f9;}
+.vorlagen-dropdown button .vt-label{font-weight:600;display:block;}
+.vorlagen-dropdown button .vt-sub{font-size:11px;color:#64748b;display:block;margin-top:1px;}
 /* MOBILE */
 @media(max-width:768px){
   .lanes-container{gap:0;padding:0;overflow:hidden;position:relative;}
@@ -160,9 +170,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 
 <div class="tab" id="tab-projekte">
   <div class="mobile-lane-nav" id="mobileLaneNav">
-    <button id="lanePrev">◀</button>
+    <button id="lanePrev">?</button>
     <span id="laneNameDisplay"></span>
-    <button id="laneNext">▶</button>
+    <button id="laneNext">?</button>
   </div>
   <div class="lane-dots" id="laneDots"></div>
   <div class="lanes-container" id="lanesContainer"></div>
@@ -171,19 +181,19 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 <div class="tab" id="tab-tagebuch">
   <div class="tb-container">
     <div class="tb-nav">
-      <button id="tbPrev">← Vorheriger Tag</button>
+      <button id="tbPrev"> Vorheriger Tag</button>
       <span id="tbDate"></span>
-      <button id="tbNext">Nächster Tag →</button>
+      <button id="tbNext">N�chster Tag </button>
     </div>
     <h2 id="tbHeading"></h2>
-    <textarea id="tbText" placeholder="Tagebucheintrag für heute..."></textarea>
+    <textarea id="tbText" placeholder="Tagebucheintrag f�r heute..."></textarea>
   </div>
 </div>
 
 <div class="tab" id="tab-patienten">
   <div class="pat-container">
     <h2>Patienten</h2>
-    <button class="btn-add-card" id="addPatient" style="margin-bottom:12px;">+ Patient hinzufügen</button>
+    <button class="btn-add-card" id="addPatient" style="margin-bottom:12px;">+ Patient hinzuf�gen</button>
     <div id="patList"></div>
   </div>
 </div>
@@ -195,7 +205,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     <button class="export-btn" id="exportBtn">Daten exportieren</button>
     <button class="import-btn" id="importBtn">Daten importieren</button>
     <input type="file" id="importFile" accept=".json" style="display:none;">
-    <button class="delete-btn" id="deleteBtn">Alle Daten löschen</button>
+    <button class="delete-btn" id="deleteBtn">Alle Daten l�schen</button>
   </div>
 </div>
 
@@ -203,16 +213,16 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 <div class="modal-overlay" id="createModal">
   <div class="modal">
     <h3 id="createModalTitle">Neue Karte</h3>
-    <label>Präfix</label>
+    <label>Pr�fix</label>
     <input type="text" id="cmPrefix" maxlength="6">
-    <label>Überschrift *</label>
+    <label>�berschrift *</label>
     <input type="text" id="cmTitle" required>
     <label>Status</label>
     <div class="status-selector" id="cmStatus">
       <div class="status-option selected" data-val="gray"><span class="dot" style="background:var(--dot-gray)"></span>grau</div>
       <div class="status-option" data-val="red"><span class="dot" style="background:var(--dot-red)"></span>rot</div>
       <div class="status-option" data-val="yellow"><span class="dot" style="background:var(--dot-yellow)"></span>gelb</div>
-      <div class="status-option" data-val="green"><span class="dot" style="background:var(--dot-green)"></span>grün</div>
+      <div class="status-option" data-val="green"><span class="dot" style="background:var(--dot-green)"></span>gr�n</div>
     </div>
     <label>Deadline</label>
     <input type="date" id="cmDeadline">
@@ -232,7 +242,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     <p id="dmStatus" style="margin:8px 0;"></p>
     <p id="dmDeadline" style="font-size:14px;color:#64748b;"></p>
     <p id="dmDesc" style="margin-top:12px;white-space:pre-wrap;"></p>
-    <div class="modal-btns"><button class="btn-cancel" id="dmClose">Schließen</button></div>
+    <div class="modal-btns"><button class="btn-cancel" id="dmClose">Schlie�en</button></div>
   </div>
 </div>
 
@@ -254,7 +264,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 <script>
 (function(){
   const LANES = [
-    {id:'heute',name:'📌 Heute',prefix:'HE',special:true},
+    {id:'heute',name:'?? Heute',prefix:'HE',special:true},
     {id:'barmelweid',name:'Barmelweid',prefix:'BA'},
     {id:'patienten_lane',name:'Patienten',prefix:'PA'},
     {id:'psp_wb',name:'PSP WB',prefix:'WB'},
@@ -344,16 +354,26 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
         if(lane.id==='heute') return c.inHeute && c.archived;
         return c.lane===lane.id && !c.inHeute && c.archived;
       });
+      const vorlagenBtn = lane.id==='barmelweid' ? `
+          <div class="vorlagen-wrapper">
+            <button class="btn-vorlagen" data-lane="${lane.id}">Vorlagen ▾</button>
+            <div class="vorlagen-dropdown" id="vorlagenDrop">
+              ${BA_TEMPLATES.map((t,i)=>`<button data-tpl="${i}"><span class="vt-label">${t.title}</span><span class="vt-sub">${t.label}</span></button>`).join('')}
+            </div>
+          </div>` : '';
       el.innerHTML=`
         <div class="lane-header">
           <span>${lane.name}</span>
-          <button class="btn-add-card" data-lane="${lane.id}">+ Karte</button>
+          <div style="display:flex;align-items:center;gap:4px;">
+            ${vorlagenBtn}
+            <button class="btn-add-card" data-lane="${lane.id}">+ Karte</button>
+          </div>
         </div>
         <div class="lane-body">
           <div class="lane-cards" data-lane="${lane.id}"></div>
           ${archived.length||cards.length>=0?`
           <div class="archive-section">
-            <button class="archive-toggle" data-lane="${lane.id}">Archiv (${archived.length}) ▶</button>
+            <button class="archive-toggle" data-lane="${lane.id}">Archiv (${archived.length}) ?</button>
             <div class="archive-body" data-lane="${lane.id}"></div>
           </div>`:''}
         </div>`;
@@ -370,13 +390,33 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     document.querySelectorAll('.btn-add-card').forEach(b=>{
       b.addEventListener('click',()=>openCreateModal(b.dataset.lane));
     });
+    // Vorlagen dropdown
+    document.querySelectorAll('.btn-vorlagen').forEach(b=>{
+      b.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        const drop=b.nextElementSibling;
+        drop.classList.toggle('open');
+      });
+    });
+    document.querySelectorAll('.vorlagen-dropdown button').forEach(b=>{
+      b.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        const idx=parseInt(b.dataset.tpl);
+        b.closest('.vorlagen-dropdown').classList.remove('open');
+        openTemplateCard(idx);
+      });
+    });
+    // Close dropdown on outside click
+    document.addEventListener('click',()=>{
+      document.querySelectorAll('.vorlagen-dropdown.open').forEach(d=>d.classList.remove('open'));
+    });
     document.querySelectorAll('.archive-toggle').forEach(b=>{
       b.addEventListener('click',()=>{
         const body=b.nextElementSibling;
         body.classList.toggle('open');
         b.textContent=body.classList.contains('open')
-          ? b.textContent.replace('▶','▼')
-          : b.textContent.replace('▼','▶');
+          ? b.textContent.replace('?','')
+          : b.textContent.replace('','?');
       });
     });
     updateMobileLaneNav();
@@ -389,22 +429,22 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     let actions='';
     if(!isArchived){
       if(hasDesc) actions+=`<button class="btn-detail" data-id="${card.id}" title="Details">...</button>`;
-      if(!isHeuteLane) actions+=`<button class="btn-to-heute" data-id="${card.id}" title="Zu Heute">→</button>`;
-      if(isHeuteLane) actions+=`<button class="btn-from-heute" data-id="${card.id}" title="Zurück">←</button>`;
-      actions+=`<button class="btn-archive" data-id="${card.id}" title="Archivieren">📥</button>`;
-      actions+=`<button class="btn-delete" data-id="${card.id}" title="Löschen">🗑</button>`;
+      if(!isHeuteLane) actions+=`<button class="btn-to-heute" data-id="${card.id}" title="Zu Heute"></button>`;
+      if(isHeuteLane) actions+=`<button class="btn-from-heute" data-id="${card.id}" title="Zur�ck"></button>`;
+      actions+=`<button class="btn-archive" data-id="${card.id}" title="Archivieren">??</button>`;
+      actions+=`<button class="btn-delete" data-id="${card.id}" title="L�schen">??</button>`;
     } else {
       actions+=`<button class="btn-unarchive" data-id="${card.id}" title="Reaktivieren">reaktivieren</button>`;
-      actions+=`<button class="btn-delete" data-id="${card.id}" title="Löschen">🗑</button>`;
+      actions+=`<button class="btn-delete" data-id="${card.id}" title="L�schen">??</button>`;
     }
     div.innerHTML=`
       <div class="card-top">
         <span class="status-dot ${card.status}"></span>
         <span class="card-prefix">${card.id}</span>
-        <span class="card-title">· ${esc(card.title)}</span>
+        <span class="card-title">� ${esc(card.title)}</span>
         <div class="card-actions">${actions}</div>
       </div>
-      ${card.deadline?`<div class="card-date">📅 ${formatDate(card.deadline)}</div>`:''}`;
+      ${card.deadline?`<div class="card-date">?? ${formatDate(card.deadline)}</div>`:''}`;
     // events
     div.querySelector('.btn-detail')?.addEventListener('click',()=>openDetail(card));
     div.querySelector('.btn-to-heute')?.addEventListener('click',()=>{moveToHeute(card.id);});
@@ -433,8 +473,30 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
   function archiveCard(id){data.cards[id].archived=true;saveData();renderLanes();renderHeute();}
   function unarchiveCard(id){data.cards[id].archived=false;saveData();renderLanes();renderHeute();}
   function deleteCard(id){
-    if(!confirm('Karte "'+id+'" wirklich löschen?')) return;
+    if(!confirm('Karte "'+id+'" wirklich l�schen?')) return;
     delete data.cards[id];saveData();renderLanes();renderHeute();
+  }
+
+  // BARMELWEID VORLAGEN
+  const BA_TEMPLATES = [
+    {title:'Verlaufsbericht-Gerüst',desc:'Strukturvorlage für Verlaufsberichte nach SGPP-Standard.\n\nBitte erstelle ein Verlaufsbericht-Gerüst mit folgenden Abschnitten:\n1. Aktueller Zustand\n2. Therapieverlauf seit letztem Bericht\n3. Medikation\n4. Diagnosen (ICD-10)\n5. Zielerreichung\n6. Weiteres Vorgehen\n\n[Stichpunkte hier einfügen]',status:'gray',label:'~30 min/Woche gespart'},
+    {title:'Erstgespräch-Dokumentation',desc:'Post-Gespräch-Dokumentationsvorlage.\n\nBitte dokumentiere das Erstgespräch in 5 Phasen:\n1. Anamnese (biographisch, sozial, medizinisch)\n2. Problemdefinition & Leidensdruck\n3. Ressourcen & Stärken\n4. Therapieziele (SMART formuliert)\n5. Nächste Schritte & Behandlungsplanung\n\n[Notizen hier einfügen]',status:'gray',label:'~20 min/Gespräch gespart'},
+    {title:'Austrittsbericht',desc:'Struktur für Austrittsberichte mit allen Pflichtfeldern.\n\nBitte erstelle einen Austrittsbericht mit:\n1. Eintrittsdatum & Austrittsdatum\n2. Diagnosen (Haupt- und Nebendiagnosen, ICD-10)\n3. Therapieverlauf & Interventionen\n4. Zielerreichung & Outcome\n5. Empfehlungen & Nachsorgeplan\n6. Medikation bei Austritt\n\n[Stichpunkte hier einfügen]',status:'gray',label:'~45 min/Austritt gespart'},
+    {title:'Gesprächsvorbereitung',desc:'Checkliste & Leitfragen für nächstes Gespräch.\n\nBitte erstelle eine Gesprächsvorbereitung:\n1. Zusammenfassung letzter Verlaufseintrag\n2. Offene Themen / Homework-Review\n3. Leitfragen für heute\n4. Interventionsideen\n5. Zeitplanung der Sitzung\n\n[Letzter Verlaufseintrag / Notizen hier einfügen]',status:'gray',label:'~10 min/Gespräch gespart'},
+    {title:'Tages-Briefing',desc:'Morgenroutine: Struktur für den Tag.\n\nBitte erstelle mein Tages-Briefing:\n1. Was liegt heute an? (Termine, Gespräche, Admin)\n2. Energie-Check (1-10)\n3. Top 3 Prioritäten\n4. Vorbereitungen nötig?\n5. Tagesabschluss-Ritual planen\n\n[Heutige Termine / Notizen hier einfügen]',status:'gray',label:'~15 min/Tag gespart'},
+    {title:'Supervision-Vorbereitung',desc:'Falldarstellung für Supervision strukturieren.\n\nBitte strukturiere meine Supervisionsvorbereitung:\n1. Fallvignette (pseudonymisiert)\n2. Kernthemen & Dynamiken\n3. Eigene Hypothesen\n4. Gegenübertragung / eigene Reaktionen\n5. Konkrete Fragen an Supervisor:in\n\n[Notizen hier einfügen]',status:'gray',label:'~30 min/Supervision gespart'},
+    {title:'Überweisungsbrief',desc:'Standard-Überweisungsbrief mit Pflichtangaben.\n\nBitte erstelle einen Überweisungsbrief mit:\n1. Absender (Klinik Barmelweid)\n2. Empfänger\n3. Patient (pseudonymisiert)\n4. Diagnosen\n5. Bisherige Behandlung\n6. Fragestellung / Grund der Überweisung\n7. Relevante Befunde\n\n[Angaben hier einfügen]',status:'gray',label:'~20 min/Brief gespart'},
+    {title:'Interne Kommunikation',desc:'Templates für häufige interne Mitteilungen.\n\nBitte erstelle eine interne Mitteilung:\nTyp: [Krankenmeldung / Anfrage / Bericht / Info]\n\n1. An: [Empfänger/Abteilung]\n2. Betreff:\n3. Inhalt:\n4. Gewünschte Aktion / Frist:\n\n[Details hier einfügen]',status:'gray',label:'~10 min/Brief gespart'}
+  ];
+
+  function openTemplateCard(tplIdx){
+    const tpl = BA_TEMPLATES[tplIdx];
+    openCreateModal('barmelweid');
+    document.getElementById('cmTitle').value = tpl.title;
+    document.getElementById('cmDesc').value = tpl.desc;
+    // Set status
+    document.querySelectorAll('#cmStatus .status-option').forEach(o=>o.classList.remove('selected'));
+    document.querySelector('#cmStatus .status-option[data-val="'+tpl.status+'"]').classList.add('selected');
   }
 
   // CREATE MODAL
@@ -461,9 +523,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
   document.getElementById('cmSave').addEventListener('click',()=>{
     const prefix=document.getElementById('cmPrefix').value.trim();
     const title=document.getElementById('cmTitle').value.trim();
-    if(!title){alert('Überschrift ist erforderlich.');return;}
-    if(!prefix){alert('Präfix ist erforderlich.');return;}
-    if(data.cards[prefix]){alert('Karte mit diesem Präfix existiert bereits.');return;}
+    if(!title){alert('�berschrift ist erforderlich.');return;}
+    if(!prefix){alert('Pr�fix ist erforderlich.');return;}
+    if(data.cards[prefix]){alert('Karte mit diesem Pr�fix existiert bereits.');return;}
     const status=document.querySelector('#cmStatus .status-option.selected').dataset.val;
     const deadline=document.getElementById('cmDeadline').value||null;
     const desc=document.getElementById('cmDesc').value;
@@ -488,8 +550,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 
   // DETAIL MODAL
   function openDetail(card){
-    document.getElementById('dmTitle').textContent=card.id+' · '+card.title;
-    const statusMap={gray:'⚪ grau',red:'🔴 rot',yellow:'🟡 gelb',green:'🟢 grün'};
+    document.getElementById('dmTitle').textContent=card.id+' � '+card.title;
+    const statusMap={gray:'? grau',red:'?? rot',yellow:'?? gelb',green:'?? gr�n'};
     document.getElementById('dmStatus').textContent='Status: '+(statusMap[card.status]||card.status);
     document.getElementById('dmDeadline').textContent=card.deadline?'Deadline: '+formatDate(card.deadline):'';
     document.getElementById('dmDesc').textContent=card.description||'Keine Beschreibung.';
@@ -511,9 +573,9 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     if(cards.length===0){
       container.innerHTML=`
         <div class="tp-empty">
-          <p style="font-size:40px;margin-bottom:12px;">📋</p>
-          <p>Kein Plan für heute — zieh Aufgaben aus dem Kanban in die Heute-Lane</p>
-          <button id="tpGoKanban">→ Zum Kanban</button>
+          <p style="font-size:40px;margin-bottom:12px;">??</p>
+          <p>Kein Plan f�r heute - zieh Aufgaben aus dem Kanban in die Heute-Lane</p>
+          <button id="tpGoKanban"> Zum Kanban</button>
         </div>`;
       document.getElementById('tpGoKanban').addEventListener('click',()=>switchTab('projekte'));
       return;
@@ -522,11 +584,11 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     let html=`
       <div class="tp-header">
         <div class="tp-date">${dateStr}</div>
-        <div class="tp-summary">${cards.length} Aufgabe${cards.length!==1?'n':''} heute · ${openCount} offen · ${doneCount} erledigt</div>
+        <div class="tp-summary">${cards.length} Aufgabe${cards.length!==1?'n':''} heute � ${openCount} offen � ${doneCount} erledigt</div>
       </div>
       <div id="tpCardList"></div>
       <div class="tp-footer">
-        <button class="tp-btn-back" id="tpBackAll">← Alles zurückschieben</button>
+        <button class="tp-btn-back" id="tpBackAll"> Alles zur�ckschieben</button>
         <button class="tp-btn-add" id="tpAddNew">+ Neue Aufgabe heute</button>
       </div>`;
     container.innerHTML=html;
@@ -538,19 +600,19 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
       const laneName=getLaneName(originLane);
       const laneColor=getLaneColor(originLane);
       const isOverdue=card.deadline&&card.deadline<todayStr()&&!isDone;
-      const descSnippet=card.description?(card.description.length>80?card.description.substring(0,80)+'…':card.description):'';
+      const descSnippet=card.description?(card.description.length>80?card.description.substring(0,80)+'.':card.description):'';
 
       const el=document.createElement('div');
       el.className='tp-card'+(isDone?' done':'');
       el.innerHTML=`
-        <div class="tp-checkbox${isDone?' checked':''}" data-id="${card.id}">${isDone?'✓':''}</div>
+        <div class="tp-checkbox${isDone?' checked':''}" data-id="${card.id}">${isDone?'V':''}</div>
         <div class="tp-body">
           <div class="tp-title-row">
-            <span class="tp-title${isDone?' strikethrough':''}">${esc(card.id)} · ${esc(card.title)}</span>
-            ${originLane&&originLane!=='heute'?`<span class="tp-lane-badge" style="background:${laneColor}">aus ${esc(laneName.replace(/📌\s*/,''))}</span>`:''}
+            <span class="tp-title${isDone?' strikethrough':''}">${esc(card.id)} � ${esc(card.title)}</span>
+            ${originLane&&originLane!=='heute'?`<span class="tp-lane-badge" style="background:${laneColor}">aus ${esc(laneName.replace(/??\s*/,''))}</span>`:''}
             <span class="tp-dot status-dot ${card.status}"></span>
           </div>
-          ${card.deadline?`<div class="tp-deadline${isOverdue?' overdue':''}">📅 ${formatDate(card.deadline)}${isOverdue?' — überfällig':''}</div>`:''}
+          ${card.deadline?`<div class="tp-deadline${isOverdue?' overdue':''}">?? ${formatDate(card.deadline)}${isOverdue?' - �berf�llig':''}</div>`:''}
           ${descSnippet?`<div class="tp-desc">${esc(descSnippet)}</div>`:''}
         </div>`;
 
@@ -577,7 +639,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     document.getElementById('tpBackAll').addEventListener('click',()=>{
       const heuteCards=Object.values(data.cards).filter(c=>c.inHeute&&!c.archived);
       if(!heuteCards.length) return;
-      if(!confirm(heuteCards.length+' Karte'+(heuteCards.length!==1?'n':'')+' zurückschieben?')) return;
+      if(!confirm(heuteCards.length+' Karte'+(heuteCards.length!==1?'n':'')+' zur�ckschieben?')) return;
       heuteCards.forEach(c=>{
         c.inHeute=false;
         if(c.originalLane){
@@ -602,7 +664,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
   function renderTagebuch(){
     if(!tbDate) tbDate=todayStr();
     document.getElementById('tbDate').textContent=formatDate(tbDate);
-    document.getElementById('tbHeading').textContent='Tagebuch — '+formatDate(tbDate);
+    document.getElementById('tbHeading').textContent='Tagebuch - '+formatDate(tbDate);
     document.getElementById('tbText').value=data.tagebuch[tbDate]||'';
   }
   document.getElementById('tbText').addEventListener('input',()=>{
@@ -626,10 +688,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
       const div=document.createElement('div');
       div.className='pat-item';
       div.innerHTML=`<div class="pat-info"><div class="pat-name">${esc(p.name)}</div>${p.notes?'<div class="pat-notes">'+esc(p.notes)+'</div>':''}</div>
-        <div class="pat-actions"><button class="pat-edit" data-idx="${i}">✏️</button><button class="pat-del" data-idx="${i}">🗑</button></div>`;
+        <div class="pat-actions"><button class="pat-edit" data-idx="${i}">??</button><button class="pat-del" data-idx="${i}">??</button></div>`;
       div.querySelector('.pat-edit').addEventListener('click',()=>openPatModal(i));
       div.querySelector('.pat-del').addEventListener('click',()=>{
-        if(!confirm('Patient "'+p.name+'" löschen?')) return;
+        if(!confirm('Patient "'+p.name+'" l�schen?')) return;
         data.patienten.splice(i,1);saveData();renderPatienten();
       });
       list.appendChild(div);
@@ -684,10 +746,10 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     e.target.value='';
   });
   document.getElementById('deleteBtn').addEventListener('click',()=>{
-    if(!confirm('Wirklich ALLE Daten löschen? Dies kann nicht rückgängig gemacht werden.')) return;
+    if(!confirm('Wirklich ALLE Daten l�schen? Dies kann nicht r�ckg�ngig gemacht werden.')) return;
     localStorage.removeItem(STORAGE_KEY);
     loadData();renderLanes();renderHeute();renderPatienten();renderTagebuch();
-    alert('Alle Daten gelöscht.');
+    alert('Alle Daten gel�scht.');
   });
 
   // MOBILE SWIPE
@@ -742,3 +804,4 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 </script>
 </body>
 </html>
+
