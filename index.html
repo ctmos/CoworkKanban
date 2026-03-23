@@ -67,6 +67,28 @@
     .prio-low{background:#E8F5E9;color:var(--success);}
     .kanban-add-btn{width:100%;padding:10px;background:none;border:none;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s;}
     .kanban-add-btn:hover{color:var(--accent);background:var(--accent-light);}
+    .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+    .card-actions{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+    .status-dot-wrap{position:relative;}
+    .status-dot{width:11px;height:11px;border-radius:50%;cursor:pointer;margin-top:2px;transition:transform 0.1s;}
+    .status-dot:hover{transform:scale(1.25);}
+    .s-neu{background:transparent;border:1.5px solid #aaa;}
+    .s-offen{background:#e74c3c;border:1.5px solid #c0392b;}
+    .s-in_arbeit{background:#f1c40f;border:1.5px solid #d4ac0d;}
+    .s-erledigt{background:#2ecc71;border:1.5px solid #27ae60;}
+    .status-dd{display:none;position:absolute;top:16px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;flex-direction:row;gap:5px;z-index:60;box-shadow:0 4px 16px rgba(0,0,0,0.15);}
+    .status-dd.open{display:flex;}
+    .status-dd-item{width:16px;height:16px;border-radius:50%;cursor:pointer;transition:transform 0.1s;flex-shrink:0;}
+    .status-dd-item:hover{transform:scale(1.2);}
+    .card-archive-btn{background:none;border:none;cursor:pointer;padding:1px;color:var(--text-muted);opacity:0.4;transition:opacity 0.15s;display:flex;align-items:center;}
+    .card-archive-btn:hover{opacity:1;color:var(--warning);}
+    .col-archive-toggle{width:100%;padding:8px 14px;background:none;border:none;border-top:1px dashed var(--border);color:var(--text-muted);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
+    .col-archive-toggle:hover{color:var(--accent);background:var(--accent-light);}
+    .col-archive-section{padding:6px 10px;}
+    .col-archive-card{background:var(--bg);border:1px dashed var(--border);border-radius:var(--radius);padding:7px 10px;font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+    .col-archive-card:last-child{margin-bottom:0;}
+    .unarchive-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:11px;color:var(--accent);padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;}
+    .unarchive-btn:hover{background:var(--accent-light);}
     .heute-date{font-size:13px;color:var(--text-muted);margin-bottom:12px;}
     .task-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--card-shadow);}
     .task-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
@@ -468,13 +490,15 @@ async function syncData(){await loadFromGitHub();await saveToGitHub();}
 function updateLastSync(){const now=new Date(),t=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");const el=document.getElementById("last-sync-label");if(el)el.textContent="Zuletzt: "+t+" Uhr";}
 
 const COL_LABELS={offen:"Offen",in_arbeit:"In Arbeit",erledigt:"Erledigt"};
+function renderArchiveSection(col){const archived=(appData.kanban.cards||[]).filter(c=>c.column===col&&c.archived);if(!archived.length)return"";const arcOpen=(window._arcOpen&&window._arcOpen[col])||false;return'<button class="col-archive-toggle" onclick="toggleColArchive(\''+col+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archiv ('+archived.length+') '+(arcOpen?'▼':'▶')+'</button>'+(arcOpen?'<div class="col-archive-section">'+archived.map(c=>'<div class="col-archive-card"><span style="flex:1">'+escHtml(c.title)+'</span><button class="unarchive-btn" onclick="unarchiveCard(\''+c.id+'\')">↩ Zur\u00fcck</button></div>').join('')+'</div>':'');}
 function renderKanban(){const board=document.getElementById("kanban-board"),cols=appData.kanban.columns||["offen","in_arbeit","erledigt"];
-  board.innerHTML=cols.map(col=>{const cards=(appData.kanban.cards||[]).filter(c=>c.column===col);
-    return `<div class="kanban-col" id="col-${col}"><div class="kanban-col-header"><span>${COL_LABELS[col]||col}</span><span class="col-count">${cards.length}</span></div><div class="kanban-cards" id="cards-${col}" ondragover="dragOver(event)" ondrop="drop(event,'${col}')" ondragenter="this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">${cards.length?cards.map(c=>renderCard(c)).join(''):'<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px">Leer</div>'}</div><button class="kanban-add-btn" onclick="openCardModal('${col}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Hinzuf\u00fcgen</button></div>`;
+  board.innerHTML=cols.map(col=>{const cards=(appData.kanban.cards||[]).filter(c=>c.column===col&&!c.archived);
+    return `<div class="kanban-col" id="col-${col}"><div class="kanban-col-header"><span>${COL_LABELS[col]||col}</span><span class="col-count">${cards.length}</span></div><div class="kanban-cards" id="cards-${col}" ondragover="dragOver(event)" ondrop="drop(event,'${col}')" ondragenter="this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">${cards.length?cards.map(c=>renderCard(c)).join(''):'<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px">Leer</div>'}</div><button class="kanban-add-btn" onclick="openCardModal('${col}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Hinzuf\u00fcgen</button>${renderArchiveSection(col)}</div>`;
   }).join('');}
 
 function renderCard(c){const prioClass=c.priority?`prio-${c.priority}`:"",prioLabel=c.priority==="high"?"Hoch":c.priority==="medium"?"Mittel":c.priority==="low"?"Niedrig":"";
-  return `<div class="kanban-card" id="card-${c.id}" draggable="true" ondragstart="dragStart(event,'${c.id}','${c.column}')" ondragend="dragEnd(event)" onclick="openCardModal('${c.column}','${c.id}')"><div class="card-title">${escHtml(c.title)}</div>${c.description?`<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${escHtml(c.description).substring(0,80)}${c.description.length>80?"...":""}</div>`:""}<div class="card-meta">${c.category?`<span class="tag">${escHtml(c.category)}</span>`:""}${prioLabel?`<span class="tag ${prioClass}">${prioLabel}</span>`:""}</div></div>`;}
+  const s=c.status||"neu";
+  return `<div class="kanban-card" id="card-${c.id}" draggable="true" ondragstart="dragStart(event,'${c.id}','${c.column}')" ondragend="dragEnd(event)" onclick="openCardModal('${c.column}','${c.id}')"><div class="card-top"><div class="card-title" style="margin-bottom:0">${escHtml(c.title)}</div><div class="card-actions" onclick="event.stopPropagation()"><div class="status-dot-wrap"><div class="status-dot s-${s}" title="Status" onclick="toggleStatusDropdown('${c.id}')"></div><div class="status-dd" id="sdrop-${c.id}"><div class="status-dd-item s-neu" title="Neu" onclick="setCardStatus('${c.id}','neu')"></div><div class="status-dd-item" title="Offen/Blockiert" style="background:#e74c3c" onclick="setCardStatus('${c.id}','offen')"></div><div class="status-dd-item" title="In Arbeit" style="background:#f1c40f" onclick="setCardStatus('${c.id}','in_arbeit')"></div><div class="status-dd-item" title="Erledigt" style="background:#2ecc71" onclick="setCardStatus('${c.id}','erledigt')"></div></div></div><button class="card-archive-btn" title="Archivieren" onclick="archiveCard('${c.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button></div></div>${c.description?`<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${escHtml(c.description).substring(0,80)}${c.description.length>80?"...":""}</div>`:""}<div class="card-meta">${c.category?`<span class="tag">${escHtml(c.category)}</span>`:""}${prioLabel?`<span class="tag ${prioClass}">${prioLabel}</span>`:""}</div></div>`;}
 
 function openCardModal(col,cardId){document.getElementById("card-modal-title").textContent=cardId?"Karte bearbeiten":"Neue Karte";document.getElementById("card-edit-id").value=cardId||"";
   if(cardId){const c=appData.kanban.cards.find(x=>x.id===cardId);if(c){document.getElementById("card-title-input").value=c.title;document.getElementById("card-desc-input").value=c.description||"";document.getElementById("card-col-input").value=c.column;document.getElementById("card-prio-input").value=c.priority||"";document.getElementById("card-cat-input").value=c.category||"";}}
@@ -483,7 +507,8 @@ function openCardModal(col,cardId){document.getElementById("card-modal-title").t
 
 function saveCard(){const title=document.getElementById("card-title-input").value.trim();if(!title)return toast("Titel ist erforderlich");
   const editId=document.getElementById("card-edit-id").value;
-  const data={id:editId||genId(),title,description:document.getElementById("card-desc-input").value.trim(),column:document.getElementById("card-col-input").value,priority:document.getElementById("card-prio-input").value,category:document.getElementById("card-cat-input").value.trim()};
+  const existing=editId?appData.kanban.cards.find(c=>c.id===editId):null;
+  const data={id:editId||genId(),title,description:document.getElementById("card-desc-input").value.trim(),column:document.getElementById("card-col-input").value,priority:document.getElementById("card-prio-input").value,category:document.getElementById("card-cat-input").value.trim(),status:existing?existing.status:"neu",archived:existing?existing.archived:false};
   if(editId){const idx=appData.kanban.cards.findIndex(c=>c.id===editId);if(idx>=0)appData.kanban.cards[idx]=data;}else{appData.kanban.cards.push(data);}
   saveData();renderKanban();closeModal("card-modal");toast(editId?"Karte aktualisiert":"Karte erstellt");}
 
@@ -491,6 +516,12 @@ function dragStart(e,cardId,col){dragCard=cardId;dragCol=col;setTimeout(()=>{con
 function dragEnd(e){const el=document.getElementById("card-"+dragCard);if(el)el.classList.remove("dragging");document.querySelectorAll(".kanban-cards").forEach(c=>c.classList.remove("drag-over"));}
 function dragOver(e){e.preventDefault();}
 function drop(e,col){e.preventDefault();document.querySelectorAll(".kanban-cards").forEach(c=>c.classList.remove("drag-over"));if(dragCard&&dragCol!==col){const card=appData.kanban.cards.find(c=>c.id===dragCard);if(card){card.column=col;saveData();renderKanban();toast("Verschoben nach "+(COL_LABELS[col]||col));}}dragCard=null;}
+
+function toggleStatusDropdown(cardId){const drop=document.getElementById("sdrop-"+cardId);if(!drop)return;const wasOpen=drop.classList.contains("open");document.querySelectorAll(".status-dd.open").forEach(d=>d.classList.remove("open"));if(!wasOpen)drop.classList.add("open");}
+function setCardStatus(cardId,status){const card=appData.kanban.cards.find(c=>c.id===cardId);if(!card)return;card.status=status;document.querySelectorAll(".status-dd.open").forEach(d=>d.classList.remove("open"));saveData();renderKanban();toast("Status aktualisiert");}
+function archiveCard(cardId){const card=appData.kanban.cards.find(c=>c.id===cardId);if(!card)return;card.archived=true;saveData();renderKanban();toast("Karte archiviert");}
+function unarchiveCard(cardId){const card=appData.kanban.cards.find(c=>c.id===cardId);if(!card)return;card.archived=false;saveData();renderKanban();toast("Karte reaktiviert");}
+function toggleColArchive(col){if(!window._arcOpen)window._arcOpen={};window._arcOpen[col]=!window._arcOpen[col];renderKanban();}
 
 function todayKey(){return new Date().toISOString().slice(0,10);}
 function renderHeuteDate(){const el=document.getElementById("heute-date"),d=new Date();const days=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];const months=["Januar","Februar","M\u00e4rz","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];el.textContent=days[d.getDay()]+", "+d.getDate()+". "+months[d.getMonth()]+" "+d.getFullYear();}
@@ -500,7 +531,7 @@ function renderHeute(){const today=todayKey(),tasks=(appData.heute.tasks&&appDat
   container.innerHTML=tasks.map(t=>`<div class="task-item"><div class="task-check ${t.done?"done":""}" onclick="toggleTask('${today}','${t.id}')">${t.done?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':""}</div><span class="task-text ${t.done?"done":""}">${escHtml(t.text)}</span><button class="task-del" onclick="deleteTask('${today}','${t.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div>`).join('');}
 
 function addHeuteTask(){const input=document.getElementById("heute-input"),text=input.value.trim();if(!text)return;const today=todayKey();if(!appData.heute.tasks[today])appData.heute.tasks[today]=[];appData.heute.tasks[today].push({id:genId(),text,done:false});saveData();renderHeute();input.value="";input.focus();}
-document.addEventListener("DOMContentLoaded",()=>{document.getElementById("heute-input").addEventListener("keydown",e=>{if(e.key==="Enter")addHeuteTask();});});
+document.addEventListener("DOMContentLoaded",()=>{document.getElementById("heute-input").addEventListener("keydown",e=>{if(e.key==="Enter")addHeuteTask();});document.addEventListener("click",()=>document.querySelectorAll(".status-dd.open").forEach(d=>d.classList.remove("open")));});
 function toggleTask(date,id){const tasks=appData.heute.tasks[date]||[],t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;saveData();renderHeute();}}
 function deleteTask(date,id){if(!appData.heute.tasks[date])return;appData.heute.tasks[date]=appData.heute.tasks[date].filter(t=>t.id!==id);saveData();renderHeute();}
 
@@ -707,3 +738,4 @@ document.addEventListener("DOMContentLoaded",function(){var nav=document.querySe
 </script>
 </body>
 </html>
+
