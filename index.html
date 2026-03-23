@@ -1075,22 +1075,26 @@ function showPinUnlockUI(stored) {
   document.getElementById('pin-title').textContent = 'CoworkDashboard';
   document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
   document.getElementById('pin-confirm-group').style.display = 'none';
-  document.getElementById('pin-btn').textContent = 'Entsperren';
-  document.getElementById('pin-btn').onclick = function() {
+  const _oldBtn = document.getElementById('pin-btn');
+  const _freshBtn = _oldBtn.cloneNode(true);
+  _oldBtn.parentNode.replaceChild(_freshBtn, _oldBtn);
+  _freshBtn.textContent = 'Entsperren';
+  _freshBtn.addEventListener('click', function() {
     const p = document.getElementById('pin-input').value.trim();
     if (btoa(p + 'cowork') === stored) { unlockApp(); }
     else { showPinError('Falscher PIN'); }
-  };
+  });
 }
 
 function showPinSetupUI() {
   document.getElementById('pin-title').textContent = 'PIN einrichten';
   document.getElementById('pin-subtitle').textContent = 'Wähle einen PIN (4–6 Stellen)';
   document.getElementById('pin-confirm-group').style.display = 'block';
-  const btn = document.getElementById('pin-btn');
-  btn.textContent = 'PIN einrichten';
-  btn.onclick = null;
-  btn.onclick = async function() {
+  const _oldSetupBtn = document.getElementById('pin-btn');
+  const _freshSetupBtn = _oldSetupBtn.cloneNode(false);
+  _oldSetupBtn.parentNode.replaceChild(_freshSetupBtn, _oldSetupBtn);
+  _freshSetupBtn.textContent = 'PIN einrichten';
+  _freshSetupBtn.addEventListener('click', async function() {
     const p1 = document.getElementById('pin-input').value;
     const p2 = document.getElementById('pin-confirm').value;
     if (p1.length < 4) { showPinError('Mindestens 4 Stellen'); return; }
@@ -1102,12 +1106,11 @@ function showPinSetupUI() {
       await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: pinHash }, null, 2), 'sync: update PIN');
     } catch(e) { /* silent fail */ }
     unlockApp();
-  };
+  });
 }
 
 async function initPinScreen() {
   const stored = localStorage.getItem('cowork_pin');
-  let resolvedHash = stored;
   if (stored) {
     showPinUnlockUI(stored);
   } else {
@@ -1121,7 +1124,6 @@ async function initPinScreen() {
         if (data.pin_hash) {
           localStorage.setItem('cowork_pin', data.pin_hash);
           localStorage.setItem('cowork_pin_set', 'true');
-          resolvedHash = data.pin_hash;
           showPinUnlockUI(data.pin_hash);
         } else {
           showPinSetupUI();
@@ -1133,18 +1135,6 @@ async function initPinScreen() {
       showPinSetupUI();
     }
   }
-  // fix: PIN unlock button guaranteed onclick via addEventListener
-  const btn = document.getElementById('pin-btn');
-  btn.addEventListener('click', function() {
-    const hash = localStorage.getItem('cowork_pin');
-    if (!hash) return;
-    const p = document.getElementById('pin-input').value.trim();
-    if (btoa(p + 'cowork') === hash) {
-      unlockApp();
-    } else {
-      showPinError('Falscher PIN');
-    }
-  });
   document.getElementById('pin-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') document.getElementById('pin-btn').click();
   });
@@ -1354,7 +1344,6 @@ function renderStatusTab() {
       }).join('');
     }
   }
-}
 }
 
 // renderHeute is now an alias for renderStatusTab (for backward compat with other code)
