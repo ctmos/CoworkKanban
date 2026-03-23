@@ -166,6 +166,115 @@ nav::-webkit-scrollbar { display: none; }
 }
 .heute-header h2 { font-size: 16px; font-weight: 600; }
 
+/* Status Tab */
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 16px;
+}
+@media (min-width: 768px) {
+  .status-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 900px;
+    margin: auto;
+  }
+}
+@media (min-width: 1200px) {
+  .status-grid {
+    max-width: 1100px;
+  }
+}
+.status-col {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.status-col-header {
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.status-list {
+  padding: 8px;
+  min-height: 80px;
+}
+.status-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  position: relative;
+}
+.status-card .card-prefix {
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+}
+.status-card .card-title {
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+.status-card .card-meta {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+.today-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 16px;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.today-btn:hover { opacity: 1; }
+.day-group-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 4px 2px;
+}
+.empty-state {
+  color: #aaa;
+  font-size: 12px;
+  text-align: center;
+  padding: 20px 8px;
+}
+/* Today button on kanban cards */
+.kanban-today-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 14px;
+  padding: 0;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+  line-height: 1;
+}
+.kanban-today-btn:hover { opacity: 1; }
+.kanban-today-btn.is-today { opacity: 1; }
+
 .btn-primary {
   background: var(--accent); color: #fff;
   border: none; border-radius: var(--radius);
@@ -612,7 +721,7 @@ nav::-webkit-scrollbar { display: none; }
 <div id="app">
   <nav>
     <span class="brand">CoworkDashboard</span>
-    <button class="tab-btn active" data-tab="heute">Heute</button>
+    <button class="tab-btn active" data-tab="heute">Status</button>
     <button class="tab-btn" data-tab="kanban">Kanban</button>
     <button class="tab-btn" data-tab="patienten">Patienten</button>
     <button class="tab-btn" data-tab="autonomy">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
@@ -622,24 +731,26 @@ nav::-webkit-scrollbar { display: none; }
 
   <!-- HEUTE TAB -->
   <div id="tab-heute" class="tab-content active">
-    <div class="heute-header">
-      <h2 id="heute-date">Heute</h2>
-      <button class="btn-primary" id="btn-heute-add">+ Aufgabe</button>
-    </div>
-    <div id="heute-cards-list"></div>
-    <div class="token-widget" id="token-widget">
-      <h3>Wochenbudget</h3>
-      <div class="budget-bar-wrap"><div class="budget-bar" id="budget-bar" style="width:0%"></div></div>
-      <div class="token-meta" id="token-meta">
-        <div class="token-meta-item"><strong id="token-used">0</strong> / <strong id="token-budget">100</strong> Tasks geplant</div>
-        <div class="token-meta-item">
-          <span class="model-badge">claude-sonnet-4-6</span>
-          <span class="model-badge">claude-haiku-4-5</span>
+    <div class="status-grid">
+      <!-- Column 1: Heute -->
+      <div class="status-col" id="status-heute">
+        <div class="status-col-header">Heute</div>
+        <div id="heute-list" class="status-list">
+          <div class="empty-state">Keine heutigen Items — ziehe Karten hierher</div>
         </div>
+      </div>
+      <!-- Column 2: Wochenplan -->
+      <div class="status-col" id="status-woche">
+        <div class="status-col-header">Wochenplan</div>
+        <div id="woche-list" class="status-list"></div>
+      </div>
+      <!-- Column 3: Weitere Plaene -->
+      <div class="status-col" id="status-weitere">
+        <div class="status-col-header">Weitere Pläne</div>
+        <div id="weitere-list" class="status-list"></div>
       </div>
     </div>
   </div>
-
   <!-- KANBAN TAB -->
   <div id="tab-kanban" class="tab-content">
     <div class="kanban-grid" id="kanban-grid"></div>
@@ -1061,38 +1172,176 @@ function switchTab(id) {
   if (id === 'backlog')   renderBacklog();
   if (id === 'settings')  initSettings();
 }
-
-// ─── HEUTE ────────────────────────────────────────────────────────────────────
-function renderHeute() {
+// ─── HEUTE / STATUS ───────────────────────────────────────────────────────────
+function moveToToday(cardId) {
   const cards = getCards();
-  const heateCards = Object.values(cards).filter(c => c.lane === 'HE' && !c.archived);
-  const container = document.getElementById('heute-cards-list');
+  if (!cards[cardId]) return;
+  const card = cards[cardId];
+  if (!card.originalLane) {
+    card.originalLane = card.lane || 'BA';
+  }
+  card.lane = 'HE';
+  card.todayFlag = true;
+  saveCards(cards);
+  renderStatusTab();
+  if (typeof renderKanban === 'function') renderKanban();
+}
 
+function moveFromToday(cardId) {
+  const cards = getCards();
+  if (!cards[cardId]) return;
+  const card = cards[cardId];
+  card.lane = card.originalLane || 'BA';
+  card.todayFlag = false;
+  delete card.originalLane;
+  saveCards(cards);
+  renderStatusTab();
+  if (typeof renderKanban === 'function') renderKanban();
+}
+
+function renderStatusTab() {
+  const cards = getCards();
+  const events = JSON.parse(localStorage.getItem('cowork_events') || '[]');
   const now = new Date();
-  document.getElementById('heute-date').textContent =
-    now.toLocaleDateString('de-CH', {weekday:'long', day:'numeric', month:'long'});
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  if (heateCards.length === 0) {
-    container.innerHTML = '<div class="empty-state">Keine Aufgaben für heute.<br>Füge eine hinzu oder bewege Karten aus dem Kanban.</div>';
-  } else {
-    container.innerHTML = heateCards.map(c => renderCardItem(c)).join('');
-    container.querySelectorAll('.card-item').forEach(el => {
-      el.addEventListener('click', () => openCardModal(el.dataset.id));
-    });
+  // --- Column 1: Heute (todayFlag or lane==='HE') ---
+  const heuteCards = Object.values(cards).filter(c => !c.archived && (c.todayFlag || c.lane === 'HE'));
+  const heuteList = document.getElementById('heute-list');
+  if (heuteList) {
+    if (heuteCards.length === 0) {
+      heuteList.innerHTML = '<div class="empty-state">Keine heutigen Items \u2014 ziehe Karten hierher</div>';
+    } else {
+      heuteList.innerHTML = heuteCards.map(c => {
+        const origLaneMeta = c.originalLane ? '<div class="card-meta">Von: ' + esc(c.originalLane) + '</div>' : '';
+        return '<div class="status-card">'
+          + '<div style="flex:1;min-width:0;">'
+          + '<div style="display:flex;align-items:center;gap:6px;">'
+          + '<span class="card-prefix">' + esc(c.id || '') + '</span>'
+          + '<span class="card-title">' + esc(c.title || '') + '</span>'
+          + '</div>'
+          + origLaneMeta
+          + '</div>'
+          + '<button class="today-btn is-today" onclick="moveFromToday(\"' + esc(c.id) + '\")" title="Zurück">↩</button>'
+          + '</div>';
+      }).join('');
   }
 
-  // Token widget
-  const weekStart = getWeekStart();
-  const weekEnd   = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
-  const allCards  = Object.values(cards).filter(c => !c.archived);
-  const budget    = ls('cowork_budget', 100);
-  const used      = allCards.filter(c => c.status !== 'erledigt').length;
-  const pct       = Math.min(100, Math.round((used / budget) * 100));
+  // --- Column 2: Wochenplan (deadline in next 7 days) ---
+  const in7 = new Date(todayStart.getTime() + 7 * 86400000);
+  const weekCards = Object.values(cards).filter(c => {
+    if (c.archived) return false;
+    if (!c.deadline) return false;
+    const d = new Date(c.deadline);
+    return d >= todayStart && d < in7;
+  });
 
-  document.getElementById('budget-bar').style.width = pct + '%';
-  document.getElementById('token-used').textContent  = used;
-  document.getElementById('token-budget').textContent = budget;
+  function dayLabel(dateStr) {
+    const d = new Date(dateStr);
+    const diff = Math.floor((d - todayStart) / 86400000);
+    if (diff === 0) return 'Heute';
+    if (diff === 1) return 'Morgen';
+    if (diff === 2) return '\u00dcbermorgen';
+    return 'Diese Woche';
+  }
+
+  const grouped = {};
+  weekCards.forEach(c => {
+    const lbl = dayLabel(c.deadline);
+    if (!grouped[lbl]) grouped[lbl] = [];
+    grouped[lbl].push(c);
+  });
+
+  const weekEvents = events.filter(e => {
+    if (!e.start) return false;
+    const d = new Date(e.start);
+    return d >= todayStart && d < in7;
+  });
+  weekEvents.forEach(e => {
+    const lbl = dayLabel(e.start);
+    if (!grouped[lbl]) grouped[lbl] = [];
+    grouped[lbl].push({ ...e, _isEvent: true });
+  });
+
+  const order = ['Heute', 'Morgen', '\u00dcbermorgen', 'Diese Woche'];
+  const wocheList = document.getElementById('woche-list');
+  if (wocheList) {
+    if (Object.keys(grouped).length === 0) {
+      wocheList.innerHTML = '<div class="empty-state">Keine F\u00e4lligkeiten diese Woche</div>';
+    } else {
+      let html = '';
+      order.forEach(lbl => {
+        if (!grouped[lbl]) return;
+        html += `<div class="day-group-header">${lbl}</div>`;
+        grouped[lbl].forEach(c => {
+          if (c._isEvent) {
+            html += `<div class="status-card"><div style="flex:1;min-width:0;"><div class="card-title">\ud83d\udcc5 ${esc(c.title || c.summary || '')}</div></div></div>`;
+          } else {
+            const isHE = c.todayFlag || c.lane === 'HE';
+            const cId = esc(c.id || '');
+            const onclickW = isHE ? "moveFromToday('" + cId + "')" : "moveToToday('" + cId + "')";
+            const titleW = isHE ? 'Zur\u00fcck' : 'Heute';
+            const iconW = isHE ? '\u21a9' : '\u2192';
+            const clsW = isHE ? ' is-today' : '';
+            html += '<div class="status-card">'
+              + '<div style="flex:1;min-width:0;">'
+              + '<div style="display:flex;align-items:center;gap:6px;">'
+              + '<span class="card-prefix">' + esc(c.id || '') + '</span>'
+              + '<span class="card-title">' + esc(c.title || '') + '</span>'
+              + '</div></div>'
+              + '<button class="today-btn' + clsW + '" onclick="' + onclickW + '" title="' + titleW + '">' + iconW + '</button>'
+              + '</div>';
+          }
+        });
+      });
+      wocheList.innerHTML = html;
+    }
+  }
+
+  // --- Column 3: Weitere Plaene (deadline > 7 days OR no deadline but high priority) ---
+  const weitereCards = Object.values(cards).filter(c => {
+    if (c.archived) return false;
+    const isHE = c.todayFlag || c.lane === 'HE';
+    if (isHE) return false;
+    if (c.deadline) {
+      const d = new Date(c.deadline);
+      return d >= in7;
+    }
+    return c.priority === 'hoch' || c.priority === 'high' || c.status === '\ud83d\udd34' || c.priority === '\ud83d\udd34';
+  });
+
+  const weitereList = document.getElementById('weitere-list');
+  if (weitereList) {
+    if (weitereCards.length === 0) {
+      weitereList.innerHTML = '<div class="empty-state">Keine weiteren Pl\u00e4ne</div>';
+    } else {
+      weitereList.innerHTML = weitereCards.map(c => {
+        const isHE = c.todayFlag || c.lane === 'HE';
+        const cId = esc(c.id || '');
+        const onclickWE = isHE ? "moveFromToday('" + cId + "')" : "moveToToday('" + cId + "')";
+        const titleWE = isHE ? 'Zur\u00fcck' : 'Heute';
+        const iconWE = isHE ? '\u21a9' : '\u2192';
+        const clsWE = isHE ? ' is-today' : '';
+        const deadlineMeta = c.deadline ? '<div class="card-meta">' + esc(c.deadline) + '</div>' : '';
+        return '<div class="status-card">'
+          + '<div style="flex:1;min-width:0;">'
+          + '<div style="display:flex;align-items:center;gap:6px;">'
+          + '<span class="card-prefix">' + esc(c.id || '') + '</span>'
+          + '<span class="card-title">' + esc(c.title || '') + '</span>'
+          + '</div>'
+          + deadlineMeta
+          + '</div>'
+          + '<button class="today-btn' + clsWE + '" onclick="' + onclickWE + '" title="' + titleWE + '">' + iconWE + '</button>'
+          + '</div>';
+      }).join('');
+    }
+  }
 }
+  }
+}
+
+// renderHeute is now an alias for renderStatusTab (for backward compat with other code)
+function renderHeute() { renderStatusTab(); }
 
 function getWeekStart() {
   const d = new Date(); const day = d.getDay();
@@ -1103,19 +1352,21 @@ function getWeekStart() {
 function renderCardItem(card) {
   const statusCls = STATUSES[card.status]?.cls || 'status-offen';
   const deadline  = card.deadline
-    ? `<span class="card-deadline">${card.deadline}</span>` : '';
-  return `<div class="card-item" data-id="${esc(card.id)}">
-    <span class="card-prefix">${esc(card.id)}</span>
-    <span class="card-title">${esc(card.title || '(kein Titel)')}</span>
-    ${deadline}
-    <span class="status-dot ${statusCls}"></span>
-  </div>`;
+    ? '<span class="card-deadline">' + card.deadline + '</span>' : '';
+  const isHE = card.todayFlag || card.lane === 'HE';
+  const cardId = esc(card.id);
+  const onclickFn = isHE ? 'moveFromToday(\"' + cardId + '\")' : 'moveToToday(\"' + cardId + '\")';
+  const titleAttr = isHE ? 'Zurück' : 'Heute';
+  const btnIcon = isHE ? '↩' : '→';
+  const todayCls = isHE ? ' is-today' : '';
+  return '<div class="card-item" data-id="' + cardId + '" style="position:relative;">'
+    + '<span class="card-prefix">' + esc(card.id) + '</span>'
+    + '<span class="card-title">' + esc(card.title || '(kein Titel)') + '</span>'
+    + deadline
+    + '<span class="status-dot ' + statusCls + '"></span>'
+    + '<button class="kanban-today-btn' + todayCls + '" onclick="event.stopPropagation(); ' + onclickFn + '" title="' + titleAttr + '">' + btnIcon + '</button>'
+    + '</div>';
 }
-
-document.getElementById('btn-heute-add').addEventListener('click', () => {
-  openCardModal(null, 'HE');
-});
-
 // ─── KANBAN ───────────────────────────────────────────────────────────────────
 function renderKanban() {
   const cards   = getCards();
