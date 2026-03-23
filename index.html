@@ -352,7 +352,7 @@ async function changePIN(){const np=document.getElementById("new-pin-input").val
   if(np!==cp)return toast("PINs stimmen nicht ueberein");
   localStorage.setItem(PIN_KEY,await sha256(np));closeModal("pin-change-modal");toast("PIN geaendert");}
 
-async function boot(){await initPIN();if(await checkSession()){document.getElementById("pin-screen").style.display="none";document.getElementById("app").classList.add("visible");initApp();}}
+async function boot(){document.getElementById("pin-screen").style.display="none";document.getElementById("app").classList.add("visible");initApp();}
 function initApp(){loadData();migrateData();applyTheme();updateTokenStatus();renderAll();renderHeuteDate();loadFromGitHub();}
 function renderAll(){renderKanban();renderHeute();renderTagebuch();renderPatienten();}
 
