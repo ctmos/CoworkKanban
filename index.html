@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -1095,6 +1095,7 @@ function showPinSetupUI() {
     if (p1 !== p2) { showPinError('PINs stimmen nicht überein'); return; }
     const pinHash = btoa(p1 + 'cowork');
     localStorage.setItem('cowork_pin', pinHash);
+    localStorage.setItem('cowork_pin_set', 'true');
     try {
       await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: pinHash }, null, 2), 'sync: update PIN');
     } catch(e) { /* silent fail */ }
@@ -1116,6 +1117,7 @@ async function initPinScreen() {
         const data = JSON.parse(remote.content);
         if (data.pin_hash) {
           localStorage.setItem('cowork_pin', data.pin_hash);
+          localStorage.setItem('cowork_pin_set', 'true');
           showPinUnlockUI(data.pin_hash);
         } else {
           showPinSetupUI();
@@ -1823,6 +1825,7 @@ document.getElementById('btn-pin-change').addEventListener('click', async () => 
     showToast('PIN muss 4–6 Ziffern sein', true); return;
   }
   localStorage.setItem('cowork_pin', hashPin(val));
+  localStorage.setItem('cowork_pin_set', 'true');
   document.getElementById('new-pin-input').value = '';
   try {
     await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: hashPin(val) }, null, 2), 'sync: update PIN');
