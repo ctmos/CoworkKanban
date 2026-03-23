@@ -1075,11 +1075,8 @@ function showPinUnlockUI(stored) {
   document.getElementById('pin-title').textContent = 'CoworkDashboard';
   document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
   document.getElementById('pin-confirm-group').style.display = 'none';
-  const _oldBtn = document.getElementById('pin-btn');
-  const _freshBtn = _oldBtn.cloneNode(true);
-  _oldBtn.parentNode.replaceChild(_freshBtn, _oldBtn);
-  _freshBtn.textContent = 'Entsperren';
-  _freshBtn.addEventListener('click', function() {
+  document.getElementById('pin-btn').textContent = 'Entsperren';
+  document.getElementById('pin-btn').addEventListener('click', function() {
     const p = document.getElementById('pin-input').value.trim();
     if (btoa(p + 'cowork') === stored) { unlockApp(); }
     else { showPinError('Falscher PIN'); }
@@ -1090,11 +1087,8 @@ function showPinSetupUI() {
   document.getElementById('pin-title').textContent = 'PIN einrichten';
   document.getElementById('pin-subtitle').textContent = 'Wähle einen PIN (4–6 Stellen)';
   document.getElementById('pin-confirm-group').style.display = 'block';
-  const _oldSetupBtn = document.getElementById('pin-btn');
-  const _freshSetupBtn = _oldSetupBtn.cloneNode(false);
-  _oldSetupBtn.parentNode.replaceChild(_freshSetupBtn, _oldSetupBtn);
-  _freshSetupBtn.textContent = 'PIN einrichten';
-  _freshSetupBtn.addEventListener('click', async function() {
+  document.getElementById('pin-btn').textContent = 'PIN einrichten';
+  document.getElementById('pin-btn').addEventListener('click', async function() {
     const p1 = document.getElementById('pin-input').value;
     const p2 = document.getElementById('pin-confirm').value;
     if (p1.length < 4) { showPinError('Mindestens 4 Stellen'); return; }
