@@ -73,10 +73,37 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 .status-option{display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 8px;border-radius:6px;border:2px solid transparent;font-size:13px;}
 .status-option.selected{border-color:var(--primary);background:#eef2ff;}
 .status-option .dot{width:14px;height:14px;border-radius:50%;display:inline-block;}
-/* HEUTE TAB */
-#tab-heute{padding:16px;}
-#tab-heute .heute-cards{max-width:600px;margin:0 auto;}
-#tab-heute h2{margin-bottom:16px;font-size:20px;}
+/* HEUTE TAB / TAGESPLAN */
+#tab-heute{padding:16px;overflow-y:auto;}
+#tab-heute .heute-cards{max-width:650px;margin:0 auto;}
+.tp-header{margin-bottom:20px;}
+.tp-date{font-size:22px;font-weight:700;margin-bottom:4px;}
+.tp-summary{font-size:14px;color:#64748b;}
+.tp-card{background:var(--card-bg);border-radius:10px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:box-shadow .15s;}
+.tp-card:hover{box-shadow:0 3px 12px rgba(0,0,0,.12);}
+.tp-card.done{opacity:.7;}
+.tp-checkbox{flex-shrink:0;width:24px;height:24px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:2px;transition:.15s;font-size:14px;background:#fff;}
+.tp-checkbox:hover{border-color:var(--primary);background:#eef2ff;}
+.tp-checkbox.checked{background:var(--dot-green);border-color:var(--dot-green);color:#fff;}
+.tp-body{flex:1;min-width:0;}
+.tp-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.tp-title{font-weight:600;font-size:15px;}
+.tp-title.strikethrough{text-decoration:line-through;color:#94a3b8;}
+.tp-lane-badge{font-size:11px;padding:2px 8px;border-radius:10px;color:#fff;white-space:nowrap;font-weight:500;}
+.tp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-left:auto;}
+.tp-deadline{font-size:12px;color:#64748b;margin-top:4px;}
+.tp-deadline.overdue{color:var(--danger);font-weight:600;}
+.tp-desc{font-size:13px;color:#64748b;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tp-footer{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.tp-footer button{padding:10px 18px;border-radius:8px;border:none;font-size:14px;cursor:pointer;font-weight:500;}
+.tp-btn-back{background:#e2e8f0;color:#475569;}
+.tp-btn-back:hover{background:#cbd5e1;}
+.tp-btn-add{background:var(--primary);color:#fff;}
+.tp-btn-add:hover{background:var(--primary-hover);}
+.tp-empty{text-align:center;padding:48px 16px;}
+.tp-empty p{color:#94a3b8;font-size:15px;margin-bottom:16px;}
+.tp-empty button{background:var(--primary);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;cursor:pointer;}
+.tp-empty button:hover{background:var(--primary-hover);}
 /* TAGEBUCH TAB */
 #tab-tagebuch{padding:16px;}
 #tab-tagebuch .tb-container{max-width:600px;margin:0 auto;}
@@ -128,11 +155,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 </nav>
 
 <div class="tab active" id="tab-heute">
-  <div class="heute-cards">
-    <h2>📌 Heute</h2>
-    <div id="heuteCardList"></div>
-    <p id="heuteEmpty" style="color:#94a3b8;font-size:14px;margin-top:12px;">Keine Karten für heute. Verschiebe Karten mit "→ Heute" aus den Projektlanes.</p>
-  </div>
+  <div class="heute-cards" id="tagesplanContainer"></div>
 </div>
 
 <div class="tab" id="tab-projekte">
@@ -179,7 +202,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
 <!-- Create Card Modal -->
 <div class="modal-overlay" id="createModal">
   <div class="modal">
-    <h3>Neue Karte</h3>
+    <h3 id="createModalTitle">Neue Karte</h3>
     <label>Präfix</label>
     <input type="text" id="cmPrefix" maxlength="6">
     <label>Überschrift *</label>
@@ -247,6 +270,15 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     {id:'tagebuch_lane',name:'Tagebuch',prefix:'TA'}
   ];
 
+  // Lane color mapping for badges
+  const LANE_COLORS = {
+    barmelweid:'#2563eb',patienten_lane:'#0891b2',psp_wb:'#7c3aed',
+    selfimprovement:'#059669',finanzen:'#d97706',freunde:'#e11d48',
+    events:'#8b5cf6',familie:'#ea580c',ki:'#0284c7',cowork:'#6366f1',
+    imperialk:'#4f46e5',erinnerungen:'#64748b',tagebuch_lane:'#475569',
+    heute:'#7c3aed'
+  };
+
   const STORAGE_KEY = 'coworkdashboard_data';
   let data;
   let currentLaneIdx = 0;
@@ -272,19 +304,29 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     return p[2]+'.'+p[1]+'.'+p[0];
   }
   function todayStr(){return new Date().toISOString().slice(0,10);}
+  function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+  function getLaneName(laneId){
+    const l=LANES.find(x=>x.id===laneId);
+    return l?l.name:laneId;
+  }
+  function getLaneColor(laneId){
+    return LANE_COLORS[laneId]||'#64748b';
+  }
 
   // NAV
+  function switchTab(tabName){
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.nav button[data-tab="'+tabName+'"]').classList.add('active');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('tab-'+tabName).classList.add('active');
+    if(tabName==='heute') renderHeute();
+    if(tabName==='projekte') renderLanes();
+    if(tabName==='tagebuch') renderTagebuch();
+    if(tabName==='patienten') renderPatienten();
+  }
   document.querySelectorAll('.nav button').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-      document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-      if(btn.dataset.tab==='heute') renderHeute();
-      if(btn.dataset.tab==='projekte') renderLanes();
-      if(btn.dataset.tab==='tagebuch') renderTagebuch();
-      if(btn.dataset.tab==='patienten') renderPatienten();
-    });
+    btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
   });
 
   // LANES
@@ -359,7 +401,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
       <div class="card-top">
         <span class="status-dot ${card.status}"></span>
         <span class="card-prefix">${card.id}</span>
-        <span class="card-title">· ${card.title}</span>
+        <span class="card-title">· ${esc(card.title)}</span>
         <div class="card-actions">${actions}</div>
       </div>
       ${card.deadline?`<div class="card-date">📅 ${formatDate(card.deadline)}</div>`:''}`;
@@ -386,13 +428,13 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     c.inHeute=false;
     if(c.originalLane) c.lane=c.originalLane;
     c.originalLane=null;
-    saveData();renderLanes();
+    saveData();renderLanes();renderHeute();
   }
-  function archiveCard(id){data.cards[id].archived=true;saveData();renderLanes();}
-  function unarchiveCard(id){data.cards[id].archived=false;saveData();renderLanes();}
+  function archiveCard(id){data.cards[id].archived=true;saveData();renderLanes();renderHeute();}
+  function unarchiveCard(id){data.cards[id].archived=false;saveData();renderLanes();renderHeute();}
   function deleteCard(id){
     if(!confirm('Karte "'+id+'" wirklich löschen?')) return;
-    delete data.cards[id];saveData();renderLanes();
+    delete data.cards[id];saveData();renderLanes();renderHeute();
   }
 
   // CREATE MODAL
@@ -400,6 +442,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     currentCreateLane=laneId;
     const lane=LANES.find(l=>l.id===laneId);
     const nextNum=data.cardCounters[lane.prefix]+1;
+    document.getElementById('createModalTitle').textContent='Neue Karte';
     document.getElementById('cmPrefix').value=lane.prefix+String(nextNum).padStart(3,'0');
     document.getElementById('cmTitle').value='';
     document.getElementById('cmDeadline').value='';
@@ -437,7 +480,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     };
     saveData();
     document.getElementById('createModal').classList.remove('open');
-    renderLanes();
+    renderLanes();renderHeute();
   });
   document.getElementById('createModal').addEventListener('click',e=>{
     if(e.target===document.getElementById('createModal')) document.getElementById('createModal').classList.remove('open');
@@ -457,16 +500,101 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
     if(e.target===document.getElementById('detailModal')) document.getElementById('detailModal').classList.remove('open');
   });
 
-  // HEUTE TAB
+  // HEUTE TAB - TAGESPLAN
   function renderHeute(){
-    const list=document.getElementById('heuteCardList');
-    list.innerHTML='';
+    const container=document.getElementById('tagesplanContainer');
     const cards=Object.values(data.cards).filter(c=>c.inHeute&&!c.archived);
-    document.getElementById('heuteEmpty').style.display=cards.length?'none':'block';
-    cards.forEach(c=>{
-      const div=createCardEl(c,true,false);
-      div.querySelector('.btn-from-heute')?.addEventListener('click',()=>{moveFromHeute(c.id);renderHeute();});
-      list.appendChild(div);
+    const doneCount=cards.filter(c=>c.status==='green').length;
+    const openCount=cards.length-doneCount;
+    const dateStr=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+
+    if(cards.length===0){
+      container.innerHTML=`
+        <div class="tp-empty">
+          <p style="font-size:40px;margin-bottom:12px;">📋</p>
+          <p>Kein Plan für heute — zieh Aufgaben aus dem Kanban in die Heute-Lane</p>
+          <button id="tpGoKanban">→ Zum Kanban</button>
+        </div>`;
+      document.getElementById('tpGoKanban').addEventListener('click',()=>switchTab('projekte'));
+      return;
+    }
+
+    let html=`
+      <div class="tp-header">
+        <div class="tp-date">${dateStr}</div>
+        <div class="tp-summary">${cards.length} Aufgabe${cards.length!==1?'n':''} heute · ${openCount} offen · ${doneCount} erledigt</div>
+      </div>
+      <div id="tpCardList"></div>
+      <div class="tp-footer">
+        <button class="tp-btn-back" id="tpBackAll">← Alles zurückschieben</button>
+        <button class="tp-btn-add" id="tpAddNew">+ Neue Aufgabe heute</button>
+      </div>`;
+    container.innerHTML=html;
+
+    const listEl=document.getElementById('tpCardList');
+    cards.forEach(card=>{
+      const isDone=card.status==='green';
+      const originLane=card.originalLane||card.lane;
+      const laneName=getLaneName(originLane);
+      const laneColor=getLaneColor(originLane);
+      const isOverdue=card.deadline&&card.deadline<todayStr()&&!isDone;
+      const descSnippet=card.description?(card.description.length>80?card.description.substring(0,80)+'…':card.description):'';
+
+      const el=document.createElement('div');
+      el.className='tp-card'+(isDone?' done':'');
+      el.innerHTML=`
+        <div class="tp-checkbox${isDone?' checked':''}" data-id="${card.id}">${isDone?'✓':''}</div>
+        <div class="tp-body">
+          <div class="tp-title-row">
+            <span class="tp-title${isDone?' strikethrough':''}">${esc(card.id)} · ${esc(card.title)}</span>
+            ${originLane&&originLane!=='heute'?`<span class="tp-lane-badge" style="background:${laneColor}">aus ${esc(laneName.replace(/📌\s*/,''))}</span>`:''}
+            <span class="tp-dot status-dot ${card.status}"></span>
+          </div>
+          ${card.deadline?`<div class="tp-deadline${isOverdue?' overdue':''}">📅 ${formatDate(card.deadline)}${isOverdue?' — überfällig':''}</div>`:''}
+          ${descSnippet?`<div class="tp-desc">${esc(descSnippet)}</div>`:''}
+        </div>`;
+
+      // Checkbox click - toggle done
+      el.querySelector('.tp-checkbox').addEventListener('click',(e)=>{
+        e.stopPropagation();
+        const c=data.cards[card.id];
+        if(!c) return;
+        if(c.status==='green'){
+          c.status='gray';
+        } else {
+          c.status='green';
+        }
+        saveData();renderHeute();
+      });
+
+      // Card body click - open detail modal
+      el.querySelector('.tp-body').addEventListener('click',()=>openDetail(card));
+
+      listEl.appendChild(el);
+    });
+
+    // Back all button
+    document.getElementById('tpBackAll').addEventListener('click',()=>{
+      const heuteCards=Object.values(data.cards).filter(c=>c.inHeute&&!c.archived);
+      if(!heuteCards.length) return;
+      if(!confirm(heuteCards.length+' Karte'+(heuteCards.length!==1?'n':'')+' zurückschieben?')) return;
+      heuteCards.forEach(c=>{
+        c.inHeute=false;
+        if(c.originalLane){
+          c.lane=c.originalLane;
+          c.originalLane=null;
+        } else {
+          // Move to first non-heute lane if no originalLane
+          const firstLane=LANES.find(l=>l.id!=='heute');
+          if(firstLane) c.lane=firstLane.id;
+        }
+      });
+      saveData();renderHeute();renderLanes();
+    });
+
+    // Add new card button
+    document.getElementById('tpAddNew').addEventListener('click',()=>{
+      openCreateModal('heute');
     });
   }
 
@@ -507,7 +635,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#
       list.appendChild(div);
     });
   }
-  function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
   document.getElementById('addPatient').addEventListener('click',()=>openPatModal(null));
   function openPatModal(idx){
     editingPatient=idx;
