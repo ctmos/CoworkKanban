@@ -1356,7 +1356,7 @@ function renderCardItem(card) {
     ? '<span class="card-deadline">' + card.deadline + '</span>' : '';
   const isHE = card.todayFlag || card.lane === 'HE';
   const cardId = esc(card.id);
-  const onclickFn = isHE ? 'moveFromToday(\"' + cardId + '\")' : 'moveToToday(\"' + cardId + '\")';
+  const onclickFn = isHE ? 'moveFromToday(\'' + cardId + '\')' : 'moveToToday(\'' + cardId + '\')';
   const titleAttr = isHE ? 'Zurück' : 'Heute';
   const btnIcon = isHE ? '↩' : 'â';
   const todayCls = isHE ? ' is-today' : '';
