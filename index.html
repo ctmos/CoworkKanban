@@ -2,14 +2,14 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CoworkKanban v9</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#F5F4EF;--surface:#FFFFFF;--border:#E5E3DD;--text:#1A1A1A;--text-muted:#6B6B6B;--accent:#CC785C;--accent-hover:#B5684E;--accent-light:#F5EDE8;--success:#4A7C59;--warning:#C8922A;--danger:#C0392B;--danger-light:#FDECEA;--radius:8px;--nav-height:64px;--card-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);--modal-shadow:0 20px 60px rgba(0,0,0,0.15);}
-    [data-theme="dark"]{--bg:#1A1916;--surface:#242320;--border:#38362F;--text:#F0EDE6;--text-muted:#9A9488;--accent:#D4896B;--accent-hover:#C07455;--accent-light:#2E231D;--card-shadow:0 1px 3px rgba(0,0,0,0.3);}
+    :root{--bg:#F2FAF6;--surface:#FFFFFF;--border:#C8E6D6;--text:#1A1A1A;--text-muted:#5A7A6A;--accent:#1E9E6B;--accent-hover:#187F56;--accent-light:#E4F5EC;--success:#1E9E6B;--warning:#C8922A;--danger:#C0392B;--danger-light:#FDECEA;--radius:8px;--nav-height:64px;--sidebar-width:220px;--card-shadow:0 1px 3px rgba(0,0,0,0.05),0 1px 2px rgba(0,0,0,0.04);--modal-shadow:0 20px 60px rgba(0,0,0,0.15);}
+    [data-theme="dark"]{--bg:#0D1F17;--surface:#122019;--border:#1C3828;--text:#E4F5EC;--text-muted:#7AAA8A;--accent:#25C47F;--accent-hover:#1EA368;--accent-light:#122019;--card-shadow:0 1px 3px rgba(0,0,0,0.35);}
     *{box-sizing:border-box;margin:0;padding:0;}
     html,body{height:100%;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
     #pin-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:24px;padding:24px;}
@@ -24,7 +24,7 @@
     .pin-key{width:72px;height:72px;border-radius:50%;border:1px solid var(--border);background:var(--surface);font-size:22px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--card-shadow);transition:all 0.1s;-webkit-tap-highlight-color:transparent;}
     .pin-key:active{transform:scale(0.93);background:var(--accent-light);}
     .pin-error{color:var(--danger);font-size:13px;text-align:center;min-height:20px;}
-    #app{display:none;flex-direction:column;height:100%;max-width:600px;margin:0 auto;position:relative;}
+    #app{display:none;flex-direction:column;height:100%;position:relative;}
     #app.visible{display:flex;}
     .app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:10;}
     .header-title{font-size:17px;font-weight:700;}
@@ -37,7 +37,7 @@
     .app-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:80px;}
     .tab-panel{display:none;padding:16px;}
     .tab-panel.active{display:block;}
-    .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:600px;height:var(--nav-height);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:50;padding-bottom:env(safe-area-inset-bottom);pointer-events:auto;}
+    .bottom-nav{position:fixed;bottom:0;left:0;width:100%;height:var(--nav-height);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:50;padding-bottom:env(safe-area-inset-bottom);pointer-events:auto;}
     .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;cursor:pointer;color:var(--text-muted);font-size:10px;font-weight:500;border:none;background:none;-webkit-tap-highlight-color:transparent;transition:color 0.15s;letter-spacing:0.3px;text-transform:uppercase;user-select:none;touch-action:manipulation;position:relative;z-index:1;pointer-events:auto;}
     .nav-item svg{width:22px;height:22px;}
     .nav-item.active{color:var(--accent);}
@@ -132,10 +132,31 @@
     ::-webkit-scrollbar-track{background:transparent;}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
     select.input{-webkit-appearance:none;appearance:none;padding-right:32px;}
+    .desktop-sidebar{display:none;}
+    @media(min-width:768px){
+      .bottom-nav{display:none!important;}
+      #app.visible{display:grid!important;grid-template-columns:var(--sidebar-width) 1fr;grid-template-rows:auto 1fr;height:100vh;overflow:hidden;}
+      .desktop-sidebar{display:flex;flex-direction:column;grid-row:1/-1;grid-column:1;background:var(--surface);border-right:1px solid var(--border);padding:20px 12px;gap:2px;overflow-y:auto;position:relative;z-index:20;}
+      .sidebar-logo{font-size:16px;font-weight:700;padding:8px 12px;margin-bottom:16px;color:var(--text);letter-spacing:-0.3px;white-space:nowrap;}
+      .sidebar-logo span{color:var(--accent);}
+      .sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text-muted);font-size:14px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:all 0.15s;-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+      .sidebar-item:hover{background:var(--accent-light);color:var(--accent);}
+      .sidebar-item.active{background:var(--accent-light);color:var(--accent);font-weight:600;}
+      .sidebar-item svg{width:18px;height:18px;flex-shrink:0;}
+      .sidebar-spacer{flex:1;}
+      .app-header{grid-column:2;grid-row:1;position:sticky;top:0;}
+      .app-content{grid-column:2;grid-row:2;overflow-y:auto;padding-bottom:24px;-webkit-overflow-scrolling:touch;}
+      .kanban-board{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;overflow-x:visible;padding-bottom:0;}
+      .kanban-col{min-width:0;}
+      .tab-panel{padding:28px 32px;}
+      #toast{bottom:24px;}
+      .modal{border-radius:12px;margin:auto;max-height:85vh;}
+      .modal-backdrop{align-items:center;}
+    }
   </style>
 </head>
 <body>
-<div id="loginScreen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#F5F4EF;z-index:9999;align-items:center;justify-content:center;font-family:'Inter',sans-serif;">
+<div id="loginScreen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#F2FAF6;z-index:9999;align-items:center;justify-content:center;font-family:'Inter',sans-serif;">
   <div style="background:#FFFFFF;border-radius:8px;padding:32px;max-width:360px;width:90%;box-sizing:border-box;">
     <h1 style="font-size:20px;font-weight:600;color:#1a1a1a;margin:0 0 8px 0;">CoworkKanban</h1>
     <p style="font-size:14px;color:#6b6b6b;margin:0 0 24px 0;">Bitte anmelden</p>
@@ -157,6 +178,25 @@
   </div>
 </div>
 <div id="app">
+  <nav class="desktop-sidebar">
+    <div class="sidebar-logo">Cowork<span>Kanban</span></div>
+    <button class="sidebar-item active" data-tab="kanban" onclick="switchTab('kanban')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/><rect x="14" y="17" width="7" height="4" rx="1"/></svg>Kanban
+    </button>
+    <button class="sidebar-item" data-tab="heute" onclick="switchTab('heute')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>Heute
+    </button>
+    <button class="sidebar-item" data-tab="tagebuch" onclick="switchTab('tagebuch')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Tagebuch
+    </button>
+    <button class="sidebar-item" data-tab="patienten" onclick="switchTab('patienten')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Patienten
+    </button>
+    <div class="sidebar-spacer"></div>
+    <button class="sidebar-item" data-tab="einstellungen" onclick="switchTab('einstellungen')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Einstellungen
+    </button>
+  </nav>
   <header class="app-header">
     <div class="header-title" id="header-title">Kanban</div>
     <button class="sync-btn" onclick="syncData()"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Sync</span></button>
@@ -333,7 +373,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">GitHub Token</div>
-    <div class="form-group"><label class="form-label">Personal Access Token</label><input type="password" class="input" id="token-input" placeholder="ghp_..."><div style="font-size:12px;color:var(--text-muted);margin-top:6px">Benötigt: repo Schreibzugriff auf ctmos/cowork-data</div></div>
+    <div class="form-group"><label class="form-label">Personal Access Token</label><input type="password" class="input" id="token-input" placeholder="ghp_..." oninput="appData.einstellungen.githubToken=this.value.trim();saveData();"><div style="font-size:12px;color:var(--text-muted);margin-top:6px">Benötigt: repo Schreibzugriff auf ctmos/cowork-data</div></div>
     <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('token-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveToken()">Speichern</button></div>
   </div>
 </div>
@@ -506,7 +546,7 @@ function exportData(){const blob=new Blob([JSON.stringify(appData,null,2)],{type
 function clearData(){localStorage.removeItem(DATA_KEY);appData={version:"1.0",lastUpdated:new Date().toISOString(),kanban:{columns:["offen","in_arbeit","erledigt"],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[],einstellungen:{githubToken:"",theme:"light"}};renderAll();applyTheme();toast("Daten gelöscht");}
 
 const TAB_TITLES={kanban:"Kanban",heute:"Heute",tagebuch:"Tagebuch",patienten:"Patienten",einstellungen:"Einstellungen"};
-function switchTab(tab){if(!tab)return;document.querySelectorAll(".tab-panel").forEach(function(p){p.classList.remove("active")});document.querySelectorAll(".nav-item").forEach(function(n){n.classList.remove("active")});var panel=document.getElementById("tab-"+tab);if(panel)panel.classList.add("active");var navBtn=document.querySelector("[data-tab=\""+tab+"\"]");if(navBtn)navBtn.classList.add("active");document.getElementById("header-title").textContent=TAB_TITLES[tab]||tab;}
+function switchTab(tab){if(!tab)return;document.querySelectorAll(".tab-panel").forEach(function(p){p.classList.remove("active")});document.querySelectorAll(".nav-item,.sidebar-item").forEach(function(n){n.classList.remove("active")});var panel=document.getElementById("tab-"+tab);if(panel)panel.classList.add("active");document.querySelectorAll("[data-tab=\""+tab+"\"]").forEach(function(n){n.classList.add("active")});document.getElementById("header-title").textContent=TAB_TITLES[tab]||tab;}
 function openModal(id){document.getElementById(id).classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
 function closeModalOnBackdrop(e,id){if(e.target===document.getElementById(id))closeModal(id);}
