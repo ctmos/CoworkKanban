@@ -1135,16 +1135,18 @@ async function initPinScreen() {
   }
   // fix: PIN unlock button guaranteed onclick via addEventListener
   const btn = document.getElementById('pin-btn');
-  btn.addEventListener('click', function() {
-    const hash = localStorage.getItem('cowork_pin');
-    if (!hash) return; // setup mode: showPinSetupUI's onclick handles it
-    const p = document.getElementById('pin-input').value.trim();
-    if (btoa(p + 'cowork') === hash) {
-      unlockApp();
-    } else {
-      showPinError('Falscher PIN');
-    }
-  });
+  btn.addEventListener('click', function() { const hash = localStorage.getItem('cowork_pin'); if (!hash) return; const p = document.getElementById('pin-input').value.trim(); if (btoa(p + 'cowork') === hash) { unlockApp(); } else { showPinError('Falscher PIN'); } });
+  if (false) {
+  const fakebtn = null;
+  if (false) {
+  const btn = document.getElementById('pin-btn');
+  if (resolvedHash) {
+    btn.onclick = function() {
+      const p = document.getElementById('pin-input').value.trim();
+      if (btoa(p + 'cowork') === resolvedHash) { unlockApp(); }
+      else { showPinError('Falscher PIN'); }
+    };
+  }
   document.getElementById('pin-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') document.getElementById('pin-btn').click();
   });
