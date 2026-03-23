@@ -1,9 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1e293b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>CoworkDashboard</title>
 <style>
@@ -13,870 +12,1620 @@
   --bg: #f9f9f8;
   --surface: #ffffff;
   --border: #e5e5e3;
-  --text-primary: #1a1a1a;
-  --text-secondary: #6b6b6b;
+  --text: #1a1a1a;
+  --text-muted: #6b6b6b;
   --accent: #cc785c;
-  --accent-hover: #b8674d;
+  --accent-dark: #b8674d;
   --nav-bg: #f3f3f2;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --radius: 8px;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  background: var(--bg);
-  color: var(--text-primary);
   min-height: 100vh;
 }
+
+/* ── PIN SCREEN ── */
+#pin-screen {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+
+.pin-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 40px 48px;
+  width: 100%; max-width: 380px;
+  text-align: center;
+}
+
+.pin-card h1 {
+  font-size: 20px; font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.pin-card p {
+  color: var(--text-muted); font-size: 13px;
+  margin-bottom: 28px;
+}
+
+.pin-input {
+  width: 100%;
+  font-size: 24px;
+  letter-spacing: 8px;
+  text-align: center;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  margin-bottom: 16px;
+}
+
+.pin-input:focus { border-color: var(--accent); }
+
+.pin-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.pin-btn:hover { background: var(--accent-dark); }
+.pin-btn:disabled { background: #ccc; cursor: default; }
+
+.pin-error {
+  color: #ef4444; font-size: 13px;
+  margin-top: 12px; min-height: 18px;
+}
+
+/* ── APP ── */
+#app { display: none; min-height: 100vh; }
 
 /* ── NAV ── */
 nav {
   background: var(--nav-bg);
   border-bottom: 1px solid var(--border);
   padding: 0 16px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  display: flex; align-items: center;
   height: 44px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: sticky; top: 0; z-index: 100;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+nav::-webkit-scrollbar { display: none; }
+
+.brand {
+  font-weight: 600; font-size: 15px;
+  color: var(--text);
+  margin-right: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-nav .brand {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-right: 16px;
-  font-size: 15px;
-}
-
-nav button {
-  background: none;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
+.tab-btn {
+  background: none; border: none;
+  padding: 0 14px;
+  height: 44px;
   cursor: pointer;
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-family: inherit;
-  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s;
+  position: relative;
 }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
 
-nav button:hover {
-  background: rgba(0,0,0,0.05);
-  color: var(--text-primary);
-}
-
-nav button.active {
-  color: var(--text-primary);
-  border-bottom: 2px solid var(--accent);
-  border-radius: 0;
-  padding-bottom: 4px;
-}
-
-nav .spacer { flex: 1; }
-
-nav .nav-action {
+.tab-badge {
   background: var(--accent);
   color: #fff;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-family: inherit;
-  font-weight: 500;
-  transition: background 0.15s;
+  font-size: 10px;
+  border-radius: 10px;
+  padding: 1px 5px;
+  margin-left: 4px;
+  font-weight: 600;
 }
 
-nav .nav-action:hover { background: var(--accent-hover); }
+/* ── TABS ── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
 
-/* ── BOARD ── */
-#board {
-  display: flex;
-  gap: 12px;
+/* ── HEUTE ── */
+#tab-heute {
+  padding: 20px 16px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heute-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.heute-header h2 { font-size: 16px; font-weight: 600; }
+
+.btn-primary {
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius);
+  padding: 8px 14px; font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: var(--accent-dark); }
+
+.btn-secondary {
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 8px 14px; font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-secondary:hover { background: var(--bg); }
+
+.btn-danger {
+  background: #fff5f5; color: #ef4444;
+  border: 1px solid #fecaca; border-radius: var(--radius);
+  padding: 8px 14px; font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+}
+
+.card-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  transition: box-shadow 0.15s;
+}
+.card-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+
+.card-prefix {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
+.card-title { flex: 1; font-size: 14px; }
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-offen { background: #9ca3af; }
+.status-blockiert { background: #ef4444; }
+.status-in-arbeit { background: #f59e0b; }
+.status-erledigt { background: #22c55e; }
+
+.card-deadline {
+  font-size: 11px; color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.empty-state {
+  text-align: center; padding: 48px 16px;
+  color: var(--text-muted); font-size: 13px;
+}
+
+/* Token Widget */
+.token-widget {
+  margin-top: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 16px;
-  overflow-x: auto;
-  min-height: calc(100vh - 44px);
-  align-items: flex-start;
+}
+.token-widget h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.budget-bar-wrap { background: var(--bg); border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 8px; }
+.budget-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s; }
+.token-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+.token-meta-item { font-size: 12px; color: var(--text-muted); }
+.token-meta-item strong { color: var(--text); }
+.model-badge {
+  display: inline-block;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 8px;
+  font-size: 11px; font-weight: 500;
+  color: var(--text-muted); margin-right: 4px;
+}
+
+/* ── KANBAN ── */
+#tab-kanban {
+  padding: 16px;
+}
+
+.kanban-grid {
+  display: flex; flex-direction: column; gap: 8px;
+  max-width: 1200px; margin: 0 auto;
 }
 
 .lane {
-  background: var(--bg);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  width: 280px;
-  min-width: 280px;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 76px);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 .lane-header {
-  padding: 12px 14px 8px;
+  display: flex; align-items: center;
+  padding: 10px 14px;
+  background: var(--nav-bg);
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.lane-title {
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.lane-count {
-  background: rgba(0,0,0,0.06);
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 500;
-  padding: 2px 7px;
-  border-radius: 10px;
-}
-
-.lane-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
-.add-card-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 13px;
+.lane-title { font-size: 13px; font-weight: 600; flex: 1; }
+.lane-count { font-size: 12px; color: var(--text-muted); }
+
+.lane-collapse {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 12px;
+  padding: 2px 6px; border-radius: 4px;
   font-family: inherit;
-  cursor: pointer;
-  padding: 8px 14px;
-  text-align: left;
+}
+.lane-collapse:hover { background: var(--border); }
+
+.lane-body {
+  padding: 8px;
+  min-height: 60px;
+  display: block;
+}
+.lane-body.collapsed { display: none; }
+
+.lane-footer {
+  padding: 6px 8px;
   border-top: 1px solid var(--border);
-  transition: color 0.15s;
+  display: flex; gap: 6px; align-items: center;
 }
 
-.add-card-btn:hover { color: var(--accent); }
+.btn-add-card {
+  background: none; border: none;
+  color: var(--text-muted); font-size: 13px;
+  cursor: pointer; padding: 4px 8px;
+  border-radius: 4px; font-family: inherit;
+}
+.btn-add-card:hover { background: var(--bg); color: var(--text); }
 
-/* ── CARDS ── */
-.card {
+/* Vorlagen Dropdown */
+.vorlagen-wrap { position: relative; }
+
+.btn-vorlagen {
+  background: none; border: none;
+  color: var(--text-muted); font-size: 13px;
+  cursor: pointer; padding: 4px 8px;
+  border-radius: 4px; font-family: inherit;
+}
+.btn-vorlagen:hover { background: var(--bg); color: var(--text); }
+
+.vorlagen-dropdown {
+  display: none;
+  position: absolute; bottom: 100%; left: 0;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  transition: box-shadow 0.15s, border-color 0.15s;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  min-width: 200px;
+  z-index: 200;
+  overflow: hidden;
 }
+.vorlagen-dropdown.open { display: block; }
 
-.card:hover {
-  box-shadow: 0 3px 8px rgba(0,0,0,0.10);
-  border-color: #d0d0ce;
+.vorlagen-item {
+  display: block; width: 100%;
+  background: none; border: none;
+  padding: 9px 14px; text-align: left;
+  font-size: 13px; color: var(--text);
+  cursor: pointer; font-family: inherit;
 }
-
-.card-title {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 6px;
-}
-
-.card-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.card-tag {
-  font-size: 11px;
-  background: rgba(0,0,0,0.05);
-  color: var(--text-secondary);
-  padding: 2px 7px;
-  border-radius: 10px;
-}
-
-.card-assignee {
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-/* Status dots */
-.status-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 4px;
-}
-.status-open     { background: #9ca3af; }
-.status-blocked  { background: #ef4444; }
-.status-progress { background: #f59e0b; }
-.status-done     { background: #22c55e; }
+.vorlagen-item:hover { background: var(--bg); }
 
 /* ── MODAL ── */
 .modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
+  display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,0.3);
-  z-index: 200;
-  align-items: center;
-  justify-content: center;
+  z-index: 500;
+  align-items: center; justify-content: center;
+  padding: 16px;
 }
-
 .modal-overlay.open { display: flex; }
 
 .modal {
   background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
-  width: 520px;
-  max-width: 95vw;
-  max-height: 90vh;
-  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
   padding: 24px;
+  width: 100%; max-width: 480px;
+  max-height: 90vh; overflow-y: auto;
 }
 
-.modal h2 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
+.modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+
+.form-input, .form-textarea, .form-select {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface); color: var(--text);
+  font-size: 14px; font-family: inherit;
+  outline: none; transition: border-color 0.15s;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+.form-textarea { resize: vertical; min-height: 80px; }
+
+.status-options { display: flex; gap: 8px; flex-wrap: wrap; }
+.status-option { display: flex; align-items: center; gap: 5px; }
+.status-option input[type=radio] { accent-color: var(--accent); }
+.status-option label { font-size: 13px; cursor: pointer; }
+
+.modal-footer {
+  display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;
+  margin-top: 24px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── PATIENTEN ── */
+#tab-patienten {
+  padding: 20px 16px;
+  max-width: 900px; margin: 0 auto;
+}
+
+.pat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+}
+.pat-header h2 { font-size: 16px; font-weight: 600; }
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface); color: var(--text);
+  font-size: 13px; font-family: inherit;
+  outline: none; width: 220px;
+}
+.search-input:focus { border-color: var(--accent); }
+
+.patient-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+}
+.patient-row:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+.pat-code { font-weight: 600; font-size: 13px; font-family: monospace; min-width: 80px; }
+.pat-info { flex: 1; font-size: 13px; color: var(--text-muted); }
+.pat-status-badge {
+  font-size: 11px; padding: 2px 8px;
+  border-radius: 10px; font-weight: 500;
+}
+.pat-status-aktiv { background: #dcfce7; color: #166534; }
+.pat-status-entlassen { background: #f1f5f9; color: #475569; }
+.pat-status-pause { background: #fef9c3; color: #854d0e; }
+
+/* ── AUTONOMIE-LOG ── */
+#tab-autonomy {
+  padding: 20px 16px;
+  max-width: 900px; margin: 0 auto;
+}
+
+.al-header {
+  display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 16px;
 }
+.al-header h2 { font-size: 16px; font-weight: 600; }
 
-.modal label {
-  display: block;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-  margin-top: 12px;
-}
-
-.modal input,
-.modal textarea,
-.modal select {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 13px;
-  font-family: inherit;
-  color: var(--text-primary);
-  background: var(--bg);
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.modal input:focus,
-.modal textarea:focus,
-.modal select:focus {
-  border-color: var(--accent);
-}
-
-.modal textarea { resize: vertical; min-height: 80px; }
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.btn {
-  padding: 7px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-family: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition: background 0.15s;
-}
-
-.btn-primary {
-  background: var(--accent);
-  color: #fff;
-}
-
-.btn-primary:hover { background: var(--accent-hover); }
-
-.btn-secondary {
+.al-card {
   background: var(--surface);
-  color: var(--text-primary);
   border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  margin-bottom: 10px;
+  transition: opacity 0.3s;
+}
+.al-card.read { opacity: 0.5; }
+
+.al-card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.al-badge { font-size: 18px; }
+.al-meta { flex: 1; }
+.al-title { font-size: 14px; font-weight: 600; }
+.al-ts { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.al-desc { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+.al-read-btn {
+  margin-top: 12px;
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px;
+  font-size: 12px; color: var(--text-muted);
+  cursor: pointer; font-family: inherit;
+}
+.al-read-btn:hover { background: var(--bg); }
+.al-card.read .al-read-btn { opacity: 0.5; pointer-events: none; }
+
+/* ── EINSTELLUNGEN ── */
+#tab-settings {
+  padding: 20px 16px;
+  max-width: 600px; margin: 0 auto;
+}
+#tab-settings h2 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+
+.settings-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.settings-section h3 { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+
+.settings-row { margin-bottom: 14px; }
+.settings-row:last-child { margin-bottom: 0; }
+.settings-label { font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block; }
+.settings-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+.settings-input-row { display: flex; gap: 8px; }
+.settings-input {
+  flex: 1; padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface); color: var(--text);
+  font-size: 13px; font-family: inherit;
+  outline: none;
+}
+.settings-input:focus { border-color: var(--accent); }
+
+.danger-zone {
+  border-color: #fecaca;
+  background: #fff5f5;
 }
 
-.btn-secondary:hover { background: var(--bg); }
-
-.btn-danger {
-  background: #fff0ee;
-  color: #c0392b;
-  border: 1px solid #fbc8c1;
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .pin-card { padding: 28px 20px; margin: 16px; }
+  #tab-kanban { padding: 10px 8px; }
+  .modal { padding: 16px; margin: 0; border-radius: 12px 12px 0 0; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
 }
 
-.btn-danger:hover { background: #fde0db; }
+/* ── BACKLOG ── */
+.bl-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.bl-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.bl-card-top { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+.bl-prio { font-size:16px; flex-shrink:0; }
+.bl-title { font-size:14px; font-weight:600; flex:1; }
+.bl-status-badge {
+  font-size:11px; padding:2px 8px;
+  border-radius:10px; font-weight:500;
+  white-space:nowrap;
+}
+.bl-geplant    { background:#eff6ff; color:#1d4ed8; }
+.bl-in-arbeit  { background:#fef9c3; color:#854d0e; }
+.bl-abgeschlossen { background:#dcfce7; color:#166534; }
+.bl-card-meta { font-size:12px; color:var(--text-muted); display:flex; gap:12px; }
+.bl-desc { font-size:13px; color:var(--text-muted); margin-top:6px; }
 
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-/* ── DRAG ── */
-.card.dragging { opacity: 0.4; }
-.lane-body.drag-over { background: rgba(204,120,92,0.06); border-radius: 8px; }
-
-/* ── EMPTY STATE ── */
-.empty-lane {
-  color: var(--text-secondary);
-  font-size: 12px;
+/* Confirm modal */
+#confirm-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 600;
+  align-items: center; justify-content: center;
+  padding: 16px;
+}
+#confirm-overlay.open { display: flex; }
+.confirm-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 360px; width: 100%;
   text-align: center;
-  padding: 24px 0;
 }
+.confirm-modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.confirm-modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.confirm-btns { display: flex; gap: 8px; justify-content: center; }
 </style>
 </head>
 <body>
-<nav class="nav" id="mainNav">
-  <button data-tab="heute" class="active">Heute</button>
-  <button data-tab="kanban">Kanban</button>
-  <button data-tab="patienten">Patienten</button>
-  <button data-tab="autonomie-log">Autonomie-Log <span id="alBadge" class="nav-badge"></span></button>
-  <button data-tab="einstellungen">Einstellungen</button>
-</nav>
 
-<div class="tab active" id="tab-heute">
-  <div class="ht-wrap" id="htContainer"></div>
-</div>
-
-<div class="tab" id="tab-kanban">
-  <div class="mob-nav" id="mobNav">
-    <button id="lanePrev">&#8592;</button>
-    <span id="laneDisplay"></span>
-    <button id="laneNext">&#8594;</button>
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div class="pin-card">
+    <h1 id="pin-title">CoworkDashboard</h1>
+    <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
+    <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••••" autocomplete="off" inputmode="numeric">
+    <button class="pin-btn" id="pin-submit">Entsperren</button>
+    <div class="pin-error" id="pin-error"></div>
   </div>
-  <div class="ldots" id="laneDots"></div>
-  <div class="lanes-wrap" id="lanesContainer"></div>
 </div>
 
-<div class="tab" id="tab-patienten">
-  <div class="pt-wrap">
-    <div class="pt-head">
+<!-- APP -->
+<div id="app">
+  <nav>
+    <span class="brand">CoworkDashboard</span>
+    <button class="tab-btn active" data-tab="heute">Heute</button>
+    <button class="tab-btn" data-tab="kanban">Kanban</button>
+    <button class="tab-btn" data-tab="patienten">Patienten</button>
+    <button class="tab-btn" data-tab="autonomy">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
+    <button class="tab-btn" data-tab="backlog">Backlog</button>
+    <button class="tab-btn" data-tab="settings">Einstellungen</button>
+  </nav>
+
+  <!-- HEUTE TAB -->
+  <div id="tab-heute" class="tab-content active">
+    <div class="heute-header">
+      <h2 id="heute-date">Heute</h2>
+      <button class="btn-primary" id="btn-heute-add">+ Aufgabe</button>
+    </div>
+    <div id="heute-cards-list"></div>
+    <div class="token-widget" id="token-widget">
+      <h3>Wochenbudget</h3>
+      <div class="budget-bar-wrap"><div class="budget-bar" id="budget-bar" style="width:0%"></div></div>
+      <div class="token-meta" id="token-meta">
+        <div class="token-meta-item"><strong id="token-used">0</strong> / <strong id="token-budget">100</strong> Tasks geplant</div>
+        <div class="token-meta-item">
+          <span class="model-badge">claude-sonnet-4-6</span>
+          <span class="model-badge">claude-haiku-4-5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KANBAN TAB -->
+  <div id="tab-kanban" class="tab-content">
+    <div class="kanban-grid" id="kanban-grid"></div>
+  </div>
+
+  <!-- PATIENTEN TAB -->
+  <div id="tab-patienten" class="tab-content">
+    <div class="pat-header">
       <h2>Patienten</h2>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="text" id="patSearch" class="pt-search" placeholder="Suche...">
-        <button class="btn-pri" id="addPat" style="padding:7px 13px;border-radius:6px;border:none;font-size:13px;cursor:pointer;font-weight:500;">+ Patient</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="search" class="search-input" id="pat-search" placeholder="Suchen…">
+        <button class="btn-primary" id="btn-pat-add">+ Patient</button>
       </div>
     </div>
-    <div id="patList"></div>
+    <div id="pat-list"></div>
   </div>
-</div>
 
-<div class="tab" id="tab-autonomie-log">
-  <div class="al-wrap">
-    <div class="al-head">
+  <!-- AUTONOMIE-LOG TAB -->
+  <div id="tab-autonomy" class="tab-content">
+    <div class="al-header">
       <h2>Autonomie-Log</h2>
-      <button class="btn-sec" id="alLoad" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);font-size:13px;cursor:pointer;font-weight:500;background:var(--lane-bg);color:var(--text);">&#8635; Laden</button>
     </div>
-    <div id="alList"></div>
+    <div id="al-list"></div>
   </div>
-</div>
 
-<div class="tab" id="tab-einstellungen">
-  <div class="set-wrap">
-    <h2>Einstellungen</h2>
-    <div class="set-sec">
-      <h3>GitHub Token</h3>
-      <input type="password" id="ghToken" class="set-input" placeholder="ghp_...">
-      <button class="set-btn pri" id="saveToken">Token speichern</button>
-    </div>
-    <div class="set-sec">
-      <h3>Design</h3>
-      <div class="theme-row">
-        <button class="tbtn on" id="thLight">&#9728; Hell</button>
-        <button class="tbtn" id="thDark">&#9790; Dunkel</button>
+  <!-- BACKLOG TAB -->
+  <div id="tab-backlog" class="tab-content">
+    <div class="bl-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 16px 12px;max-width:900px;margin:0 auto;flex-wrap:wrap;gap:8px;">
+      <h2 style="font-size:16px;font-weight:600">Build-Backlog</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="bl-filter" class="form-select" style="width:auto;padding:7px 10px;font-size:13px;">
+          <option value="">Alle Prioritäten</option>
+          <option value="hoch">🔴 Hoch</option>
+          <option value="mittel">🟡 Mittel</option>
+          <option value="niedrig">🟢 Niedrig</option>
+        </select>
+        <button class="btn-primary" id="btn-bl-add">+ Eintrag</button>
       </div>
     </div>
-    <div class="set-sec">
+    <div id="bl-list" style="padding:0 16px 20px;max-width:900px;margin:0 auto;"></div>
+  </div>
+
+  <!-- EINSTELLUNGEN TAB -->
+  <div id="tab-settings" class="tab-content">
+    <h2>Einstellungen</h2>
+
+    <div class="settings-section">
+      <h3>GitHub</h3>
+      <div class="settings-row">
+        <label class="settings-label">Personal Access Token</label>
+        <div class="settings-input-row">
+          <input type="password" class="settings-input" id="gh-token-input" placeholder="ghp_...">
+          <button class="btn-primary" id="btn-gh-save">Speichern</button>
+        </div>
+        <p class="settings-desc">Für GitHub-Sync (optional)</p>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>PIN</h3>
+      <div class="settings-row">
+        <label class="settings-label">Neuen PIN setzen</label>
+        <div class="settings-input-row">
+          <input type="password" class="settings-input" id="new-pin-input" maxlength="6" placeholder="Neuer PIN (4–6 Ziffern)" inputmode="numeric">
+          <button class="btn-primary" id="btn-pin-change">Ändern</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Wochenbudget</h3>
+      <div class="settings-row">
+        <label class="settings-label">Max. Aufgaben/Woche</label>
+        <div class="settings-input-row">
+          <input type="number" class="settings-input" id="budget-input" placeholder="100" min="1" max="1000">
+          <button class="btn-primary" id="btn-budget-save">Speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <h3>Daten</h3>
-      <button class="set-btn" id="exportBtn">&#8595; Exportieren</button>
-      <button class="set-btn" id="importBtn">&#8593; Importieren</button>
-      <input type="file" id="importFile" accept=".json" style="display:none;">
-      <button class="set-btn dng" id="resetBtn">Alle Daten löschen</button>
+      <div class="settings-row">
+        <button class="btn-secondary" id="btn-export" style="width:100%;margin-bottom:8px">Daten exportieren (JSON)</button>
+        <button class="btn-secondary" id="btn-import" style="width:100%;margin-bottom:8px">Daten importieren (JSON)</button>
+        <input type="file" id="import-file" accept=".json" style="display:none">
+      </div>
     </div>
-    <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">CoworkDashboard v2.0 &mdash; Single-file PWA</p>
-  </div>
-</div>
 
-<!-- Card Modal -->
-<div class="moverlay" id="cardModal">
-  <div class="modal">
-    <h3 id="cmHead">Karte</h3>
-    <label>Überschrift *</label>
-    <input type="text" id="cmTitle">
-    <label>Status</label>
-    <div class="ssel" id="cmStatus">
-      <div class="sopt sel" data-val="gray"><span class="d" style="background:var(--dot-gray)"></span>Offen</div>
-      <div class="sopt" data-val="red"><span class="d" style="background:var(--dot-red)"></span>Blockiert</div>
-      <div class="sopt" data-val="yellow"><span class="d" style="background:var(--dot-yellow)"></span>In Arbeit</div>
-      <div class="sopt" data-val="green"><span class="d" style="background:var(--dot-green)"></span>Erledigt</div>
-    </div>
-    <label>Deadline</label>
-    <input type="date" id="cmDeadline">
-    <label>Beschreibung</label>
-    <textarea id="cmDesc"></textarea>
-    <div class="mbtns">
-      <button class="btn-cancel" id="cmCancel">Abbrechen</button>
-      <button class="btn-heute" id="cmToH" style="display:none;">&#8594; Heute</button>
-      <button class="btn-dang" id="cmDel" style="display:none;">Löschen</button>
-      <button class="btn-pri" id="cmSave">Speichern</button>
+    <div class="settings-section danger-zone">
+      <h3>Danger Zone</h3>
+      <div class="settings-row">
+        <button class="btn-danger" id="btn-reset" style="width:100%">Alle Daten löschen</button>
+        <p class="settings-desc">Löscht alle Karten, Patienten und Logs unwiderruflich.</p>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Patient Modal -->
-<div class="moverlay" id="patModal">
+<!-- BACKLOG MODAL -->
+<div class="modal-overlay" id="bl-modal-overlay">
   <div class="modal">
-    <h3 id="pmHead">Patient</h3>
-    <label>Code * (z.B. MÜL0226)</label>
-    <input type="text" id="pmCode" maxlength="12" placeholder="XXX-MMYY">
-    <label>Aufnahmedatum</label>
-    <input type="date" id="pmAdm">
-    <label>Status</label>
-    <select id="pmStat">
-      <option value="aktiv">Aktiv</option>
-      <option value="pause">Pause</option>
-      <option value="entlassen">Entlassen</option>
-    </select>
-    <label>Notizen</label>
-    <textarea id="pmNotes"></textarea>
-    <div class="mbtns">
-      <button class="btn-cancel" id="pmCancel">Abbrechen</button>
-      <button class="btn-dang" id="pmDel" style="display:none;">Löschen</button>
-      <button class="btn-pri" id="pmSave">Speichern</button>
+    <h2 id="bl-modal-title">Backlog-Eintrag</h2>
+    <div class="form-group">
+      <label class="form-label">Titel</label>
+      <input type="text" class="form-input" id="blm-title" placeholder="Feature oder Projekt…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Priorität</label>
+      <select class="form-select" id="blm-prio">
+        <option value="hoch">🔴 Hoch</option>
+        <option value="mittel">🟡 Mittel</option>
+        <option value="niedrig">🟢 Niedrig</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Kategorie</label>
+      <input type="text" class="form-input" id="blm-cat" placeholder="z.B. KI, Integration, UI…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select class="form-select" id="blm-status">
+        <option value="geplant">Geplant</option>
+        <option value="in-arbeit">In Arbeit</option>
+        <option value="abgeschlossen">Abgeschlossen</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Beschreibung</label>
+      <textarea class="form-textarea" id="blm-desc" placeholder="Details…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="blm-delete" style="margin-right:auto">Löschen</button>
+      <button class="btn-secondary" id="blm-cancel">Abbrechen</button>
+      <button class="btn-primary" id="blm-save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- CARD MODAL -->
+<div class="modal-overlay" id="card-modal-overlay">
+  <div class="modal">
+    <h2 id="card-modal-title">Karte</h2>
+    <div class="form-group">
+      <label class="form-label">Titel</label>
+      <input type="text" class="form-input" id="cm-title" placeholder="Aufgabe beschreiben…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <div class="status-options">
+        <label class="status-option"><input type="radio" name="cm-status" value="offen" checked> <span class="status-dot status-offen"></span> Offen</label>
+        <label class="status-option"><input type="radio" name="cm-status" value="blockiert"> <span class="status-dot status-blockiert"></span> Blockiert</label>
+        <label class="status-option"><input type="radio" name="cm-status" value="in-arbeit"> <span class="status-dot status-in-arbeit"></span> In Arbeit</label>
+        <label class="status-option"><input type="radio" name="cm-status" value="erledigt"> <span class="status-dot status-erledigt"></span> Erledigt</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Deadline</label>
+      <input type="date" class="form-input" id="cm-deadline">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Beschreibung</label>
+      <textarea class="form-textarea" id="cm-desc" placeholder="Details…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="cm-delete" style="margin-right:auto">Löschen</button>
+      <button class="btn-secondary" id="cm-heute" style="display:none">→ Heute</button>
+      <button class="btn-secondary" id="cm-cancel">Abbrechen</button>
+      <button class="btn-primary" id="cm-save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- PATIENT MODAL -->
+<div class="modal-overlay" id="pat-modal-overlay">
+  <div class="modal">
+    <h2 id="pat-modal-title">Patient</h2>
+    <div class="form-group">
+      <label class="form-label">Code (XXX-MMYY)</label>
+      <input type="text" class="form-input" id="pm-code" placeholder="z.B. MUS-0325">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Aufnahmedatum</label>
+      <input type="date" class="form-input" id="pm-aufnahme">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select class="form-select" id="pm-status">
+        <option value="aktiv">Aktiv</option>
+        <option value="entlassen">Entlassen</option>
+        <option value="pause">Pause</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notizen</label>
+      <textarea class="form-textarea" id="pm-notizen" placeholder="Klinische Notizen…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="pm-delete" style="margin-right:auto">Löschen</button>
+      <button class="btn-secondary" id="pm-cancel">Abbrechen</button>
+      <button class="btn-primary" id="pm-save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-overlay">
+  <div class="confirm-modal">
+    <h3 id="confirm-title">Bestätigen</h3>
+    <p id="confirm-msg"></p>
+    <div class="confirm-btns">
+      <button class="btn-secondary" id="confirm-no">Abbrechen</button>
+      <button class="btn-danger" id="confirm-yes">Löschen</button>
     </div>
   </div>
 </div>
 
 <script>
-(function(){
-'use strict';
-/* ---- LANES ---- */
-const LANES=[
-  {id:'barmelweid',  name:'BA \u2014 Barmelweid',        prefix:'BA',isBA:true},
-  {id:'pat_admin',   name:'PA \u2014 Patienten-Admin',    prefix:'PA'},
-  {id:'weiterbild',  name:'WB \u2014 Weiterbildung',      prefix:'WB'},
-  {id:'selbst',      name:'SI \u2014 Selbst & Identit\xe4t',prefix:'SI'},
-  {id:'finanzen',    name:'FI \u2014 Finanzen',           prefix:'FI'},
-  {id:'freizeit',    name:'FR \u2014 Freizeit & Familie', prefix:'FR'},
-  {id:'events',      name:'EV \u2014 Events & Termine',   prefix:'EV'},
-  {id:'familie',     name:'FA \u2014 Familie & Bez.',     prefix:'FA'},
-  {id:'ki_tech',     name:'KI \u2014 KI & Tech',          prefix:'KI'},
-  {id:'coaching',    name:'CO \u2014 Coaching',           prefix:'CO'},
-  {id:'interkant',   name:'IK \u2014 Interkantonales',    prefix:'IK'},
-  {id:'ernaehrung',  name:'ER \u2014 Ern\xe4hrung & Sport',prefix:'ER'},
-  {id:'tagesstruktur',name:'TA \u2014 Tagesstruktur',     prefix:'TA'},
-  {id:'heute',       name:'HE \u2014 Heute',              prefix:'HE',isHeute:true}
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const LANES = [
+  {id:'BA', name:'Barmelweid', isBA:true},
+  {id:'PA', name:'Patienten-Admin'},
+  {id:'WB', name:'Weiterbildung'},
+  {id:'SI', name:'Selbst & Identität'},
+  {id:'FI', name:'Finanzen'},
+  {id:'FR', name:'Freizeit & Familie'},
+  {id:'EV', name:'Events & Termine'},
+  {id:'FA', name:'Familie & Beziehungen'},
+  {id:'KI', name:'KI & Tech'},
+  {id:'CO', name:'Coaching'},
+  {id:'IK', name:'Interkantonales'},
+  {id:'ER', name:'Ernährung & Sport'},
+  {id:'TA', name:'Tagesstruktur'},
+  {id:'HE', name:'Heute', isHeute:true}
 ];
-const LANE_COLORS={
-  barmelweid:'#2563eb',pat_admin:'#0891b2',weiterbild:'#7c3aed',
-  selbst:'#059669',finanzen:'#d97706',freizeit:'#e11d48',
-  events:'#8b5cf6',familie:'#ea580c',ki_tech:'#0284c7',
-  coaching:'#6366f1',interkant:'#4f46e5',ernaehrung:'#64748b',
-  tagesstruktur:'#475569',heute:'#7c3aed'
+
+const BA_TPLS = [
+  'Verlaufsbericht',
+  'Erstgespräch-Bericht',
+  'Austrittsbericht',
+  'Verlaufs-/Austrittsbericht',
+  'Gruppen-Verlaufsbericht',
+  'Arzneimittelabgabe',
+  'Dosisanpassung',
+  'Notfall-Protokoll'
+];
+
+const STATUSES = {
+  'offen':      {label:'Offen',      cls:'status-offen'},
+  'blockiert':  {label:'Blockiert',  cls:'status-blockiert'},
+  'in-arbeit':  {label:'In Arbeit',  cls:'status-in-arbeit'},
+  'erledigt':   {label:'Erledigt',   cls:'status-erledigt'}
 };
-const BA_TPLS=[
-  {t:'Verlaufsbericht',   d:'Abschnitte:\n1. Aktueller Zustand\n2. Therapieverlauf\n3. Medikation\n4. ICD-10-Diagnosen\n5. Zielerreichung\n6. Weiteres Vorgehen'},
-  {t:'Erstgespr\xe4ch-Bericht',d:'Abschnitte:\n1. Anamnese\n2. Problemdefinition\n3. Ressourcen\n4. Therapieziele (SMART)\n5. N\xe4chste Schritte'},
-  {t:'Austrittsbericht',  d:'Abschnitte:\n1. Eintrittsdatum / Austrittsdatum\n2. Diagnosen\n3. Therapieverlauf\n4. Outcome\n5. Empfehlungen\n6. Medikation bei Austritt'},
-  {t:'Verlaufs-/Austrittsbericht',d:'Kombinierter Verlaufs- und Austrittsbericht.\n\nAbschnitte ausf\xfcllen.'},
-  {t:'Gruppen-Verlaufsbericht',d:'Gruppentherapie-Verlaufsbericht.\n\nDatum, Thema, Teilnehmer, Verlauf, Besonderheiten.'},
-  {t:'Arzneimittelabgabe', d:'Patient:\nMedikament:\nDosis:\nDatum/Zeit:\nAbgebende Person:\nBemerkungen:'},
-  {t:'Dosisanpassung',     d:'Patient:\nMedikament:\nBisherige Dosis:\nNeue Dosis:\nGrund der Anpassung:\nDatum:'},
-  {t:'Notfall-Protokoll',  d:'Datum/Uhrzeit:\nPatient:\nSituation:\nMassnahmen:\nInformierte Personen:\nFolgemassnahmen:'}
-];
-/* ---- STORAGE KEYS ---- */
-const KC='cowork_cards',KP='cowork_patients',KS='cowork_settings',KA='cowork_autonomy_log',KT='github_token';
-/* ---- STATE ---- */
-let cards={},counters={},patients=[],settings={theme:'light'},alog=[];
-let curLane=0,editCardId=null,editPatIdx=null;
-let collapsedLanes=new Set();
 
-/* ---- LOAD/SAVE ---- */
-function loadAll(){
-  // migrate old data
-  try{const old=localStorage.getItem('coworkdashboard_data');
-    if(old){const d=JSON.parse(old);if(d.cards&&!localStorage.getItem(KC)){localStorage.setItem(KC,JSON.stringify({cards:d.cards,counters:d.cardCounters||{}}));}}
-  }catch(e){}
-  try{const r=JSON.parse(localStorage.getItem(KC)||'{}');cards=r.cards||{};counters=r.counters||{};}catch(e){cards={};counters={};}
-  try{patients=JSON.parse(localStorage.getItem(KP)||'[]');}catch(e){patients=[];}
-  try{settings=JSON.parse(localStorage.getItem(KS)||'{"theme":"light"}');}catch(e){settings={theme:'light'};}
-  try{alog=JSON.parse(localStorage.getItem(KA)||'null');}catch(e){alog=null;}
-  if(!alog){
-    alog=[{id:'demo-001',timestamp:'2026-03-23T00:00:00.000Z',title:'Testlauf 2026-03-23 \u2014 14 Tasks',desc:'Vollst\xe4ndiger Rebuild CoworkDashboard. 14 Lanes, Patienten-Tab, Autonomie-Log deployt.',status:'success',read:false}];
-    localStorage.setItem(KA,JSON.stringify(alog));
+// ─── STORAGE HELPERS ─────────────────────────────────────────────────────────
+function ls(key, def) {
+  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; }
+  catch(e) { return def; }
+}
+function lsSet(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+// ─── PIN SYSTEM ──────────────────────────────────────────────────────────────
+let pinFailures = 0;
+let pinLocked = false;
+let pinLockTimer = null;
+
+function hashPin(pin) { return btoa(pin + 'cowork'); }
+
+function initPin() {
+  const storedPin = localStorage.getItem('cowork_pin');
+  const pinScreen = document.getElementById('pin-screen');
+  const pinInput  = document.getElementById('pin-input');
+  const pinSubmit = document.getElementById('pin-submit');
+  const pinTitle  = document.getElementById('pin-title');
+  const pinSub    = document.getElementById('pin-subtitle');
+  const pinError  = document.getElementById('pin-error');
+
+  if (!storedPin) {
+    // First-time setup
+    pinTitle.textContent = 'PIN einrichten';
+    pinSub.textContent   = 'Wähle einen PIN (4–6 Ziffern) für dein Dashboard';
+    pinSubmit.textContent = 'PIN setzen';
+    let confirmMode = false;
+    let firstPin = '';
+
+    pinSubmit.addEventListener('click', () => {
+      const val = pinInput.value.trim();
+      if (val.length < 4 || val.length > 6 || !/^\d+$/.test(val)) {
+        pinError.textContent = 'PIN muss 4–6 Ziffern sein.'; return;
+      }
+      if (!confirmMode) {
+        firstPin = val;
+        pinInput.value = '';
+        pinSub.textContent = 'PIN bestätigen';
+        pinSubmit.textContent = 'Bestätigen';
+        confirmMode = true;
+        pinError.textContent = '';
+      } else {
+        if (val !== firstPin) {
+          pinError.textContent = 'PINs stimmen nicht überein.';
+          confirmMode = false; firstPin = '';
+          pinInput.value = '';
+          pinSub.textContent = 'Wähle einen PIN (4–6 Ziffern)';
+          pinSubmit.textContent = 'PIN setzen';
+          return;
+        }
+        localStorage.setItem('cowork_pin', hashPin(val));
+        unlockApp();
+      }
+    });
+  } else {
+    pinSubmit.addEventListener('click', tryUnlock);
   }
-  LANES.forEach(l=>{if(!counters[l.prefix])counters[l.prefix]=0;});
-}
-function saveCards(){localStorage.setItem(KC,JSON.stringify({cards,counters}));}
-function savePatients(){localStorage.setItem(KP,JSON.stringify(patients));}
-function saveSettings(){localStorage.setItem(KS,JSON.stringify(settings));}
-function saveAlog(){localStorage.setItem(KA,JSON.stringify(alog));}
 
-/* ---- UTILS ---- */
-function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-function fmt(d){if(!d)return'';const p=d.split('-');return p[2]+'.'+p[1]+'.'+p[0];}
-function today(){return new Date().toISOString().slice(0,10);}
-function priOf(s){return{red:0,yellow:1,gray:2,green:3}[s]??2;}
-function laneById(id){return LANES.find(l=>l.id===id);}
-function laneByPfx(p){return LANES.find(l=>l.prefix===p);}
+  pinInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') pinSubmit.click();
+  });
+  pinInput.focus();
 
-/* ---- NAV ---- */
-function switchTab(t){
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
-  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.id==='tab-'+t));
-  if(t==='heute')renderHeute();
-  if(t==='kanban')renderLanes();
-  if(t==='patienten')renderPatienten();
-  if(t==='autonomie-log')renderAlog();
-  if(t==='einstellungen')renderSettings();
+  function tryUnlock() {
+    if (pinLocked) return;
+    const val = pinInput.value.trim();
+    const stored = localStorage.getItem('cowork_pin');
+    if (hashPin(val) === stored) {
+      pinFailures = 0;
+      unlockApp();
+    } else {
+      pinFailures++;
+      pinInput.value = '';
+      if (pinFailures >= 3) {
+        pinLocked = true;
+        let secs = 30;
+        pinSubmit.disabled = true;
+        pinError.textContent = `Zu viele Versuche. Warte ${secs}s.`;
+        pinLockTimer = setInterval(() => {
+          secs--;
+          pinError.textContent = `Zu viele Versuche. Warte ${secs}s.`;
+          if (secs <= 0) {
+            clearInterval(pinLockTimer);
+            pinLocked = false;
+            pinFailures = 0;
+            pinSubmit.disabled = false;
+            pinError.textContent = '';
+          }
+        }, 1000);
+      } else {
+        pinError.textContent = `Falscher PIN. ${3 - pinFailures} Versuch${3-pinFailures!==1?'e':''} verbleibend.`;
+      }
+    }
+  }
 }
-document.querySelectorAll('.nav button').forEach(b=>{
-  b.addEventListener('click',()=>switchTab(b.dataset.tab));
+
+function unlockApp() {
+  document.getElementById('pin-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  initApp();
+}
+
+// ─── APP DATA ─────────────────────────────────────────────────────────────────
+function getCards()    { return ls('cowork_cards', {}); }
+function saveCards(c)  { lsSet('cowork_cards', c); }
+function getPatients() { return ls('cowork_patients', []); }
+function savePatients(p) { lsSet('cowork_patients', p); }
+function getALLog()    { return ls('cowork_autonomy_log', null); }
+function saveALLog(l)  { lsSet('cowork_autonomy_log', l); }
+
+function nextCardId(laneId) {
+  const key = 'cowork_seq_' + laneId;
+  const n = (ls(key, 0)) + 1;
+  lsSet(key, n);
+  return laneId + String(n).padStart(3, '0');
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+let currentTab = 'heute';
+
+function switchTab(id) {
+  currentTab = id;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === id);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => {
+    c.classList.toggle('active', c.id === 'tab-' + id);
+  });
+  if (id === 'heute')     renderHeute();
+  if (id === 'kanban')    renderKanban();
+  if (id === 'patienten') renderPatients();
+  if (id === 'autonomy')  renderAL();
+  if (id === 'backlog')   renderBacklog();
+  if (id === 'settings')  initSettings();
+}
+
+// ─── HEUTE ────────────────────────────────────────────────────────────────────
+function renderHeute() {
+  const cards = getCards();
+  const heateCards = Object.values(cards).filter(c => c.lane === 'HE' && !c.archived);
+  const container = document.getElementById('heute-cards-list');
+
+  const now = new Date();
+  document.getElementById('heute-date').textContent =
+    now.toLocaleDateString('de-CH', {weekday:'long', day:'numeric', month:'long'});
+
+  if (heateCards.length === 0) {
+    container.innerHTML = '<div class="empty-state">Keine Aufgaben für heute.<br>Füge eine hinzu oder bewege Karten aus dem Kanban.</div>';
+  } else {
+    container.innerHTML = heateCards.map(c => renderCardItem(c)).join('');
+    container.querySelectorAll('.card-item').forEach(el => {
+      el.addEventListener('click', () => openCardModal(el.dataset.id));
+    });
+  }
+
+  // Token widget
+  const weekStart = getWeekStart();
+  const weekEnd   = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
+  const allCards  = Object.values(cards).filter(c => !c.archived);
+  const budget    = ls('cowork_budget', 100);
+  const used      = allCards.filter(c => c.status !== 'erledigt').length;
+  const pct       = Math.min(100, Math.round((used / budget) * 100));
+
+  document.getElementById('budget-bar').style.width = pct + '%';
+  document.getElementById('token-used').textContent  = used;
+  document.getElementById('token-budget').textContent = budget;
+}
+
+function getWeekStart() {
+  const d = new Date(); const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0,0,0,0); return d;
+}
+
+function renderCardItem(card) {
+  const statusCls = STATUSES[card.status]?.cls || 'status-offen';
+  const deadline  = card.deadline
+    ? `<span class="card-deadline">${card.deadline}</span>` : '';
+  return `<div class="card-item" data-id="${esc(card.id)}">
+    <span class="card-prefix">${esc(card.id)}</span>
+    <span class="card-title">${esc(card.title || '(kein Titel)')}</span>
+    ${deadline}
+    <span class="status-dot ${statusCls}"></span>
+  </div>`;
+}
+
+document.getElementById('btn-heute-add').addEventListener('click', () => {
+  openCardModal(null, 'HE');
 });
 
-/* ---- HEUTE ---- */
-function renderHeute(){
-  const c=document.getElementById('htContainer');
-  const all=Object.values(cards).filter(x=>x.inHeute&&!x.archived);
-  all.sort((a,b)=>priOf(a.status)-priOf(b.status));
-  const done=all.filter(x=>x.status==='green').length;
-  const dateStr=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
-  if(!all.length){
-    c.innerHTML=`<div class="ht-empty"><p style="font-size:36px;margin-bottom:10px;">&#128197;</p><p>Kein Plan f\xfcr heute &mdash; \xfcbertrage Karten aus dem Kanban</p><button class="btn-pri" onclick="switchTab('kanban')" style="padding:9px 16px;border-radius:7px;border:none;font-size:13px;cursor:pointer;margin-top:6px;">Zum Kanban</button></div>`;
-    renderTokenWidget(c);
+// ─── KANBAN ───────────────────────────────────────────────────────────────────
+function renderKanban() {
+  const cards   = getCards();
+  const grid    = document.getElementById('kanban-grid');
+  const collapsed = ls('cowork_collapsed', {});
+
+  grid.innerHTML = LANES.map(lane => {
+    const laneCards = Object.values(cards)
+      .filter(c => c.lane === lane.id && !c.archived)
+      .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id));
+    const isCollapsed = collapsed[lane.id];
+
+    const cardsHtml = laneCards.map(c => renderCardItem(c)).join('') ||
+      '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
+
+    const voorlagenBtn = lane.isBA ? `
+      <div class="vorlagen-wrap">
+        <button class="btn-vorlagen" onclick="toggleVorlagen('${lane.id}')">Vorlagen ▾</button>
+        <div class="vorlagen-dropdown" id="vd-${lane.id}">
+          ${BA_TPLS.map(t => `<button class="vorlagen-item" onclick="addVorlage('${lane.id}','${t.replace(/'/g,"\\'")}');closeVorlagen('${lane.id}')">${t}</button>`).join('')}
+        </div>
+      </div>` : '';
+
+    return `<div class="lane" id="lane-${lane.id}">
+      <div class="lane-header">
+        <span class="lane-title">${esc(lane.name)}</span>
+        <span class="lane-count">${laneCards.length}</span>
+        <button class="lane-collapse" onclick="toggleCollapse('${lane.id}')">${isCollapsed ? '▶' : '▼'}</button>
+      </div>
+      <div class="lane-body${isCollapsed ? ' collapsed' : ''}" id="lb-${lane.id}">
+        ${cardsHtml}
+      </div>
+      <div class="lane-footer">
+        <button class="btn-add-card" onclick="openCardModal(null,'${lane.id}')">＋ Karte</button>
+        ${voorlagenBtn}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Bind card clicks
+  grid.querySelectorAll('.card-item').forEach(el => {
+    el.addEventListener('click', () => openCardModal(el.dataset.id));
+  });
+}
+
+function toggleCollapse(laneId) {
+  const collapsed = ls('cowork_collapsed', {});
+  collapsed[laneId] = !collapsed[laneId];
+  lsSet('cowork_collapsed', collapsed);
+  renderKanban();
+}
+
+function toggleVorlagen(laneId) {
+  const dd = document.getElementById('vd-' + laneId);
+  if (dd) dd.classList.toggle('open');
+}
+function closeVorlagen(laneId) {
+  const dd = document.getElementById('vd-' + laneId);
+  if (dd) dd.classList.remove('open');
+}
+
+function addVorlage(laneId, title) {
+  const cards = getCards();
+  const id = nextCardId(laneId);
+  cards[id] = { id, lane: laneId, title, status: 'offen', deadline:'', desc:'', archived:false, order: Date.now() };
+  saveCards(cards);
+  renderKanban();
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.vorlagen-wrap')) {
+    document.querySelectorAll('.vorlagen-dropdown.open').forEach(d => d.classList.remove('open'));
+  }
+});
+
+// ─── CARD MODAL ───────────────────────────────────────────────────────────────
+let cmCardId   = null;
+let cmLaneId   = null;
+
+function openCardModal(cardId, laneId) {
+  cmCardId = cardId;
+  cmLaneId = laneId;
+  const modal    = document.getElementById('card-modal-overlay');
+  const cards    = getCards();
+  const card     = cardId ? cards[cardId] : null;
+  const isNew    = !card;
+
+  document.getElementById('card-modal-title').textContent = isNew ? 'Neue Karte' : card.id;
+  document.getElementById('cm-title').value    = card?.title    || '';
+  document.getElementById('cm-deadline').value = card?.deadline || '';
+  document.getElementById('cm-desc').value     = card?.desc     || '';
+
+  const status = card?.status || 'offen';
+  document.querySelectorAll('[name=cm-status]').forEach(r => {
+    r.checked = r.value === status;
+  });
+
+  document.getElementById('cm-delete').style.display = isNew ? 'none' : '';
+  document.getElementById('cm-heute').style.display  = (card && card.lane !== 'HE') ? '' : 'none';
+
+  modal.classList.add('open');
+}
+
+function closeCardModal() {
+  document.getElementById('card-modal-overlay').classList.remove('open');
+  cmCardId = null; cmLaneId = null;
+}
+
+document.getElementById('cm-cancel').addEventListener('click', closeCardModal);
+document.getElementById('card-modal-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeCardModal();
+});
+
+document.getElementById('cm-save').addEventListener('click', () => {
+  const title    = document.getElementById('cm-title').value.trim();
+  const deadline = document.getElementById('cm-deadline').value;
+  const desc     = document.getElementById('cm-desc').value.trim();
+  const status   = document.querySelector('[name=cm-status]:checked')?.value || 'offen';
+
+  if (!title) { document.getElementById('cm-title').focus(); return; }
+
+  const cards = getCards();
+  if (cmCardId) {
+    Object.assign(cards[cmCardId], { title, deadline, desc, status });
+  } else {
+    const id = nextCardId(cmLaneId);
+    cards[id] = { id, lane: cmLaneId, title, deadline, desc, status, archived:false, order: Date.now() };
+  }
+  saveCards(cards);
+  closeCardModal();
+  if (currentTab === 'heute') renderHeute();
+  if (currentTab === 'kanban') renderKanban();
+});
+
+document.getElementById('cm-delete').addEventListener('click', () => {
+  confirmAction('Karte löschen?', 'Diese Karte wird unwiderruflich gelöscht.', () => {
+    const cards = getCards();
+    if (cmCardId) { cards[cmCardId].archived = true; saveCards(cards); }
+    closeCardModal();
+    if (currentTab === 'heute') renderHeute();
+    if (currentTab === 'kanban') renderKanban();
+  });
+});
+
+document.getElementById('cm-heute').addEventListener('click', () => {
+  const cards = getCards();
+  if (cmCardId && cards[cmCardId]) {
+    cards[cmCardId].lane = 'HE';
+    saveCards(cards);
+  }
+  closeCardModal();
+  if (currentTab === 'heute') renderHeute();
+  if (currentTab === 'kanban') renderKanban();
+});
+
+// ─── PATIENTEN ────────────────────────────────────────────────────────────────
+function renderPatients(filter) {
+  let patients = getPatients();
+  const q = filter || document.getElementById('pat-search').value.trim().toLowerCase();
+  if (q) patients = patients.filter(p =>
+    p.code.toLowerCase().includes(q) ||
+    (p.notizen||'').toLowerCase().includes(q)
+  );
+  const list = document.getElementById('pat-list');
+  if (patients.length === 0) {
+    list.innerHTML = '<div class="empty-state">Keine Patienten gefunden.</div>';
     return;
   }
-  c.innerHTML=`<div class="ht-head"><div class="ht-date">${esc(dateStr)}</div><div class="ht-sum">${all.length} Aufgabe${all.length!==1?'n':''} &mdash; ${all.length-done} offen &mdash; ${done} erledigt</div></div><div id="htCards"></div><div class="ht-foot"><button class="btn-sec" id="htBack" style="padding:8px 14px;border-radius:7px;border:1px solid var(--border);font-size:13px;cursor:pointer;font-weight:500;background:var(--lane-bg);color:var(--text);">Alle zur\xfcckschieben</button><button class="btn-pri" id="htAdd" style="padding:8px 14px;border-radius:7px;border:none;font-size:13px;cursor:pointer;font-weight:500;">+ Neue Aufgabe</button></div>`;
-  const list=document.getElementById('htCards');
-  all.forEach(card=>{
-    const isDone=card.status==='green';
-    const orig=card.originalLane||card.lane;
-    const lc=LANE_COLORS[orig]||'#64748b';
-    const ln=laneById(orig);
-    const lname=ln&&orig!=='heute'?ln.name.replace(/^[A-Z]+ \u2014 /,''):'';
-    const over=card.deadline&&card.deadline<today()&&!isDone;
-    const el=document.createElement('div');
-    el.className='ht-card'+(isDone?' done':'');
-    el.innerHTML=`<div class="ht-cb${isDone?' chk':''}" data-id="${card.id}">${isDone?'&#10003;':''}</div><div class="ht-body"><div class="ht-trow"><span class="ht-title${isDone?' thru':''}">${esc(card.id)} &mdash; ${esc(card.title)}</span>${lname?`<span class="lbadge" style="background:${lc}">${esc(lname)}</span>`:''}<span class="ht-sdot sdot ${card.status}" style="background:${{gray:'var(--dot-gray)',red:'var(--dot-red)',yellow:'var(--dot-yellow)',green:'var(--dot-green)'}[card.status]||'var(--dot-gray)'}"></span></div>${card.deadline?`<div class="ht-dl${over?' over':''}">${over?'&#9888; ':''}${fmt(card.deadline)}${over?' &mdash; \xfcberf\xe4llig':''}</div>`:''}${card.description?`<div class="ht-desc">${esc(card.description.substring(0,80))}</div>`:''}</div>`;
-    el.querySelector('.ht-cb').addEventListener('click',e=>{e.stopPropagation();const cc=cards[card.id];if(!cc)return;cc.status=cc.status==='green'?'gray':'green';saveCards();renderHeute();});
-    el.querySelector('.ht-body').addEventListener('click',()=>openCardModal(null,card.id));
-    list.appendChild(el);
-  });
-  document.getElementById('htBack').addEventListener('click',()=>{
-    const hc=Object.values(cards).filter(x=>x.inHeute&&!x.archived);
-    if(!hc.length)return;
-    if(!confirm(hc.length+' Karte'+(hc.length!==1?'n':'')+' zur\xfcckschieben?'))return;
-    hc.forEach(cc=>{cc.inHeute=false;if(cc.originalLane){cc.lane=cc.originalLane;cc.originalLane=null;}});
-    saveCards();renderHeute();if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();
-  });
-  document.getElementById('htAdd').addEventListener('click',()=>openCardModal('heute',null));
-  renderTokenWidget(document.getElementById('htContainer'));
+  list.innerHTML = patients.map(p => `
+    <div class="patient-row" data-id="${esc(p.id)}" onclick="openPatModal('${esc(p.id)}')">
+      <span class="pat-code">${esc(p.code)}</span>
+      <span class="pat-info">${esc(p.aufnahme||'')} ${p.notizen ? '· ' + esc(p.notizen.substring(0,40)) : ''}</span>
+      <span class="pat-status-badge pat-status-${p.status||'aktiv'}">${p.status||'aktiv'}</span>
+    </div>`).join('');
 }
 
-/* ---- LANES / KANBAN ---- */
-function renderLanes(){
-  const con=document.getElementById('lanesContainer');
-  con.innerHTML='';
-  LANES.forEach((lane,idx)=>{
-    const lc=Object.values(cards).filter(c=>lane.isHeute?(c.inHeute&&!c.archived):(c.lane===lane.id&&!c.inHeute&&!c.archived));
-    const la=Object.values(cards).filter(c=>lane.isHeute?(c.inHeute&&c.archived):(c.lane===lane.id&&c.archived));
-    const el=document.createElement('div');
-    el.className='lane'+(lane.isHeute?' hl':'')+(collapsedLanes.has(lane.id)?' collapsed':'');
-    const vorlagen=lane.isBA?`<div class="vwrap"><button class="vbtn" data-lane="${lane.id}">Vorlagen &#9660;</button><div class="vdrop" id="vdrop_${lane.id}">${BA_TPLS.map((t,i)=>`<button data-ti="${i}">${esc(t.t)}</button>`).join('')}</div></div>`:'';
-    el.innerHTML=`<div class="lane-hdr" data-lid="${lane.id}"><span><span class="lane-caret">&#9660;</span>${esc(lane.name)}</span><div class="lane-hdr-r">${vorlagen}<button class="btn-add" data-lane="${lane.id}">+ Karte</button></div></div><div class="lane-body"><div class="lane-cards" data-lane="${lane.id}"></div><div style="border-top:1px solid var(--border);margin-top:6px;"><button class="arch-tog" data-lid="${lane.id}" style="width:100%;background:none;border:none;padding:6px 10px;text-align:left;font-size:11px;color:var(--text-muted);cursor:pointer;">Archiv (${la.length})</button><div class="arch-body" data-lid="${lane.id}" style="display:none;padding:0 2px 4px;"></div></div></div>`;
-    con.appendChild(el);
-    const cd=el.querySelector('.lane-cards');
-    lc.forEach(c=>cd.appendChild(makeCardEl(c)));
-    const ab=el.querySelector('.arch-body');
-    la.forEach(c=>ab.appendChild(makeCardEl(c,true)));
-    el.querySelector('.lane-hdr').addEventListener('click',e=>{
-      if(e.target.closest('.btn-add,.vwrap'))return;
-      collapsedLanes.has(lane.id)?collapsedLanes.delete(lane.id):collapsedLanes.add(lane.id);
-      el.classList.toggle('collapsed');
-    });
-    el.querySelector('.btn-add').addEventListener('click',e=>{e.stopPropagation();openCardModal(lane.id,null);});
-    if(lane.isBA){
-      el.querySelector('.vbtn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('vdrop_'+lane.id).classList.toggle('open');});
-      el.querySelectorAll('.vdrop button').forEach(b=>{
-        b.addEventListener('click',e=>{e.stopPropagation();document.getElementById('vdrop_'+lane.id).classList.remove('open');openCardModal(lane.id,null,parseInt(b.dataset.ti));});
-      });
-    }
-    el.querySelector('.arch-tog').addEventListener('click',()=>{const ab2=el.querySelector('.arch-body');ab2.style.display=ab2.style.display==='none'?'block':'none';});
-  });
-  document.addEventListener('click',()=>document.querySelectorAll('.vdrop.open').forEach(d=>d.classList.remove('open')),{once:false});
-  updateMobNav();
+document.getElementById('pat-search').addEventListener('input', () => renderPatients());
+document.getElementById('btn-pat-add').addEventListener('click', () => openPatModal(null));
+
+let pmPatId = null;
+
+function openPatModal(patId) {
+  pmPatId = patId;
+  const patients = getPatients();
+  const pat = patId ? patients.find(p => p.id === patId) : null;
+  const isNew = !pat;
+
+  document.getElementById('pat-modal-title').textContent = isNew ? 'Neuer Patient' : pat.code;
+  document.getElementById('pm-code').value     = pat?.code     || '';
+  document.getElementById('pm-aufnahme').value  = pat?.aufnahme || '';
+  document.getElementById('pm-status').value    = pat?.status   || 'aktiv';
+  document.getElementById('pm-notizen').value   = pat?.notizen  || '';
+  document.getElementById('pm-delete').style.display = isNew ? 'none' : '';
+
+  document.getElementById('pat-modal-overlay').classList.add('open');
 }
 
-function makeCardEl(card,archived=false){
-  const el=document.createElement('div');
-  el.className='card';
-  el.innerHTML=`<div class="card-top"><span class="sdot ${card.status}"></span><span class="cpfx">${esc(card.id)}</span><span class="ctit">${esc(card.title)}</span></div>${card.deadline?`<div class="cdate">${fmt(card.deadline)}</div>`:''}`;
-  el.addEventListener('click',()=>openCardModal(null,card.id));
-  if(archived)el.style.opacity='.6';
-  return el;
+function closePatModal() {
+  document.getElementById('pat-modal-overlay').classList.remove('open');
+  pmPatId = null;
 }
 
-/* ---- CARD MODAL ---- */
-function openCardModal(laneId,cardId,tplIdx=null){
-  editCardId=cardId;
-  const isEdit=!!cardId;
-  const card=isEdit?cards[cardId]:null;
-  const targetLane=laneId||(card?card.lane:null);
-  const lane=laneById(targetLane)||LANES[0];
-  document.getElementById('cmHead').textContent=isEdit?card.id+' bearbeiten':'Neue Karte \u2014 '+lane.name;
-  document.getElementById('cmTitle').value=isEdit?card.title:'';
-  document.getElementById('cmDeadline').value=isEdit?(card.deadline||''):'';
-  document.getElementById('cmDesc').value=isEdit?(card.description||''):'';
-  document.querySelectorAll('#cmStatus .sopt').forEach(o=>o.classList.toggle('sel',o.dataset.val===(isEdit?card.status:'gray')));
-  document.getElementById('cmToH').style.display=isEdit&&!card.inHeute?'inline-block':'none';
-  document.getElementById('cmDel').style.display=isEdit?'inline-block':'none';
-  if(tplIdx!==null){const t=BA_TPLS[tplIdx];document.getElementById('cmTitle').value=t.t;document.getElementById('cmDesc').value=t.d;}
-  // store target lane for save
-  document.getElementById('cardModal').dataset.lane=targetLane;
-  document.getElementById('cardModal').classList.add('open');
-  document.getElementById('cmTitle').focus();
-}
-document.getElementById('cmCancel').addEventListener('click',()=>document.getElementById('cardModal').classList.remove('open'));
-document.getElementById('cardModal').addEventListener('click',e=>{if(e.target===document.getElementById('cardModal'))document.getElementById('cardModal').classList.remove('open');});
-document.querySelectorAll('#cmStatus .sopt').forEach(o=>{
-  o.addEventListener('click',()=>{document.querySelectorAll('#cmStatus .sopt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel');});
+document.getElementById('pm-cancel').addEventListener('click', closePatModal);
+document.getElementById('pat-modal-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closePatModal();
 });
-document.getElementById('cmSave').addEventListener('click',()=>{
-  const title=document.getElementById('cmTitle').value.trim();
-  if(!title){alert('\xdcberschrift ist erforderlich.');return;}
-  const status=document.querySelector('#cmStatus .sopt.sel')?.dataset.val||'gray';
-  const deadline=document.getElementById('cmDeadline').value||null;
-  const desc=document.getElementById('cmDesc').value.trim();
-  if(editCardId){
-    const c=cards[editCardId];
-    c.title=title;c.status=status;c.deadline=deadline;c.description=desc;
+
+document.getElementById('pm-save').addEventListener('click', () => {
+  const code    = document.getElementById('pm-code').value.trim();
+  const aufnahme = document.getElementById('pm-aufnahme').value;
+  const status  = document.getElementById('pm-status').value;
+  const notizen = document.getElementById('pm-notizen').value.trim();
+
+  if (!code) { document.getElementById('pm-code').focus(); return; }
+
+  let patients = getPatients();
+  if (pmPatId) {
+    const idx = patients.findIndex(p => p.id === pmPatId);
+    if (idx !== -1) patients[idx] = { ...patients[idx], code, aufnahme, status, notizen };
   } else {
-    const laneId=document.getElementById('cardModal').dataset.lane;
-    const lane=laneById(laneId)||LANES[0];
-    counters[lane.prefix]=(counters[lane.prefix]||0)+1;
-    const id=lane.prefix+String(counters[lane.prefix]).padStart(3,'0');
-    cards[id]={id,lane:laneId,inHeute:lane.isHeute||false,originalLane:null,title,status,deadline,description:desc,archived:false,createdAt:new Date().toISOString()};
+    patients.push({ id: 'PAT' + Date.now(), code, aufnahme, status, notizen });
   }
-  saveCards();
-  document.getElementById('cardModal').classList.remove('open');
-  if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();
-  if(document.getElementById('tab-heute').classList.contains('active'))renderHeute();
-});
-document.getElementById('cmToH').addEventListener('click',()=>{
-  if(!editCardId)return;
-  const c=cards[editCardId];
-  c.originalLane=c.originalLane||c.lane;
-  c.inHeute=true;
-  saveCards();
-  document.getElementById('cardModal').classList.remove('open');
-  if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();
-  if(document.getElementById('tab-heute').classList.contains('active'))renderHeute();
-});
-document.getElementById('cmDel').addEventListener('click',()=>{
-  if(!editCardId)return;
-  const c=cards[editCardId];
-  if(!confirm('Karte "'+editCardId+'" l\xf6schen?'))return;
-  delete cards[editCardId];
-  saveCards();
-  document.getElementById('cardModal').classList.remove('open');
-  if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();
-  if(document.getElementById('tab-heute').classList.contains('active'))renderHeute();
+  savePatients(patients);
+  closePatModal();
+  renderPatients();
 });
 
-/* ---- PATIENTEN ---- */
-function renderPatienten(filter=''){
-  const list=document.getElementById('patList');
-  list.innerHTML='';
-  const f=filter.toLowerCase();
-  const shown=patients.filter(p=>!f||p.code.toLowerCase().includes(f)||(p.notes||'').toLowerCase().includes(f));
-  if(!shown.length){list.innerHTML=`<p style="color:var(--text-muted);padding:20px 0;text-align:center;">${filter?'Keine Treffer.':'Noch keine Patienten.'}</p>`;return;}
-  shown.forEach((p,i)=>{
-    const idx=patients.indexOf(p);
-    const el=document.createElement('div');
-    el.className='pt-item';
-    el.innerHTML=`<div style="flex:1;min-width:0;"><div><span class="pt-code">${esc(p.code)}</span><span class="pt-sbadge ${p.status||'aktiv'}">${esc(p.status||'aktiv')}</span></div><div class="pt-detail">${p.admissionDate?'Aufnahme: '+fmt(p.admissionDate)+'  ':''} ${p.notes?esc(p.notes.substring(0,60))+(p.notes.length>60?'\u2026':''):''}</div></div><div class="pt-acts"><button class="edit" data-i="${idx}">Bearbeiten</button><button class="del" data-i="${idx}">L\xf6schen</button></div>`;
-    el.querySelector('.edit').addEventListener('click',()=>openPatModal(idx));
-    el.querySelector('.del').addEventListener('click',()=>{if(!confirm('Patient "'+p.code+'" l\xf6schen?'))return;patients.splice(idx,1);savePatients();renderPatienten(document.getElementById('patSearch').value);});
-    list.appendChild(el);
+document.getElementById('pm-delete').addEventListener('click', () => {
+  confirmAction('Patient löschen?', 'Dieser Patient wird unwiderruflich gelöscht.', () => {
+    let patients = getPatients();
+    patients = patients.filter(p => p.id !== pmPatId);
+    savePatients(patients);
+    closePatModal();
+    renderPatients();
   });
-}
-document.getElementById('patSearch').addEventListener('input',e=>renderPatienten(e.target.value));
-document.getElementById('addPat').addEventListener('click',()=>openPatModal(null));
-function openPatModal(idx){
-  editPatIdx=idx;
-  const p=idx!==null?patients[idx]:null;
-  document.getElementById('pmHead').textContent=p?'Patient bearbeiten':'Neuer Patient';
-  document.getElementById('pmCode').value=p?p.code:'';
-  document.getElementById('pmAdm').value=p?(p.admissionDate||''):'';
-  document.getElementById('pmStat').value=p?(p.status||'aktiv'):'aktiv';
-  document.getElementById('pmNotes').value=p?(p.notes||''):'';
-  document.getElementById('pmDel').style.display=p?'inline-block':'none';
-  document.getElementById('patModal').classList.add('open');
-  document.getElementById('pmCode').focus();
-}
-document.getElementById('pmCancel').addEventListener('click',()=>document.getElementById('patModal').classList.remove('open'));
-document.getElementById('patModal').addEventListener('click',e=>{if(e.target===document.getElementById('patModal'))document.getElementById('patModal').classList.remove('open');});
-document.getElementById('pmSave').addEventListener('click',()=>{
-  const code=document.getElementById('pmCode').value.trim();
-  if(!code){alert('Code ist erforderlich.');return;}
-  const obj={code,admissionDate:document.getElementById('pmAdm').value||null,status:document.getElementById('pmStat').value,notes:document.getElementById('pmNotes').value.trim()};
-  if(editPatIdx!==null){patients[editPatIdx]=obj;}else{patients.push(obj);}
-  savePatients();
-  document.getElementById('patModal').classList.remove('open');
-  renderPatienten(document.getElementById('patSearch').value);
-});
-document.getElementById('pmDel').addEventListener('click',()=>{
-  if(editPatIdx===null)return;
-  if(!confirm('Patient l\xf6schen?'))return;
-  patients.splice(editPatIdx,1);savePatients();
-  document.getElementById('patModal').classList.remove('open');
-  renderPatienten(document.getElementById('patSearch').value);
 });
 
-/* ---- AUTONOMIE-LOG ---- */
-function renderAlog(){
-  const list=document.getElementById('alList');
-  list.innerHTML='';
-  const sorted=[...alog].sort((a,b)=>(a.read===b.read)?0:a.read?1:-1);
-  if(!sorted.length){list.innerHTML='<p style="color:var(--text-muted);padding:20px 0;text-align:center;">Keine Eintr\xe4ge.</p>';return;}
-  sorted.forEach(entry=>{
-    const el=document.createElement('div');
-    el.className=`al-entry ${entry.status}${entry.read?' read':''}`;
-    const ts=new Date(entry.timestamp).toLocaleString('de-DE');
-    el.innerHTML=`<div class="al-ehead"><span class="al-ts">${esc(ts)}</span><span class="al-sb ${entry.status}">${{success:'&#10003; Erfolg',warning:'&#9888; Warnung',error:'&#10007; Fehler'}[entry.status]||entry.status}</span></div><div class="al-title">${esc(entry.title)}</div><div class="al-desc">${esc(entry.desc)}</div>${!entry.read?`<button class="al-rbtn" data-id="${entry.id}">Okay, gelesen &#10003;</button>`:''}`;
-    if(!entry.read){el.querySelector('.al-rbtn').addEventListener('click',()=>{entry.read=true;saveAlog();renderAlog();updateAlBadge();});}
-    list.appendChild(el);
+// ─── AUTONOMIE-LOG ────────────────────────────────────────────────────────────
+function initAL() {
+  let log = getALLog();
+  if (!log) {
+    log = [{
+      id: 'al001',
+      ts: new Date().toISOString(),
+      title: 'System gestartet',
+      desc: 'CoworkDashboard v10 erfolgreich initialisiert. Alle Daten werden lokal gespeichert.',
+      badge: '✅',
+      read: false
+    }];
+    saveALLog(log);
+  }
+}
+
+function renderAL() {
+  const log = getALLog() || [];
+  const list = document.getElementById('al-list');
+  const unread = log.filter(e => !e.read).length;
+  const badge = document.getElementById('al-badge');
+  if (unread > 0) {
+    badge.style.display = '';
+    badge.textContent = unread;
+  } else {
+    badge.style.display = 'none';
+  }
+
+  if (log.length === 0) {
+    list.innerHTML = '<div class="empty-state">Keine Einträge.</div>';
+    return;
+  }
+
+  list.innerHTML = log.map(e => `
+    <div class="al-card${e.read ? ' read' : ''}" id="alc-${e.id}">
+      <div class="al-card-header">
+        <span class="al-badge">${e.badge || '📋'}</span>
+        <div class="al-meta">
+          <div class="al-title">${esc(e.title)}</div>
+          <div class="al-ts">${new Date(e.ts).toLocaleString('de-CH')}</div>
+        </div>
+      </div>
+      <div class="al-desc">${esc(e.desc || '')}</div>
+      ${!e.read ? `<button class="al-read-btn" onclick="markALRead('${e.id}')">Okay, gelesen ✓</button>` : '<button class="al-read-btn">Gelesen ✓</button>'}
+    </div>`).join('');
+}
+
+function markALRead(id) {
+  const log = getALLog() || [];
+  const entry = log.find(e => e.id === id);
+  if (entry) entry.read = true;
+  saveALLog(log);
+  renderAL();
+  updateALBadge();
+}
+
+function updateALBadge() {
+  const log = getALLog() || [];
+  const unread = log.filter(e => !e.read).length;
+  const badge = document.getElementById('al-badge');
+  if (unread > 0) { badge.style.display = ''; badge.textContent = unread; }
+  else badge.style.display = 'none';
+}
+
+// ─── BACKLOG ──────────────────────────────────────────────────────────────────
+const BL_DEMOS = [
+  { id:'bl001', title:'Nacht-Autopilot aktivieren',       prio:'hoch',    cat:'KI',          status:'geplant',    desc:'Automatische Aufgaben-Priorisierung nach 22 Uhr basierend auf Kalender.' },
+  { id:'bl002', title:'Google Drive Integration',         prio:'mittel',  cat:'Integration', status:'geplant',    desc:'Berichte direkt in Drive-Ordner speichern und teilen.' },
+  { id:'bl003', title:'Patienten-Timeline Variante C',    prio:'hoch',    cat:'Patienten',   status:'in-arbeit',  desc:'Chronologische Verlaufsansicht pro Patient mit Meilensteinen.' },
+  { id:'bl004', title:'Offline-Modus & PWA-Install',     prio:'mittel',  cat:'Tech',        status:'geplant',    desc:'Service Worker für Offline-Nutzung und App-Installation auf Homescreen.' },
+  { id:'bl005', title:'Wochenrückblick-Report (PDF)',     prio:'niedrig', cat:'Reporting',   status:'geplant',    desc:'Automatisch generierter PDF-Report aller erledigten Aufgaben pro Woche.' }
+];
+
+function getBacklog() {
+  return ls('cowork_backlog', null);
+}
+function saveBacklog(b) { lsSet('cowork_backlog', b); }
+
+function initBacklog() {
+  if (!getBacklog()) {
+    saveBacklog(BL_DEMOS);
+  }
+}
+
+const PRIO_LABELS = { hoch:'🔴 Hoch', mittel:'🟡 Mittel', niedrig:'🟢 Niedrig' };
+const PRIO_ORDER  = { hoch:0, mittel:1, niedrig:2 };
+const BL_STATUS_CLS = { geplant:'bl-geplant', 'in-arbeit':'bl-in-arbeit', abgeschlossen:'bl-abgeschlossen' };
+const BL_STATUS_LABELS = { geplant:'Geplant', 'in-arbeit':'In Arbeit', abgeschlossen:'Abgeschlossen' };
+
+function renderBacklog() {
+  let bl = getBacklog() || [];
+  const filter = document.getElementById('bl-filter').value;
+  if (filter) bl = bl.filter(e => e.prio === filter);
+  bl = [...bl].sort((a,b) => (PRIO_ORDER[a.prio]||1) - (PRIO_ORDER[b.prio]||1));
+
+  const list = document.getElementById('bl-list');
+  if (bl.length === 0) {
+    list.innerHTML = '<div class="empty-state">Keine Einträge.</div>'; return;
+  }
+  list.innerHTML = bl.map(e => `
+    <div class="bl-card" onclick="openBLModal('${esc(e.id)}')">
+      <div class="bl-card-top">
+        <span class="bl-prio">${PRIO_LABELS[e.prio]?.slice(0,2)||'📋'}</span>
+        <span class="bl-title">${esc(e.title)}</span>
+        <span class="bl-status-badge ${BL_STATUS_CLS[e.status]||'bl-geplant'}">${BL_STATUS_LABELS[e.status]||e.status}</span>
+      </div>
+      <div class="bl-card-meta">
+        <span>${PRIO_LABELS[e.prio]||e.prio}</span>
+        ${e.cat ? `<span>${esc(e.cat)}</span>` : ''}
+      </div>
+      ${e.desc ? `<div class="bl-desc">${esc(e.desc.substring(0,120))}${e.desc.length>120?'…':''}</div>` : ''}
+    </div>`).join('');
+}
+
+document.getElementById('bl-filter').addEventListener('change', renderBacklog);
+document.getElementById('btn-bl-add').addEventListener('click', () => openBLModal(null));
+
+let blEntryId = null;
+
+function openBLModal(entryId) {
+  blEntryId = entryId;
+  const bl   = getBacklog() || [];
+  const entry = entryId ? bl.find(e => e.id === entryId) : null;
+  const isNew = !entry;
+
+  document.getElementById('bl-modal-title').textContent = isNew ? 'Neuer Eintrag' : entry.title;
+  document.getElementById('blm-title').value  = entry?.title  || '';
+  document.getElementById('blm-prio').value   = entry?.prio   || 'mittel';
+  document.getElementById('blm-cat').value    = entry?.cat    || '';
+  document.getElementById('blm-status').value = entry?.status || 'geplant';
+  document.getElementById('blm-desc').value   = entry?.desc   || '';
+  document.getElementById('blm-delete').style.display = isNew ? 'none' : '';
+
+  document.getElementById('bl-modal-overlay').classList.add('open');
+}
+
+function closeBLModal() {
+  document.getElementById('bl-modal-overlay').classList.remove('open');
+  blEntryId = null;
+}
+
+document.getElementById('blm-cancel').addEventListener('click', closeBLModal);
+document.getElementById('bl-modal-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeBLModal();
+});
+
+document.getElementById('blm-save').addEventListener('click', () => {
+  const title  = document.getElementById('blm-title').value.trim();
+  const prio   = document.getElementById('blm-prio').value;
+  const cat    = document.getElementById('blm-cat').value.trim();
+  const status = document.getElementById('blm-status').value;
+  const desc   = document.getElementById('blm-desc').value.trim();
+
+  if (!title) { document.getElementById('blm-title').focus(); return; }
+
+  let bl = getBacklog() || [];
+  if (blEntryId) {
+    const idx = bl.findIndex(e => e.id === blEntryId);
+    if (idx !== -1) bl[idx] = { ...bl[idx], title, prio, cat, status, desc };
+  } else {
+    bl.push({ id:'bl'+Date.now(), title, prio, cat, status, desc });
+  }
+  saveBacklog(bl);
+  closeBLModal();
+  renderBacklog();
+});
+
+document.getElementById('blm-delete').addEventListener('click', () => {
+  confirmAction('Eintrag löschen?', 'Dieser Backlog-Eintrag wird unwiderruflich gelöscht.', () => {
+    let bl = getBacklog() || [];
+    bl = bl.filter(e => e.id !== blEntryId);
+    saveBacklog(bl);
+    closeBLModal();
+    renderBacklog();
   });
-  updateAlBadge();
-}
-function updateAlBadge(){
-  const n=alog.filter(e=>!e.read).length;
-  const b=document.getElementById('alBadge');
-  b.textContent=n||'';b.classList.toggle('on',n>0);
-}
-async function fetchAlogFromGH(){
-  const tok=localStorage.getItem(KT);
-  if(!tok){alert('Kein GitHub Token hinterlegt (Einstellungen).');return;}
-  try{
-    const r=await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/autonomy-log.json',{headers:{Authorization:'token '+tok,Accept:'application/vnd.github.v3.raw'}});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const data=await r.json();
-    if(Array.isArray(data)){alog=data;saveAlog();renderAlog();alert('Log geladen: '+data.length+' Eintr\xe4ge.');}
-  }catch(e){alert('Fehler beim Laden: '+e.message);}
-}
-document.getElementById('alLoad').addEventListener('click',fetchAlogFromGH);
-
-/* ---- EINSTELLUNGEN ---- */
-function renderSettings(){
-  const tok=localStorage.getItem(KT)||'';
-  document.getElementById('ghToken').value=tok?'********':'';
-  document.getElementById('thLight').classList.toggle('on',settings.theme!=='dark');
-  document.getElementById('thDark').classList.toggle('on',settings.theme==='dark');
-}
-document.getElementById('saveToken').addEventListener('click',()=>{
-  const t=document.getElementById('ghToken').value.trim();
-  if(!t||t==='********'){alert('Bitte Token eingeben.');return;}
-  localStorage.setItem(KT,t);alert('Token gespeichert.');
-});
-document.getElementById('thLight').addEventListener('click',()=>{settings.theme='light';document.body.classList.remove('dark');saveSettings();document.getElementById('thLight').classList.add('on');document.getElementById('thDark').classList.remove('on');});
-document.getElementById('thDark').addEventListener('click',()=>{settings.theme='dark';document.body.classList.add('dark');saveSettings();document.getElementById('thDark').classList.add('on');document.getElementById('thLight').classList.remove('on');});
-document.getElementById('exportBtn').addEventListener('click',()=>{
-  const blob=new Blob([JSON.stringify({cards,counters,patients,settings,alog},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cowork_export_'+today()+'.json';a.click();
-});
-document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
-document.getElementById('importFile').addEventListener('change',e=>{
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.cards)cards=d.cards;if(d.counters)counters=d.counters;if(d.patients)patients=d.patients;if(d.settings)settings=d.settings;if(d.alog)alog=d.alog;saveCards();savePatients();saveSettings();saveAlog();alert('Importiert.');switchTab('heute');}catch(err){alert('Fehler: '+err.message);}};
-  r.readAsText(f);e.target.value='';
-});
-document.getElementById('resetBtn').addEventListener('click',()=>{
-  if(!confirm('Wirklich ALLE Daten l\xf6schen?'))return;
-  [KC,KP,KS,KA,KT].forEach(k=>localStorage.removeItem(k));
-  loadAll();switchTab('heute');alert('Gel\xf6scht.');
 });
 
-/* ---- MOBILE LANE NAV ---- */
-function updateMobNav(){
-  const l=LANES[curLane];
-  document.getElementById('laneDisplay').textContent=l?l.name:'';
-  const dots=document.getElementById('laneDots');
-  dots.innerHTML='';
-  LANES.forEach((_,i)=>{const d=document.createElement('span');d.className='ldot'+(i===curLane?' on':'');d.addEventListener('click',()=>scrollLane(i));dots.appendChild(d);});
+// ─── EINSTELLUNGEN ────────────────────────────────────────────────────────────
+function initSettings() {
+  const token = ls('cowork_gh_token', '');
+  document.getElementById('gh-token-input').value = token;
+  const budget = ls('cowork_budget', 100);
+  document.getElementById('budget-input').value = budget;
 }
-function scrollLane(idx){
-  curLane=idx;
-  const lanes=document.querySelectorAll('.lane');
-  if(lanes[idx])lanes[idx].scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'});
-  updateMobNav();
-}
-document.getElementById('lanePrev').addEventListener('click',()=>{if(curLane>0)scrollLane(curLane-1);});
-document.getElementById('laneNext').addEventListener('click',()=>{if(curLane<LANES.length-1)scrollLane(curLane+1);});
-let tx=0,ty=0;
-document.getElementById('lanesContainer').addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;},{passive:true});
-document.getElementById('lanesContainer').addEventListener('touchend',e=>{
-  const dx=tx-e.changedTouches[0].screenX;
-  if(window.innerWidth>768||Math.abs(dx)<50)return;
-  if(dx>0&&curLane<LANES.length-1)scrollLane(curLane+1);
-  else if(dx<0&&curLane>0)scrollLane(curLane-1);
-},{passive:true});
 
-/* ---- TOKEN WIDGET ---- */
-const KTP='cowork_token_plan';
-function loadTokenPlan(){
-  try{const r=JSON.parse(localStorage.getItem(KTP));if(r&&r.entries)return r;}catch(e){}
-  const demo={weekly_budget:1000000,weekly_used:800000,entries:[
-    {task:'Dashboard Rebuild',model:'claude-opus-4-6',estimated:50000,status:'running'},
-    {task:'Nacht-Autopilot heute',model:'claude-sonnet-4-6',estimated:100000,status:'planned'}
-  ]};
-  localStorage.setItem(KTP,JSON.stringify(demo));
-  return demo;
-}
-function saveTokenPlan(obj){localStorage.setItem(KTP,JSON.stringify(obj));}
-function modelClass(m){if(/opus/i.test(m))return'opus';if(/haiku/i.test(m))return'haiku';return'sonnet';}
-function fmtK(n){return n>=1000?(n/1000).toFixed(0)+'k':String(n);}
-function renderTokenWidget(container){
-  const plan=loadTokenPlan();
-  const pct=Math.min(100,Math.round((plan.weekly_used||0)/(plan.weekly_budget||1000000)*100));
-  const barCls=pct>=90?'danger':pct>=70?'warn':'';
-  const totalEst=(plan.entries||[]).reduce((s,e)=>s+(e.estimated||0),0);
-  const el=document.createElement('div');
-  el.className='tok-widget';
-  el.innerHTML=`<h3>\uD83E\uDD16 Token & Modell <button id="tokEditBtn" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--lane-bg);color:var(--text);cursor:pointer;">Bearbeiten</button></h3><div class="tok-progress-wrap"><div class="tok-bar ${barCls}" style="width:${pct}%"></div></div><div class="tok-stats"><span>${fmtK(plan.weekly_used||0)} / ${fmtK(plan.weekly_budget||1000000)} Tokens (${pct}%)</span><span>Heute geplant: ~${fmtK(totalEst)}</span></div><div class="tok-entries">${(plan.entries||[]).map(e=>`<div class="tok-entry"><span class="tok-model ${modelClass(e.model)}">${esc(e.model.replace('claude-',''))}</span><span class="tok-task">${esc(e.task)}</span><span class="tok-est">~${fmtK(e.estimated||0)}</span><span class="tok-status ${e.status||'planned'}">${e.status==='running'?'l\xe4uft':e.status==='done'?'fertig':'geplant'}</span></div>`).join('')}</div><div class="tok-edit-area" id="tokEditArea"><textarea id="tokEditTxt"></textarea><div style="display:flex;gap:6px;margin-top:6px;"><button class="btn-pri" id="tokSave" style="padding:5px 12px;border:none;border-radius:5px;font-size:12px;cursor:pointer;font-weight:500;background:var(--primary);color:#fff;">Speichern</button><button class="btn-cancel" id="tokCancel" style="padding:5px 12px;border:none;border-radius:5px;font-size:12px;cursor:pointer;background:var(--lane-bg);color:var(--text-muted);">Abbrechen</button></div></div>`;
-  container.appendChild(el);
-  document.getElementById('tokEditBtn').addEventListener('click',()=>{
-    const area=document.getElementById('tokEditArea');
-    const isOpen=area.style.display==='block';
-    area.style.display=isOpen?'none':'block';
-    if(!isOpen)document.getElementById('tokEditTxt').value=JSON.stringify(plan,null,2);
+document.getElementById('btn-gh-save').addEventListener('click', () => {
+  const v = document.getElementById('gh-token-input').value.trim();
+  lsSet('cowork_gh_token', v);
+  showToast('GitHub Token gespeichert');
+});
+
+document.getElementById('btn-budget-save').addEventListener('click', () => {
+  const v = parseInt(document.getElementById('budget-input').value) || 100;
+  lsSet('cowork_budget', v);
+  showToast('Budget gespeichert');
+  if (currentTab === 'heute') renderHeute();
+});
+
+document.getElementById('btn-pin-change').addEventListener('click', () => {
+  const val = document.getElementById('new-pin-input').value.trim();
+  if (val.length < 4 || val.length > 6 || !/^\d+$/.test(val)) {
+    showToast('PIN muss 4–6 Ziffern sein', true); return;
+  }
+  localStorage.setItem('cowork_pin', hashPin(val));
+  document.getElementById('new-pin-input').value = '';
+  showToast('PIN geändert');
+});
+
+document.getElementById('btn-export').addEventListener('click', () => {
+  const data = {
+    cards:       ls('cowork_cards', {}),
+    patients:    ls('cowork_patients', []),
+    autonomy:    ls('cowork_autonomy_log', []),
+    backlog:     ls('cowork_backlog', []),
+    seqs:        Object.fromEntries(
+                   LANES.map(l => [`cowork_seq_${l.id}`, ls(`cowork_seq_${l.id}`, 0)])
+                 ),
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `cowork-export-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+});
+
+document.getElementById('btn-import').addEventListener('click', () => {
+  document.getElementById('import-file').click();
+});
+
+document.getElementById('import-file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.cards)    lsSet('cowork_cards', data.cards);
+      if (data.patients) lsSet('cowork_patients', data.patients);
+      if (data.autonomy) lsSet('cowork_autonomy_log', data.autonomy);
+      if (data.backlog)  lsSet('cowork_backlog', data.backlog);
+      if (data.seqs) Object.entries(data.seqs).forEach(([k,v]) => lsSet(k,v));
+      showToast('Daten importiert');
+      switchTab(currentTab);
+    } catch(err) {
+      showToast('Fehler beim Importieren', true);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  confirmAction('Alle Daten löschen?', 'ALLE Karten, Patienten und Logs werden unwiderruflich gelöscht.', () => {
+    ['cowork_cards','cowork_patients','cowork_autonomy_log','cowork_backlog','cowork_collapsed','cowork_budget']
+      .forEach(k => localStorage.removeItem(k));
+    LANES.forEach(l => localStorage.removeItem('cowork_seq_' + l.id));
+    showToast('Alle Daten gelöscht');
+    switchTab('heute');
   });
-  document.getElementById('tokSave').addEventListener('click',()=>{
-    try{const p=JSON.parse(document.getElementById('tokEditTxt').value);saveTokenPlan(p);document.getElementById('tokEditArea').style.display='none';renderHeute();}catch(e){alert('JSON-Fehler: '+e.message);}
-  });
-  document.getElementById('tokCancel').addEventListener('click',()=>{document.getElementById('tokEditArea').style.display='none';});
+});
+
+// ─── CONFIRM DIALOG ───────────────────────────────────────────────────────────
+let confirmCallback = null;
+
+function confirmAction(title, msg, cb) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent   = msg;
+  confirmCallback = cb;
+  document.getElementById('confirm-overlay').classList.add('open');
 }
 
-/* ---- INIT ---- */
-loadAll();
-if(settings.theme==='dark')document.body.classList.add('dark');
-updateAlBadge();
-renderHeute();
-setTimeout(()=>{if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();},0);
-})();
+document.getElementById('confirm-no').addEventListener('click', () => {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  confirmCallback = null;
+});
+
+document.getElementById('confirm-yes').addEventListener('click', () => {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+});
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimer = null;
+
+function showToast(msg, isError) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;transition:opacity 0.3s;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.background = isError ? '#ef4444' : '#1a1a1a';
+  t.style.color = '#fff';
+  t.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ─── TAB BINDING ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// ─── INIT APP ─────────────────────────────────────────────────────────────────
+function initApp() {
+  initAL();
+  initBacklog();
+  updateALBadge();
+  renderHeute();
+}
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+initPin();
 </script>
 </body>
 </html>
-
