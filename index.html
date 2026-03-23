@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CoworkKanban v9</title>
+  <title>CoworkDashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -84,6 +84,12 @@
     .card-archive-btn:hover{opacity:1;color:var(--warning);}
     .col-archive-toggle{width:100%;padding:8px 14px;background:none;border:none;border-top:1px dashed var(--border);color:var(--text-muted);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
     .col-archive-toggle:hover{color:var(--accent);background:var(--accent-light);}
+    .col-delete-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px 4px;border-radius:4px;opacity:0.5;transition:opacity 0.15s,color 0.15s;display:flex;align-items:center;}
+    .col-delete-btn:hover{opacity:1;color:var(--danger);}
+    .kanban-add-col{min-width:180px;flex-shrink:0;display:flex;align-items:flex-start;padding-top:10px;}
+    .add-col-btn{background:none;border:2px dashed var(--border);border-radius:var(--radius);padding:12px 20px;color:var(--text-muted);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;justify-content:center;transition:all 0.15s;font-family:inherit;}
+    .add-col-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+    .col-title-text{cursor:default;flex:1;}
     .col-archive-section{padding:6px 10px;}
     .col-archive-card{background:var(--bg);border:1px dashed var(--border);border-radius:var(--radius);padding:7px 10px;font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;margin-bottom:5px;}
     .col-archive-card:last-child{margin-bottom:0;}
@@ -205,7 +211,7 @@
 <body>
 <div id="loginScreen" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#F2FAF6;z-index:9999;align-items:center;justify-content:center;font-family:'Inter',sans-serif;">
   <div style="background:#FFFFFF;border-radius:8px;padding:32px;max-width:360px;width:90%;box-sizing:border-box;">
-    <h1 style="font-size:20px;font-weight:600;color:#1a1a1a;margin:0 0 8px 0;">CoworkKanban</h1>
+    <h1 style="font-size:20px;font-weight:600;color:#1a1a1a;margin:0 0 8px 0;">CoworkDashboard</h1>
     <p style="font-size:14px;color:#6b6b6b;margin:0 0 24px 0;">Bitte anmelden</p>
     <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Passwort eingeben" style="width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;outline:none;margin-bottom:12px;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><input type="checkbox" id="rememberMe" style="width:16px;height:16px;cursor:pointer;accent-color:#CC785C;"><label for="rememberMe" style="font-size:13px;color:#6b6b6b;cursor:pointer;">Anmeldedaten merken</label></div><button id="loginBtn" style="width:100%;background:#1a1a1a;color:#ffffff;border:none;border-radius:8px;padding:10px;font-size:15px;font-family:inherit;cursor:pointer;">Anmelden</button>
@@ -214,7 +220,7 @@
 </div>
 <div id="pin-screen">
   <div class="pin-logo">CK</div>
-  <div><div class="pin-title">CoworkKanban</div><div class="pin-subtitle" style="margin-top:4px">Version 9</div></div>
+  <div><div class="pin-title">CoworkDashboard</div><div class="pin-subtitle" style="margin-top:4px">Version 9</div></div>
   <div class="pin-dots" id="pin-dots"><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div></div>
   <div class="pin-error" id="pin-error"></div>
   <div class="pin-keypad">
@@ -226,12 +232,12 @@
 </div>
 <div id="app">
   <nav class="desktop-sidebar">
-    <div class="sidebar-logo">Cowork<span>Kanban</span></div>
-    <button class="sidebar-item active" data-tab="kanban" onclick="switchTab('kanban')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/><rect x="14" y="17" width="7" height="4" rx="1"/></svg>Kanban
-    </button>
-    <button class="sidebar-item" data-tab="heute" onclick="switchTab('heute')">
+    <div class="sidebar-logo">Cowork<span>Dashboard</span></div>
+          <button class="sidebar-item active" data-tab="heute" onclick="switchTab('heute')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>Heute
+    </button>
+      <button class="sidebar-item" data-tab="kanban" onclick="switchTab('kanban')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/><rect x="14" y="17" width="7" height="4" rx="1"/></svg>Projekte
     </button>
     <button class="sidebar-item" data-tab="tagebuch" onclick="switchTab('tagebuch')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Tagebuch
@@ -245,18 +251,18 @@
     </button>
   </nav>
   <header class="app-header">
-    <div class="header-title" id="header-title">Kanban</div>
+    <div class="header-title" id="header-title">Heute</div>
     <button class="sync-btn" onclick="syncData()"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Sync</span></button>
   </header>
   <div class="app-content">
-    <div class="tab-panel active" id="tab-kanban">
+    <div class="tab-panel" id="tab-kanban">
       <div class="section-header">
-        <div class="section-title">Aufgaben</div>
+        <div class="section-title">Projekte</div>
         <button class="btn btn-primary" onclick="openCardModal()" style="padding:8px 14px;font-size:13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Neue Karte</button>
       </div>
       <div class="kanban-board" id="kanban-board"></div>
     </div>
-    <div class="tab-panel" id="tab-heute">
+    <div class="tab-panel active" id="tab-heute">
       <div class="heute-hero">
         <div class="heute-hero-date" id="heute-date"></div>
       </div>
@@ -376,15 +382,15 @@
           <div class="roadmap-item"><div class="roadmap-version">v10</div><div class="roadmap-title">Kollaboration</div><div class="roadmap-features">Mehrbenutzer-Sync, Kommentare, Benachrichtigungen, Kalender-Integration</div></div>
         </div>
       </div>
-      <div style="text-align:center;padding:16px 0 8px;color:var(--text-muted);font-size:12px">CoworkKanban v9 &bull; Anthropic Cowork Aesthetic</div>
+      <div style="text-align:center;padding:16px 0 8px;color:var(--text-muted);font-size:12px">CoworkDashboard &bull; Anthropic Cowork Aesthetic</div>
     </div>
   </div>
   <nav class="bottom-nav">
-    <button class="nav-item active" data-tab="kanban" onclick="switchTab('kanban')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/><rect x="14" y="17" width="7" height="4" rx="1"/></svg>Kanban
-    </button>
-    <button class="nav-item" data-tab="heute" onclick="switchTab('heute')">
+        <button class="nav-item active" data-tab="heute" onclick="switchTab('heute')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>Heute
+    </button>
+    <button class="nav-item" data-tab="kanban" onclick="switchTab('kanban')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/><rect x="14" y="17" width="7" height="4" rx="1"/></svg>Projekte
     </button>
     <button class="nav-item" data-tab="tagebuch" onclick="switchTab('tagebuch')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Tagebuch
@@ -404,7 +410,7 @@
     <input type="hidden" id="card-edit-id">
     <div class="form-group"><label class="form-label">Titel *</label><input type="text" class="input" id="card-title-input" placeholder="Aufgabe beschreiben..."></div>
     <div class="form-group"><label class="form-label">Beschreibung</label><textarea class="input" id="card-desc-input" placeholder="Details..."></textarea></div>
-    <div class="form-group"><label class="form-label">Spalte</label><select class="input" id="card-col-input"><option value="offen">Offen</option><option value="in_arbeit">In Arbeit</option><option value="erledigt">Erledigt</option></select></div>
+    <div class="form-group"><label class="form-label">Spalte</label><select class="input" id="card-col-input"></select></div>
     <div class="form-group"><label class="form-label">Priorität</label><select class="input" id="card-prio-input"><option value="">Keine</option><option value="high">Hoch</option><option value="medium">Mittel</option><option value="low">Niedrig</option></select></div>
     <div class="form-group"><label class="form-label">Kategorie</label><input type="text" class="input" id="card-cat-input" placeholder="z.B. Klinik, Ambulanz..."></div>
     <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('card-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveCard()">Speichern</button></div>
@@ -464,7 +470,7 @@
 const GITHUB_OWNER="ctmos",GITHUB_REPO="cowork-data",GITHUB_FILE="cowork-data.json",BRANCH="main";
 const SESSION_KEY="cw_session",PIN_KEY="cw_pin_hash",DATA_KEY="cw_data";
 const DEFAULT_PIN="cowork2026",SESSION_TTL=864e5;
-let appData={version:"1.0",lastUpdated:new Date().toISOString(),kanban:{columns:["offen","in_arbeit","erledigt"],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[],einstellungen:{githubToken:"",theme:"light"}};
+let appData={version:"1.0",lastUpdated:new Date().toISOString(),kanban:{columns:[{id:"col_1",name:"Barmelweid"},{id:"col_2",name:"Patienten"},{id:"col_3",name:"PSP WB"},{id:"col_4",name:"SelfImprovement"},{id:"col_5",name:"Heute"},{id:"col_6",name:"Finanzen"},{id:"col_7",name:"Freunde"},{id:"col_8",name:"Events"},{id:"col_9",name:"Familie"},{id:"col_10",name:"KI"},{id:"col_11",name:"Cowork"},{id:"col_12",name:"ImperialKI"},{id:"col_13",name:"Erinnerungen"},{id:"col_14",name:"Tagebuch"}],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[],einstellungen:{githubToken:"",theme:"light"}};
 let currentMood=3,dragCard=null,dragCol=null;
 
 async function sha256(t){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
@@ -491,6 +497,12 @@ function initApp(){loadData();migrateData();applyTheme();updateTokenStatus();ren
 function renderAll(){renderKanban();renderHeute();renderTagebuch();renderPatienten();}
 
 function migrateData(){
+  // Migrate old string columns to object format
+  if(appData.kanban&&Array.isArray(appData.kanban.columns)&&appData.kanban.columns.length&&typeof appData.kanban.columns[0]==="string"){
+    const oldCols=appData.kanban.columns;
+    appData.kanban.columns=oldCols.map((s,i)=>({id:"col_"+(i+1),name:s==="offen"?"Offen":s==="in_arbeit"?"In Arbeit":s==="erledigt"?"Erledigt":s}));
+    appData.kanban.cards=(appData.kanban.cards||[]).map(c=>{const idx=oldCols.indexOf(c.column);return Object.assign({},c,{column:idx>=0?"col_"+(idx+1):c.column});});
+  }
   let migrated=false;
   const oldCards=localStorage.getItem("coworkKanbanCards");
   if(oldCards&&!appData.kanban.cards.length){try{const cards=JSON.parse(oldCards);appData.kanban.cards=cards.map(c=>({id:c.id||genId(),title:c.title||c.text||"",description:c.desc||c.description||"",column:c.column||c.status||"offen",priority:c.priority||"",category:c.category||""}));migrated=true;}catch(e){}}
@@ -503,7 +515,7 @@ function migrateData(){
   if(migrated)saveData();}
 
 function saveData(){appData.lastUpdated=new Date().toISOString();localStorage.setItem(DATA_KEY,JSON.stringify(appData));}
-function loadData(){const raw=localStorage.getItem(DATA_KEY);if(raw){try{const d=JSON.parse(raw);appData=Object.assign(appData,d);if(!appData.kanban)appData.kanban={columns:["offen","in_arbeit","erledigt"],cards:[]};if(!appData.heute)appData.heute={tasks:{}};if(!appData.tagebuch)appData.tagebuch=[];if(!appData.patienten)appData.patienten=[];if(!appData.einstellungen)appData.einstellungen={githubToken:"",theme:"light"};}catch(e){}}}
+function loadData(){const raw=localStorage.getItem(DATA_KEY);if(raw){try{const d=JSON.parse(raw);appData=Object.assign(appData,d);if(!appData.kanban)appData.kanban={columns:[{id:"col_1",name:"Barmelweid"},{id:"col_2",name:"Patienten"},{id:"col_3",name:"PSP WB"},{id:"col_4",name:"SelfImprovement"},{id:"col_5",name:"Heute"},{id:"col_6",name:"Finanzen"},{id:"col_7",name:"Freunde"},{id:"col_8",name:"Events"},{id:"col_9",name:"Familie"},{id:"col_10",name:"KI"},{id:"col_11",name:"Cowork"},{id:"col_12",name:"ImperialKI"},{id:"col_13",name:"Erinnerungen"},{id:"col_14",name:"Tagebuch"}],cards:[]};if(!appData.heute)appData.heute={tasks:{}};if(!appData.tagebuch)appData.tagebuch=[];if(!appData.patienten)appData.patienten=[];if(!appData.einstellungen)appData.einstellungen={githubToken:"",theme:"light"};}catch(e){}}}
 
 function getToken(){return appData.einstellungen.githubToken||"";}
 function setSyncState(s){const dot=document.getElementById("sync-dot"),lbl=document.getElementById("sync-label");dot.className="sync-dot"+(s==="syncing"?" syncing":s==="error"?" error":"");lbl.textContent=s==="syncing"?"Sync...":"Sync";}
@@ -515,7 +527,7 @@ async function loadFromGitHub(){const token=getToken();if(!token)return;setSyncS
     const remote=JSON.parse(content);
     if(!appData.lastUpdated||new Date(remote.lastUpdated)>new Date(appData.lastUpdated)){
       if(remote.kanban&&remote.kanban.cards)appData.kanban=remote.kanban;
-      else if(remote.tasks){const cols=["offen","in_arbeit","erledigt"],cards=[];cols.forEach(col=>{(remote.tasks[col]||[]).forEach(t=>{cards.push({id:t.id||genId(),title:t.title||t.text||"",description:t.desc||"",column:col,priority:t.priority||"",category:t.category||""});});});appData.kanban.cards=cards;}
+      else if(remote.tasks){const oldCols=["offen","in_arbeit","erledigt"],cards=[];oldCols.forEach((col,i)=>{(remote.tasks[col]||[]).forEach(t=>{cards.push({id:t.id||genId(),title:t.title||t.text||"",description:t.desc||"",column:"col_"+(i+1),priority:t.priority||"",category:t.category||""});});});appData.kanban.cards=cards;}
       if(remote.heute){if(Array.isArray(remote.heute))appData.heute.tasks[todayKey()]=remote.heute;else appData.heute=remote.heute;}
       if(remote.tagebuch)appData.tagebuch=remote.tagebuch;
       if(remote.patienten)appData.patienten=remote.patienten;
@@ -529,7 +541,7 @@ async function saveToGitHub(){const token=getToken();if(!token){toast("Kein GitH
     let sha=null;if(getR.ok){sha=(await getR.json()).sha;}
     const payload={version:"1.0",lastUpdated:new Date().toISOString(),kanban:appData.kanban,heute:appData.heute,tagebuch:appData.tagebuch,patienten:appData.patienten,settings:{theme:appData.einstellungen.theme}};
     const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2))));
-    const body={message:"CoworkKanban v9: sync "+new Date().toISOString(),content:encoded,branch:BRANCH};
+    const body={message:"CoworkDashboard: sync "+new Date().toISOString(),content:encoded,branch:BRANCH};
     if(sha)body.sha=sha;
     const putR=await fetch("https://api.github.com/repos/"+GITHUB_OWNER+"/"+GITHUB_REPO+"/contents/"+GITHUB_FILE,{method:"PUT",headers:{Authorization:"token "+token,Accept:"application/vnd.github.v3+json","Content-Type":"application/json"},body:JSON.stringify(body)});
     if(!putR.ok)throw new Error("HTTP "+putR.status);
@@ -539,20 +551,37 @@ async function saveToGitHub(){const token=getToken();if(!token){toast("Kein GitH
 async function syncData(){await loadFromGitHub();await saveToGitHub();}
 function updateLastSync(){const now=new Date(),t=now.getHours().toString().padStart(2,"0")+":"+now.getMinutes().toString().padStart(2,"0");const el=document.getElementById("last-sync-label");if(el)el.textContent="Zuletzt: "+t+" Uhr";}
 
-const COL_LABELS={offen:"Offen",in_arbeit:"In Arbeit",erledigt:"Erledigt"};
-function renderArchiveSection(col){const archived=(appData.kanban.cards||[]).filter(c=>c.column===col&&c.archived);if(!archived.length)return"";const arcOpen=(window._arcOpen&&window._arcOpen[col])||false;return'<button class="col-archive-toggle" onclick="toggleColArchive(\''+col+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archiv ('+archived.length+') '+(arcOpen?'▼':'▶')+'</button>'+(arcOpen?'<div class="col-archive-section">'+archived.map(c=>'<div class="col-archive-card"><span style="flex:1">'+escHtml(c.title)+'</span><button class="unarchive-btn" onclick="unarchiveCard(\''+c.id+'\')">↩ Zur\u00fcck</button></div>').join('')+'</div>':'');}
-function renderKanban(){const board=document.getElementById("kanban-board"),cols=appData.kanban.columns||["offen","in_arbeit","erledigt"];
-  board.innerHTML=cols.map(col=>{const cards=(appData.kanban.cards||[]).filter(c=>c.column===col&&!c.archived);
-    return `<div class="kanban-col" id="col-${col}"><div class="kanban-col-header"><span>${COL_LABELS[col]||col}</span><span class="col-count">${cards.length}</span></div><div class="kanban-cards" id="cards-${col}" ondragover="dragOver(event)" ondrop="drop(event,'${col}')" ondragenter="this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">${cards.length?cards.map(c=>renderCard(c)).join(''):'<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px">Leer</div>'}</div><button class="kanban-add-btn" onclick="openCardModal('${col}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Hinzuf\u00fcgen</button>${renderArchiveSection(col)}</div>`;
-  }).join('');}
+function getColName(colId){const c=(appData.kanban.columns||[]).find(x=>x.id===colId);return c?c.name:colId;}
+function renderArchiveSection(colId){const archived=(appData.kanban.cards||[]).filter(c=>c.column===colId&&c.archived);if(!archived.length)return"";const arcOpen=(window._arcOpen&&window._arcOpen[colId])||false;return'<button class="col-archive-toggle" onclick="toggleColArchive(\''+colId+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archiv ('+archived.length+') '+(arcOpen?'â–¼':'â–¶')+'</button>'+(arcOpen?'<div class="col-archive-section">'+archived.map(c=>'<div class="col-archive-card"><span style="flex:1">'+escHtml(c.title)+'</span><button class="unarchive-btn" onclick="unarchiveCard(\''+c.id+'\')">â†© ZurÃ¼ck</button></div>').join('')+'</div>':'');}
+function renderKanban(){
+  const board=document.getElementById("kanban-board");
+  const cols=appData.kanban.columns||[];
+  let html=cols.map(col=>{
+    const colId=col.id,colName=col.name;
+    const cards=(appData.kanban.cards||[]).filter(c=>c.column===colId&&!c.archived);
+    const isRenaming=window._renamingCol===colId;
+    const headerHtml=isRenaming
+      ?`<input type="text" class="col-rename-input" id="rename-input-${colId}" value="${escHtml(colName)}" onkeydown="if(event.key==='Enter')confirmRenameColumn('${colId}');if(event.key==='Escape')cancelRenameColumn()" onblur="confirmRenameColumn('${colId}')" style="flex:1;border:none;background:transparent;font-weight:600;font-size:13px;outline:none;color:var(--text);min-width:0;">`
+      :`<span class="col-title-text" ondblclick="startRenameColumn('${colId}')" title="Doppelklick zum Umbenennen">${escHtml(colName)}</span>`;
+    return `<div class="kanban-col" id="col-${colId}"><div class="kanban-col-header">${headerHtml}<span class="col-count">${cards.length}</span><button class="col-delete-btn" title="Spalte lÃ¶schen" onclick="deleteColumn('${colId}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div><div class="kanban-cards" id="cards-${colId}" ondragover="dragOver(event)" ondrop="drop(event,'${colId}')" ondragenter="this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">${cards.length?cards.map(c=>renderCard(c)).join(''):'<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px">Leer</div>'}</div><button class="kanban-add-btn" onclick="openCardModal('${colId}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>HinzufÃ¼gen</button>${renderArchiveSection(colId)}</div>`;
+  }).join('');
+  html+=`<div class="kanban-col kanban-add-col"><button class="add-col-btn" onclick="addColumn()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Spalte hinzufÃ¼gen</button></div>`;
+  board.innerHTML=html;
+  if(window._renamingCol){const inp=document.getElementById("rename-input-"+window._renamingCol);if(inp){inp.focus();inp.select();}}
+}
 
 function renderCard(c){const prioClass=c.priority?`prio-${c.priority}`:"",prioLabel=c.priority==="high"?"Hoch":c.priority==="medium"?"Mittel":c.priority==="low"?"Niedrig":"";
   const s=c.status||"neu";
   return `<div class="kanban-card" id="card-${c.id}" draggable="true" ondragstart="dragStart(event,'${c.id}','${c.column}')" ondragend="dragEnd(event)" onclick="openCardModal('${c.column}','${c.id}')"><div class="card-top"><div class="card-title" style="margin-bottom:0">${escHtml(c.title)}</div><div class="card-actions" onclick="event.stopPropagation()"><div class="status-dot-wrap"><div class="status-dot s-${s}" title="Status" onclick="toggleStatusDropdown('${c.id}')"></div><div class="status-dd" id="sdrop-${c.id}"><div class="status-dd-item s-neu" title="Neu" onclick="setCardStatus('${c.id}','neu')"></div><div class="status-dd-item" title="Offen/Blockiert" style="background:#e74c3c" onclick="setCardStatus('${c.id}','offen')"></div><div class="status-dd-item" title="In Arbeit" style="background:#f1c40f" onclick="setCardStatus('${c.id}','in_arbeit')"></div><div class="status-dd-item" title="Erledigt" style="background:#2ecc71" onclick="setCardStatus('${c.id}','erledigt')"></div></div></div><button class="card-archive-btn" title="Archivieren" onclick="archiveCard('${c.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button></div></div>${c.description?`<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${escHtml(c.description).substring(0,80)}${c.description.length>80?"...":""}</div>`:""}<div class="card-meta">${c.category?`<span class="tag">${escHtml(c.category)}</span>`:""}${prioLabel?`<span class="tag ${prioClass}">${prioLabel}</span>`:""}</div></div>`;}
 
-function openCardModal(col,cardId){document.getElementById("card-modal-title").textContent=cardId?"Karte bearbeiten":"Neue Karte";document.getElementById("card-edit-id").value=cardId||"";
-  if(cardId){const c=appData.kanban.cards.find(x=>x.id===cardId);if(c){document.getElementById("card-title-input").value=c.title;document.getElementById("card-desc-input").value=c.description||"";document.getElementById("card-col-input").value=c.column;document.getElementById("card-prio-input").value=c.priority||"";document.getElementById("card-cat-input").value=c.category||"";}}
-  else{document.getElementById("card-title-input").value="";document.getElementById("card-desc-input").value="";document.getElementById("card-col-input").value=col||"offen";document.getElementById("card-prio-input").value="";document.getElementById("card-cat-input").value="";}
+function openCardModal(col,cardId){
+  document.getElementById("card-modal-title").textContent=cardId?"Karte bearbeiten":"Neue Karte";
+  document.getElementById("card-edit-id").value=cardId||"";
+  const colSel=document.getElementById("card-col-input");
+  const cols=appData.kanban.columns||[];
+  colSel.innerHTML=cols.map(c=>`<option value="${escHtml(c.id)}">${escHtml(c.name)}</option>`).join('');
+  if(cardId){const c=appData.kanban.cards.find(x=>x.id===cardId);if(c){document.getElementById("card-title-input").value=c.title;document.getElementById("card-desc-input").value=c.description||"";colSel.value=c.column;document.getElementById("card-prio-input").value=c.priority||"";document.getElementById("card-cat-input").value=c.category||"";}}
+  else{document.getElementById("card-title-input").value="";document.getElementById("card-desc-input").value="";colSel.value=col||(cols[0]&&cols[0].id)||"";document.getElementById("card-prio-input").value="";document.getElementById("card-cat-input").value="";}
   openModal("card-modal");setTimeout(()=>document.getElementById("card-title-input").focus(),200);}
 
 function saveCard(){const title=document.getElementById("card-title-input").value.trim();if(!title)return toast("Titel ist erforderlich");
@@ -565,13 +594,19 @@ function saveCard(){const title=document.getElementById("card-title-input").valu
 function dragStart(e,cardId,col){dragCard=cardId;dragCol=col;setTimeout(()=>{const el=document.getElementById("card-"+cardId);if(el)el.classList.add("dragging");},0);}
 function dragEnd(e){const el=document.getElementById("card-"+dragCard);if(el)el.classList.remove("dragging");document.querySelectorAll(".kanban-cards").forEach(c=>c.classList.remove("drag-over"));}
 function dragOver(e){e.preventDefault();}
-function drop(e,col){e.preventDefault();document.querySelectorAll(".kanban-cards").forEach(c=>c.classList.remove("drag-over"));if(dragCard&&dragCol!==col){const card=appData.kanban.cards.find(c=>c.id===dragCard);if(card){card.column=col;saveData();renderKanban();toast("Verschoben nach "+(COL_LABELS[col]||col));}}dragCard=null;}
+function drop(e,col){e.preventDefault();document.querySelectorAll(".kanban-cards").forEach(c=>c.classList.remove("drag-over"));if(dragCard&&dragCol!==col){const card=appData.kanban.cards.find(c=>c.id===dragCard);if(card){card.column=col;saveData();renderKanban();toast("Verschoben nach "+getColName(col));}}dragCard=null;}
 
 function toggleStatusDropdown(cardId){const drop=document.getElementById("sdrop-"+cardId);if(!drop)return;const wasOpen=drop.classList.contains("open");document.querySelectorAll(".status-dd.open").forEach(d=>d.classList.remove("open"));if(!wasOpen)drop.classList.add("open");}
 function setCardStatus(cardId,status){const card=appData.kanban.cards.find(c=>c.id===cardId);if(!card)return;card.status=status;document.querySelectorAll(".status-dd.open").forEach(d=>d.classList.remove("open"));saveData();renderKanban();toast("Status aktualisiert");}
 function archiveCard(cardId){const card=appData.kanban.cards.find(c=>c.id===cardId);if(!card)return;card.archived=true;saveData();renderKanban();toast("Karte archiviert");}
 function unarchiveCard(cardId){const card=appData.kanban.cards.find(c=>c.id===cardId);if(!card)return;card.archived=false;saveData();renderKanban();toast("Karte reaktiviert");}
 function toggleColArchive(col){if(!window._arcOpen)window._arcOpen={};window._arcOpen[col]=!window._arcOpen[col];renderKanban();}
+
+function addColumn(){const name=prompt("Name der neuen Spalte:");if(!name||!name.trim())return;const id="col_"+genId();appData.kanban.columns.push({id,name:name.trim()});saveData();renderKanban();toast("Spalte '"+name.trim()+"' erstellt");}
+function startRenameColumn(colId){window._renamingCol=colId;renderKanban();}
+function cancelRenameColumn(){window._renamingCol=null;renderKanban();}
+function confirmRenameColumn(colId){if(!window._renamingCol)return;const inp=document.getElementById("rename-input-"+colId);if(!inp)return;const name=inp.value.trim();if(name){const col=appData.kanban.columns.find(c=>c.id===colId);if(col)col.name=name;saveData();}window._renamingCol=null;renderKanban();if(name)toast("Spalte umbenannt");}
+function deleteColumn(colId){const col=appData.kanban.columns.find(c=>c.id===colId);if(!col)return;const cardCount=(appData.kanban.cards||[]).filter(c=>c.column===colId&&!c.archived).length;if(cardCount>0&&!confirm("Spalte '"+col.name+"' hat "+cardCount+" Karte(n). Trotzdem lÃ¶schen? Karten werden ebenfalls gelÃ¶scht."))return;appData.kanban.columns=appData.kanban.columns.filter(c=>c.id!==colId);appData.kanban.cards=appData.kanban.cards.filter(c=>c.column!==colId);saveData();renderKanban();toast("Spalte gelÃ¶scht");}
 
 function todayKey(){return new Date().toISOString().slice(0,10);}
 function renderHeuteDate(){const el=document.getElementById("heute-date"),d=new Date();const days=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];const months=["Januar","Februar","M\u00e4rz","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];el.textContent=days[d.getDay()]+", "+d.getDate()+". "+months[d.getMonth()]+" "+d.getFullYear();}
@@ -625,9 +660,9 @@ function saveToken(){const token=document.getElementById("token-input").value.tr
 function updateTokenStatus(){const el=document.getElementById("token-status");if(!el)return;const t=appData.einstellungen.githubToken;el.textContent=t?"Konfiguriert ("+t.slice(0,8)+"...)":"Nicht konfiguriert";}
 function openPinChangeModal(){document.getElementById("new-pin-input").value="";document.getElementById("confirm-pin-input").value="";openModal("pin-change-modal");setTimeout(()=>document.getElementById("new-pin-input").focus(),200);}
 function exportData(){const blob=new Blob([JSON.stringify(appData,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cowork-data-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url);toast("Export gestartet");}
-function clearData(){localStorage.removeItem(DATA_KEY);appData={version:"1.0",lastUpdated:new Date().toISOString(),kanban:{columns:["offen","in_arbeit","erledigt"],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[],einstellungen:{githubToken:"",theme:"light"}};renderAll();applyTheme();toast("Daten gelöscht");}
+function clearData(){localStorage.removeItem(DATA_KEY);appData={version:"1.0",lastUpdated:new Date().toISOString(),kanban:{columns:[{id:"col_1",name:"Barmelweid"},{id:"col_2",name:"Patienten"},{id:"col_3",name:"PSP WB"},{id:"col_4",name:"SelfImprovement"},{id:"col_5",name:"Heute"},{id:"col_6",name:"Finanzen"},{id:"col_7",name:"Freunde"},{id:"col_8",name:"Events"},{id:"col_9",name:"Familie"},{id:"col_10",name:"KI"},{id:"col_11",name:"Cowork"},{id:"col_12",name:"ImperialKI"},{id:"col_13",name:"Erinnerungen"},{id:"col_14",name:"Tagebuch"}],cards:[]},heute:{tasks:{}},tagebuch:[],patienten:[],kategorien:[],einstellungen:{githubToken:"",theme:"light"}};renderAll();applyTheme();toast("Daten gelöscht");}
 
-const TAB_TITLES={kanban:"Kanban",heute:"Heute",tagebuch:"Tagebuch",patienten:"Patienten",einstellungen:"Einstellungen"};
+const TAB_TITLES={kanban:"Projekte",heute:"Heute",tagebuch:"Tagebuch",patienten:"Patienten",einstellungen:"Einstellungen"};
 function switchTab(tab){if(!tab)return;document.querySelectorAll(".tab-panel").forEach(function(p){p.classList.remove("active")});document.querySelectorAll(".nav-item,.sidebar-item").forEach(function(n){n.classList.remove("active")});var panel=document.getElementById("tab-"+tab);if(panel)panel.classList.add("active");document.querySelectorAll("[data-tab=\""+tab+"\"]").forEach(function(n){n.classList.add("active")});document.getElementById("header-title").textContent=TAB_TITLES[tab]||tab;}
 function openModal(id){document.getElementById(id).classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
@@ -637,7 +672,7 @@ function genId(){return Date.now().toString(36)+Math.random().toString(36).slice
 function escHtml(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 let toastTimer=null;
 function toast(msg,dur){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),dur||2500);}
-function renderKanbanSummary(){const el=document.getElementById("kanban-summary");if(!el)return;const cards=appData.kanban.cards||[];const offen=cards.filter(c=>!c.archived&&c.column==="offen").length;const inArbeit=cards.filter(c=>!c.archived&&c.column==="in_arbeit").length;const erledigt=cards.filter(c=>!c.archived&&c.column==="erledigt").length;el.innerHTML=`<div class="kanban-summary-stats"><div class="kanban-stat"><span class="kanban-stat-num">${offen}</span><span class="kanban-stat-label">Offen</span></div><div class="kanban-stat"><span class="kanban-stat-num">${inArbeit}</span><span class="kanban-stat-label">In Arbeit</span></div><div class="kanban-stat"><span class="kanban-stat-num">${erledigt}</span><span class="kanban-stat-label">Erledigt</span></div></div>`;}
+function renderKanbanSummary(){const el=document.getElementById("kanban-summary");if(!el)return;const cards=(appData.kanban.cards||[]).filter(c=>!c.archived);const total=cards.length;const inArbeit=cards.filter(c=>c.status==="in_arbeit").length;const erledigt=cards.filter(c=>c.status==="erledigt").length;const cols=(appData.kanban.columns||[]).length;el.innerHTML=`<div class="kanban-summary-stats"><div class="kanban-stat"><span class="kanban-stat-num">${total}</span><span class="kanban-stat-label">Karten</span></div><div class="kanban-stat"><span class="kanban-stat-num">${inArbeit}</span><span class="kanban-stat-label">In Arbeit</span></div><div class="kanban-stat"><span class="kanban-stat-num">${erledigt}</span><span class="kanban-stat-label">Erledigt</span></div><div class="kanban-stat"><span class="kanban-stat-num">${cols}</span><span class="kanban-stat-label">Projekte</span></div></div>`;}
 async function loadActiveTasks(){const el=document.getElementById("active-tasks-list");if(!el)return;const token=getToken();if(!token){el.innerHTML='<div class="heute-widget-empty">GitHub Token erforderlich</div>';return;}try{const resp=await fetch("https://api.github.com/repos/ctmos/cowork-data/contents/active_tasks.json?ref=main",{headers:{Authorization:"token "+token,Accept:"application/vnd.github.v3+json"}});if(!resp.ok)throw new Error("HTTP "+resp.status);const json=await resp.json();const data=JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g,"")))));renderActiveTasks(data);}catch(e){el.innerHTML='<div class="heute-widget-empty">Keine laufenden Prozesse</div>';}}
 function renderActiveTasks(data){const el=document.getElementById("active-tasks-list");if(!el)return;const tasks=data&&data.tasks;if(!tasks||!tasks.length){el.innerHTML='<div class="heute-widget-empty">Keine laufenden Prozesse</div>';return;}const badges={active:'<span class="process-badge process-badge-active">🟢 aktiv</span>',done:'<span class="process-badge process-badge-done">✅ erledigt</span>',paused:'<span class="process-badge process-badge-paused">⏸ pausiert</span>'};el.innerHTML=tasks.map(t=>`<div class="process-item"><div class="process-info"><div class="process-title">${escHtml(t.title)}</div>${t.note?`<div class="process-note">${escHtml(t.note)}</div>`:""}</div>${badges[t.status]||""}</div>`).join('');}
 boot();
