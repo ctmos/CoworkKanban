@@ -52,14 +52,16 @@
     .btn-icon:hover{color:var(--accent);background:var(--accent-light);border-color:var(--accent);}
     .btn-icon svg{width:16px;height:16px;}
     .kanban-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;}
-    .kanban-col{min-width:260px;flex-shrink:0;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+    .kanban-board{scroll-snap-type:x mandatory;}
+    .kanban-col{scroll-snap-align:start;}
+    .kanban-col{min-width:calc(100vw - 32px);flex-shrink:0;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
     .kanban-col-header{padding:10px 14px;font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface);}
     .col-count{background:var(--border);color:var(--text-muted);border-radius:10px;padding:2px 7px;font-size:11px;font-weight:600;}
     .kanban-cards{padding:10px;min-height:80px;display:flex;flex-direction:column;gap:8px;}
     .kanban-cards.drag-over{background:var(--accent-light);}
-    .kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:grab;box-shadow:var(--card-shadow);transition:box-shadow 0.15s,transform 0.15s;user-select:none;}
+    .kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;box-shadow:var(--card-shadow);transition:box-shadow 0.15s,border-color 0.15s;user-select:none;}.kanban-card:hover{border-color:var(--accent);}
     .kanban-card.dragging{opacity:0.5;transform:scale(0.97);}
-    .card-title{font-size:14px;font-weight:500;margin-bottom:6px;}
+    .card-title{font-size:14px;font-weight:500;color:var(--text);line-height:1.4;margin:0;}
     .card-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
     .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500;background:var(--accent-light);color:var(--accent);}
     .prio-high{background:#FDECEA;color:var(--danger);}
@@ -93,6 +95,22 @@
     .col-archive-section{padding:6px 10px;}
     .col-archive-card{background:var(--bg);border:1px dashed var(--border);border-radius:var(--radius);padding:7px 10px;font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;margin-bottom:5px;}
     .col-archive-card:last-child{margin-bottom:0;}
+    .card-row{display:flex;align-items:flex-start;gap:8px;}
+    .card-body{flex:1;min-width:0;}
+    .card-deadline{font-size:11px;color:var(--text-muted);margin-top:3px;display:flex;align-items:center;gap:3px;}
+    .card-more-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0 2px;font-size:16px;line-height:1;opacity:0.4;transition:opacity 0.15s;flex-shrink:0;margin-left:2px;}
+    .card-more-btn:hover{opacity:1;color:var(--accent);}
+    .status-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+    .status-pick-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--border);border-radius:20px;background:none;cursor:pointer;font-size:12px;font-family:inherit;color:var(--text-muted);transition:all 0.15s;}
+    .status-pick-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent);font-weight:500;}
+    .sp-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block;}
+    .sp-dot.sp-neu{background:transparent;border:1.5px solid #aaa;}
+    .sp-dot.sp-offen{background:#e74c3c;}
+    .sp-dot.sp-in_arbeit{background:#f1c40f;}
+    .sp-dot.sp-erledigt{background:#2ecc71;}
+    .card-view-title{font-size:18px;font-weight:700;line-height:1.4;margin-bottom:8px;}
+    .card-view-meta{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+    .card-view-desc{font-size:14px;color:var(--text);line-height:1.7;white-space:pre-wrap;word-break:break-word;}
     .unarchive-btn{background:none;border:1px solid var(--border);cursor:pointer;font-size:11px;color:var(--accent);padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;}
     .unarchive-btn:hover{background:var(--accent-light);}
     .heute-date{font-size:13px;color:var(--text-muted);margin-bottom:12px;}
@@ -199,8 +217,8 @@
       .sidebar-spacer{flex:1;}
       .app-header{grid-column:2;grid-row:1;position:sticky;top:0;}
       .app-content{grid-column:2;grid-row:2;overflow-y:auto;padding-bottom:24px;-webkit-overflow-scrolling:touch;}
-      .kanban-board{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;overflow-x:visible;padding-bottom:0;}
-      .kanban-col{min-width:0;}
+      .kanban-board{display:flex!important;gap:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+      .kanban-col{min-width:280px;}
       .tab-panel{padding:28px 32px;}
       #toast{bottom:24px;}
       .modal{border-radius:12px;margin:auto;max-height:85vh;}
@@ -409,11 +427,25 @@
     <div class="modal-title" id="card-modal-title">Neue Karte</div>
     <input type="hidden" id="card-edit-id">
     <div class="form-group"><label class="form-label">Titel *</label><input type="text" class="input" id="card-title-input" placeholder="Aufgabe beschreiben..."></div>
-    <div class="form-group"><label class="form-label">Beschreibung</label><textarea class="input" id="card-desc-input" placeholder="Details..."></textarea></div>
+    <div class="form-group"><label class="form-label">Status</label><div class="status-picker" id="card-status-picker" data-status="neu"><button type="button" class="status-pick-btn active" data-status="neu" onclick="pickStatus('neu',this)"><span class="sp-dot sp-neu"></span>Neu</button><button type="button" class="status-pick-btn" data-status="offen" onclick="pickStatus('offen',this)"><span class="sp-dot sp-offen"></span>Offen</button><button type="button" class="status-pick-btn" data-status="in_arbeit" onclick="pickStatus('in_arbeit',this)"><span class="sp-dot sp-in_arbeit"></span>In Arbeit</button><button type="button" class="status-pick-btn" data-status="erledigt" onclick="pickStatus('erledigt',this)"><span class="sp-dot sp-erledigt"></span>Erledigt</button></div></div>
+    <div class="form-group"><label class="form-label">Deadline</label><input type="date" class="input" id="card-deadline-input"></div>
+    <div class="form-group"><label class="form-label">Beschreibung</label><textarea class="input" id="card-desc-input" rows="4" placeholder="Details..."></textarea></div>
     <div class="form-group"><label class="form-label">Spalte</label><select class="input" id="card-col-input"></select></div>
-    <div class="form-group"><label class="form-label">Priorität</label><select class="input" id="card-prio-input"><option value="">Keine</option><option value="high">Hoch</option><option value="medium">Mittel</option><option value="low">Niedrig</option></select></div>
-    <div class="form-group"><label class="form-label">Kategorie</label><input type="text" class="input" id="card-cat-input" placeholder="z.B. Klinik, Ambulanz..."></div>
+    
     <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal('card-modal')">Abbrechen</button><button class="btn btn-primary" onclick="saveCard()">Speichern</button></div>
+  </div>
+</div>
+<div class="modal-backdrop" id="card-view-modal" onclick="closeModalOnBackdrop(event,'card-view-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div id="view-status-wrap" style="display:flex;align-items:center;gap:8px;"></div>
+      <div style="display:flex;gap:6px;"><button class="btn btn-ghost" style="padding:6px 12px;font-size:13px" onclick="editCardFromView()">Bearbeiten</button><button style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--text-muted);padding:0 4px;line-height:1;" onclick="closeModal('card-view-modal')">&times;</button></div>
+    </div>
+    <div id="view-title" class="card-view-title"></div>
+    <div class="card-view-meta"><div id="view-deadline" style="display:none;font-size:12px;color:var(--text-muted);"></div><div id="view-col" style="font-size:12px;color:var(--text-muted);"></div></div>
+    <div id="view-description" class="card-view-desc" style="display:none;"></div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;"><button class="btn btn-ghost" style="font-size:13px;color:var(--danger)" onclick="archiveCardFromView()">Archivieren</button></div>
   </div>
 </div>
 <div class="modal-backdrop" id="diary-modal" onclick="closeModalOnBackdrop(event,'diary-modal')">
@@ -570,24 +602,42 @@ function renderKanban(){
   if(window._renamingCol){const inp=document.getElementById("rename-input-"+window._renamingCol);if(inp){inp.focus();inp.select();}}
 }
 
-function renderCard(c){const prioClass=c.priority?`prio-${c.priority}`:"",prioLabel=c.priority==="high"?"Hoch":c.priority==="medium"?"Mittel":c.priority==="low"?"Niedrig":"";
+function renderCard(c){
   const s=c.status||"neu";
-  return `<div class="kanban-card" id="card-${c.id}" draggable="true" ondragstart="dragStart(event,'${c.id}','${c.column}')" ondragend="dragEnd(event)" onclick="openCardModal('${c.column}','${c.id}')"><div class="card-top"><div class="card-title" style="margin-bottom:0">${escHtml(c.title)}</div><div class="card-actions" onclick="event.stopPropagation()"><div class="status-dot-wrap"><div class="status-dot s-${s}" title="Status" onclick="toggleStatusDropdown('${c.id}')"></div><div class="status-dd" id="sdrop-${c.id}"><div class="status-dd-item s-neu" title="Neu" onclick="setCardStatus('${c.id}','neu')"></div><div class="status-dd-item" title="Offen/Blockiert" style="background:#e74c3c" onclick="setCardStatus('${c.id}','offen')"></div><div class="status-dd-item" title="In Arbeit" style="background:#f1c40f" onclick="setCardStatus('${c.id}','in_arbeit')"></div><div class="status-dd-item" title="Erledigt" style="background:#2ecc71" onclick="setCardStatus('${c.id}','erledigt')"></div></div></div><button class="card-archive-btn" title="Archivieren" onclick="archiveCard('${c.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button></div></div>${c.description?`<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${escHtml(c.description).substring(0,80)}${c.description.length>80?"...":""}</div>`:""}<div class="card-meta">${c.category?`<span class="tag">${escHtml(c.category)}</span>`:""}${prioLabel?`<span class="tag ${prioClass}">${prioLabel}</span>`:""}</div></div>`;}
+  const dl=c.deadline?'<div class="card-deadline">&#128197; '+formatDeadline(c.deadline)+'</div>':''
+  const mb=c.description?'<button class="card-more-btn" title="Details" onclick="event.stopPropagation();openCardView(\''+c.id+'\')">\xb7\xb7\xb7</button>':''
+  return '<div class="kanban-card" id="card-'+c.id+'" draggable="true" ondragstart="dragStart(event,\''+c.id+'\',\''+c.column+'\')" ondragend="dragEnd(event)" onclick="openCardView(\''+c.id+'\')">'
+    +'<div class="card-row">'
+    +'<div class="status-dot-wrap" onclick="event.stopPropagation()">'
+    +'<div class="status-dot s-'+s+'" onclick="toggleStatusDropdown(\''+c.id+'\')"></div>'
+    +'<div class="status-dd" id="sdrop-'+c.id+'">'
+    +'<div class="status-dd-item s-neu" onclick="setCardStatus(\''+c.id+'\',\'neu\')"></div>'
+    +'<div class="status-dd-item" style="background:#e74c3c" onclick="setCardStatus(\''+c.id+'\',\'offen\')"></div>'
+    +'<div class="status-dd-item" style="background:#f1c40f" onclick="setCardStatus(\''+c.id+'\',\'in_arbeit\')"></div>'
+    +'<div class="status-dd-item" style="background:#2ecc71" onclick="setCardStatus(\''+c.id+'\',\'erledigt\')"></div>'
+    +'</div></div>'
+    +'<div class="card-body"><div class="card-title">'+escHtml(c.title)+'</div>'+dl+'</div>'
+    +mb
+    +'<button class="card-archive-btn" onclick="event.stopPropagation();archiveCard(\''+c.id+'\')" title="Archivieren"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>'
+    +'</div></div>'
+}
 
 function openCardModal(col,cardId){
   document.getElementById("card-modal-title").textContent=cardId?"Karte bearbeiten":"Neue Karte";
   document.getElementById("card-edit-id").value=cardId||"";
   const colSel=document.getElementById("card-col-input");
   const cols=appData.kanban.columns||[];
-  colSel.innerHTML=cols.map(c=>`<option value="${escHtml(c.id)}">${escHtml(c.name)}</option>`).join('');
-  if(cardId){const c=appData.kanban.cards.find(x=>x.id===cardId);if(c){document.getElementById("card-title-input").value=c.title;document.getElementById("card-desc-input").value=c.description||"";colSel.value=c.column;document.getElementById("card-prio-input").value=c.priority||"";document.getElementById("card-cat-input").value=c.category||"";}}
-  else{document.getElementById("card-title-input").value="";document.getElementById("card-desc-input").value="";colSel.value=col||(cols[0]&&cols[0].id)||"";document.getElementById("card-prio-input").value="";document.getElementById("card-cat-input").value="";}
+  colSel.innerHTML=cols.map(x=>`<option value="${escHtml(x.id)}">${escHtml(x.name)}</option>`).join('');
+  function setSt(s){document.querySelectorAll(".status-pick-btn").forEach(b=>b.classList.remove("active"));const b=document.querySelector(`.status-pick-btn[data-status="${s}"]`);if(b)b.classList.add("active");document.getElementById("card-status-picker").dataset.status=s;}
+  if(cardId){const card=appData.kanban.cards.find(x=>x.id===cardId);if(card){document.getElementById("card-title-input").value=card.title;document.getElementById("card-desc-input").value=card.description||"";colSel.value=card.column;document.getElementById("card-deadline-input").value=card.deadline||"";setSt(card.status||"neu");}}
+  else{document.getElementById("card-title-input").value="";document.getElementById("card-desc-input").value="";colSel.value=col||(cols[0]&&cols[0].id)||"";document.getElementById("card-deadline-input").value="";setSt("neu");}
   openModal("card-modal");setTimeout(()=>document.getElementById("card-title-input").focus(),200);}
 
 function saveCard(){const title=document.getElementById("card-title-input").value.trim();if(!title)return toast("Titel ist erforderlich");
   const editId=document.getElementById("card-edit-id").value;
   const existing=editId?appData.kanban.cards.find(c=>c.id===editId):null;
-  const data={id:editId||genId(),title,description:document.getElementById("card-desc-input").value.trim(),column:document.getElementById("card-col-input").value,priority:document.getElementById("card-prio-input").value,category:document.getElementById("card-cat-input").value.trim(),status:existing?existing.status:"neu",archived:existing?existing.archived:false};
+  const st=document.getElementById("card-status-picker").dataset.status||"neu";
+  const data={id:editId||genId(),title,description:document.getElementById("card-desc-input").value.trim(),column:document.getElementById("card-col-input").value,deadline:document.getElementById("card-deadline-input").value||"",status:st,archived:existing?existing.archived:false};
   if(editId){const idx=appData.kanban.cards.findIndex(c=>c.id===editId);if(idx>=0)appData.kanban.cards[idx]=data;}else{appData.kanban.cards.push(data);}
   saveData();renderKanban();closeModal("card-modal");toast(editId?"Karte aktualisiert":"Karte erstellt");}
 
@@ -609,6 +659,28 @@ function confirmRenameColumn(colId){if(!window._renamingCol)return;const inp=doc
 function deleteColumn(colId){const col=appData.kanban.columns.find(c=>c.id===colId);if(!col)return;const cardCount=(appData.kanban.cards||[]).filter(c=>c.column===colId&&!c.archived).length;if(cardCount>0&&!confirm("Spalte '"+col.name+"' hat "+cardCount+" Karte(n). Trotzdem lÃ¶schen? Karten werden ebenfalls gelÃ¶scht."))return;appData.kanban.columns=appData.kanban.columns.filter(c=>c.id!==colId);appData.kanban.cards=appData.kanban.cards.filter(c=>c.column!==colId);saveData();renderKanban();toast("Spalte gelÃ¶scht");}
 
 function todayKey(){return new Date().toISOString().slice(0,10);}
+function formatDeadline(d){if(!d)return"";const dt=new Date(d+"T00:00:00");return dt.getDate().toString().padStart(2,"0")+"."+(dt.getMonth()+1).toString().padStart(2,"0")+"."+dt.getFullYear();}
+function pickStatus(status,btn){document.querySelectorAll(".status-pick-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");document.getElementById("card-status-picker").dataset.status=status;}
+function openCardView(cardId){
+  const card=appData.kanban.cards.find(x=>x.id===cardId);if(!card)return;
+  document.getElementById("view-title").textContent=card.title;
+  const s=card.status||"neu";
+  const SC={neu:"transparent",offen:"#e74c3c",in_arbeit:"#f1c40f",erledigt:"#2ecc71"};
+  const SB={neu:"1.5px solid #aaa",offen:"none",in_arbeit:"none",erledigt:"none"};
+  const SL={neu:"Neu",offen:"Offen / Blockiert",in_arbeit:"In Arbeit",erledigt:"Erledigt"};
+  document.getElementById("view-status-wrap").innerHTML=`<span style="width:10px;height:10px;border-radius:50%;background:${SC[s]||"#bbb"};border:${SB[s]||"none"};display:inline-block;flex-shrink:0;"></span><span style="font-size:13px;color:var(--text-muted);margin-left:4px">${SL[s]||s}</span>`;
+  const dlEl=document.getElementById("view-deadline");
+  if(card.deadline){dlEl.textContent="\uD83D\uDCC5 "+formatDeadline(card.deadline);dlEl.style.display="block";}else{dlEl.style.display="none";}
+  const colObj=(appData.kanban.columns||[]).find(x=>x.id===card.column);
+  document.getElementById("view-col").textContent=colObj?"\uD83D\uDCC2 "+colObj.name:"";
+  const descEl=document.getElementById("view-description");
+  if(card.description){descEl.textContent=card.description;descEl.style.display="block";}else{descEl.style.display="none";}
+  document.getElementById("card-view-modal").dataset.cardId=cardId;
+  openModal("card-view-modal");
+}
+function editCardFromView(){const id=document.getElementById("card-view-modal").dataset.cardId;closeModal("card-view-modal");const card=appData.kanban.cards.find(x=>x.id===id);if(card)setTimeout(()=>openCardModal(card.column,id),150);}
+function archiveCardFromView(){const id=document.getElementById("card-view-modal").dataset.cardId;closeModal("card-view-modal");archiveCard(id);}
+
 function renderHeuteDate(){const el=document.getElementById("heute-date"),d=new Date();const days=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];const months=["Januar","Februar","M\u00e4rz","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];el.textContent=days[d.getDay()]+", "+d.getDate()+". "+months[d.getMonth()]+" "+d.getFullYear();}
 
 function renderHeute(){renderKanbanSummary();const today=todayKey(),tasks=(appData.heute.tasks&&appData.heute.tasks[today])||[],container=document.getElementById("heute-tasks");
