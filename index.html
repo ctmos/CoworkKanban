@@ -1087,8 +1087,10 @@ function showPinSetupUI() {
   document.getElementById('pin-title').textContent = 'PIN einrichten';
   document.getElementById('pin-subtitle').textContent = 'Wähle einen PIN (4–6 Stellen)';
   document.getElementById('pin-confirm-group').style.display = 'block';
-  document.getElementById('pin-btn').textContent = 'PIN einrichten';
-  document.getElementById('pin-btn').onclick = async function() {
+  const btn = document.getElementById('pin-btn');
+  btn.textContent = 'PIN einrichten';
+  btn.onclick = null;
+  btn.onclick = async function() {
     const p1 = document.getElementById('pin-input').value;
     const p2 = document.getElementById('pin-confirm').value;
     if (p1.length < 4) { showPinError('Mindestens 4 Stellen'); return; }
@@ -1105,6 +1107,7 @@ function showPinSetupUI() {
 
 async function initPinScreen() {
   const stored = localStorage.getItem('cowork_pin');
+  let resolvedHash = stored;
   if (stored) {
     showPinUnlockUI(stored);
   } else {
@@ -1118,6 +1121,7 @@ async function initPinScreen() {
         if (data.pin_hash) {
           localStorage.setItem('cowork_pin', data.pin_hash);
           localStorage.setItem('cowork_pin_set', 'true');
+          resolvedHash = data.pin_hash;
           showPinUnlockUI(data.pin_hash);
         } else {
           showPinSetupUI();
@@ -1128,6 +1132,15 @@ async function initPinScreen() {
     } else {
       showPinSetupUI();
     }
+  }
+  // Explicitly attach onclick synchronously after all async/UI work is complete
+  const btn = document.getElementById('pin-btn');
+  if (resolvedHash) {
+    btn.onclick = function() {
+      const p = document.getElementById('pin-input').value.trim();
+      if (btoa(p + 'cowork') === resolvedHash) { unlockApp(); }
+      else { showPinError('Falscher PIN'); }
+    };
   }
   document.getElementById('pin-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') document.getElementById('pin-btn').click();
