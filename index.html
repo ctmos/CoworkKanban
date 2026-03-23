@@ -2,806 +2,751 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>CoworkDashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1e293b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>CoworkDashboard</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --nav-bg:#1e293b;--nav-text:#e2e8f0;--bg:#f1f5f9;--card-bg:#fff;
-  --heute-bg:#ede9fe;--lane-bg:#f8fafc;--border:#e2e8f0;
-  --dot-gray:#9ca3af;--dot-red:#ef4444;--dot-yellow:#eab308;--dot-green:#22c55e;
-  --primary:#6366f1;--primary-hover:#4f46e5;--danger:#ef4444;
+  --nav-bg:#1e293b;--nav-text:#e2e8f0;--bg:#f8fafc;--card-bg:#ffffff;
+  --lane-bg:#f1f5f9;--heute-bg:#ede9fe;--border:#e2e8f0;
+  --text:#1e293b;--text-muted:#64748b;
+  --primary:#2563eb;--primary-h:#1d4ed8;
+  --danger:#ef4444;--danger-h:#dc2626;
+  --dot-gray:#9ca3af;--dot-red:#ef4444;--dot-yellow:#f59e0b;--dot-green:#22c55e;
 }
-body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:#1e293b;min-height:100vh;display:flex;flex-direction:column;}
+body.dark{
+  --nav-bg:#0f172a;--bg:#1e293b;--card-bg:#293548;
+  --lane-bg:#1e293b;--heute-bg:#3b2f6e;--border:#475569;
+  --text:#f1f5f9;--text-muted:#94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 /* NAV */
-.nav{background:var(--nav-bg);display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100;}
-.nav button{background:none;border:none;color:var(--nav-text);padding:14px 22px;font-size:15px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:.2s;}
+.nav{background:var(--nav-bg);display:flex;overflow-x:auto;position:sticky;top:0;z-index:100;flex-shrink:0;}
+.nav::-webkit-scrollbar{height:3px;}
+.nav::-webkit-scrollbar-thumb{background:#475569;}
+.nav button{background:none;border:none;color:var(--nav-text);padding:13px 18px;font-size:14px;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:.15s;position:relative;}
 .nav button:hover{background:#334155;}
 .nav button.active{border-bottom-color:var(--primary);color:#fff;background:#334155;}
+.nav-badge{background:#ef4444;color:#fff;border-radius:10px;font-size:10px;padding:1px 5px;margin-left:3px;font-weight:700;display:none;}
+.nav-badge.on{display:inline;}
 /* TABS */
 .tab{display:none;flex:1;overflow:hidden;}
 .tab.active{display:flex;flex-direction:column;}
-/* PROJEKTE */
-#tab-projekte{flex-direction:row;overflow:hidden;}
-.lanes-container{display:flex;gap:16px;padding:16px;overflow-x:auto;flex:1;align-items:flex-start;}
-.lane{min-width:300px;max-width:300px;background:var(--lane-bg);border-radius:12px;border:1px solid var(--border);display:flex;flex-direction:column;max-height:calc(100vh - 60px);}
-.lane.heute-lane{background:var(--heute-bg);border-color:#c4b5fd;}
-.lane-header{padding:12px 14px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:inherit;border-radius:12px 12px 0 0;z-index:2;}
-.lane.heute-lane .lane-header{background:var(--heute-bg);}
-.lane-body{padding:8px;overflow-y:auto;flex:1;}
-.btn-add-card{background:var(--primary);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:13px;cursor:pointer;}
-.btn-add-card:hover{background:var(--primary-hover);}
-/* CARD */
-.card{background:var(--card-bg);border-radius:8px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);position:relative;}
-.card-top{display:flex;align-items:center;gap:6px;font-size:14px;}
-.status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.status-dot.gray{background:var(--dot-gray);}
-.status-dot.red{background:var(--dot-red);}
-.status-dot.yellow{background:var(--dot-yellow);}
-.status-dot.green{background:var(--dot-green);}
-.card-prefix{font-weight:600;color:#6366f1;white-space:nowrap;}
-.card-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.card-actions{display:flex;gap:2px;margin-left:auto;flex-shrink:0;}
-.card-actions button{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;border-radius:4px;opacity:.7;}
-.card-actions button:hover{opacity:1;background:#e2e8f0;}
-.card-date{font-size:12px;color:#64748b;margin-top:4px;padding-left:16px;}
-/* ARCHIVE */
-.archive-section{border-top:1px solid var(--border);margin-top:8px;}
-.archive-toggle{width:100%;background:none;border:none;padding:8px 12px;text-align:left;font-size:13px;color:#64748b;cursor:pointer;}
-.archive-toggle:hover{background:#e2e8f0;}
-.archive-body{display:none;padding:4px 8px 8px;}
-.archive-body.open{display:block;}
-.archive-body .card{opacity:.75;}
+/* KANBAN */
+#tab-kanban{flex-direction:row;overflow:hidden;}
+.lanes-wrap{display:flex;gap:13px;padding:13px;overflow-x:auto;flex:1;align-items:flex-start;}
+.lane{min-width:285px;max-width:285px;background:var(--lane-bg);border-radius:10px;border:1px solid var(--border);display:flex;flex-direction:column;max-height:calc(100vh - 57px);flex-shrink:0;}
+.lane.hl{background:var(--heute-bg);border-color:#c4b5fd;}
+.lane.collapsed .lane-body{display:none;}
+.lane-hdr{padding:9px 11px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;background:inherit;border-radius:10px 10px 0 0;position:sticky;top:0;z-index:2;}
+.lane-hdr-r{display:flex;align-items:center;gap:4px;}
+.lane-caret{font-size:11px;opacity:.5;margin-right:2px;transition:.15s;}
+.lane.collapsed .lane-caret{transform:rotate(-90deg);}
+.lane-body{padding:7px;overflow-y:auto;flex:1;}
+.btn-add{background:var(--primary);color:#fff;border:none;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;flex-shrink:0;}
+.btn-add:hover{background:var(--primary-h);}
+/* CARDS */
+.card{background:var(--card-bg);border-radius:7px;padding:9px 10px;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.07);cursor:pointer;transition:box-shadow .15s;}
+.card:hover{box-shadow:0 3px 10px rgba(0,0,0,.11);}
+.card-top{display:flex;align-items:center;gap:5px;}
+.sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.sdot.gray{background:var(--dot-gray);}
+.sdot.red{background:var(--dot-red);}
+.sdot.yellow{background:var(--dot-yellow);}
+.sdot.green{background:var(--dot-green);}
+.cpfx{font-weight:700;color:var(--primary);white-space:nowrap;font-size:11px;}
+.ctit{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}
+.cdate{font-size:11px;color:var(--text-muted);margin-top:2px;padding-left:14px;}
 /* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;justify-content:center;align-items:center;}
-.modal-overlay.open{display:flex;}
-.modal{background:#fff;border-radius:12px;padding:24px;width:90%;max-width:440px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
-.modal h3{margin-bottom:16px;font-size:18px;}
-.modal label{display:block;font-size:13px;font-weight:600;margin-bottom:4px;margin-top:12px;color:#475569;}
-.modal input,.modal textarea,.modal select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;}
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;justify-content:center;align-items:center;}
+.moverlay.open{display:flex;}
+.modal{background:var(--card-bg);border-radius:12px;padding:20px;width:90%;max-width:440px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.modal h3{margin-bottom:13px;font-size:16px;color:var(--text);}
+.modal label{display:block;font-size:11px;font-weight:700;margin-bottom:3px;margin-top:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;}
+.modal input,.modal textarea,.modal select{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);}
 .modal textarea{min-height:80px;resize:vertical;}
-.modal-btns{display:flex;gap:8px;margin-top:20px;justify-content:flex-end;}
-.modal-btns button{padding:8px 18px;border-radius:6px;border:none;font-size:14px;cursor:pointer;}
-.btn-primary{background:var(--primary);color:#fff;}
-.btn-primary:hover{background:var(--primary-hover);}
-.btn-cancel{background:#e2e8f0;color:#475569;}
-.btn-cancel:hover{background:#cbd5e1;}
-.btn-danger{background:var(--danger);color:#fff;}
-.btn-danger:hover{background:#dc2626;}
+.modal input:focus,.modal textarea:focus,.modal select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(37,99,235,.12);}
+.mbtns{display:flex;gap:7px;margin-top:16px;flex-wrap:wrap;}
+.mbtns button{padding:7px 14px;border-radius:6px;border:none;font-size:13px;cursor:pointer;font-weight:500;}
+.btn-pri{background:var(--primary);color:#fff;}
+.btn-pri:hover{background:var(--primary-h);}
+.btn-sec{background:var(--lane-bg);color:var(--text);border:1px solid var(--border)!important;}
+.btn-sec:hover{background:var(--border);}
+.btn-cancel{background:var(--lane-bg);color:var(--text-muted);}
+.btn-cancel:hover{background:var(--border);}
+.btn-dang{background:var(--danger);color:#fff;}
+.btn-dang:hover{background:var(--danger-h);}
+.btn-heute{background:#7c3aed;color:#fff;}
+.btn-heute:hover{background:#6d28d9;}
 /* STATUS SELECTOR */
-.status-selector{display:flex;gap:12px;margin-top:4px;}
-.status-option{display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 8px;border-radius:6px;border:2px solid transparent;font-size:13px;}
-.status-option.selected{border-color:var(--primary);background:#eef2ff;}
-.status-option .dot{width:14px;height:14px;border-radius:50%;display:inline-block;}
-/* HEUTE TAB / TAGESPLAN */
-#tab-heute{padding:16px;overflow-y:auto;}
-#tab-heute .heute-cards{max-width:650px;margin:0 auto;}
-.tp-header{margin-bottom:20px;}
-.tp-date{font-size:22px;font-weight:700;margin-bottom:4px;}
-.tp-summary{font-size:14px;color:#64748b;}
-.tp-card{background:var(--card-bg);border-radius:10px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:box-shadow .15s;}
-.tp-card:hover{box-shadow:0 3px 12px rgba(0,0,0,.12);}
-.tp-card.done{opacity:.7;}
-.tp-checkbox{flex-shrink:0;width:24px;height:24px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:2px;transition:.15s;font-size:14px;background:#fff;}
-.tp-checkbox:hover{border-color:var(--primary);background:#eef2ff;}
-.tp-checkbox.checked{background:var(--dot-green);border-color:var(--dot-green);color:#fff;}
-.tp-body{flex:1;min-width:0;}
-.tp-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.tp-title{font-weight:600;font-size:15px;}
-.tp-title.strikethrough{text-decoration:line-through;color:#94a3b8;}
-.tp-lane-badge{font-size:11px;padding:2px 8px;border-radius:10px;color:#fff;white-space:nowrap;font-weight:500;}
-.tp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-left:auto;}
-.tp-deadline{font-size:12px;color:#64748b;margin-top:4px;}
-.tp-deadline.overdue{color:var(--danger);font-weight:600;}
-.tp-desc{font-size:13px;color:#64748b;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.tp-footer{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
-.tp-footer button{padding:10px 18px;border-radius:8px;border:none;font-size:14px;cursor:pointer;font-weight:500;}
-.tp-btn-back{background:#e2e8f0;color:#475569;}
-.tp-btn-back:hover{background:#cbd5e1;}
-.tp-btn-add{background:var(--primary);color:#fff;}
-.tp-btn-add:hover{background:var(--primary-hover);}
-.tp-empty{text-align:center;padding:48px 16px;}
-.tp-empty p{color:#94a3b8;font-size:15px;margin-bottom:16px;}
-.tp-empty button{background:var(--primary);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;cursor:pointer;}
-.tp-empty button:hover{background:var(--primary-hover);}
-/* TAGEBUCH TAB */
-#tab-tagebuch{padding:16px;}
-#tab-tagebuch .tb-container{max-width:600px;margin:0 auto;}
-#tab-tagebuch h2{font-size:20px;margin-bottom:4px;}
-#tab-tagebuch .tb-nav{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
-#tab-tagebuch .tb-nav button{background:var(--primary);color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px;}
-#tab-tagebuch textarea{width:100%;min-height:300px;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;resize:vertical;}
-/* PATIENTEN TAB */
-#tab-patienten{padding:16px;}
-#tab-patienten .pat-container{max-width:600px;margin:0 auto;}
-#tab-patienten h2{margin-bottom:12px;font-size:20px;}
-.pat-item{background:var(--card-bg);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;}
-.pat-item .pat-info{flex:1;}
-.pat-item .pat-name{font-weight:600;}
-.pat-item .pat-notes{font-size:13px;color:#64748b;margin-top:2px;}
-.pat-actions button{background:none;border:none;cursor:pointer;font-size:16px;padding:4px;opacity:.7;}
-.pat-actions button:hover{opacity:1;}
+.ssel{display:flex;gap:7px;margin-top:4px;flex-wrap:wrap;}
+.sopt{display:flex;align-items:center;gap:4px;cursor:pointer;padding:5px 9px;border-radius:6px;border:2px solid transparent;font-size:12px;color:var(--text);}
+.sopt.sel{border-color:var(--primary);background:rgba(37,99,235,.07);}
+.sopt .d{width:9px;height:9px;border-radius:50%;}
+/* HEUTE TAB */
+#tab-heute{overflow-y:auto;}
+.ht-wrap{max-width:680px;margin:0 auto;padding:16px;}
+.ht-head{margin-bottom:16px;}
+.ht-date{font-size:21px;font-weight:700;}
+.ht-sum{font-size:13px;color:var(--text-muted);margin-top:3px;}
+.ht-card{background:var(--card-bg);border-radius:10px;padding:11px 13px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;align-items:flex-start;gap:10px;cursor:pointer;transition:box-shadow .15s;}
+.ht-card:hover{box-shadow:0 3px 12px rgba(0,0,0,.1);}
+.ht-card.done{opacity:.6;}
+.ht-cb{flex-shrink:0;width:21px;height:21px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin-top:1px;font-size:11px;font-weight:700;background:var(--card-bg);color:transparent;transition:.15s;}
+.ht-cb.chk{background:var(--dot-green);border-color:var(--dot-green);color:#fff;}
+.ht-body{flex:1;min-width:0;}
+.ht-trow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.ht-title{font-weight:600;font-size:14px;}
+.ht-title.thru{text-decoration:line-through;color:var(--text-muted);}
+.lbadge{font-size:10px;padding:2px 7px;border-radius:10px;color:#fff;white-space:nowrap;font-weight:600;}
+.ht-sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:auto;}
+.ht-dl{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.ht-dl.over{color:var(--danger);font-weight:600;}
+.ht-desc{font-size:12px;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ht-foot{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.ht-foot button{padding:8px 14px;border-radius:7px;border:none;font-size:13px;cursor:pointer;font-weight:500;}
+.ht-empty{text-align:center;padding:44px 16px;}
+.ht-empty p{color:var(--text-muted);margin-bottom:14px;}
+/* PATIENTEN */
+#tab-patienten{overflow-y:auto;}
+.pt-wrap{max-width:680px;margin:0 auto;padding:16px;}
+.pt-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;flex-wrap:wrap;gap:8px;}
+.pt-head h2{font-size:19px;}
+.pt-search{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card-bg);color:var(--text);width:170px;}
+.pt-search:focus{outline:none;border-color:var(--primary);}
+.pt-item{background:var(--card-bg);border-radius:8px;padding:11px 13px;margin-bottom:7px;box-shadow:0 1px 3px rgba(0,0,0,.07);display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.pt-code{font-weight:700;font-size:15px;letter-spacing:.3px;}
+.pt-sbadge{display:inline-block;font-size:11px;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:7px;}
+.pt-sbadge.aktiv{background:#dcfce7;color:#166534;}
+.pt-sbadge.entlassen{background:#f1f5f9;color:#64748b;}
+.pt-sbadge.pause{background:#fef9c3;color:#854d0e;}
+.pt-detail{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.pt-acts button{background:none;border:1px solid var(--border);border-radius:5px;cursor:pointer;font-size:12px;padding:3px 8px;color:var(--text-muted);margin-left:4px;}
+.pt-acts button:hover{background:var(--lane-bg);}
+.pt-acts .del:hover{background:#fee2e2;color:var(--danger);border-color:var(--danger);}
+/* AUTONOMIE-LOG */
+#tab-autonomie-log{overflow-y:auto;}
+.al-wrap{max-width:680px;margin:0 auto;padding:16px;}
+.al-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;}
+.al-head h2{font-size:19px;}
+.al-entry{background:var(--card-bg);border-radius:10px;padding:13px 15px;margin-bottom:9px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid var(--border);}
+.al-entry.success{border-left-color:var(--dot-green);}
+.al-entry.warning{border-left-color:var(--dot-yellow);}
+.al-entry.error{border-left-color:var(--dot-red);}
+.al-entry.read{opacity:.5;}
+.al-ehead{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.al-ts{font-size:11px;color:var(--text-muted);}
+.al-sb{font-size:11px;padding:2px 7px;border-radius:10px;font-weight:600;}
+.al-sb.success{background:#dcfce7;color:#166534;}
+.al-sb.warning{background:#fef9c3;color:#854d0e;}
+.al-sb.error{background:#fee2e2;color:#991b1b;}
+.al-title{font-weight:700;font-size:14px;margin-top:6px;}
+.al-desc{font-size:13px;color:var(--text-muted);margin-top:3px;}
+.al-rbtn{margin-top:9px;background:none;border:1px solid var(--border);border-radius:5px;padding:3px 11px;font-size:12px;cursor:pointer;color:var(--text-muted);}
+.al-rbtn:hover{background:var(--lane-bg);}
 /* EINSTELLUNGEN */
-#tab-einstellungen{padding:16px;}
-#tab-einstellungen .settings-container{max-width:500px;margin:0 auto;}
-#tab-einstellungen h2{margin-bottom:16px;font-size:20px;}
-#tab-einstellungen button{display:block;width:100%;padding:12px;margin-bottom:10px;border-radius:8px;font-size:14px;cursor:pointer;border:1px solid var(--border);}
-#tab-einstellungen .export-btn{background:var(--primary);color:#fff;border:none;}
-#tab-einstellungen .import-btn{background:#fff;}
-#tab-einstellungen .delete-btn{background:var(--danger);color:#fff;border:none;}
-/* VORLAGEN DROPDOWN */
-.vorlagen-wrapper{position:relative;display:inline-block;}
-.btn-vorlagen{background:#2563eb;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;margin-right:4px;}
-.btn-vorlagen:hover{background:#1d4ed8;}
-.vorlagen-dropdown{display:none;position:absolute;top:100%;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:50;min-width:260px;padding:4px 0;margin-top:4px;}
-.vorlagen-dropdown.open{display:block;}
-.vorlagen-dropdown button{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 14px;font-size:13px;cursor:pointer;color:#1e293b;}
-.vorlagen-dropdown button:hover{background:#f1f5f9;}
-.vorlagen-dropdown button .vt-label{font-weight:600;display:block;}
-.vorlagen-dropdown button .vt-sub{font-size:11px;color:#64748b;display:block;margin-top:1px;}
+#tab-einstellungen{overflow-y:auto;}
+.set-wrap{max-width:500px;margin:0 auto;padding:16px;}
+.set-wrap h2{font-size:19px;margin-bottom:16px;}
+.set-sec{margin-bottom:20px;}
+.set-sec h3{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.set-input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;background:var(--card-bg);color:var(--text);margin-bottom:7px;}
+.set-input:focus{outline:none;border-color:var(--primary);}
+.set-btn{display:block;width:100%;padding:10px;margin-bottom:7px;border-radius:7px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--card-bg);color:var(--text);text-align:left;font-weight:500;}
+.set-btn:hover{background:var(--lane-bg);}
+.set-btn.pri{background:var(--primary);color:#fff;border:none;}
+.set-btn.pri:hover{background:var(--primary-h);}
+.set-btn.dng{background:var(--danger);color:#fff;border:none;}
+.set-btn.dng:hover{background:var(--danger-h);}
+.theme-row{display:flex;gap:7px;}
+.tbtn{flex:1;padding:8px;border-radius:6px;border:2px solid var(--border);background:var(--card-bg);color:var(--text);cursor:pointer;font-size:13px;font-weight:500;}
+.tbtn.on{border-color:var(--primary);background:rgba(37,99,235,.07);color:var(--primary);}
+/* VORLAGEN */
+.vwrap{position:relative;display:inline-block;}
+.vbtn{background:#1d4ed8;color:#fff;border:none;border-radius:5px;padding:3px 7px;font-size:11px;cursor:pointer;}
+.vbtn:hover{background:#1e40af;}
+.vdrop{display:none;position:absolute;top:100%;right:0;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:50;min-width:210px;padding:3px 0;margin-top:3px;}
+.vdrop.open{display:block;}
+.vdrop button{display:block;width:100%;text-align:left;background:none;border:none;padding:7px 12px;font-size:13px;cursor:pointer;color:var(--text);}
+.vdrop button:hover{background:var(--lane-bg);}
+/* TOKEN WIDGET */
+.tok-widget{background:var(--card-bg);border-radius:10px;padding:14px 16px;margin-top:18px;box-shadow:0 1px 4px rgba(0,0,0,.07);border:1px solid var(--border);}
+.tok-widget h3{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.tok-progress-wrap{background:var(--lane-bg);border-radius:10px;height:10px;overflow:hidden;margin-bottom:6px;}
+.tok-bar{height:100%;border-radius:10px;background:var(--primary);transition:width .4s;}
+.tok-bar.warn{background:var(--dot-yellow);}
+.tok-bar.danger{background:var(--dot-red);}
+.tok-stats{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+.tok-entries{display:flex;flex-direction:column;gap:5px;}
+.tok-entry{display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;background:var(--lane-bg);border-radius:6px;}
+.tok-model{font-weight:700;font-size:10px;padding:2px 6px;border-radius:8px;color:#fff;white-space:nowrap;}
+.tok-model.opus{background:#7c3aed;}
+.tok-model.sonnet{background:#2563eb;}
+.tok-model.haiku{background:#059669;}
+.tok-status{font-size:10px;padding:2px 6px;border-radius:8px;font-weight:600;}
+.tok-status.running{background:#fef9c3;color:#854d0e;}
+.tok-status.planned{background:#f1f5f9;color:#64748b;}
+.tok-status.done{background:#dcfce7;color:#166534;}
+.tok-task{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tok-est{color:var(--text-muted);white-space:nowrap;}
+.tok-edit-area{margin-top:10px;display:none;}
+.tok-edit-area textarea{width:100%;min-height:100px;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:monospace;background:var(--bg);color:var(--text);resize:vertical;}
 /* MOBILE */
+.mob-nav{display:none;align-items:center;justify-content:center;gap:8px;padding:7px;background:var(--bg);position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border);}
+.mob-nav button{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 12px;cursor:pointer;font-size:15px;color:var(--text);}
+.mob-nav span{font-size:13px;font-weight:700;min-width:120px;text-align:center;}
+.ldots{display:none;gap:5px;justify-content:center;padding:4px;}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;}
+.ldot.on{background:var(--primary);}
 @media(max-width:768px){
-  .lanes-container{gap:0;padding:0;overflow:hidden;position:relative;}
-  .lane{min-width:calc(100vw - 16px);max-width:calc(100vw - 16px);margin:0 8px;flex-shrink:0;max-height:calc(100vh - 110px);}
-  .mobile-lane-nav{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;background:var(--bg);position:sticky;top:0;z-index:10;}
-  .mobile-lane-nav button{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 12px;cursor:pointer;font-size:18px;}
-  .mobile-lane-nav span{font-size:14px;font-weight:600;min-width:120px;text-align:center;}
-  .lane-dots{display:flex;gap:4px;justify-content:center;padding-bottom:4px;}
-  .lane-dots .dot{width:8px;height:8px;border-radius:50%;background:#cbd5e1;}
-  .lane-dots .dot.active{background:var(--primary);}
-}
-@media(min-width:769px){
-  .mobile-lane-nav,.lane-dots{display:none;}
+  .lanes-wrap{gap:0;padding:0;overflow:hidden;}
+  .lane{min-width:calc(100vw - 16px);max-width:calc(100vw - 16px);margin:8px;max-height:calc(100vh - 115px);}
+  .mob-nav{display:flex;}
+  .ldots{display:flex;}
 }
 </style>
 </head>
 <body>
 <nav class="nav" id="mainNav">
   <button data-tab="heute" class="active">Heute</button>
-  <button data-tab="projekte">Projekte</button>
-  <button data-tab="tagebuch">Tagebuch</button>
+  <button data-tab="kanban">Kanban</button>
   <button data-tab="patienten">Patienten</button>
+  <button data-tab="autonomie-log">Autonomie-Log <span id="alBadge" class="nav-badge"></span></button>
   <button data-tab="einstellungen">Einstellungen</button>
 </nav>
 
 <div class="tab active" id="tab-heute">
-  <div class="heute-cards" id="tagesplanContainer"></div>
+  <div class="ht-wrap" id="htContainer"></div>
 </div>
 
-<div class="tab" id="tab-projekte">
-  <div class="mobile-lane-nav" id="mobileLaneNav">
-    <button id="lanePrev">?</button>
-    <span id="laneNameDisplay"></span>
-    <button id="laneNext">?</button>
+<div class="tab" id="tab-kanban">
+  <div class="mob-nav" id="mobNav">
+    <button id="lanePrev">&#8592;</button>
+    <span id="laneDisplay"></span>
+    <button id="laneNext">&#8594;</button>
   </div>
-  <div class="lane-dots" id="laneDots"></div>
-  <div class="lanes-container" id="lanesContainer"></div>
-</div>
-
-<div class="tab" id="tab-tagebuch">
-  <div class="tb-container">
-    <div class="tb-nav">
-      <button id="tbPrev">← Vorheriger Tag</button>
-      <span id="tbDate"></span>
-      <button id="tbNext">Nächster Tag →</button>
-    </div>
-    <h2 id="tbHeading"></h2>
-    <textarea id="tbText" placeholder="Tagebucheintrag für heute..."></textarea>
-  </div>
+  <div class="ldots" id="laneDots"></div>
+  <div class="lanes-wrap" id="lanesContainer"></div>
 </div>
 
 <div class="tab" id="tab-patienten">
-  <div class="pat-container">
-    <h2>Patienten</h2>
-    <button class="btn-add-card" id="addPatient" style="margin-bottom:12px;">+ Patient hinzufügen</button>
+  <div class="pt-wrap">
+    <div class="pt-head">
+      <h2>Patienten</h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="patSearch" class="pt-search" placeholder="Suche...">
+        <button class="btn-pri" id="addPat" style="padding:7px 13px;border-radius:6px;border:none;font-size:13px;cursor:pointer;font-weight:500;">+ Patient</button>
+      </div>
+    </div>
     <div id="patList"></div>
   </div>
 </div>
 
-<div class="tab" id="tab-einstellungen">
-  <div class="settings-container">
-    <h2>Einstellungen</h2>
-    <p style="margin-bottom:16px;color:#64748b;">CoworkDashboard</p>
-    <button class="export-btn" id="exportBtn">Daten exportieren</button>
-    <button class="import-btn" id="importBtn">Daten importieren</button>
-    <input type="file" id="importFile" accept=".json" style="display:none;">
-    <button class="delete-btn" id="deleteBtn">Alle Daten löschen</button>
+<div class="tab" id="tab-autonomie-log">
+  <div class="al-wrap">
+    <div class="al-head">
+      <h2>Autonomie-Log</h2>
+      <button class="btn-sec" id="alLoad" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);font-size:13px;cursor:pointer;font-weight:500;background:var(--lane-bg);color:var(--text);">&#8635; Laden</button>
+    </div>
+    <div id="alList"></div>
   </div>
 </div>
 
-<!-- Create Card Modal -->
-<div class="modal-overlay" id="createModal">
+<div class="tab" id="tab-einstellungen">
+  <div class="set-wrap">
+    <h2>Einstellungen</h2>
+    <div class="set-sec">
+      <h3>GitHub Token</h3>
+      <input type="password" id="ghToken" class="set-input" placeholder="ghp_...">
+      <button class="set-btn pri" id="saveToken">Token speichern</button>
+    </div>
+    <div class="set-sec">
+      <h3>Design</h3>
+      <div class="theme-row">
+        <button class="tbtn on" id="thLight">&#9728; Hell</button>
+        <button class="tbtn" id="thDark">&#9790; Dunkel</button>
+      </div>
+    </div>
+    <div class="set-sec">
+      <h3>Daten</h3>
+      <button class="set-btn" id="exportBtn">&#8595; Exportieren</button>
+      <button class="set-btn" id="importBtn">&#8593; Importieren</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+      <button class="set-btn dng" id="resetBtn">Alle Daten löschen</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">CoworkDashboard v2.0 &mdash; Single-file PWA</p>
+  </div>
+</div>
+
+<!-- Card Modal -->
+<div class="moverlay" id="cardModal">
   <div class="modal">
-    <h3 id="createModalTitle">Neue Karte</h3>
-    <label>Präfix</label>
-    <input type="text" id="cmPrefix" maxlength="6">
+    <h3 id="cmHead">Karte</h3>
     <label>Überschrift *</label>
-    <input type="text" id="cmTitle" required>
+    <input type="text" id="cmTitle">
     <label>Status</label>
-    <div class="status-selector" id="cmStatus">
-      <div class="status-option selected" data-val="gray"><span class="dot" style="background:var(--dot-gray)"></span>grau</div>
-      <div class="status-option" data-val="red"><span class="dot" style="background:var(--dot-red)"></span>rot</div>
-      <div class="status-option" data-val="yellow"><span class="dot" style="background:var(--dot-yellow)"></span>gelb</div>
-      <div class="status-option" data-val="green"><span class="dot" style="background:var(--dot-green)"></span>grün</div>
+    <div class="ssel" id="cmStatus">
+      <div class="sopt sel" data-val="gray"><span class="d" style="background:var(--dot-gray)"></span>Offen</div>
+      <div class="sopt" data-val="red"><span class="d" style="background:var(--dot-red)"></span>Blockiert</div>
+      <div class="sopt" data-val="yellow"><span class="d" style="background:var(--dot-yellow)"></span>In Arbeit</div>
+      <div class="sopt" data-val="green"><span class="d" style="background:var(--dot-green)"></span>Erledigt</div>
     </div>
     <label>Deadline</label>
     <input type="date" id="cmDeadline">
     <label>Beschreibung</label>
     <textarea id="cmDesc"></textarea>
-    <div class="modal-btns">
+    <div class="mbtns">
       <button class="btn-cancel" id="cmCancel">Abbrechen</button>
-      <button class="btn-primary" id="cmSave">Erstellen</button>
+      <button class="btn-heute" id="cmToH" style="display:none;">&#8594; Heute</button>
+      <button class="btn-dang" id="cmDel" style="display:none;">Löschen</button>
+      <button class="btn-pri" id="cmSave">Speichern</button>
     </div>
   </div>
 </div>
 
-<!-- Detail Modal -->
-<div class="modal-overlay" id="detailModal">
-  <div class="modal">
-    <h3 id="dmTitle"></h3>
-    <p id="dmStatus" style="margin:8px 0;"></p>
-    <p id="dmDeadline" style="font-size:14px;color:#64748b;"></p>
-    <p id="dmDesc" style="margin-top:12px;white-space:pre-wrap;"></p>
-    <div class="modal-btns"><button class="btn-cancel" id="dmClose">Schließen</button></div>
-  </div>
-</div>
-
 <!-- Patient Modal -->
-<div class="modal-overlay" id="patModal">
+<div class="moverlay" id="patModal">
   <div class="modal">
-    <h3 id="patModalTitle">Neuer Patient</h3>
-    <label>Name *</label>
-    <input type="text" id="pmName">
+    <h3 id="pmHead">Patient</h3>
+    <label>Code * (z.B. MÜL0226)</label>
+    <input type="text" id="pmCode" maxlength="12" placeholder="XXX-MMYY">
+    <label>Aufnahmedatum</label>
+    <input type="date" id="pmAdm">
+    <label>Status</label>
+    <select id="pmStat">
+      <option value="aktiv">Aktiv</option>
+      <option value="pause">Pause</option>
+      <option value="entlassen">Entlassen</option>
+    </select>
     <label>Notizen</label>
     <textarea id="pmNotes"></textarea>
-    <div class="modal-btns">
+    <div class="mbtns">
       <button class="btn-cancel" id="pmCancel">Abbrechen</button>
-      <button class="btn-primary" id="pmSave">Speichern</button>
+      <button class="btn-dang" id="pmDel" style="display:none;">Löschen</button>
+      <button class="btn-pri" id="pmSave">Speichern</button>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-  const LANES = [
-    {id:'heute',name:'📌 Heute',prefix:'HE',special:true},
-    {id:'barmelweid',name:'Barmelweid',prefix:'BA'},
-    {id:'patienten_lane',name:'Patienten',prefix:'PA'},
-    {id:'psp_wb',name:'PSP WB',prefix:'WB'},
-    {id:'selfimprovement',name:'SelfImprovement',prefix:'SI'},
-    {id:'finanzen',name:'Finanzen',prefix:'FI'},
-    {id:'freunde',name:'Freunde',prefix:'FR'},
-    {id:'events',name:'Events',prefix:'EV'},
-    {id:'familie',name:'Familie',prefix:'FA'},
-    {id:'ki',name:'KI',prefix:'KI'},
-    {id:'cowork',name:'Cowork',prefix:'CO'},
-    {id:'imperialk',name:'ImperialKI',prefix:'IK'},
-    {id:'erinnerungen',name:'Erinnerungen',prefix:'ER'},
-    {id:'tagebuch_lane',name:'Tagebuch',prefix:'TA'}
-  ];
+'use strict';
+/* ---- LANES ---- */
+const LANES=[
+  {id:'barmelweid',  name:'BA \u2014 Barmelweid',        prefix:'BA',isBA:true},
+  {id:'pat_admin',   name:'PA \u2014 Patienten-Admin',    prefix:'PA'},
+  {id:'weiterbild',  name:'WB \u2014 Weiterbildung',      prefix:'WB'},
+  {id:'selbst',      name:'SI \u2014 Selbst & Identit\xe4t',prefix:'SI'},
+  {id:'finanzen',    name:'FI \u2014 Finanzen',           prefix:'FI'},
+  {id:'freizeit',    name:'FR \u2014 Freizeit & Familie', prefix:'FR'},
+  {id:'events',      name:'EV \u2014 Events & Termine',   prefix:'EV'},
+  {id:'familie',     name:'FA \u2014 Familie & Bez.',     prefix:'FA'},
+  {id:'ki_tech',     name:'KI \u2014 KI & Tech',          prefix:'KI'},
+  {id:'coaching',    name:'CO \u2014 Coaching',           prefix:'CO'},
+  {id:'interkant',   name:'IK \u2014 Interkantonales',    prefix:'IK'},
+  {id:'ernaehrung',  name:'ER \u2014 Ern\xe4hrung & Sport',prefix:'ER'},
+  {id:'tagesstruktur',name:'TA \u2014 Tagesstruktur',     prefix:'TA'},
+  {id:'heute',       name:'HE \u2014 Heute',              prefix:'HE',isHeute:true}
+];
+const LANE_COLORS={
+  barmelweid:'#2563eb',pat_admin:'#0891b2',weiterbild:'#7c3aed',
+  selbst:'#059669',finanzen:'#d97706',freizeit:'#e11d48',
+  events:'#8b5cf6',familie:'#ea580c',ki_tech:'#0284c7',
+  coaching:'#6366f1',interkant:'#4f46e5',ernaehrung:'#64748b',
+  tagesstruktur:'#475569',heute:'#7c3aed'
+};
+const BA_TPLS=[
+  {t:'Verlaufsbericht',   d:'Abschnitte:\n1. Aktueller Zustand\n2. Therapieverlauf\n3. Medikation\n4. ICD-10-Diagnosen\n5. Zielerreichung\n6. Weiteres Vorgehen'},
+  {t:'Erstgespr\xe4ch-Bericht',d:'Abschnitte:\n1. Anamnese\n2. Problemdefinition\n3. Ressourcen\n4. Therapieziele (SMART)\n5. N\xe4chste Schritte'},
+  {t:'Austrittsbericht',  d:'Abschnitte:\n1. Eintrittsdatum / Austrittsdatum\n2. Diagnosen\n3. Therapieverlauf\n4. Outcome\n5. Empfehlungen\n6. Medikation bei Austritt'},
+  {t:'Verlaufs-/Austrittsbericht',d:'Kombinierter Verlaufs- und Austrittsbericht.\n\nAbschnitte ausf\xfcllen.'},
+  {t:'Gruppen-Verlaufsbericht',d:'Gruppentherapie-Verlaufsbericht.\n\nDatum, Thema, Teilnehmer, Verlauf, Besonderheiten.'},
+  {t:'Arzneimittelabgabe', d:'Patient:\nMedikament:\nDosis:\nDatum/Zeit:\nAbgebende Person:\nBemerkungen:'},
+  {t:'Dosisanpassung',     d:'Patient:\nMedikament:\nBisherige Dosis:\nNeue Dosis:\nGrund der Anpassung:\nDatum:'},
+  {t:'Notfall-Protokoll',  d:'Datum/Uhrzeit:\nPatient:\nSituation:\nMassnahmen:\nInformierte Personen:\nFolgemassnahmen:'}
+];
+/* ---- STORAGE KEYS ---- */
+const KC='cowork_cards',KP='cowork_patients',KS='cowork_settings',KA='cowork_autonomy_log',KT='github_token';
+/* ---- STATE ---- */
+let cards={},counters={},patients=[],settings={theme:'light'},alog=[];
+let curLane=0,editCardId=null,editPatIdx=null;
+let collapsedLanes=new Set();
 
-  // Lane color mapping for badges
-  const LANE_COLORS = {
-    barmelweid:'#2563eb',patienten_lane:'#0891b2',psp_wb:'#7c3aed',
-    selfimprovement:'#059669',finanzen:'#d97706',freunde:'#e11d48',
-    events:'#8b5cf6',familie:'#ea580c',ki:'#0284c7',cowork:'#6366f1',
-    imperialk:'#4f46e5',erinnerungen:'#64748b',tagebuch_lane:'#475569',
-    heute:'#7c3aed'
-  };
-
-  const STORAGE_KEY = 'coworkdashboard_data';
-  let data;
-  let currentLaneIdx = 0;
-  let currentCreateLane = null;
-  let editingPatient = null;
-  let tbDate;
-
-  function loadData(){
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){try{data=JSON.parse(raw);}catch(e){data=null;}}
-    if(!data) data = {cards:{},cardCounters:{},tagebuch:{},patienten:[]};
-    if(!data.cards) data.cards={};
-    if(!data.cardCounters) data.cardCounters={};
-    if(!data.tagebuch) data.tagebuch={};
-    if(!data.patienten) data.patienten=[];
-    LANES.forEach(l=>{if(!data.cardCounters[l.prefix]) data.cardCounters[l.prefix]=0;});
+/* ---- LOAD/SAVE ---- */
+function loadAll(){
+  // migrate old data
+  try{const old=localStorage.getItem('coworkdashboard_data');
+    if(old){const d=JSON.parse(old);if(d.cards&&!localStorage.getItem(KC)){localStorage.setItem(KC,JSON.stringify({cards:d.cards,counters:d.cardCounters||{}}));}}
+  }catch(e){}
+  try{const r=JSON.parse(localStorage.getItem(KC)||'{}');cards=r.cards||{};counters=r.counters||{};}catch(e){cards={};counters={};}
+  try{patients=JSON.parse(localStorage.getItem(KP)||'[]');}catch(e){patients=[];}
+  try{settings=JSON.parse(localStorage.getItem(KS)||'{"theme":"light"}');}catch(e){settings={theme:'light'};}
+  try{alog=JSON.parse(localStorage.getItem(KA)||'null');}catch(e){alog=null;}
+  if(!alog){
+    alog=[{id:'demo-001',timestamp:'2026-03-23T00:00:00.000Z',title:'Testlauf 2026-03-23 \u2014 14 Tasks',desc:'Vollst\xe4ndiger Rebuild CoworkDashboard. 14 Lanes, Patienten-Tab, Autonomie-Log deployt.',status:'success',read:false}];
+    localStorage.setItem(KA,JSON.stringify(alog));
   }
-  function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}
+  LANES.forEach(l=>{if(!counters[l.prefix])counters[l.prefix]=0;});
+}
+function saveCards(){localStorage.setItem(KC,JSON.stringify({cards,counters}));}
+function savePatients(){localStorage.setItem(KP,JSON.stringify(patients));}
+function saveSettings(){localStorage.setItem(KS,JSON.stringify(settings));}
+function saveAlog(){localStorage.setItem(KA,JSON.stringify(alog));}
 
-  function formatDate(d){
-    if(!d) return '';
-    const p=d.split('-');
-    return p[2]+'.'+p[1]+'.'+p[0];
-  }
-  function todayStr(){return new Date().toISOString().slice(0,10);}
-  function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+/* ---- UTILS ---- */
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function fmt(d){if(!d)return'';const p=d.split('-');return p[2]+'.'+p[1]+'.'+p[0];}
+function today(){return new Date().toISOString().slice(0,10);}
+function priOf(s){return{red:0,yellow:1,gray:2,green:3}[s]??2;}
+function laneById(id){return LANES.find(l=>l.id===id);}
+function laneByPfx(p){return LANES.find(l=>l.prefix===p);}
 
-  function getLaneName(laneId){
-    const l=LANES.find(x=>x.id===laneId);
-    return l?l.name:laneId;
-  }
-  function getLaneColor(laneId){
-    return LANE_COLORS[laneId]||'#64748b';
-  }
+/* ---- NAV ---- */
+function switchTab(t){
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.id==='tab-'+t));
+  if(t==='heute')renderHeute();
+  if(t==='kanban')renderLanes();
+  if(t==='patienten')renderPatienten();
+  if(t==='autonomie-log')renderAlog();
+  if(t==='einstellungen')renderSettings();
+}
+document.querySelectorAll('.nav button').forEach(b=>{
+  b.addEventListener('click',()=>switchTab(b.dataset.tab));
+});
 
-  // NAV
-  function switchTab(tabName){
-    document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
-    document.querySelector('.nav button[data-tab="'+tabName+'"]').classList.add('active');
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById('tab-'+tabName).classList.add('active');
-    if(tabName==='heute') renderHeute();
-    if(tabName==='projekte') renderLanes();
-    if(tabName==='tagebuch') renderTagebuch();
-    if(tabName==='patienten') renderPatienten();
+/* ---- HEUTE ---- */
+function renderHeute(){
+  const c=document.getElementById('htContainer');
+  const all=Object.values(cards).filter(x=>x.inHeute&&!x.archived);
+  all.sort((a,b)=>priOf(a.status)-priOf(b.status));
+  const done=all.filter(x=>x.status==='green').length;
+  const dateStr=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  if(!all.length){
+    c.innerHTML=`<div class="ht-empty"><p style="font-size:36px;margin-bottom:10px;">&#128197;</p><p>Kein Plan f\xfcr heute &mdash; \xfcbertrage Karten aus dem Kanban</p><button class="btn-pri" onclick="switchTab('kanban')" style="padding:9px 16px;border-radius:7px;border:none;font-size:13px;cursor:pointer;margin-top:6px;">Zum Kanban</button></div>`;
+    renderTokenWidget(c);
+    return;
   }
-  document.querySelectorAll('.nav button').forEach(btn=>{
-    btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
+  c.innerHTML=`<div class="ht-head"><div class="ht-date">${esc(dateStr)}</div><div class="ht-sum">${all.length} Aufgabe${all.length!==1?'n':''} &mdash; ${all.length-done} offen &mdash; ${done} erledigt</div></div><div id="htCards"></div><div class="ht-foot"><button class="btn-sec" id="htBack" style="padding:8px 14px;border-radius:7px;border:1px solid var(--border);font-size:13px;cursor:pointer;font-weight:500;background:var(--lane-bg);color:var(--text);">Alle zur\xfcckschieben</button><button class="btn-pri" id="htAdd" style="padding:8px 14px;border-radius:7px;border:none;font-size:13px;cursor:pointer;font-weight:500;">+ Neue Aufgabe</button></div>`;
+  const list=document.getElementById('htCards');
+  all.forEach(card=>{
+    const isDone=card.status==='green';
+    const orig=card.originalLane||card.lane;
+    const lc=LANE_COLORS[orig]||'#64748b';
+    const ln=laneById(orig);
+    const lname=ln&&orig!=='heute'?ln.name.replace(/^[A-Z]+ \u2014 /,''):'';
+    const over=card.deadline&&card.deadline<today()&&!isDone;
+    const el=document.createElement('div');
+    el.className='ht-card'+(isDone?' done':'');
+    el.innerHTML=`<div class="ht-cb${isDone?' chk':''}" data-id="${card.id}">${isDone?'&#10003;':''}</div><div class="ht-body"><div class="ht-trow"><span class="ht-title${isDone?' thru':''}">${esc(card.id)} &mdash; ${esc(card.title)}</span>${lname?`<span class="lbadge" style="background:${lc}">${esc(lname)}</span>`:''}<span class="ht-sdot sdot ${card.status}" style="background:${{gray:'var(--dot-gray)',red:'var(--dot-red)',yellow:'var(--dot-yellow)',green:'var(--dot-green)'}[card.status]||'var(--dot-gray)'}"></span></div>${card.deadline?`<div class="ht-dl${over?' over':''}">${over?'&#9888; ':''}${fmt(card.deadline)}${over?' &mdash; \xfcberf\xe4llig':''}</div>`:''}${card.description?`<div class="ht-desc">${esc(card.description.substring(0,80))}</div>`:''}</div>`;
+    el.querySelector('.ht-cb').addEventListener('click',e=>{e.stopPropagation();const cc=cards[card.id];if(!cc)return;cc.status=cc.status==='green'?'gray':'green';saveCards();renderHeute();});
+    el.querySelector('.ht-body').addEventListener('click',()=>openCardModal(null,card.id));
+    list.appendChild(el);
   });
+  document.getElementById('htBack').addEventListener('click',()=>{
+    const hc=Object.values(cards).filter(x=>x.inHeute&&!x.archived);
+    if(!hc.length)return;
+    if(!confirm(hc.length+' Karte'+(hc.length!==1?'n':'')+' zur\xfcckschieben?'))return;
+    hc.forEach(cc=>{cc.inHeute=false;if(cc.originalLane){cc.lane=cc.originalLane;cc.originalLane=null;}});
+    saveCards();renderHeute();if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();
+  });
+  document.getElementById('htAdd').addEventListener('click',()=>openCardModal('heute',null));
+  renderTokenWidget(document.getElementById('htContainer'));
+}
 
-  // LANES
-  function renderLanes(){
-    const container = document.getElementById('lanesContainer');
-    container.innerHTML='';
-    LANES.forEach((lane,idx)=>{
-      const el = document.createElement('div');
-      el.className='lane'+(lane.special?' heute-lane':'');
-      const cards = Object.values(data.cards).filter(c=>{
-        if(lane.id==='heute') return c.inHeute && !c.archived;
-        return c.lane===lane.id && !c.inHeute && !c.archived;
-      });
-      const archived = Object.values(data.cards).filter(c=>{
-        if(lane.id==='heute') return c.inHeute && c.archived;
-        return c.lane===lane.id && !c.inHeute && c.archived;
-      });
-      const vorlagenBtn = lane.id==='barmelweid' ? `
-          <div class="vorlagen-wrapper">
-            <button class="btn-vorlagen" data-lane="${lane.id}">Vorlagen ▾</button>
-            <div class="vorlagen-dropdown" id="vorlagenDrop">
-              ${BA_TEMPLATES.map((t,i)=>`<button data-tpl="${i}"><span class="vt-label">${t.title}</span><span class="vt-sub">${t.label}</span></button>`).join('')}
-            </div>
-          </div>` : '';
-      el.innerHTML=`
-        <div class="lane-header">
-          <span>${lane.name}</span>
-          <div style="display:flex;align-items:center;gap:4px;">
-            ${vorlagenBtn}
-            <button class="btn-add-card" data-lane="${lane.id}">+ Karte</button>
-          </div>
-        </div>
-        <div class="lane-body">
-          <div class="lane-cards" data-lane="${lane.id}"></div>
-          ${archived.length||cards.length>=0?`
-          <div class="archive-section">
-            <button class="archive-toggle" data-lane="${lane.id}">Archiv (${archived.length}) ▶</button>
-            <div class="archive-body" data-lane="${lane.id}"></div>
-          </div>`:''}
-        </div>`;
-      container.appendChild(el);
-      const cardsDiv=el.querySelector('.lane-cards');
-      cards.forEach(c=>cardsDiv.appendChild(createCardEl(c,lane.id==='heute')));
-      const archBody=el.querySelector('.archive-body');
-      if(archBody) archived.forEach(c=>{
-        const ce=createCardEl(c,lane.id==='heute',true);
-        archBody.appendChild(ce);
-      });
+/* ---- LANES / KANBAN ---- */
+function renderLanes(){
+  const con=document.getElementById('lanesContainer');
+  con.innerHTML='';
+  LANES.forEach((lane,idx)=>{
+    const lc=Object.values(cards).filter(c=>lane.isHeute?(c.inHeute&&!c.archived):(c.lane===lane.id&&!c.inHeute&&!c.archived));
+    const la=Object.values(cards).filter(c=>lane.isHeute?(c.inHeute&&c.archived):(c.lane===lane.id&&c.archived));
+    const el=document.createElement('div');
+    el.className='lane'+(lane.isHeute?' hl':'')+(collapsedLanes.has(lane.id)?' collapsed':'');
+    const vorlagen=lane.isBA?`<div class="vwrap"><button class="vbtn" data-lane="${lane.id}">Vorlagen &#9660;</button><div class="vdrop" id="vdrop_${lane.id}">${BA_TPLS.map((t,i)=>`<button data-ti="${i}">${esc(t.t)}</button>`).join('')}</div></div>`:'';
+    el.innerHTML=`<div class="lane-hdr" data-lid="${lane.id}"><span><span class="lane-caret">&#9660;</span>${esc(lane.name)}</span><div class="lane-hdr-r">${vorlagen}<button class="btn-add" data-lane="${lane.id}">+ Karte</button></div></div><div class="lane-body"><div class="lane-cards" data-lane="${lane.id}"></div><div style="border-top:1px solid var(--border);margin-top:6px;"><button class="arch-tog" data-lid="${lane.id}" style="width:100%;background:none;border:none;padding:6px 10px;text-align:left;font-size:11px;color:var(--text-muted);cursor:pointer;">Archiv (${la.length})</button><div class="arch-body" data-lid="${lane.id}" style="display:none;padding:0 2px 4px;"></div></div></div>`;
+    con.appendChild(el);
+    const cd=el.querySelector('.lane-cards');
+    lc.forEach(c=>cd.appendChild(makeCardEl(c)));
+    const ab=el.querySelector('.arch-body');
+    la.forEach(c=>ab.appendChild(makeCardEl(c,true)));
+    el.querySelector('.lane-hdr').addEventListener('click',e=>{
+      if(e.target.closest('.btn-add,.vwrap'))return;
+      collapsedLanes.has(lane.id)?collapsedLanes.delete(lane.id):collapsedLanes.add(lane.id);
+      el.classList.toggle('collapsed');
     });
-    // events
-    document.querySelectorAll('.btn-add-card').forEach(b=>{
-      b.addEventListener('click',()=>openCreateModal(b.dataset.lane));
-    });
-    // Vorlagen dropdown
-    document.querySelectorAll('.btn-vorlagen').forEach(b=>{
-      b.addEventListener('click',(e)=>{
-        e.stopPropagation();
-        const drop=b.nextElementSibling;
-        drop.classList.toggle('open');
+    el.querySelector('.btn-add').addEventListener('click',e=>{e.stopPropagation();openCardModal(lane.id,null);});
+    if(lane.isBA){
+      el.querySelector('.vbtn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('vdrop_'+lane.id).classList.toggle('open');});
+      el.querySelectorAll('.vdrop button').forEach(b=>{
+        b.addEventListener('click',e=>{e.stopPropagation();document.getElementById('vdrop_'+lane.id).classList.remove('open');openCardModal(lane.id,null,parseInt(b.dataset.ti));});
       });
-    });
-    document.querySelectorAll('.vorlagen-dropdown button').forEach(b=>{
-      b.addEventListener('click',(e)=>{
-        e.stopPropagation();
-        const idx=parseInt(b.dataset.tpl);
-        b.closest('.vorlagen-dropdown').classList.remove('open');
-        openTemplateCard(idx);
-      });
-    });
-    // Close dropdown on outside click
-    document.addEventListener('click',()=>{
-      document.querySelectorAll('.vorlagen-dropdown.open').forEach(d=>d.classList.remove('open'));
-    });
-    document.querySelectorAll('.archive-toggle').forEach(b=>{
-      b.addEventListener('click',()=>{
-        const body=b.nextElementSibling;
-        body.classList.toggle('open');
-        b.textContent=body.classList.contains('open')
-          ? b.textContent.replace('?','')
-          : b.textContent.replace('','?');
-      });
-    });
-    updateMobileLaneNav();
-  }
-
-  function createCardEl(card, isHeuteLane, isArchived){
-    const div=document.createElement('div');
-    div.className='card';
-    const hasDesc=card.description&&card.description.trim();
-    let actions='';
-    if(!isArchived){
-      if(hasDesc) actions+=`<button class="btn-detail" data-id="${card.id}" title="Details">...</button>`;
-      if(!isHeuteLane) actions+=`<button class="btn-to-heute" data-id="${card.id}" title="Zu Heute">→</button>`;
-      if(isHeuteLane) actions+=`<button class="btn-from-heute" data-id="${card.id}" title="Zurück">←</button>`;
-      actions+=`<button class="btn-archive" data-id="${card.id}" title="Archivieren">📥</button>`;
-      actions+=`<button class="btn-delete" data-id="${card.id}" title="Löschen">🗑</button>`;
-    } else {
-      actions+=`<button class="btn-unarchive" data-id="${card.id}" title="Reaktivieren">reaktivieren</button>`;
-      actions+=`<button class="btn-delete" data-id="${card.id}" title="Löschen">🗑</button>`;
     }
-    div.innerHTML=`
-      <div class="card-top">
-        <span class="status-dot ${card.status}"></span>
-        <span class="card-prefix">${card.id}</span>
-        <span class="card-title">· ${esc(card.title)}</span>
-        <div class="card-actions">${actions}</div>
-      </div>
-      ${card.deadline?`<div class="card-date">📅 ${formatDate(card.deadline)}</div>`:''}`;
-    // events
-    div.querySelector('.btn-detail')?.addEventListener('click',()=>openDetail(card));
-    div.querySelector('.btn-to-heute')?.addEventListener('click',()=>{moveToHeute(card.id);});
-    div.querySelector('.btn-from-heute')?.addEventListener('click',()=>{moveFromHeute(card.id);});
-    div.querySelector('.btn-archive')?.addEventListener('click',()=>{archiveCard(card.id);});
-    div.querySelector('.btn-unarchive')?.addEventListener('click',()=>{unarchiveCard(card.id);});
-    div.querySelector('.btn-delete')?.addEventListener('click',()=>{deleteCard(card.id);});
-    return div;
+    el.querySelector('.arch-tog').addEventListener('click',()=>{const ab2=el.querySelector('.arch-body');ab2.style.display=ab2.style.display==='none'?'block':'none';});
+  });
+  document.addEventListener('click',()=>document.querySelectorAll('.vdrop.open').forEach(d=>d.classList.remove('open')),{once:false});
+  updateMobNav();
+}
+
+function makeCardEl(card,archived=false){
+  const el=document.createElement('div');
+  el.className='card';
+  el.innerHTML=`<div class="card-top"><span class="sdot ${card.status}"></span><span class="cpfx">${esc(card.id)}</span><span class="ctit">${esc(card.title)}</span></div>${card.deadline?`<div class="cdate">${fmt(card.deadline)}</div>`:''}`;
+  el.addEventListener('click',()=>openCardModal(null,card.id));
+  if(archived)el.style.opacity='.6';
+  return el;
+}
+
+/* ---- CARD MODAL ---- */
+function openCardModal(laneId,cardId,tplIdx=null){
+  editCardId=cardId;
+  const isEdit=!!cardId;
+  const card=isEdit?cards[cardId]:null;
+  const targetLane=laneId||(card?card.lane:null);
+  const lane=laneById(targetLane)||LANES[0];
+  document.getElementById('cmHead').textContent=isEdit?card.id+' bearbeiten':'Neue Karte \u2014 '+lane.name;
+  document.getElementById('cmTitle').value=isEdit?card.title:'';
+  document.getElementById('cmDeadline').value=isEdit?(card.deadline||''):'';
+  document.getElementById('cmDesc').value=isEdit?(card.description||''):'';
+  document.querySelectorAll('#cmStatus .sopt').forEach(o=>o.classList.toggle('sel',o.dataset.val===(isEdit?card.status:'gray')));
+  document.getElementById('cmToH').style.display=isEdit&&!card.inHeute?'inline-block':'none';
+  document.getElementById('cmDel').style.display=isEdit?'inline-block':'none';
+  if(tplIdx!==null){const t=BA_TPLS[tplIdx];document.getElementById('cmTitle').value=t.t;document.getElementById('cmDesc').value=t.d;}
+  // store target lane for save
+  document.getElementById('cardModal').dataset.lane=targetLane;
+  document.getElementById('cardModal').classList.add('open');
+  document.getElementById('cmTitle').focus();
+}
+document.getElementById('cmCancel').addEventListener('click',()=>document.getElementById('cardModal').classList.remove('open'));
+document.getElementById('cardModal').addEventListener('click',e=>{if(e.target===document.getElementById('cardModal'))document.getElementById('cardModal').classList.remove('open');});
+document.querySelectorAll('#cmStatus .sopt').forEach(o=>{
+  o.addEventListener('click',()=>{document.querySelectorAll('#cmStatus .sopt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel');});
+});
+document.getElementById('cmSave').addEventListener('click',()=>{
+  const title=document.getElementById('cmTitle').value.trim();
+  if(!title){alert('\xdcberschrift ist erforderlich.');return;}
+  const status=document.querySelector('#cmStatus .sopt.sel')?.dataset.val||'gray';
+  const deadline=document.getElementById('cmDeadline').value||null;
+  const desc=document.getElementById('cmDesc').value.trim();
+  if(editCardId){
+    const c=cards[editCardId];
+    c.title=title;c.status=status;c.deadline=deadline;c.description=desc;
+  } else {
+    const laneId=document.getElementById('cardModal').dataset.lane;
+    const lane=laneById(laneId)||LANES[0];
+    counters[lane.prefix]=(counters[lane.prefix]||0)+1;
+    const id=lane.prefix+String(counters[lane.prefix]).padStart(3,'0');
+    cards[id]={id,lane:laneId,inHeute:lane.isHeute||false,originalLane:null,title,status,deadline,description:desc,archived:false,createdAt:new Date().toISOString()};
   }
+  saveCards();
+  document.getElementById('cardModal').classList.remove('open');
+  if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();
+  if(document.getElementById('tab-heute').classList.contains('active'))renderHeute();
+});
+document.getElementById('cmToH').addEventListener('click',()=>{
+  if(!editCardId)return;
+  const c=cards[editCardId];
+  c.originalLane=c.originalLane||c.lane;
+  c.inHeute=true;
+  saveCards();
+  document.getElementById('cardModal').classList.remove('open');
+  if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();
+  if(document.getElementById('tab-heute').classList.contains('active'))renderHeute();
+});
+document.getElementById('cmDel').addEventListener('click',()=>{
+  if(!editCardId)return;
+  const c=cards[editCardId];
+  if(!confirm('Karte "'+editCardId+'" l\xf6schen?'))return;
+  delete cards[editCardId];
+  saveCards();
+  document.getElementById('cardModal').classList.remove('open');
+  if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();
+  if(document.getElementById('tab-heute').classList.contains('active'))renderHeute();
+});
 
-  function moveToHeute(id){
-    const c=data.cards[id];
-    if(!c) return;
-    c.originalLane=c.lane;
-    c.inHeute=true;
-    saveData();renderLanes();
-  }
-  function moveFromHeute(id){
-    const c=data.cards[id];
-    if(!c) return;
-    c.inHeute=false;
-    if(c.originalLane) c.lane=c.originalLane;
-    c.originalLane=null;
-    saveData();renderLanes();renderHeute();
-  }
-  function archiveCard(id){data.cards[id].archived=true;saveData();renderLanes();renderHeute();}
-  function unarchiveCard(id){data.cards[id].archived=false;saveData();renderLanes();renderHeute();}
-  function deleteCard(id){
-    if(!confirm('Karte "'+id+'" wirklich löschen?')) return;
-    delete data.cards[id];saveData();renderLanes();renderHeute();
-  }
-
-  // BARMELWEID VORLAGEN
-  const BA_TEMPLATES = [
-    {title:'Verlaufsbericht-Gerüst',desc:'Strukturvorlage für Verlaufsberichte nach SGPP-Standard.\n\nBitte erstelle ein Verlaufsbericht-Gerüst mit folgenden Abschnitten:\n1. Aktueller Zustand\n2. Therapieverlauf seit letztem Bericht\n3. Medikation\n4. Diagnosen (ICD-10)\n5. Zielerreichung\n6. Weiteres Vorgehen\n\n[Stichpunkte hier einfügen]',status:'gray',label:'~30 min/Woche gespart'},
-    {title:'Erstgespräch-Dokumentation',desc:'Post-Gespräch-Dokumentationsvorlage.\n\nBitte dokumentiere das Erstgespräch in 5 Phasen:\n1. Anamnese (biographisch, sozial, medizinisch)\n2. Problemdefinition & Leidensdruck\n3. Ressourcen & Stärken\n4. Therapieziele (SMART formuliert)\n5. Nächste Schritte & Behandlungsplanung\n\n[Notizen hier einfügen]',status:'gray',label:'~20 min/Gespräch gespart'},
-    {title:'Austrittsbericht',desc:'Struktur für Austrittsberichte mit allen Pflichtfeldern.\n\nBitte erstelle einen Austrittsbericht mit:\n1. Eintrittsdatum & Austrittsdatum\n2. Diagnosen (Haupt- und Nebendiagnosen, ICD-10)\n3. Therapieverlauf & Interventionen\n4. Zielerreichung & Outcome\n5. Empfehlungen & Nachsorgeplan\n6. Medikation bei Austritt\n\n[Stichpunkte hier einfügen]',status:'gray',label:'~45 min/Austritt gespart'},
-    {title:'Gesprächsvorbereitung',desc:'Checkliste & Leitfragen für nächstes Gespräch.\n\nBitte erstelle eine Gesprächsvorbereitung:\n1. Zusammenfassung letzter Verlaufseintrag\n2. Offene Themen / Homework-Review\n3. Leitfragen für heute\n4. Interventionsideen\n5. Zeitplanung der Sitzung\n\n[Letzter Verlaufseintrag / Notizen hier einfügen]',status:'gray',label:'~10 min/Gespräch gespart'},
-    {title:'Tages-Briefing',desc:'Morgenroutine: Struktur für den Tag.\n\nBitte erstelle mein Tages-Briefing:\n1. Was liegt heute an? (Termine, Gespräche, Admin)\n2. Energie-Check (1-10)\n3. Top 3 Prioritäten\n4. Vorbereitungen nötig?\n5. Tagesabschluss-Ritual planen\n\n[Heutige Termine / Notizen hier einfügen]',status:'gray',label:'~15 min/Tag gespart'},
-    {title:'Supervision-Vorbereitung',desc:'Falldarstellung für Supervision strukturieren.\n\nBitte strukturiere meine Supervisionsvorbereitung:\n1. Fallvignette (pseudonymisiert)\n2. Kernthemen & Dynamiken\n3. Eigene Hypothesen\n4. Gegenübertragung / eigene Reaktionen\n5. Konkrete Fragen an Supervisor:in\n\n[Notizen hier einfügen]',status:'gray',label:'~30 min/Supervision gespart'},
-    {title:'Überweisungsbrief',desc:'Standard-Überweisungsbrief mit Pflichtangaben.\n\nBitte erstelle einen Überweisungsbrief mit:\n1. Absender (Klinik Barmelweid)\n2. Empfänger\n3. Patient (pseudonymisiert)\n4. Diagnosen\n5. Bisherige Behandlung\n6. Fragestellung / Grund der Überweisung\n7. Relevante Befunde\n\n[Angaben hier einfügen]',status:'gray',label:'~20 min/Brief gespart'},
-    {title:'Interne Kommunikation',desc:'Templates für häufige interne Mitteilungen.\n\nBitte erstelle eine interne Mitteilung:\nTyp: [Krankenmeldung / Anfrage / Bericht / Info]\n\n1. An: [Empfänger/Abteilung]\n2. Betreff:\n3. Inhalt:\n4. Gewünschte Aktion / Frist:\n\n[Details hier einfügen]',status:'gray',label:'~10 min/Brief gespart'}
-  ];
-
-  function openTemplateCard(tplIdx){
-    const tpl = BA_TEMPLATES[tplIdx];
-    openCreateModal('barmelweid');
-    document.getElementById('cmTitle').value = tpl.title;
-    document.getElementById('cmDesc').value = tpl.desc;
-    // Set status
-    document.querySelectorAll('#cmStatus .status-option').forEach(o=>o.classList.remove('selected'));
-    document.querySelector('#cmStatus .status-option[data-val="'+tpl.status+'"]').classList.add('selected');
-  }
-
-  // CREATE MODAL
-  function openCreateModal(laneId){
-    currentCreateLane=laneId;
-    const lane=LANES.find(l=>l.id===laneId);
-    const nextNum=data.cardCounters[lane.prefix]+1;
-    document.getElementById('createModalTitle').textContent='Neue Karte';
-    document.getElementById('cmPrefix').value=lane.prefix+String(nextNum).padStart(3,'0');
-    document.getElementById('cmTitle').value='';
-    document.getElementById('cmDeadline').value='';
-    document.getElementById('cmDesc').value='';
-    document.querySelectorAll('#cmStatus .status-option').forEach(o=>o.classList.remove('selected'));
-    document.querySelector('#cmStatus .status-option[data-val="gray"]').classList.add('selected');
-    document.getElementById('createModal').classList.add('open');
-  }
-  document.getElementById('cmCancel').addEventListener('click',()=>document.getElementById('createModal').classList.remove('open'));
-  document.querySelectorAll('#cmStatus .status-option').forEach(o=>{
-    o.addEventListener('click',()=>{
-      document.querySelectorAll('#cmStatus .status-option').forEach(x=>x.classList.remove('selected'));
-      o.classList.add('selected');
-    });
+/* ---- PATIENTEN ---- */
+function renderPatienten(filter=''){
+  const list=document.getElementById('patList');
+  list.innerHTML='';
+  const f=filter.toLowerCase();
+  const shown=patients.filter(p=>!f||p.code.toLowerCase().includes(f)||(p.notes||'').toLowerCase().includes(f));
+  if(!shown.length){list.innerHTML=`<p style="color:var(--text-muted);padding:20px 0;text-align:center;">${filter?'Keine Treffer.':'Noch keine Patienten.'}</p>`;return;}
+  shown.forEach((p,i)=>{
+    const idx=patients.indexOf(p);
+    const el=document.createElement('div');
+    el.className='pt-item';
+    el.innerHTML=`<div style="flex:1;min-width:0;"><div><span class="pt-code">${esc(p.code)}</span><span class="pt-sbadge ${p.status||'aktiv'}">${esc(p.status||'aktiv')}</span></div><div class="pt-detail">${p.admissionDate?'Aufnahme: '+fmt(p.admissionDate)+'  ':''} ${p.notes?esc(p.notes.substring(0,60))+(p.notes.length>60?'\u2026':''):''}</div></div><div class="pt-acts"><button class="edit" data-i="${idx}">Bearbeiten</button><button class="del" data-i="${idx}">L\xf6schen</button></div>`;
+    el.querySelector('.edit').addEventListener('click',()=>openPatModal(idx));
+    el.querySelector('.del').addEventListener('click',()=>{if(!confirm('Patient "'+p.code+'" l\xf6schen?'))return;patients.splice(idx,1);savePatients();renderPatienten(document.getElementById('patSearch').value);});
+    list.appendChild(el);
   });
-  document.getElementById('cmSave').addEventListener('click',()=>{
-    const prefix=document.getElementById('cmPrefix').value.trim();
-    const title=document.getElementById('cmTitle').value.trim();
-    if(!title){alert('Überschrift ist erforderlich.');return;}
-    if(!prefix){alert('Präfix ist erforderlich.');return;}
-    if(data.cards[prefix]){alert('Karte mit diesem Präfix existiert bereits.');return;}
-    const status=document.querySelector('#cmStatus .status-option.selected').dataset.val;
-    const deadline=document.getElementById('cmDeadline').value||null;
-    const desc=document.getElementById('cmDesc').value;
-    const lane=LANES.find(l=>l.id===currentCreateLane);
-    // update counter
-    const numPart=parseInt(prefix.replace(/^[A-Z]+/,''),10);
-    if(numPart>data.cardCounters[lane.prefix]) data.cardCounters[lane.prefix]=numPart;
-    data.cards[prefix]={
-      id:prefix,lane:currentCreateLane,originalLane:null,
-      title:title,status:status,deadline:deadline,
-      description:desc,archived:false,
-      inHeute:currentCreateLane==='heute',
-      createdAt:new Date().toISOString()
-    };
-    saveData();
-    document.getElementById('createModal').classList.remove('open');
-    renderLanes();renderHeute();
+}
+document.getElementById('patSearch').addEventListener('input',e=>renderPatienten(e.target.value));
+document.getElementById('addPat').addEventListener('click',()=>openPatModal(null));
+function openPatModal(idx){
+  editPatIdx=idx;
+  const p=idx!==null?patients[idx]:null;
+  document.getElementById('pmHead').textContent=p?'Patient bearbeiten':'Neuer Patient';
+  document.getElementById('pmCode').value=p?p.code:'';
+  document.getElementById('pmAdm').value=p?(p.admissionDate||''):'';
+  document.getElementById('pmStat').value=p?(p.status||'aktiv'):'aktiv';
+  document.getElementById('pmNotes').value=p?(p.notes||''):'';
+  document.getElementById('pmDel').style.display=p?'inline-block':'none';
+  document.getElementById('patModal').classList.add('open');
+  document.getElementById('pmCode').focus();
+}
+document.getElementById('pmCancel').addEventListener('click',()=>document.getElementById('patModal').classList.remove('open'));
+document.getElementById('patModal').addEventListener('click',e=>{if(e.target===document.getElementById('patModal'))document.getElementById('patModal').classList.remove('open');});
+document.getElementById('pmSave').addEventListener('click',()=>{
+  const code=document.getElementById('pmCode').value.trim();
+  if(!code){alert('Code ist erforderlich.');return;}
+  const obj={code,admissionDate:document.getElementById('pmAdm').value||null,status:document.getElementById('pmStat').value,notes:document.getElementById('pmNotes').value.trim()};
+  if(editPatIdx!==null){patients[editPatIdx]=obj;}else{patients.push(obj);}
+  savePatients();
+  document.getElementById('patModal').classList.remove('open');
+  renderPatienten(document.getElementById('patSearch').value);
+});
+document.getElementById('pmDel').addEventListener('click',()=>{
+  if(editPatIdx===null)return;
+  if(!confirm('Patient l\xf6schen?'))return;
+  patients.splice(editPatIdx,1);savePatients();
+  document.getElementById('patModal').classList.remove('open');
+  renderPatienten(document.getElementById('patSearch').value);
+});
+
+/* ---- AUTONOMIE-LOG ---- */
+function renderAlog(){
+  const list=document.getElementById('alList');
+  list.innerHTML='';
+  const sorted=[...alog].sort((a,b)=>(a.read===b.read)?0:a.read?1:-1);
+  if(!sorted.length){list.innerHTML='<p style="color:var(--text-muted);padding:20px 0;text-align:center;">Keine Eintr\xe4ge.</p>';return;}
+  sorted.forEach(entry=>{
+    const el=document.createElement('div');
+    el.className=`al-entry ${entry.status}${entry.read?' read':''}`;
+    const ts=new Date(entry.timestamp).toLocaleString('de-DE');
+    el.innerHTML=`<div class="al-ehead"><span class="al-ts">${esc(ts)}</span><span class="al-sb ${entry.status}">${{success:'&#10003; Erfolg',warning:'&#9888; Warnung',error:'&#10007; Fehler'}[entry.status]||entry.status}</span></div><div class="al-title">${esc(entry.title)}</div><div class="al-desc">${esc(entry.desc)}</div>${!entry.read?`<button class="al-rbtn" data-id="${entry.id}">Okay, gelesen &#10003;</button>`:''}`;
+    if(!entry.read){el.querySelector('.al-rbtn').addEventListener('click',()=>{entry.read=true;saveAlog();renderAlog();updateAlBadge();});}
+    list.appendChild(el);
   });
-  document.getElementById('createModal').addEventListener('click',e=>{
-    if(e.target===document.getElementById('createModal')) document.getElementById('createModal').classList.remove('open');
+  updateAlBadge();
+}
+function updateAlBadge(){
+  const n=alog.filter(e=>!e.read).length;
+  const b=document.getElementById('alBadge');
+  b.textContent=n||'';b.classList.toggle('on',n>0);
+}
+async function fetchAlogFromGH(){
+  const tok=localStorage.getItem(KT);
+  if(!tok){alert('Kein GitHub Token hinterlegt (Einstellungen).');return;}
+  try{
+    const r=await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/autonomy-log.json',{headers:{Authorization:'token '+tok,Accept:'application/vnd.github.v3.raw'}});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    if(Array.isArray(data)){alog=data;saveAlog();renderAlog();alert('Log geladen: '+data.length+' Eintr\xe4ge.');}
+  }catch(e){alert('Fehler beim Laden: '+e.message);}
+}
+document.getElementById('alLoad').addEventListener('click',fetchAlogFromGH);
+
+/* ---- EINSTELLUNGEN ---- */
+function renderSettings(){
+  const tok=localStorage.getItem(KT)||'';
+  document.getElementById('ghToken').value=tok?'********':'';
+  document.getElementById('thLight').classList.toggle('on',settings.theme!=='dark');
+  document.getElementById('thDark').classList.toggle('on',settings.theme==='dark');
+}
+document.getElementById('saveToken').addEventListener('click',()=>{
+  const t=document.getElementById('ghToken').value.trim();
+  if(!t||t==='********'){alert('Bitte Token eingeben.');return;}
+  localStorage.setItem(KT,t);alert('Token gespeichert.');
+});
+document.getElementById('thLight').addEventListener('click',()=>{settings.theme='light';document.body.classList.remove('dark');saveSettings();document.getElementById('thLight').classList.add('on');document.getElementById('thDark').classList.remove('on');});
+document.getElementById('thDark').addEventListener('click',()=>{settings.theme='dark';document.body.classList.add('dark');saveSettings();document.getElementById('thDark').classList.add('on');document.getElementById('thLight').classList.remove('on');});
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify({cards,counters,patients,settings,alog},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cowork_export_'+today()+'.json';a.click();
+});
+document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.cards)cards=d.cards;if(d.counters)counters=d.counters;if(d.patients)patients=d.patients;if(d.settings)settings=d.settings;if(d.alog)alog=d.alog;saveCards();savePatients();saveSettings();saveAlog();alert('Importiert.');switchTab('heute');}catch(err){alert('Fehler: '+err.message);}};
+  r.readAsText(f);e.target.value='';
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if(!confirm('Wirklich ALLE Daten l\xf6schen?'))return;
+  [KC,KP,KS,KA,KT].forEach(k=>localStorage.removeItem(k));
+  loadAll();switchTab('heute');alert('Gel\xf6scht.');
+});
+
+/* ---- MOBILE LANE NAV ---- */
+function updateMobNav(){
+  const l=LANES[curLane];
+  document.getElementById('laneDisplay').textContent=l?l.name:'';
+  const dots=document.getElementById('laneDots');
+  dots.innerHTML='';
+  LANES.forEach((_,i)=>{const d=document.createElement('span');d.className='ldot'+(i===curLane?' on':'');d.addEventListener('click',()=>scrollLane(i));dots.appendChild(d);});
+}
+function scrollLane(idx){
+  curLane=idx;
+  const lanes=document.querySelectorAll('.lane');
+  if(lanes[idx])lanes[idx].scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'});
+  updateMobNav();
+}
+document.getElementById('lanePrev').addEventListener('click',()=>{if(curLane>0)scrollLane(curLane-1);});
+document.getElementById('laneNext').addEventListener('click',()=>{if(curLane<LANES.length-1)scrollLane(curLane+1);});
+let tx=0,ty=0;
+document.getElementById('lanesContainer').addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;},{passive:true});
+document.getElementById('lanesContainer').addEventListener('touchend',e=>{
+  const dx=tx-e.changedTouches[0].screenX;
+  if(window.innerWidth>768||Math.abs(dx)<50)return;
+  if(dx>0&&curLane<LANES.length-1)scrollLane(curLane+1);
+  else if(dx<0&&curLane>0)scrollLane(curLane-1);
+},{passive:true});
+
+/* ---- TOKEN WIDGET ---- */
+const KTP='cowork_token_plan';
+function loadTokenPlan(){
+  try{const r=JSON.parse(localStorage.getItem(KTP));if(r&&r.entries)return r;}catch(e){}
+  const demo={weekly_budget:1000000,weekly_used:800000,entries:[
+    {task:'Dashboard Rebuild',model:'claude-opus-4-6',estimated:50000,status:'running'},
+    {task:'Nacht-Autopilot heute',model:'claude-sonnet-4-6',estimated:100000,status:'planned'}
+  ]};
+  localStorage.setItem(KTP,JSON.stringify(demo));
+  return demo;
+}
+function saveTokenPlan(obj){localStorage.setItem(KTP,JSON.stringify(obj));}
+function modelClass(m){if(/opus/i.test(m))return'opus';if(/haiku/i.test(m))return'haiku';return'sonnet';}
+function fmtK(n){return n>=1000?(n/1000).toFixed(0)+'k':String(n);}
+function renderTokenWidget(container){
+  const plan=loadTokenPlan();
+  const pct=Math.min(100,Math.round((plan.weekly_used||0)/(plan.weekly_budget||1000000)*100));
+  const barCls=pct>=90?'danger':pct>=70?'warn':'';
+  const totalEst=(plan.entries||[]).reduce((s,e)=>s+(e.estimated||0),0);
+  const el=document.createElement('div');
+  el.className='tok-widget';
+  el.innerHTML=`<h3>\uD83E\uDD16 Token & Modell <button id="tokEditBtn" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--lane-bg);color:var(--text);cursor:pointer;">Bearbeiten</button></h3><div class="tok-progress-wrap"><div class="tok-bar ${barCls}" style="width:${pct}%"></div></div><div class="tok-stats"><span>${fmtK(plan.weekly_used||0)} / ${fmtK(plan.weekly_budget||1000000)} Tokens (${pct}%)</span><span>Heute geplant: ~${fmtK(totalEst)}</span></div><div class="tok-entries">${(plan.entries||[]).map(e=>`<div class="tok-entry"><span class="tok-model ${modelClass(e.model)}">${esc(e.model.replace('claude-',''))}</span><span class="tok-task">${esc(e.task)}</span><span class="tok-est">~${fmtK(e.estimated||0)}</span><span class="tok-status ${e.status||'planned'}">${e.status==='running'?'l\xe4uft':e.status==='done'?'fertig':'geplant'}</span></div>`).join('')}</div><div class="tok-edit-area" id="tokEditArea"><textarea id="tokEditTxt"></textarea><div style="display:flex;gap:6px;margin-top:6px;"><button class="btn-pri" id="tokSave" style="padding:5px 12px;border:none;border-radius:5px;font-size:12px;cursor:pointer;font-weight:500;background:var(--primary);color:#fff;">Speichern</button><button class="btn-cancel" id="tokCancel" style="padding:5px 12px;border:none;border-radius:5px;font-size:12px;cursor:pointer;background:var(--lane-bg);color:var(--text-muted);">Abbrechen</button></div></div>`;
+  container.appendChild(el);
+  document.getElementById('tokEditBtn').addEventListener('click',()=>{
+    const area=document.getElementById('tokEditArea');
+    const isOpen=area.style.display==='block';
+    area.style.display=isOpen?'none':'block';
+    if(!isOpen)document.getElementById('tokEditTxt').value=JSON.stringify(plan,null,2);
   });
-
-  // DETAIL MODAL
-  function openDetail(card){
-    document.getElementById('dmTitle').textContent=card.id+' · '+card.title;
-    const statusMap={gray:'⚪ grau',red:'🔴 rot',yellow:'🟡 gelb',green:'🟢 grün'};
-    document.getElementById('dmStatus').textContent='Status: '+(statusMap[card.status]||card.status);
-    document.getElementById('dmDeadline').textContent=card.deadline?'Deadline: '+formatDate(card.deadline):'';
-    document.getElementById('dmDesc').textContent=card.description||'Keine Beschreibung.';
-    document.getElementById('detailModal').classList.add('open');
-  }
-  document.getElementById('dmClose').addEventListener('click',()=>document.getElementById('detailModal').classList.remove('open'));
-  document.getElementById('detailModal').addEventListener('click',e=>{
-    if(e.target===document.getElementById('detailModal')) document.getElementById('detailModal').classList.remove('open');
+  document.getElementById('tokSave').addEventListener('click',()=>{
+    try{const p=JSON.parse(document.getElementById('tokEditTxt').value);saveTokenPlan(p);document.getElementById('tokEditArea').style.display='none';renderHeute();}catch(e){alert('JSON-Fehler: '+e.message);}
   });
+  document.getElementById('tokCancel').addEventListener('click',()=>{document.getElementById('tokEditArea').style.display='none';});
+}
 
-  // HEUTE TAB - TAGESPLAN
-  function renderHeute(){
-    const container=document.getElementById('tagesplanContainer');
-    const cards=Object.values(data.cards).filter(c=>c.inHeute&&!c.archived);
-    const doneCount=cards.filter(c=>c.status==='green').length;
-    const openCount=cards.length-doneCount;
-    const dateStr=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
-
-    if(cards.length===0){
-      container.innerHTML=`
-        <div class="tp-empty">
-          <p style="font-size:40px;margin-bottom:12px;">📋</p>
-          <p>Kein Plan für heute — zieh Aufgaben aus dem Kanban in die Heute-Lane</p>
-          <button id="tpGoKanban">→ Zum Kanban</button>
-        </div>`;
-      document.getElementById('tpGoKanban').addEventListener('click',()=>switchTab('projekte'));
-      return;
-    }
-
-    let html=`
-      <div class="tp-header">
-        <div class="tp-date">${dateStr}</div>
-        <div class="tp-summary">${cards.length} Aufgabe${cards.length!==1?'n':''} heute · ${openCount} offen · ${doneCount} erledigt</div>
-      </div>
-      <div id="tpCardList"></div>
-      <div class="tp-footer">
-        <button class="tp-btn-back" id="tpBackAll">← Alles zurückschieben</button>
-        <button class="tp-btn-add" id="tpAddNew">+ Neue Aufgabe heute</button>
-      </div>`;
-    container.innerHTML=html;
-
-    const listEl=document.getElementById('tpCardList');
-    cards.forEach(card=>{
-      const isDone=card.status==='green';
-      const originLane=card.originalLane||card.lane;
-      const laneName=getLaneName(originLane);
-      const laneColor=getLaneColor(originLane);
-      const isOverdue=card.deadline&&card.deadline<todayStr()&&!isDone;
-      const descSnippet=card.description?(card.description.length>80?card.description.substring(0,80)+'.':card.description):'';
-
-      const el=document.createElement('div');
-      el.className='tp-card'+(isDone?' done':'');
-      el.innerHTML=`
-        <div class="tp-checkbox${isDone?' checked':''}" data-id="${card.id}">${isDone?'V':''}</div>
-        <div class="tp-body">
-          <div class="tp-title-row">
-            <span class="tp-title${isDone?' strikethrough':''}">${esc(card.id)} · ${esc(card.title)}</span>
-            ${originLane&&originLane!=='heute'?`<span class="tp-lane-badge" style="background:${laneColor}">aus ${esc(laneName.replace(/📌\s*/,''))}</span>`:''}
-            <span class="tp-dot status-dot ${card.status}"></span>
-          </div>
-          ${card.deadline?`<div class="tp-deadline${isOverdue?' overdue':''}">📅 ${formatDate(card.deadline)}${isOverdue?'— überfällig':''}</div>`:''}
-          ${descSnippet?`<div class="tp-desc">${esc(descSnippet)}</div>`:''}
-        </div>`;
-
-      // Checkbox click - toggle done
-      el.querySelector('.tp-checkbox').addEventListener('click',(e)=>{
-        e.stopPropagation();
-        const c=data.cards[card.id];
-        if(!c) return;
-        if(c.status==='green'){
-          c.status='gray';
-        } else {
-          c.status='green';
-        }
-        saveData();renderHeute();
-      });
-
-      // Card body click - open detail modal
-      el.querySelector('.tp-body').addEventListener('click',()=>openDetail(card));
-
-      listEl.appendChild(el);
-    });
-
-    // Back all button
-    document.getElementById('tpBackAll').addEventListener('click',()=>{
-      const heuteCards=Object.values(data.cards).filter(c=>c.inHeute&&!c.archived);
-      if(!heuteCards.length) return;
-      if(!confirm(heuteCards.length+' Karte'+(heuteCards.length!==1?'n':'')+' zurückschieben?')) return;
-      heuteCards.forEach(c=>{
-        c.inHeute=false;
-        if(c.originalLane){
-          c.lane=c.originalLane;
-          c.originalLane=null;
-        } else {
-          // Move to first non-heute lane if no originalLane
-          const firstLane=LANES.find(l=>l.id!=='heute');
-          if(firstLane) c.lane=firstLane.id;
-        }
-      });
-      saveData();renderHeute();renderLanes();
-    });
-
-    // Add new card button
-    document.getElementById('tpAddNew').addEventListener('click',()=>{
-      openCreateModal('heute');
-    });
-  }
-
-  // TAGEBUCH
-  function renderTagebuch(){
-    if(!tbDate) tbDate=todayStr();
-    document.getElementById('tbDate').textContent=formatDate(tbDate);
-    document.getElementById('tbHeading').textContent='Tagebuch - '+formatDate(tbDate);
-    document.getElementById('tbText').value=data.tagebuch[tbDate]||'';
-  }
-  document.getElementById('tbText').addEventListener('input',()=>{
-    data.tagebuch[tbDate]=document.getElementById('tbText').value;
-    saveData();
-  });
-  document.getElementById('tbPrev').addEventListener('click',()=>{
-    const d=new Date(tbDate);d.setDate(d.getDate()-1);
-    tbDate=d.toISOString().slice(0,10);renderTagebuch();
-  });
-  document.getElementById('tbNext').addEventListener('click',()=>{
-    const d=new Date(tbDate);d.setDate(d.getDate()+1);
-    tbDate=d.toISOString().slice(0,10);renderTagebuch();
-  });
-
-  // PATIENTEN
-  function renderPatienten(){
-    const list=document.getElementById('patList');
-    list.innerHTML='';
-    data.patienten.forEach((p,i)=>{
-      const div=document.createElement('div');
-      div.className='pat-item';
-      div.innerHTML=`<div class="pat-info"><div class="pat-name">${esc(p.name)}</div>${p.notes?'<div class="pat-notes">'+esc(p.notes)+'</div>':''}</div>
-        <div class="pat-actions"><button class="pat-edit" data-idx="${i}">✏️</button><button class="pat-del" data-idx="${i}">🗑</button></div>`;
-      div.querySelector('.pat-edit').addEventListener('click',()=>openPatModal(i));
-      div.querySelector('.pat-del').addEventListener('click',()=>{
-        if(!confirm('Patient "'+p.name+'" löschen?')) return;
-        data.patienten.splice(i,1);saveData();renderPatienten();
-      });
-      list.appendChild(div);
-    });
-  }
-  document.getElementById('addPatient').addEventListener('click',()=>openPatModal(null));
-  function openPatModal(idx){
-    editingPatient=idx;
-    document.getElementById('patModalTitle').textContent=idx===null?'Neuer Patient':'Patient bearbeiten';
-    document.getElementById('pmName').value=idx!==null?data.patienten[idx].name:'';
-    document.getElementById('pmNotes').value=idx!==null?(data.patienten[idx].notes||''):'';
-    document.getElementById('patModal').classList.add('open');
-  }
-  document.getElementById('pmCancel').addEventListener('click',()=>document.getElementById('patModal').classList.remove('open'));
-  document.getElementById('pmSave').addEventListener('click',()=>{
-    const name=document.getElementById('pmName').value.trim();
-    if(!name){alert('Name ist erforderlich.');return;}
-    const notes=document.getElementById('pmNotes').value.trim();
-    if(editingPatient!==null){
-      data.patienten[editingPatient].name=name;
-      data.patienten[editingPatient].notes=notes;
-    } else {
-      data.patienten.push({id:Date.now().toString(),name:name,notes:notes});
-    }
-    saveData();
-    document.getElementById('patModal').classList.remove('open');
-    renderPatienten();
-  });
-  document.getElementById('patModal').addEventListener('click',e=>{
-    if(e.target===document.getElementById('patModal')) document.getElementById('patModal').classList.remove('open');
-  });
-
-  // EINSTELLUNGEN
-  document.getElementById('exportBtn').addEventListener('click',()=>{
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='coworkdashboard_export_'+todayStr()+'.json';a.click();
-  });
-  document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
-  document.getElementById('importFile').addEventListener('change',e=>{
-    const file=e.target.files[0];if(!file) return;
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      try{
-        const imported=JSON.parse(ev.target.result);
-        data=imported;saveData();
-        alert('Daten erfolgreich importiert.');
-        renderLanes();renderHeute();renderPatienten();
-      }catch(err){alert('Fehler beim Importieren: '+err.message);}
-    };
-    reader.readAsText(file);
-    e.target.value='';
-  });
-  document.getElementById('deleteBtn').addEventListener('click',()=>{
-    if(!confirm('Wirklich ALLE Daten löschen? Dies kann nicht rückgängig gemacht werden.')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    loadData();renderLanes();renderHeute();renderPatienten();renderTagebuch();
-    alert('Alle Daten gelöscht.');
-  });
-
-  // MOBILE SWIPE
-  let touchStartX=0,touchEndX=0;
-  const lc=document.getElementById('lanesContainer');
-  lc.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].screenX;},{passive:true});
-  lc.addEventListener('touchend',e=>{
-    touchEndX=e.changedTouches[0].screenX;
-    if(window.innerWidth>768) return;
-    const diff=touchStartX-touchEndX;
-    if(Math.abs(diff)>50){
-      if(diff>0 && currentLaneIdx<LANES.length-1) currentLaneIdx++;
-      else if(diff<0 && currentLaneIdx>0) currentLaneIdx--;
-      scrollToLane(currentLaneIdx);
-    }
-  },{passive:true});
-
-  function scrollToLane(idx){
-    currentLaneIdx=idx;
-    const lanes=lc.querySelectorAll('.lane');
-    if(lanes[idx]) lanes[idx].scrollIntoView({behavior:'smooth',inline:'start',block:'nearest'});
-    updateMobileLaneNav();
-  }
-  function updateMobileLaneNav(){
-    document.getElementById('laneNameDisplay').textContent=LANES[currentLaneIdx].name;
-    // dots
-    const dotsEl=document.getElementById('laneDots');
-    dotsEl.innerHTML='';
-    LANES.forEach((_,i)=>{
-      const d=document.createElement('span');
-      d.className='dot'+(i===currentLaneIdx?' active':'');
-      d.addEventListener('click',()=>scrollToLane(i));
-      dotsEl.appendChild(d);
-    });
-  }
-  document.getElementById('lanePrev').addEventListener('click',()=>{
-    if(currentLaneIdx>0) scrollToLane(currentLaneIdx-1);
-  });
-  document.getElementById('laneNext').addEventListener('click',()=>{
-    if(currentLaneIdx<LANES.length-1) scrollToLane(currentLaneIdx+1);
-  });
-
-  // INIT
-  loadData();
-  tbDate=todayStr();
-  renderHeute();
-  renderTagebuch();
-  renderPatienten();
-  // Render lanes when projekte tab is shown
-  setTimeout(()=>renderLanes(),0);
+/* ---- INIT ---- */
+loadAll();
+if(settings.theme==='dark')document.body.classList.add('dark');
+updateAlBadge();
+renderHeute();
+setTimeout(()=>{if(document.getElementById('tab-kanban').classList.contains('active'))renderLanes();},0);
 })();
 </script>
 </body>
 </html>
-
