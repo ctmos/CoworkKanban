@@ -524,6 +524,26 @@ nav::-webkit-scrollbar { display: none; }
   .modal-overlay { align-items: flex-end; padding: 0; }
 }
 
+/* ââ DESKTOP LAYOUT ââ */
+@media (min-width: 769px) {
+  nav { justify-content: center; }
+  #tab-heute, #tab-patienten, #tab-autonomy, #tab-settings {
+    max-width: 900px; margin-left: auto; margin-right: auto; width: 100%;
+  }
+  .kanban-grid { max-width: 900px; margin-left: auto; margin-right: auto; }
+}
+@media (min-width: 1200px) {
+  #tab-heute, #tab-patienten, #tab-autonomy, #tab-settings { max-width: 1100px; }
+  .kanban-grid {
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  .kanban-grid .lane { margin-bottom: 0; }
+}
+
+
 /* ── BACKLOG ── */
 .bl-card {
   background: var(--surface);
@@ -838,6 +858,54 @@ nav::-webkit-scrollbar { display: none; }
 </div>
 
 <script>
+
+// âââ GITHUB HELPERS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+const GH_DATA_REPO = 'ctmos/cowork-data';
+const GH_API_BASE  = 'https://api.github.com';
+
+function getGHToken() {
+  const settings = ls('cowork_settings', {});
+  return settings.gh_token || ls('cowork_gh_token', '');
+}
+
+async function fetchFromGitHub(path) {
+  const token = getGHToken();
+  if (!token) return null;
+  try {
+    const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return { content: atob(d.content.replace(/\n/g, '')), sha: d.sha };
+  } catch(e) { return null; }
+}
+
+async function pushToGitHub(token, path, content, message) {
+  const ghToken = token || getGHToken();
+  if (!ghToken) throw new Error('No token');
+  let sha = undefined;
+  try {
+    const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
+      headers: { Authorization: `token ${ghToken}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (r.ok) { const d = await r.json(); sha = d.sha; }
+  } catch(e) {}
+  const body = { message, content: btoa(unescape(encodeURIComponent(content))) };
+  if (sha) body.sha = sha;
+  const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${ghToken}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error('GitHub push failed: ' + r.status);
+  return await r.json();
+}
+
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const LANES = [
   {id:'BA', name:'Barmelweid', isBA:true},
@@ -892,37 +960,68 @@ function showPinError(msg) {
   document.getElementById('pin-error').textContent = msg;
 }
 
-function initPinScreen() {
+function showPinUnlockUI(stored) {
+  document.getElementById('pin-title').textContent = 'CoworkDashboard';
+  document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
+  document.getElementById('pin-confirm-group').style.display = 'none';
+  document.getElementById('pin-btn').textContent = 'Entsperren';
+  document.getElementById('pin-btn').onclick = function() {
+    const p = document.getElementById('pin-input').value;
+    if (btoa(p + 'cowork') === stored) { unlockApp(); }
+    else { showPinError('Falscher PIN'); }
+  };
+}
+
+function showPinSetupUI() {
+  document.getElementById('pin-title').textContent = 'PIN einrichten';
+  document.getElementById('pin-subtitle').textContent = 'Wähle einen PIN (4–6 Stellen)';
+  document.getElementById('pin-confirm-group').style.display = 'block';
+  document.getElementById('pin-btn').textContent = 'PIN einrichten';
+  document.getElementById('pin-btn').onclick = async function() {
+    const p1 = document.getElementById('pin-input').value;
+    const p2 = document.getElementById('pin-confirm').value;
+    if (p1.length < 4) { showPinError('Mindestens 4 Stellen'); return; }
+    if (p1 !== p2) { showPinError('PINs stimmen nicht überein'); return; }
+    const pinHash = btoa(p1 + 'cowork');
+    localStorage.setItem('cowork_pin', pinHash);
+    try {
+      await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: pinHash }, null, 2), 'sync: update PIN');
+    } catch(e) { /* silent fail */ }
+    unlockApp();
+  };
+}
+
+async function initPinScreen() {
   const stored = localStorage.getItem('cowork_pin');
-  if (!stored) {
-    document.getElementById('pin-title').textContent = 'PIN einrichten';
-    document.getElementById('pin-subtitle').textContent = 'Wähle einen PIN (4–6 Stellen)';
-    document.getElementById('pin-confirm-group').style.display = 'block';
-    document.getElementById('pin-btn').textContent = 'PIN einrichten';
-    document.getElementById('pin-btn').onclick = function() {
-      const p1 = document.getElementById('pin-input').value;
-      const p2 = document.getElementById('pin-confirm').value;
-      if (p1.length < 4) { showPinError('Mindestens 4 Stellen'); return; }
-      if (p1 !== p2) { showPinError('PINs stimmen nicht überein'); return; }
-      localStorage.setItem('cowork_pin', btoa(p1 + 'cowork'));
-      unlockApp();
-    };
+  if (stored) {
+    showPinUnlockUI(stored);
   } else {
-    document.getElementById('pin-title').textContent = 'CoworkDashboard';
-    document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
-    document.getElementById('pin-confirm-group').style.display = 'none';
-    document.getElementById('pin-btn').textContent = 'Entsperren';
-    document.getElementById('pin-btn').onclick = function() {
-      const p = document.getElementById('pin-input').value;
-      if (btoa(p + 'cowork') === stored) { unlockApp(); }
-      else { showPinError('Falscher PIN'); }
-    };
+    document.getElementById('pin-subtitle').textContent = 'Prüfe GitHub…';
+    document.getElementById('pin-btn').disabled = true;
+    const remote = await fetchFromGitHub('settings/pin.json');
+    document.getElementById('pin-btn').disabled = false;
+    if (remote) {
+      try {
+        const data = JSON.parse(remote.content);
+        if (data.pin_hash) {
+          localStorage.setItem('cowork_pin', data.pin_hash);
+          showPinUnlockUI(data.pin_hash);
+        } else {
+          showPinSetupUI();
+        }
+      } catch(e) {
+        showPinSetupUI();
+      }
+    } else {
+      showPinSetupUI();
+    }
   }
   document.getElementById('pin-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') document.getElementById('pin-btn').click();
   });
   document.getElementById('pin-input').focus();
 }
+
 function unlockApp() {
   document.getElementById('pin-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
@@ -1434,33 +1533,54 @@ document.getElementById('blm-delete').addEventListener('click', () => {
 
 // ─── EINSTELLUNGEN ────────────────────────────────────────────────────────────
 function initSettings() {
-  const token = ls('cowork_gh_token', '');
+  const settings = ls('cowork_settings', {});
+  const token = settings.gh_token || ls('cowork_gh_token', '');
   document.getElementById('gh-token-input').value = token;
-  const budget = ls('cowork_budget', 100);
+  const budget = settings.budget || ls('cowork_budget', 100);
   document.getElementById('budget-input').value = budget;
 }
 
-document.getElementById('btn-gh-save').addEventListener('click', () => {
+document.getElementById('btn-gh-save').addEventListener('click', async () => {
   const v = document.getElementById('gh-token-input').value.trim();
   lsSet('cowork_gh_token', v);
-  showToast('GitHub Token gespeichert');
+  const settings = ls('cowork_settings', {});
+  settings.gh_token = v;
+  lsSet('cowork_settings', settings);
+  if (v) {
+    try {
+      await pushToGitHub(v, 'settings/config.json', JSON.stringify({ updated: new Date().toISOString() }, null, 2), 'sync: update config');
+      showToast('2705 Token gespeichert & synchronisiert');
+    } catch(e) {
+      showToast('2705 Token lokal gespeichert');
+    }
+  } else {
+    showToast('2705 Token gespeichert');
+  }
 });
 
 document.getElementById('btn-budget-save').addEventListener('click', () => {
   const v = parseInt(document.getElementById('budget-input').value) || 100;
   lsSet('cowork_budget', v);
-  showToast('Budget gespeichert');
+  const settings = ls('cowork_settings', {});
+  settings.budget = v;
+  lsSet('cowork_settings', settings);
+  showToast('2705 Budget gespeichert');
   if (currentTab === 'heute') renderHeute();
 });
 
-document.getElementById('btn-pin-change').addEventListener('click', () => {
+document.getElementById('btn-pin-change').addEventListener('click', async () => {
   const val = document.getElementById('new-pin-input').value.trim();
   if (val.length < 4 || val.length > 6 || !/^\d+$/.test(val)) {
     showToast('PIN muss 4–6 Ziffern sein', true); return;
   }
   localStorage.setItem('cowork_pin', hashPin(val));
   document.getElementById('new-pin-input').value = '';
-  showToast('PIN geändert');
+  try {
+    await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: hashPin(val) }, null, 2), 'sync: update PIN');
+    showToast('✅ PIN geändert & synchronisiert');
+  } catch(e) {
+    showToast('✅ PIN lokal geändert');
+  }
 });
 
 document.getElementById('btn-export').addEventListener('click', () => {
