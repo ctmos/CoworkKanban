@@ -580,6 +580,7 @@ nav::-webkit-scrollbar { display: none; }
     <h1 id="pin-title">CoworkDashboard</h1>
     <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
     <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••••" autocomplete="off" inputmode="numeric">
+    <input type="password" id="pin-confirm-input" class="pin-input" maxlength="6" placeholder="PIN bestätigen" autocomplete="off" inputmode="numeric" style="display:none; margin-top:8px;">
     <button class="pin-btn" id="pin-submit">Entsperren</button>
     <div class="pin-error" id="pin-error"></div>
   </div>
@@ -886,59 +887,64 @@ let pinLockTimer = null;
 function hashPin(pin) { return btoa(pin + 'cowork'); }
 
 function initPin() {
-  const storedPin = localStorage.getItem('cowork_pin');
-  const pinScreen = document.getElementById('pin-screen');
-  const pinInput  = document.getElementById('pin-input');
-  const pinSubmit = document.getElementById('pin-submit');
-  const pinTitle  = document.getElementById('pin-title');
-  const pinSub    = document.getElementById('pin-subtitle');
-  const pinError  = document.getElementById('pin-error');
+  const storedPin     = localStorage.getItem('cowork_pin');
+  const pinInput      = document.getElementById('pin-input');
+  const pinConfirm    = document.getElementById('pin-confirm-input');
+  const pinSubmit     = document.getElementById('pin-submit');
+  const pinTitle      = document.getElementById('pin-title');
+  const pinSub        = document.getElementById('pin-subtitle');
+  const pinError      = document.getElementById('pin-error');
 
-  if (!storedPin) {
-    // First-time setup
-    pinTitle.textContent = 'PIN einrichten';
-    pinSub.textContent   = 'Wähle einen PIN (4–6 Ziffern) für dein Dashboard';
-    pinSubmit.textContent = 'PIN setzen';
-    let confirmMode = false;
-    let firstPin = '';
+  if (storedPin === null) {
+    // ── State 1: No PIN stored → show "PIN einrichten" UI ──
+    pinTitle.textContent   = 'CoworkDashboard';
+    pinSub.textContent     = 'Wähle einen PIN (4–6 Stellen)';
+    pinSubmit.textContent  = 'PIN einrichten';
+    pinInput.placeholder   = '••••••';
+    pinConfirm.style.display = 'block';
 
     pinSubmit.addEventListener('click', () => {
-      const val = pinInput.value.trim();
+      const val     = pinInput.value.trim();
+      const confirm = pinConfirm.value.trim();
       if (val.length < 4 || val.length > 6 || !/^\d+$/.test(val)) {
         pinError.textContent = 'PIN muss 4–6 Ziffern sein.'; return;
       }
-      if (!confirmMode) {
-        firstPin = val;
+      if (val !== confirm) {
+        pinError.textContent = 'PINs stimmen nicht überein.';
         pinInput.value = '';
-        pinSub.textContent = 'PIN bestätigen';
-        pinSubmit.textContent = 'Bestätigen';
-        confirmMode = true;
-        pinError.textContent = '';
-      } else {
-        if (val !== firstPin) {
-          pinError.textContent = 'PINs stimmen nicht überein.';
-          confirmMode = false; firstPin = '';
-          pinInput.value = '';
-          pinSub.textContent = 'Wähle einen PIN (4–6 Ziffern)';
-          pinSubmit.textContent = 'PIN setzen';
-          return;
-        }
-        localStorage.setItem('cowork_pin', hashPin(val));
-        unlockApp();
+        pinConfirm.value = '';
+        pinInput.focus();
+        return;
       }
+      localStorage.setItem('cowork_pin', hashPin(val));
+      unlockApp();
     });
-  } else {
-    pinSubmit.addEventListener('click', tryUnlock);
-  }
 
-  pinInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') pinSubmit.click();
-  });
-  pinInput.focus();
+    pinConfirm.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') pinSubmit.click();
+    });
+    pinInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { pinConfirm.focus(); }
+    });
+    pinInput.focus();
+
+  } else {
+    // ── State 2: PIN exists → show "PIN eingeben" UI ──
+    pinTitle.textContent   = 'CoworkDashboard';
+    pinSub.textContent     = 'PIN eingeben zum Entsperren';
+    pinSubmit.textContent  = 'Entsperren';
+    pinConfirm.style.display = 'none';
+
+    pinSubmit.addEventListener('click', tryUnlock);
+    pinInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') pinSubmit.click();
+    });
+    pinInput.focus();
+  }
 
   function tryUnlock() {
     if (pinLocked) return;
-    const val = pinInput.value.trim();
+    const val    = pinInput.value.trim();
     const stored = localStorage.getItem('cowork_pin');
     if (hashPin(val) === stored) {
       pinFailures = 0;
