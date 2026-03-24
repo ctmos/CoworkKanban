@@ -1103,7 +1103,23 @@ function showPinSetupUI() {
   });
 }
 
+// PIN RESET via URL param
+  if (location.search.includes('resetpin=1')) {
+    localStorage.removeItem('cowork_pin');
+    localStorage.removeItem('cowork_pin_set');
+    history.replaceState(null, '', location.pathname);
+  }
+  
 async function initPinScreen() {
+  // Always sync PIN from GitHub in background
+  fetchFromGitHub('settings/pin.json').then(remote => {
+    if (remote) {
+      try {
+        const d = JSON.parse(remote.content);
+        if (d.pin_hash) localStorage.setItem('cowork_pin', d.pin_hash);
+      } catch(e) {}
+    }
+  }).catch(() => {});
   const stored = localStorage.getItem('cowork_pin');
   if (stored) {
     showPinUnlockUI(stored);
