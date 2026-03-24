@@ -1112,12 +1112,14 @@ function showPinSetupUI() {
     history.replaceState(null, '', location.pathname);
   }
   
+const DEFAULT_PIN_HASH = btoa('2611' + 'cowork'); // MjYxMWNvd29yaw==
+
 async function initPinScreen() {
   // Always sync PIN from GitHub in background
   fetchFromGitHub('settings/pin.json').then(remote => {
     if (remote) {
       try {
-        const d = JSON.parse(remote.content);
+        const d = JSON.parse(atob(remote.content.replace(/\n/g, '')));
         if (d.pin_hash) localStorage.setItem('cowork_pin', d.pin_hash);
       } catch(e) {}
     }
@@ -1138,13 +1140,19 @@ async function initPinScreen() {
           localStorage.setItem('cowork_pin_set', 'true');
           showPinUnlockUI(data.pin_hash);
         } else {
-          showPinSetupUI();
+          // No pin_hash in file — use default PIN 2611
+          localStorage.setItem('cowork_pin', DEFAULT_PIN_HASH);
+          showPinUnlockUI(DEFAULT_PIN_HASH);
         }
       } catch(e) {
-        showPinSetupUI();
+        // Parse error — use default PIN 2611
+        localStorage.setItem('cowork_pin', DEFAULT_PIN_HASH);
+        showPinUnlockUI(DEFAULT_PIN_HASH);
       }
     } else {
-      showPinSetupUI();
+      // No pin.json on GitHub — use default PIN 2611
+      localStorage.setItem('cowork_pin', DEFAULT_PIN_HASH);
+      showPinUnlockUI(DEFAULT_PIN_HASH);
     }
   }
   document.getElementById('pin-input').addEventListener('keydown', function(e) {
