@@ -629,6 +629,91 @@ nav::-webkit-scrollbar { display: none; }
   background: #fff5f5;
 }
 
+/* ── PROJEKTE ── */
+#tab-projekte {
+  padding: 20px 16px;
+  max-width: 900px; margin: 0 auto;
+}
+.proj-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+}
+.proj-header h2 { font-size: 16px; font-weight: 600; }
+.proj-grid {
+  display: grid; grid-template-columns: 1fr; gap: 12px;
+}
+@media (min-width: 600px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .proj-grid { grid-template-columns: repeat(3, 1fr); } }
+.proj-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 16px; cursor: pointer; transition: box-shadow 0.15s;
+  position: relative; overflow: hidden;
+}
+.proj-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+.proj-card-color-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.proj-card-name { font-size: 15px; font-weight: 600; margin: 6px 0; }
+.proj-card-desc {
+  font-size: 12px; color: var(--text-muted); margin-bottom: 8px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.proj-status-badge {
+  font-size: 11px; padding: 2px 8px;
+  border-radius: 10px; font-weight: 500; display: inline-block;
+}
+.proj-status-aktiv         { background: #dcfce7; color: #166534; }
+.proj-status-pausiert      { background: #fef9c3; color: #854d0e; }
+.proj-status-abgeschlossen { background: #f1f5f9; color: #475569; }
+.proj-card-log {
+  font-size: 12px; color: var(--text-muted); margin-top: 8px;
+  padding-top: 8px; border-top: 1px solid var(--border);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.proj-detail-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.proj-detail-back {
+  background: none; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 6px 12px;
+  font-size: 13px; cursor: pointer; font-family: inherit; color: var(--text-muted);
+}
+.proj-detail-back:hover { background: var(--bg); color: var(--text); }
+.proj-detail-name { font-size: 18px; font-weight: 700; flex: 1; }
+.proj-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+}
+.proj-section h3 {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;
+}
+.proj-log-content {
+  font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.6;
+  max-height: 300px; overflow-y: auto; font-family: inherit;
+}
+.proj-log-form {
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; align-items: flex-end;
+}
+.proj-log-input {
+  flex: 1; padding: 9px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--surface); color: var(--text);
+  font-size: 13px; font-family: inherit; outline: none; resize: vertical; min-height: 60px;
+}
+.proj-log-input:focus { border-color: var(--accent); }
+.proj-kanban-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.proj-kanban-chip {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--text-muted);
+}
+.proj-color-options { display: flex; gap: 8px; margin-top: 4px; }
+.proj-color-swatch {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid transparent; cursor: pointer; transition: border-color 0.15s;
+}
+.proj-color-swatch.selected { border-color: var(--text); }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 600px) {
   .pin-card { padding: 28px 20px; margin: 16px; }
@@ -747,6 +832,7 @@ nav::-webkit-scrollbar { display: none; }
     <button class="tab-btn" data-tab="patienten">Patienten</button>
     <button class="tab-btn" data-tab="autonomy">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
     <button class="tab-btn" data-tab="backlog">Backlog</button>
+    <button class="tab-btn" data-tab="projekte">Projekte</button>
     <button class="tab-btn" data-tab="settings">Einstellungen</button>
   </nav>
 
@@ -812,6 +898,11 @@ nav::-webkit-scrollbar { display: none; }
       </div>
     </div>
     <div id="bl-list" style="padding:0 16px 20px;max-width:900px;margin:0 auto;"></div>
+  </div>
+
+  <!-- PROJEKTE TAB -->
+  <div id="tab-projekte" class="tab-content">
+    <div id="projekte-view"></div>
   </div>
 
   <!-- EINSTELLUNGEN TAB -->
@@ -973,6 +1064,43 @@ nav::-webkit-scrollbar { display: none; }
       <button class="btn-danger" id="pm-delete" style="margin-right:auto">Löschen</button>
       <button class="btn-secondary" id="pm-cancel">Abbrechen</button>
       <button class="btn-primary" id="pm-save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJEKT ERSTELLEN MODAL -->
+<div class="modal-overlay" id="proj-modal-overlay">
+  <div class="modal">
+    <h2>Neues Projekt</h2>
+    <div class="form-group">
+      <label class="form-label">Name *</label>
+      <input type="text" class="form-input" id="pjm-name" placeholder="Projektname…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Beschreibung</label>
+      <textarea class="form-textarea" id="pjm-desc" placeholder="Kurze Beschreibung…" style="min-height:60px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select class="form-select" id="pjm-status">
+        <option value="aktiv">Aktiv</option>
+        <option value="pausiert">Pausiert</option>
+        <option value="abgeschlossen">Abgeschlossen</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Farbe</label>
+      <div class="proj-color-options">
+        <div class="proj-color-swatch selected" style="background:#cc785c" data-color="#cc785c" onclick="selectProjColor(this)"></div>
+        <div class="proj-color-swatch" style="background:#6366f1" data-color="#6366f1" onclick="selectProjColor(this)"></div>
+        <div class="proj-color-swatch" style="background:#22c55e" data-color="#22c55e" onclick="selectProjColor(this)"></div>
+        <div class="proj-color-swatch" style="background:#f59e0b" data-color="#f59e0b" onclick="selectProjColor(this)"></div>
+        <div class="proj-color-swatch" style="background:#ef4444" data-color="#ef4444" onclick="selectProjColor(this)"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="pjm-cancel">Abbrechen</button>
+      <button class="btn-primary" id="pjm-save">Erstellen</button>
     </div>
   </div>
 </div>
@@ -1296,6 +1424,7 @@ function switchTab(id) {
   if (id === 'patienten') renderPatients();
   if (id === 'autonomy')  renderAL();
   if (id === 'backlog')   renderBacklog();
+  if (id === 'projekte')  showProjectsTab();
   if (id === 'settings')  initSettings();
 }
 // ─── HEUTE / STATUS ───────────────────────────────────────────────────────────
@@ -2055,6 +2184,279 @@ function showToast(msg, isError) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
 }
+
+// ─── PROJEKTE ─────────────────────────────────────────────────────────────────
+
+async function loadProjects() {
+  const token = getGHToken();
+  if (!token) return null;
+  try {
+    const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/projects`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (r.status === 404) return [];
+    if (!r.ok) return null;
+    const items = await r.json();
+    return items.filter(i => i.type === 'dir').map(i => i.name);
+  } catch(e) { return null; }
+}
+
+async function loadProjectMeta(id) {
+  const result = await fetchFromGitHub('projects/' + id + '/meta.json');
+  if (!result) return null;
+  try { return JSON.parse(result.content); } catch(e) { return null; }
+}
+
+async function loadProjectLog(id) {
+  const result = await fetchFromGitHub('projects/' + id + '/log.md');
+  if (!result) return { content: '', sha: null };
+  return result;
+}
+
+async function saveProject(meta) {
+  const token = getGHToken();
+  if (!token) throw new Error('No token');
+  await pushToGitHub(token, 'projects/' + meta.id + '/meta.json',
+    JSON.stringify(meta, null, 2), 'project: save ' + meta.name);
+  // Create empty log.md if it doesn't exist yet
+  const existingLog = await fetchFromGitHub('projects/' + meta.id + '/log.md');
+  if (!existingLog) {
+    await pushToGitHub(token, 'projects/' + meta.id + '/log.md',
+      '', 'project: init log for ' + meta.name);
+  }
+}
+
+async function updateProjectLog(projectId, text) {
+  const token = getGHToken();
+  if (!token) throw new Error('No token');
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' })
+    + ' ' + now.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+  const entry = '\n\n---\n**[' + dateStr + ']** ' + text;
+  // Fetch current SHA and content
+  let sha, currentContent = '';
+  try {
+    const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/projects/${projectId}/log.md`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (r.ok) {
+      const d = await r.json();
+      sha = d.sha;
+      const bytes = Uint8Array.from(atob(d.content.replace(/\n/g,'')), c => c.charCodeAt(0));
+      currentContent = new TextDecoder('utf-8').decode(bytes);
+    }
+  } catch(e) {}
+  const newContent = entry + currentContent;
+  const body = { message: 'project: log entry for ' + projectId,
+    content: btoa(unescape(encodeURIComponent(newContent))) };
+  if (sha) body.sha = sha;
+  const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/projects/${projectId}/log.md`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json',
+      Accept: 'application/vnd.github.v3+json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error('Log update failed: ' + r.status);
+}
+
+async function showProjectsTab() {
+  const container = document.getElementById('projekte-view');
+  const token = getGHToken();
+  const headerHtml = '<div class="proj-header"><h2>Projekte</h2>'
+    + '<button class="btn-primary" onclick="openCreateProjectModal()">+ Neues Projekt</button></div>';
+
+  if (!token) {
+    container.innerHTML = headerHtml
+      + '<div class="empty-state">Bitte GitHub Token in Einstellungen eintragen.</div>';
+    return;
+  }
+  container.innerHTML = headerHtml
+    + '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Lade Projekte\u2026</div>';
+
+  const projectIds = await loadProjects();
+  if (projectIds === null) {
+    container.innerHTML = headerHtml
+      + '<div class="empty-state">Fehler beim Laden. Bitte Token pr\u00fcfen.</div>';
+    return;
+  }
+  if (projectIds.length === 0) {
+    container.innerHTML = headerHtml
+      + '<div class="empty-state">Noch keine Projekte. Erstelle dein erstes Projekt!</div>';
+    return;
+  }
+
+  const [metas, logs] = await Promise.all([
+    Promise.all(projectIds.map(id => loadProjectMeta(id))),
+    Promise.all(projectIds.map(id => loadProjectLog(id)))
+  ]);
+
+  const statusCls = { aktiv:'proj-status-aktiv', pausiert:'proj-status-pausiert', abgeschlossen:'proj-status-abgeschlossen' };
+  const statusLbl = { aktiv:'Aktiv', pausiert:'Pausiert', abgeschlossen:'Abgeschlossen' };
+
+  let cards = '';
+  projectIds.forEach((id, i) => {
+    const meta = metas[i];
+    if (!meta) return;
+    const logContent = logs[i]?.content || '';
+    const firstLine = logContent.split('\n').map(l => l.trim())
+      .find(l => l && l !== '---' && !l.startsWith('**[')) || '';
+    const colorBar = meta.color
+      ? `<div class="proj-card-color-bar" style="background:${esc(meta.color)}"></div>` : '';
+    const badge = `<span class="proj-status-badge ${statusCls[meta.status]||'proj-status-aktiv'}">`
+      + `${statusLbl[meta.status]||esc(meta.status)}</span>`;
+    cards += `<div class="proj-card" onclick="showProjectDetail('${esc(id)}')">
+      ${colorBar}
+      <div class="proj-card-name">${esc(meta.name||id)}</div>
+      ${badge}
+      ${meta.description ? `<div class="proj-card-desc">${esc(meta.description)}</div>` : ''}
+      ${firstLine ? `<div class="proj-card-log">${esc(firstLine)}</div>` : ''}
+    </div>`;
+  });
+
+  container.innerHTML = headerHtml + `<div class="proj-grid">${cards}</div>`;
+}
+
+async function showProjectDetail(projectId) {
+  const container = document.getElementById('projekte-view');
+  container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted);font-size:13px">Lade Projekt\u2026</div>';
+
+  const meta = await loadProjectMeta(projectId);
+  if (!meta) {
+    container.innerHTML = '<div class="empty-state">Projekt nicht gefunden.</div>';
+    return;
+  }
+  const logData = await loadProjectLog(projectId);
+  const logContent = logData?.content || '';
+
+  const cards = getCards();
+  const linkedCards = (meta.kanbanCards || []).map(id => cards[id]).filter(Boolean);
+
+  const statusCls = { aktiv:'proj-status-aktiv', pausiert:'proj-status-pausiert', abgeschlossen:'proj-status-abgeschlossen' };
+  const statusLbl = { aktiv:'Aktiv', pausiert:'Pausiert', abgeschlossen:'Abgeschlossen' };
+  const colorBorder = meta.color ? ` style="border-top:4px solid ${esc(meta.color)}"` : '';
+
+  container.innerHTML = `
+    <div class="proj-detail-header">
+      <button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button>
+      <span class="proj-detail-name">${esc(meta.name||projectId)}</span>
+      <span class="proj-status-badge ${statusCls[meta.status]||'proj-status-aktiv'}">${statusLbl[meta.status]||esc(meta.status)}</span>
+    </div>
+    <div class="proj-section"${colorBorder}>
+      <h3>Info</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div>
+          <label class="form-label" style="margin-bottom:4px">Name</label>
+          <input type="text" class="form-input" id="pjd-name" value="${esc(meta.name||'')}" style="width:auto;min-width:200px">
+        </div>
+        <div>
+          <label class="form-label" style="margin-bottom:4px">Status</label>
+          <select class="form-select" id="pjd-status" style="width:auto">
+            <option value="aktiv" ${meta.status==='aktiv'?'selected':''}>Aktiv</option>
+            <option value="pausiert" ${meta.status==='pausiert'?'selected':''}>Pausiert</option>
+            <option value="abgeschlossen" ${meta.status==='abgeschlossen'?'selected':''}>Abgeschlossen</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" id="pjd-save-btn">Speichern</button>
+      <span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span>
+    </div>
+    <div class="proj-section">
+      <h3>Log</h3>
+      <pre class="proj-log-content" id="pjd-log-display">${logContent ? esc(logContent) : '<span style="color:var(--text-muted);font-style:italic">Noch keine Eintr\u00e4ge.</span>'}</pre>
+      <div class="proj-log-form">
+        <textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea>
+        <button class="btn-primary" id="pjd-log-btn" style="flex-shrink:0;white-space:nowrap">Eintrag hinzuf\u00fcgen</button>
+      </div>
+    </div>
+    <div class="proj-section">
+      <h3>Verkn\u00fcpfte Kanban-Karten</h3>
+      ${linkedCards.length === 0
+        ? '<div style="font-size:13px;color:var(--text-muted)">Keine verkn\u00fcpften Karten</div>'
+        : '<div class="proj-kanban-chips">' + linkedCards.map(c =>
+            `<span class="proj-kanban-chip"><strong>${esc(c.id)}</strong> ${esc(c.title||'')}</span>`
+          ).join('') + '</div>'
+      }
+    </div>`;
+
+  document.getElementById('pjd-save-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('pjd-save-btn');
+    const statusEl = document.getElementById('pjd-save-status');
+    const newName   = document.getElementById('pjd-name').value.trim();
+    const newStatus = document.getElementById('pjd-status').value;
+    if (!newName) { showToast('Name darf nicht leer sein', true); return; }
+    btn.disabled = true; statusEl.textContent = 'Speichert\u2026';
+    try {
+      await saveProject({ ...meta, name: newName, status: newStatus, updatedAt: new Date().toISOString() });
+      statusEl.textContent = 'Gespeichert \u2713';
+      showToast('Projekt gespeichert');
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+    } catch(e) { showToast('Fehler beim Speichern', true); statusEl.textContent = ''; }
+    btn.disabled = false;
+  });
+
+  document.getElementById('pjd-log-btn').addEventListener('click', async () => {
+    const btn  = document.getElementById('pjd-log-btn');
+    const text = document.getElementById('pjd-log-entry').value.trim();
+    if (!text) { document.getElementById('pjd-log-entry').focus(); return; }
+    btn.disabled = true; btn.textContent = 'Speichert\u2026';
+    try {
+      await updateProjectLog(projectId, text);
+      document.getElementById('pjd-log-entry').value = '';
+      showToast('Eintrag hinzugef\u00fcgt');
+      const newLogData = await loadProjectLog(projectId);
+      const pre = document.getElementById('pjd-log-display');
+      if (pre) pre.textContent = newLogData?.content || '';
+    } catch(e) { showToast('Fehler beim Speichern', true); }
+    btn.disabled = false; btn.textContent = 'Eintrag hinzuf\u00fcgen';
+  });
+}
+
+function openCreateProjectModal() {
+  document.getElementById('pjm-name').value  = '';
+  document.getElementById('pjm-desc').value  = '';
+  document.getElementById('pjm-status').value = 'aktiv';
+  document.querySelectorAll('.proj-color-swatch').forEach((s, i) => s.classList.toggle('selected', i === 0));
+  document.getElementById('proj-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('pjm-name').focus(), 50);
+}
+
+function selectProjColor(el) {
+  document.querySelectorAll('.proj-color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+document.getElementById('pjm-cancel').addEventListener('click', () => {
+  document.getElementById('proj-modal-overlay').classList.remove('open');
+});
+document.getElementById('proj-modal-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('proj-modal-overlay').classList.remove('open');
+});
+
+document.getElementById('pjm-save').addEventListener('click', async () => {
+  const name = document.getElementById('pjm-name').value.trim();
+  if (!name) { document.getElementById('pjm-name').focus(); return; }
+  const token = getGHToken();
+  if (!token) { showToast('Bitte GitHub Token in Einstellungen eintragen', true); return; }
+
+  const desc   = document.getElementById('pjm-desc').value.trim();
+  const status = document.getElementById('pjm-status').value;
+  const colorEl = document.querySelector('.proj-color-swatch.selected');
+  const color  = colorEl ? colorEl.dataset.color : '#cc785c';
+  const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  const id   = slug + '-' + Date.now().toString(36);
+  const meta = { id, name, description: desc, status, color,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), kanbanCards: [] };
+
+  const btn = document.getElementById('pjm-save');
+  btn.disabled = true; btn.textContent = 'Erstellt\u2026';
+  try {
+    await saveProject(meta);
+    document.getElementById('proj-modal-overlay').classList.remove('open');
+    showToast('Projekt erstellt');
+    showProjectsTab();
+  } catch(e) { showToast('Fehler: ' + e.message, true); }
+  btn.disabled = false; btn.textContent = 'Erstellen';
+});
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function esc(s) {
