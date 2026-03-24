@@ -30,7 +30,7 @@ body {
   min-height: 100vh;
 }
 
-/* ── PIN SCREEN ── */
+/* ââ PIN SCREEN ââ */
 #pin-screen {
   position: fixed; inset: 0;
   background: var(--bg);
@@ -97,10 +97,10 @@ body {
   margin-top: 12px; min-height: 18px;
 }
 
-/* ── APP ── */
+/* ââ APP ââ */
 #app { display: none; min-height: 100vh; }
 
-/* ── NAV ── */
+/* ââ NAV ââ */
 nav {
   background: var(--nav-bg);
   border-bottom: 1px solid var(--border);
@@ -149,11 +149,11 @@ nav::-webkit-scrollbar { display: none; }
   font-weight: 600;
 }
 
-/* ── TABS ── */
+/* ââ TABS ââ */
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* ── HEUTE ── */
+/* ââ HEUTE ââ */
 #tab-heute {
   padding: 20px 16px;
   max-width: 900px;
@@ -367,7 +367,7 @@ nav::-webkit-scrollbar { display: none; }
   color: var(--text-muted); margin-right: 4px;
 }
 
-/* ── KANBAN ── */
+/* ââ KANBAN ââ */
 #tab-kanban {
   padding: 16px;
 }
@@ -458,7 +458,7 @@ nav::-webkit-scrollbar { display: none; }
 }
 .vorlagen-item:hover { background: var(--bg); }
 
-/* ── MODAL ── */
+/* ââ MODAL ââ */
 .modal-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,0.3);
@@ -505,7 +505,7 @@ nav::-webkit-scrollbar { display: none; }
   border-top: 1px solid var(--border);
 }
 
-/* ── PATIENTEN ── */
+/* ââ PATIENTEN ââ */
 #tab-patienten {
   padding: 20px 16px;
   max-width: 900px; margin: 0 auto;
@@ -549,7 +549,7 @@ nav::-webkit-scrollbar { display: none; }
 .pat-status-entlassen { background: #f1f5f9; color: #475569; }
 .pat-status-pause { background: #fef9c3; color: #854d0e; }
 
-/* ── AUTONOMIE-LOG ── */
+/* ââ AUTONOMIE-LOG ââ */
 #tab-autonomy {
   padding: 20px 16px;
   max-width: 900px; margin: 0 auto;
@@ -588,7 +588,7 @@ nav::-webkit-scrollbar { display: none; }
 .al-read-btn:hover { background: var(--bg); }
 .al-card.read .al-read-btn { opacity: 0.5; pointer-events: none; }
 
-/* ── EINSTELLUNGEN ── */
+/* ââ EINSTELLUNGEN ââ */
 #tab-settings {
   padding: 20px 16px;
   max-width: 600px; margin: 0 auto;
@@ -625,7 +625,7 @@ nav::-webkit-scrollbar { display: none; }
   background: #fff5f5;
 }
 
-/* ── RESPONSIVE ── */
+/* ââ RESPONSIVE ââ */
 @media (max-width: 600px) {
   .pin-card { padding: 28px 20px; margin: 16px; }
   #tab-kanban { padding: 10px 8px; }
@@ -633,7 +633,7 @@ nav::-webkit-scrollbar { display: none; }
   .modal-overlay { align-items: flex-end; padding: 0; }
 }
 
-/* �� DESKTOP LAYOUT �� */
+/* âÂÂâÂÂ DESKTOP LAYOUT âÂÂâÂÂ */
 @media (min-width: 769px) {
   nav { justify-content: center; }
   #tab-heute, #tab-patienten, #tab-autonomy, #tab-settings {
@@ -653,7 +653,7 @@ nav::-webkit-scrollbar { display: none; }
 }
 
 
-/* ── BACKLOG ── */
+/* ââ BACKLOG ââ */
 .bl-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -708,9 +708,9 @@ nav::-webkit-scrollbar { display: none; }
   <div class="pin-card">
     <h1 id="pin-title">CoworkDashboard</h1>
     <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
-    <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••••" autocomplete="off" inputmode="numeric">
+    <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="â¢â¢â¢â¢â¢â¢" autocomplete="off" inputmode="numeric">
     <div id="pin-confirm-group" style="display:none">
-      <input type="password" id="pin-confirm" class="pin-input" maxlength="6" placeholder="PIN best�tigen" autocomplete="off" inputmode="numeric">
+      <input type="password" id="pin-confirm" class="pin-input" maxlength="6" placeholder="PIN bestätigen" autocomplete="off" inputmode="numeric">
     </div>
     <button class="pin-btn" id="pin-btn">Entsperren</button>
     <div class="pin-error" id="pin-error"></div>
@@ -736,7 +736,7 @@ nav::-webkit-scrollbar { display: none; }
       <div class="status-col" id="status-heute">
         <div class="status-col-header">Heute</div>
         <div id="heute-list" class="status-list">
-          <div class="empty-state">Keine heutigen Items — ziehe Karten hierher</div>
+          <div class="empty-state">Keine heutigen Items â ziehe Karten hierher</div>
         </div>
       </div>
       <!-- Column 2: Wochenplan -->
@@ -746,7 +746,7 @@ nav::-webkit-scrollbar { display: none; }
       </div>
       <!-- Column 3: Weitere Plaene -->
       <div class="status-col" id="status-weitere">
-        <div class="status-col-header">Weitere Pl�ne</div>
+        <div class="status-col-header">Weitere Pläne</div>
         <div id="weitere-list" class="status-list"></div>
       </div>
     </div>
@@ -761,7 +761,7 @@ nav::-webkit-scrollbar { display: none; }
     <div class="pat-header">
       <h2>Patienten</h2>
       <div style="display:flex;gap:8px;align-items:center">
-        <input type="search" class="search-input" id="pat-search" placeholder="Suchen…">
+        <input type="search" class="search-input" id="pat-search" placeholder="Suchenâ¦">
         <button class="btn-primary" id="btn-pat-add">+ Patient</button>
       </div>
     </div>
@@ -782,10 +782,10 @@ nav::-webkit-scrollbar { display: none; }
       <h2 style="font-size:16px;font-weight:600">Build-Backlog</h2>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <select id="bl-filter" class="form-select" style="width:auto;padding:7px 10px;font-size:13px;">
-          <option value="">Alle Priorit�ten</option>
-          <option value="hoch">🔴 Hoch</option>
-          <option value="mittel">🟡 Mittel</option>
-          <option value="niedrig">🟢 Niedrig</option>
+          <option value="">Alle Prioritäten</option>
+          <option value="hoch">ð´ Hoch</option>
+          <option value="mittel">ð¡ Mittel</option>
+          <option value="niedrig">ð¢ Niedrig</option>
         </select>
         <button class="btn-primary" id="btn-bl-add">+ Eintrag</button>
       </div>
@@ -805,7 +805,7 @@ nav::-webkit-scrollbar { display: none; }
           <input type="password" class="settings-input" id="gh-token-input" placeholder="ghp_...">
           <button class="btn-primary" id="btn-gh-save">Speichern</button>
         </div>
-        <p class="settings-desc">F�r GitHub-Sync (optional)</p>
+        <p class="settings-desc">Für GitHub-Sync (optional)</p>
       </div>
     </div>
 
@@ -814,8 +814,8 @@ nav::-webkit-scrollbar { display: none; }
       <div class="settings-row">
         <label class="settings-label">Neuen PIN setzen</label>
         <div class="settings-input-row">
-          <input type="password" class="settings-input" id="new-pin-input" maxlength="6" placeholder="Neuer PIN (4–6 Ziffern)" inputmode="numeric">
-          <button class="btn-primary" id="btn-pin-change">�ndern</button>
+          <input type="password" class="settings-input" id="new-pin-input" maxlength="6" placeholder="Neuer PIN (4â6 Ziffern)" inputmode="numeric">
+          <button class="btn-primary" id="btn-pin-change">Ändern</button>
         </div>
       </div>
     </div>
@@ -843,8 +843,8 @@ nav::-webkit-scrollbar { display: none; }
     <div class="settings-section danger-zone">
       <h3>Danger Zone</h3>
       <div class="settings-row">
-        <button class="btn-danger" id="btn-reset" style="width:100%">Alle Daten l�schen</button>
-        <p class="settings-desc">L�scht alle Karten, Patienten und Logs unwiderruflich.</p>
+        <button class="btn-danger" id="btn-reset" style="width:100%">Alle Daten löschen</button>
+        <p class="settings-desc">Löscht alle Karten, Patienten und Logs unwiderruflich.</p>
       </div>
     </div>
   </div>
@@ -856,19 +856,19 @@ nav::-webkit-scrollbar { display: none; }
     <h2 id="bl-modal-title">Backlog-Eintrag</h2>
     <div class="form-group">
       <label class="form-label">Titel</label>
-      <input type="text" class="form-input" id="blm-title" placeholder="Feature oder Projekt…">
+      <input type="text" class="form-input" id="blm-title" placeholder="Feature oder Projektâ¦">
     </div>
     <div class="form-group">
-      <label class="form-label">Priorit�t</label>
+      <label class="form-label">Priorität</label>
       <select class="form-select" id="blm-prio">
-        <option value="hoch">🔴 Hoch</option>
-        <option value="mittel">🟡 Mittel</option>
-        <option value="niedrig">🟢 Niedrig</option>
+        <option value="hoch">ð´ Hoch</option>
+        <option value="mittel">ð¡ Mittel</option>
+        <option value="niedrig">ð¢ Niedrig</option>
       </select>
     </div>
     <div class="form-group">
       <label class="form-label">Kategorie</label>
-      <input type="text" class="form-input" id="blm-cat" placeholder="z.B. KI, Integration, UI…">
+      <input type="text" class="form-input" id="blm-cat" placeholder="z.B. KI, Integration, UIâ¦">
     </div>
     <div class="form-group">
       <label class="form-label">Status</label>
@@ -880,10 +880,10 @@ nav::-webkit-scrollbar { display: none; }
     </div>
     <div class="form-group">
       <label class="form-label">Beschreibung</label>
-      <textarea class="form-textarea" id="blm-desc" placeholder="Details…"></textarea>
+      <textarea class="form-textarea" id="blm-desc" placeholder="Detailsâ¦"></textarea>
     </div>
     <div class="modal-footer">
-      <button class="btn-danger" id="blm-delete" style="margin-right:auto">L�schen</button>
+      <button class="btn-danger" id="blm-delete" style="margin-right:auto">Löschen</button>
       <button class="btn-secondary" id="blm-cancel">Abbrechen</button>
       <button class="btn-primary" id="blm-save">Speichern</button>
     </div>
@@ -896,7 +896,7 @@ nav::-webkit-scrollbar { display: none; }
     <h2 id="card-modal-title">Karte</h2>
     <div class="form-group">
       <label class="form-label">Titel</label>
-      <input type="text" class="form-input" id="cm-title" placeholder="Aufgabe beschreiben…">
+      <input type="text" class="form-input" id="cm-title" placeholder="Aufgabe beschreibenâ¦">
     </div>
     <div class="form-group">
       <label class="form-label">Status</label>
@@ -913,11 +913,11 @@ nav::-webkit-scrollbar { display: none; }
     </div>
     <div class="form-group">
       <label class="form-label">Beschreibung</label>
-      <textarea class="form-textarea" id="cm-desc" placeholder="Details…"></textarea>
+      <textarea class="form-textarea" id="cm-desc" placeholder="Detailsâ¦"></textarea>
     </div>
     <div class="modal-footer">
-      <button class="btn-danger" id="cm-delete" style="margin-right:auto">L�schen</button>
-      <button class="btn-secondary" id="cm-heute" style="display:none">→ Heute</button>
+      <button class="btn-danger" id="cm-delete" style="margin-right:auto">Löschen</button>
+      <button class="btn-secondary" id="cm-heute" style="display:none">â Heute</button>
       <button class="btn-secondary" id="cm-cancel">Abbrechen</button>
       <button class="btn-primary" id="cm-save">Speichern</button>
     </div>
@@ -946,10 +946,10 @@ nav::-webkit-scrollbar { display: none; }
     </div>
     <div class="form-group">
       <label class="form-label">Notizen</label>
-      <textarea class="form-textarea" id="pm-notizen" placeholder="Klinische Notizen…"></textarea>
+      <textarea class="form-textarea" id="pm-notizen" placeholder="Klinische Notizenâ¦"></textarea>
     </div>
     <div class="modal-footer">
-      <button class="btn-danger" id="pm-delete" style="margin-right:auto">L�schen</button>
+      <button class="btn-danger" id="pm-delete" style="margin-right:auto">Löschen</button>
       <button class="btn-secondary" id="pm-cancel">Abbrechen</button>
       <button class="btn-primary" id="pm-save">Speichern</button>
     </div>
@@ -959,18 +959,18 @@ nav::-webkit-scrollbar { display: none; }
 <!-- CONFIRM MODAL -->
 <div id="confirm-overlay">
   <div class="confirm-modal">
-    <h3 id="confirm-title">Best�tigen</h3>
+    <h3 id="confirm-title">Bestätigen</h3>
     <p id="confirm-msg"></p>
     <div class="confirm-btns">
       <button class="btn-secondary" id="confirm-no">Abbrechen</button>
-      <button class="btn-danger" id="confirm-yes">L�schen</button>
+      <button class="btn-danger" id="confirm-yes">Löschen</button>
     </div>
   </div>
 </div>
 
 <script>
 
-// ��� GITHUB HELPERS ����������������������������������������������������������
+// âÂÂâÂÂâÂÂ GITHUB HELPERS âÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂâÂÂ
 const GH_DATA_REPO = 'ctmos/cowork-data';
 const GH_API_BASE  = 'https://api.github.com';
 
@@ -1017,12 +1017,12 @@ async function pushToGitHub(token, path, content, message) {
   return await r.json();
 }
 
-// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+// âââ CONSTANTS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const LANES = [
   {id:'BA', name:'Barmelweid', isBA:true},
   {id:'PA', name:'Patienten-Admin'},
   {id:'WB', name:'Weiterbildung'},
-  {id:'SI', name:'Selbst & Identit�t'},
+  {id:'SI', name:'Selbst & Identität'},
   {id:'FI', name:'Finanzen'},
   {id:'FR', name:'Freizeit & Familie'},
   {id:'EV', name:'Events & Termine'},
@@ -1030,14 +1030,14 @@ const LANES = [
   {id:'KI', name:'KI & Tech'},
   {id:'CO', name:'Coaching'},
   {id:'IK', name:'Interkantonales'},
-  {id:'ER', name:'Ern�hrung & Sport'},
+  {id:'ER', name:'Ernährung & Sport'},
   {id:'TA', name:'Tagesstruktur'},
   {id:'HE', name:'Heute', isHeute:true}
 ];
 
 const BA_TPLS = [
   'Verlaufsbericht',
-  'Erstgespr�ch-Bericht',
+  'Erstgespräch-Bericht',
   'Austrittsbericht',
   'Verlaufs-/Austrittsbericht',
   'Gruppen-Verlaufsbericht',
@@ -1053,14 +1053,14 @@ const STATUSES = {
   'erledigt':   {label:'Erledigt',   cls:'status-erledigt'}
 };
 
-// ─── STORAGE HELPERS ─────────────────────────────────────────────────────────
+// âââ STORAGE HELPERS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function ls(key, def) {
   try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; }
   catch(e) { return def; }
 }
 function lsSet(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
-// ─── PIN SYSTEM ──────────────────────────────────────────────────────────────
+// âââ PIN SYSTEM ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let pinFailures = 0;
 let pinLocked = false;
 let pinLockTimer = null;
@@ -1085,14 +1085,14 @@ function showPinUnlockUI(stored) {
 
 function showPinSetupUI() {
   document.getElementById('pin-title').textContent = 'PIN einrichten';
-  document.getElementById('pin-subtitle').textContent = 'W�hle einen PIN (4–6 Stellen)';
+  document.getElementById('pin-subtitle').textContent = 'Wähle einen PIN (4â6 Stellen)';
   document.getElementById('pin-confirm-group').style.display = 'block';
   document.getElementById('pin-btn').textContent = 'PIN einrichten';
   document.getElementById('pin-btn').addEventListener('click', async function() {
     const p1 = document.getElementById('pin-input').value;
     const p2 = document.getElementById('pin-confirm').value;
     if (p1.length < 4) { showPinError('Mindestens 4 Stellen'); return; }
-    if (p1 !== p2) { showPinError('PINs stimmen nicht �berein'); return; }
+    if (p1 !== p2) { showPinError('PINs stimmen nicht überein'); return; }
     const pinHash = btoa(p1 + 'cowork');
     localStorage.setItem('cowork_pin', pinHash);
     localStorage.setItem('cowork_pin_set', 'true');
@@ -1124,7 +1124,7 @@ async function initPinScreen() {
   if (stored) {
     showPinUnlockUI(stored);
   } else {
-    document.getElementById('pin-subtitle').textContent = 'Pr�fe GitHub…';
+    document.getElementById('pin-subtitle').textContent = 'Prüfe GitHubâ¦';
     document.getElementById('pin-btn').disabled = true;
     const remote = await fetchFromGitHub('settings/pin.json');
     document.getElementById('pin-btn').disabled = false;
@@ -1157,7 +1157,7 @@ function unlockApp() {
   initApp();
 }
 
-// ─── APP DATA ─────────────────────────────────────────────────────────────────
+// âââ APP DATA âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function getCards()    { return ls('cowork_cards', {}); }
 function saveCards(c)  { lsSet('cowork_cards', c); }
 function getPatients() { return ls('cowork_patients', []); }
@@ -1172,7 +1172,7 @@ function nextCardId(laneId) {
   return laneId + String(n).padStart(3, '0');
 }
 
-// ─── TABS ─────────────────────────────────────────────────────────────────────
+// âââ TABS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let currentTab = 'heute';
 
 function switchTab(id) {
@@ -1190,7 +1190,7 @@ function switchTab(id) {
   if (id === 'backlog')   renderBacklog();
   if (id === 'settings')  initSettings();
 }
-// ─── HEUTE / STATUS ───────────────────────────────────────────────────────────
+// âââ HEUTE / STATUS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function moveToToday(cardId) {
   const cards = getCards();
   if (!cards[cardId]) return;
@@ -1240,7 +1240,7 @@ function renderStatusTab() {
           + '</div>'
           + origLaneMeta
           + '</div>'
-          + '<button class="today-btn is-today" onclick="moveFromToday(\'' + esc(c.id) + '\')" title="Zur�ck">�</button>'
+          + '<button class="today-btn is-today" onclick="moveFromToday(\'' + esc(c.id) + '\')" title="Zurück">↩</button>'
           + '</div>';
       }).join('');
   }
@@ -1373,8 +1373,8 @@ function renderCardItem(card) {
   const isHE = card.todayFlag || card.lane === 'HE';
   const cardId = esc(card.id);
   const onclickFn = isHE ? 'moveFromToday(\'' + cardId + '\')' : 'moveToToday(\'' + cardId + '\')';
-  const titleAttr = isHE ? 'Zur�ck' : 'Heute';
-  const btnIcon = isHE ? '�' : '→';
+  const titleAttr = isHE ? 'Zurück' : 'Heute';
+  const btnIcon = isHE ? '↩' : 'â';
   const todayCls = isHE ? ' is-today' : '';
   return '<div class="card-item" data-id="' + cardId + '" style="position:relative;">'
     + '<span class="card-prefix">' + esc(card.id) + '</span>'
@@ -1384,7 +1384,7 @@ function renderCardItem(card) {
     + '<button class="kanban-today-btn' + todayCls + '" onclick="event.stopPropagation(); ' + onclickFn + '" title="' + titleAttr + '">' + btnIcon + '</button>'
     + '</div>';
 }
-// ─── KANBAN ───────────────────────────────────────────────────────────────────
+// âââ KANBAN âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderKanban() {
   const cards   = getCards();
   const grid    = document.getElementById('kanban-grid');
@@ -1401,7 +1401,7 @@ function renderKanban() {
 
     const voorlagenBtn = lane.isBA ? `
       <div class="vorlagen-wrap">
-        <button class="btn-vorlagen" onclick="toggleVorlagen('${lane.id}')">Vorlagen ▾</button>
+        <button class="btn-vorlagen" onclick="toggleVorlagen('${lane.id}')">Vorlagen â¾</button>
         <div class="vorlagen-dropdown" id="vd-${lane.id}">
           ${BA_TPLS.map(t => `<button class="vorlagen-item" onclick="addVorlage('${lane.id}','${t.replace(/'/g,"\\'")}');closeVorlagen('${lane.id}')">${t}</button>`).join('')}
         </div>
@@ -1411,13 +1411,13 @@ function renderKanban() {
       <div class="lane-header">
         <span class="lane-title">${esc(lane.name)}</span>
         <span class="lane-count">${laneCards.length}</span>
-        <button class="lane-collapse" onclick="toggleCollapse('${lane.id}')">${isCollapsed ? '▶' : '▼'}</button>
+        <button class="lane-collapse" onclick="toggleCollapse('${lane.id}')">${isCollapsed ? 'â¶' : 'â¼'}</button>
       </div>
       <div class="lane-body${isCollapsed ? ' collapsed' : ''}" id="lb-${lane.id}">
         ${cardsHtml}
       </div>
       <div class="lane-footer">
-        <button class="btn-add-card" onclick="openCardModal(null,'${lane.id}')">＋ Karte</button>
+        <button class="btn-add-card" onclick="openCardModal(null,'${lane.id}')">ï¼ Karte</button>
         ${voorlagenBtn}
       </div>
     </div>`;
@@ -1460,7 +1460,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// ─── CARD MODAL ───────────────────────────────────────────────────────────────
+// âââ CARD MODAL âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let cmCardId   = null;
 let cmLaneId   = null;
 
@@ -1520,7 +1520,7 @@ document.getElementById('cm-save').addEventListener('click', () => {
 });
 
 document.getElementById('cm-delete').addEventListener('click', () => {
-  confirmAction('Karte l�schen?', 'Diese Karte wird unwiderruflich gel�scht.', () => {
+  confirmAction('Karte löschen?', 'Diese Karte wird unwiderruflich gelöscht.', () => {
     const cards = getCards();
     if (cmCardId) { cards[cmCardId].archived = true; saveCards(cards); }
     closeCardModal();
@@ -1540,7 +1540,7 @@ document.getElementById('cm-heute').addEventListener('click', () => {
   if (currentTab === 'kanban') renderKanban();
 });
 
-// ─── PATIENTEN ────────────────────────────────────────────────────────────────
+// âââ PATIENTEN ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderPatients(filter) {
   let patients = getPatients();
   const q = filter || document.getElementById('pat-search').value.trim().toLowerCase();
@@ -1556,7 +1556,7 @@ function renderPatients(filter) {
   list.innerHTML = patients.map(p => `
     <div class="patient-row" data-id="${esc(p.id)}" onclick="openPatModal('${esc(p.id)}')">
       <span class="pat-code">${esc(p.code)}</span>
-      <span class="pat-info">${esc(p.aufnahme||'')} ${p.notizen ? '· ' + esc(p.notizen.substring(0,40)) : ''}</span>
+      <span class="pat-info">${esc(p.aufnahme||'')} ${p.notizen ? 'Â· ' + esc(p.notizen.substring(0,40)) : ''}</span>
       <span class="pat-status-badge pat-status-${p.status||'aktiv'}">${p.status||'aktiv'}</span>
     </div>`).join('');
 }
@@ -1613,7 +1613,7 @@ document.getElementById('pm-save').addEventListener('click', () => {
 });
 
 document.getElementById('pm-delete').addEventListener('click', () => {
-  confirmAction('Patient l�schen?', 'Dieser Patient wird unwiderruflich gel�scht.', () => {
+  confirmAction('Patient löschen?', 'Dieser Patient wird unwiderruflich gelöscht.', () => {
     let patients = getPatients();
     patients = patients.filter(p => p.id !== pmPatId);
     savePatients(patients);
@@ -1622,7 +1622,7 @@ document.getElementById('pm-delete').addEventListener('click', () => {
   });
 });
 
-// ─── AUTONOMIE-LOG ────────────────────────────────────────────────────────────
+// âââ AUTONOMIE-LOG ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function initAL() {
   let log = getALLog();
   if (!log) {
@@ -1631,7 +1631,7 @@ function initAL() {
       ts: new Date().toISOString(),
       title: 'System gestartet',
       desc: 'CoworkDashboard v10 erfolgreich initialisiert. Alle Daten werden lokal gespeichert.',
-      badge: '✅',
+      badge: 'â',
       read: false
     }];
     saveALLog(log);
@@ -1651,21 +1651,21 @@ function renderAL() {
   }
 
   if (log.length === 0) {
-    list.innerHTML = '<div class="empty-state">Keine Eintr�ge.</div>';
+    list.innerHTML = '<div class="empty-state">Keine Einträge.</div>';
     return;
   }
 
   list.innerHTML = log.map(e => `
     <div class="al-card${e.read ? ' read' : ''}" id="alc-${e.id}">
       <div class="al-card-header">
-        <span class="al-badge">${e.badge || '📋'}</span>
+        <span class="al-badge">${e.badge || 'ð'}</span>
         <div class="al-meta">
           <div class="al-title">${esc(e.title)}</div>
           <div class="al-ts">${new Date(e.ts).toLocaleString('de-CH')}</div>
         </div>
       </div>
       <div class="al-desc">${esc(e.desc || '')}</div>
-      ${!e.read ? `<button class="al-read-btn" onclick="markALRead('${e.id}')">Okay, gelesen ✓</button>` : '<button class="al-read-btn">Gelesen ✓</button>'}
+      ${!e.read ? `<button class="al-read-btn" onclick="markALRead('${e.id}')">Okay, gelesen â</button>` : '<button class="al-read-btn">Gelesen â</button>'}
     </div>`).join('');
 }
 
@@ -1686,13 +1686,13 @@ function updateALBadge() {
   else badge.style.display = 'none';
 }
 
-// ─── BACKLOG ──────────────────────────────────────────────────────────────────
+// âââ BACKLOG ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const BL_DEMOS = [
   { id:'bl001', title:'Nacht-Autopilot aktivieren',       prio:'hoch',    cat:'KI',          status:'geplant',    desc:'Automatische Aufgaben-Priorisierung nach 22 Uhr basierend auf Kalender.' },
   { id:'bl002', title:'Google Drive Integration',         prio:'mittel',  cat:'Integration', status:'geplant',    desc:'Berichte direkt in Drive-Ordner speichern und teilen.' },
   { id:'bl003', title:'Patienten-Timeline Variante C',    prio:'hoch',    cat:'Patienten',   status:'in-arbeit',  desc:'Chronologische Verlaufsansicht pro Patient mit Meilensteinen.' },
-  { id:'bl004', title:'Offline-Modus & PWA-Install',     prio:'mittel',  cat:'Tech',        status:'geplant',    desc:'Service Worker f�r Offline-Nutzung und App-Installation auf Homescreen.' },
-  { id:'bl005', title:'Wochenr�ckblick-Report (PDF)',     prio:'niedrig', cat:'Reporting',   status:'geplant',    desc:'Automatisch generierter PDF-Report aller erledigten Aufgaben pro Woche.' }
+  { id:'bl004', title:'Offline-Modus & PWA-Install',     prio:'mittel',  cat:'Tech',        status:'geplant',    desc:'Service Worker für Offline-Nutzung und App-Installation auf Homescreen.' },
+  { id:'bl005', title:'Wochenrückblick-Report (PDF)',     prio:'niedrig', cat:'Reporting',   status:'geplant',    desc:'Automatisch generierter PDF-Report aller erledigten Aufgaben pro Woche.' }
 ];
 
 function getBacklog() {
@@ -1706,7 +1706,7 @@ function initBacklog() {
   }
 }
 
-const PRIO_LABELS = { hoch:'🔴 Hoch', mittel:'🟡 Mittel', niedrig:'🟢 Niedrig' };
+const PRIO_LABELS = { hoch:'ð´ Hoch', mittel:'ð¡ Mittel', niedrig:'ð¢ Niedrig' };
 const PRIO_ORDER  = { hoch:0, mittel:1, niedrig:2 };
 const BL_STATUS_CLS = { geplant:'bl-geplant', 'in-arbeit':'bl-in-arbeit', abgeschlossen:'bl-abgeschlossen' };
 const BL_STATUS_LABELS = { geplant:'Geplant', 'in-arbeit':'In Arbeit', abgeschlossen:'Abgeschlossen' };
@@ -1719,12 +1719,12 @@ function renderBacklog() {
 
   const list = document.getElementById('bl-list');
   if (bl.length === 0) {
-    list.innerHTML = '<div class="empty-state">Keine Eintr�ge.</div>'; return;
+    list.innerHTML = '<div class="empty-state">Keine Einträge.</div>'; return;
   }
   list.innerHTML = bl.map(e => `
     <div class="bl-card" onclick="openBLModal('${esc(e.id)}')">
       <div class="bl-card-top">
-        <span class="bl-prio">${PRIO_LABELS[e.prio]?.slice(0,2)||'📋'}</span>
+        <span class="bl-prio">${PRIO_LABELS[e.prio]?.slice(0,2)||'ð'}</span>
         <span class="bl-title">${esc(e.title)}</span>
         <span class="bl-status-badge ${BL_STATUS_CLS[e.status]||'bl-geplant'}">${BL_STATUS_LABELS[e.status]||e.status}</span>
       </div>
@@ -1732,7 +1732,7 @@ function renderBacklog() {
         <span>${PRIO_LABELS[e.prio]||e.prio}</span>
         ${e.cat ? `<span>${esc(e.cat)}</span>` : ''}
       </div>
-      ${e.desc ? `<div class="bl-desc">${esc(e.desc.substring(0,120))}${e.desc.length>120?'…':''}</div>` : ''}
+      ${e.desc ? `<div class="bl-desc">${esc(e.desc.substring(0,120))}${e.desc.length>120?'â¦':''}</div>` : ''}
     </div>`).join('');
 }
 
@@ -1790,7 +1790,7 @@ document.getElementById('blm-save').addEventListener('click', () => {
 });
 
 document.getElementById('blm-delete').addEventListener('click', () => {
-  confirmAction('Eintrag l�schen?', 'Dieser Backlog-Eintrag wird unwiderruflich gel�scht.', () => {
+  confirmAction('Eintrag löschen?', 'Dieser Backlog-Eintrag wird unwiderruflich gelöscht.', () => {
     let bl = getBacklog() || [];
     bl = bl.filter(e => e.id !== blEntryId);
     saveBacklog(bl);
@@ -1799,7 +1799,7 @@ document.getElementById('blm-delete').addEventListener('click', () => {
   });
 });
 
-// ─── EINSTELLUNGEN ────────────────────────────────────────────────────────────
+// âââ EINSTELLUNGEN ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function initSettings() {
   const settings = ls('cowork_settings', {});
   const token = settings.gh_token || ls('cowork_gh_token', '');
@@ -1839,16 +1839,16 @@ document.getElementById('btn-budget-save').addEventListener('click', () => {
 document.getElementById('btn-pin-change').addEventListener('click', async () => {
   const val = document.getElementById('new-pin-input').value.trim();
   if (val.length < 4 || val.length > 6 || !/^\d+$/.test(val)) {
-    showToast('PIN muss 4–6 Ziffern sein', true); return;
+    showToast('PIN muss 4â6 Ziffern sein', true); return;
   }
   localStorage.setItem('cowork_pin', hashPin(val));
   localStorage.setItem('cowork_pin_set', 'true');
   document.getElementById('new-pin-input').value = '';
   try {
     await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: hashPin(val) }, null, 2), 'sync: update PIN');
-    showToast('✅ PIN ge�ndert & synchronisiert');
+    showToast('â PIN geändert & synchronisiert');
   } catch(e) {
-    showToast('✅ PIN lokal ge�ndert');
+    showToast('â PIN lokal geändert');
   }
 });
 
@@ -1897,16 +1897,16 @@ document.getElementById('import-file').addEventListener('change', (e) => {
 });
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-  confirmAction('Alle Daten l�schen?', 'ALLE Karten, Patienten und Logs werden unwiderruflich gel�scht.', () => {
+  confirmAction('Alle Daten löschen?', 'ALLE Karten, Patienten und Logs werden unwiderruflich gelöscht.', () => {
     ['cowork_cards','cowork_patients','cowork_autonomy_log','cowork_backlog','cowork_collapsed','cowork_budget']
       .forEach(k => localStorage.removeItem(k));
     LANES.forEach(l => localStorage.removeItem('cowork_seq_' + l.id));
-    showToast('Alle Daten gel�scht');
+    showToast('Alle Daten gelöscht');
     switchTab('heute');
   });
 });
 
-// ─── CONFIRM DIALOG ───────────────────────────────────────────────────────────
+// âââ CONFIRM DIALOG âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let confirmCallback = null;
 
 function confirmAction(title, msg, cb) {
@@ -1926,7 +1926,7 @@ document.getElementById('confirm-yes').addEventListener('click', () => {
   if (confirmCallback) { confirmCallback(); confirmCallback = null; }
 });
 
-// ─── TOAST ────────────────────────────────────────────────────────────────────
+// âââ TOAST ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let toastTimer = null;
 
 function showToast(msg, isError) {
@@ -1945,7 +1945,7 @@ function showToast(msg, isError) {
   toastTimer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
 }
 
-// ─── UTILS ────────────────────────────────────────────────────────────────────
+// âââ UTILS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function esc(s) {
   return String(s||'')
     .replace(/&/g,'&amp;')
@@ -1954,12 +1954,12 @@ function esc(s) {
     .replace(/"/g,'&quot;');
 }
 
-// ─── TAB BINDING ─────────────────────────────────────────────────────────────
+// âââ TAB BINDING âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
-// ─── INIT APP ─────────────────────────────────────────────────────────────────
+// âââ INIT APP âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function initApp() {
   initAL();
   initBacklog();
@@ -1967,7 +1967,7 @@ function initApp() {
   renderHeute();
 }
 
-// ─── BOOT ─────────────────────────────────────────────────────────────────────
+// âââ BOOT âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 initPinScreen();
 </script>
 </body>
