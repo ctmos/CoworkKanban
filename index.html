@@ -1,6 +1,6 @@
-﻿﻿<!-- CoworkOS Dashboard v1.3 | 2026-03-24 | colored cards, date badges, done-archive -->
+﻿﻿<!-- CoworkOS Dashboard v1.3 | 2026-03-24 | colored cards, date badges, done-archive, desc-dropdown -->
 <!-- CHANGELOG
-  v1.3 | 2026-03-24 | colored card backgrounds, date badges (D/createdAt), done-archive per lane
+  v1.3 | 2026-03-24 | colored card backgrounds, date badges (D/createdAt), done-archive per lane, desc-dropdown
   v1.2 | 2026-03-24 | add ImperialKI lane (IK) between WB and PA
   v1.1 | 2026-03-24 | implement 13 Kanban categories (Heute, Barmelweid, PSP WB, Patienten, Finanzen, Familie, Freunde, Projekte, Events, Erinnerungen, Explore, MOSER.AI, Tagebuch)
 -->
@@ -479,6 +479,17 @@ nav::-webkit-scrollbar { display: none; }
 }
 .done-archive-toggle:hover { color: var(--text); background: var(--bg); }
 .done-archive-list .card-item { opacity: 0.6; }
+
+/* ── DESC DROPDOWN ── */
+.card-desc-toggle {
+  color: #868e96; font-size: 11px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
+.card-desc-toggle:hover { color: #adb5bd; }
+.card-desc-box {
+  background: rgba(0,0,0,0.2); border-radius: 4px;
+  padding: 6px 8px; font-size: 12px; color: #ccc; margin-top: 4px;
+  white-space: pre-wrap; word-break: break-word;
+}
 
 /* ── MODAL ── */
 .modal-overlay {
@@ -1641,8 +1652,15 @@ function renderCardItem(card, laneColor) {
     ? '<span class="card-date-cr">* ' + fmtDateShort(card.createdAt) + '</span>' : '';
   const datesHtml = (dlBadge || crBadge)
     ? '<div class="card-dates">' + dlBadge + crBadge + '</div>' : '';
-  const isHE = card.todayFlag || card.lane === 'HE';
+  const hasDesc = !!(card.desc && card.desc.trim());
   const cardId = esc(card.id);
+  const descExpanded = hasDesc && (descExpandState[cardId] || false);
+  const descToggle = hasDesc
+    ? '<span class="card-desc-toggle" onclick="event.stopPropagation();toggleDescExpand(\'' + cardId + '\')">(...)</span>'
+    : '';
+  const descBox = descExpanded
+    ? '<div class="card-desc-box">' + esc(card.desc) + '</div>' : '';
+  const isHE = card.todayFlag || card.lane === 'HE';
   const onclickFn = isHE ? 'moveFromToday(\'' + cardId + '\')' : 'moveToToday(\'' + cardId + '\')';
   const titleAttr = isHE ? 'Zur\u00fcck' : 'Heute';
   const btnIcon = isHE ? '\u21a9' : '\u2192';
@@ -1653,15 +1671,23 @@ function renderCardItem(card, laneColor) {
     + '<div style="display:flex;align-items:center;gap:10px;">'
     + '<span class="card-prefix">' + esc(card.id) + '</span>'
     + '<span class="card-title">' + esc(card.title || '(kein Titel)') + '</span>'
+    + descToggle
     + '<span class="status-dot ' + statusCls + '"></span>'
     + '</div>'
     + datesHtml
+    + descBox
     + '</div>'
     + '<button class="kanban-today-btn' + todayCls + '" onclick="event.stopPropagation(); ' + onclickFn + '" title="' + titleAttr + '">' + btnIcon + '</button>'
     + '</div>';
 }
 // ─── KANBAN ───────────────────────────────────────────────────────────────────
 const doneExpandState = {};
+const descExpandState = {};
+
+function toggleDescExpand(cardId) {
+  descExpandState[cardId] = !descExpandState[cardId];
+  renderKanban();
+}
 
 function toggleDoneArchive(laneId) {
   doneExpandState[laneId] = !doneExpandState[laneId];
