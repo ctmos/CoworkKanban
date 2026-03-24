@@ -2271,6 +2271,9 @@ function showToast(msg, isError) {
 
 // ─── PROJEKTE ─────────────────────────────────────────────────────────────────
 
+// In-memory cache: newly created projects before GitHub propagation catches up
+const _localProjectsMeta = {};
+
 async function loadProjects() {
   const token = getGHToken();
   if (!token) return null;
@@ -2278,11 +2281,13 @@ async function loadProjects() {
     const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/projects`, {
       headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
     });
-    if (r.status === 404) return [];
-    if (!r.ok) return null;
+    console.log('[loadProjects] HTTP', r.status);
+    if (r.status === 404) { console.log('[loadProjects] projects/ not found yet \u2192 []'); return []; }
+    if (!r.ok) { console.warn('[loadProjects] unexpected status', r.status); return null; }
     const items = await r.json();
+    console.log('[loadProjects] dirs:', items.filter(i => i.type === 'dir').map(i => i.name));
     return items.filter(i => i.type === 'dir').map(i => i.name);
-  } catch(e) { return null; }
+  } catch(e) { console.error('[loadProjects]', e); return null; }
 }
 
 async function loadProjectMeta(id) {
@@ -2302,6 +2307,8 @@ async function saveProject(meta) {
   if (!token) throw new Error('No token');
   await pushToGitHub(token, 'projects/' + meta.id + '/meta.json',
     JSON.stringify(meta, null, 2), 'project: save ' + meta.name);
+  // Cache immediately so UI shows the project before GitHub propagation
+  _localProjectsMeta[meta.id] = meta;
   // Create empty log.md if it doesn't exist yet
   const existingLog = await fetchFromGitHub('projects/' + meta.id + '/log.md');
   if (!existingLog) {
@@ -2357,12 +2364,16 @@ async function showProjectsTab() {
   container.innerHTML = headerHtml
     + '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Lade Projekte\u2026</div>';
 
-  const projectIds = await loadProjects();
-  if (projectIds === null) {
+  const ghIds = await loadProjects();
+  if (ghIds === null) {
     container.innerHTML = headerHtml
       + '<div class="empty-state">Fehler beim Laden. Bitte Token pr\u00fcfen.</div>';
     return;
   }
+  // Merge: include locally cached projects not yet visible in GitHub listing
+  const localOnlyIds = Object.keys(_localProjectsMeta).filter(id => !ghIds.includes(id));
+  const projectIds = [...ghIds, ...localOnlyIds];
+
   if (projectIds.length === 0) {
     container.innerHTML = headerHtml
       + '<div class="empty-state">Noch keine Projekte. Erstelle dein erstes Projekt!</div>';
@@ -2370,7 +2381,11 @@ async function showProjectsTab() {
   }
 
   const [metas, logs] = await Promise.all([
-    Promise.all(projectIds.map(id => loadProjectMeta(id))),
+    Promise.all(projectIds.map(id =>
+      _localProjectsMeta[id] && !ghIds.includes(id)
+        ? Promise.resolve(_localProjectsMeta[id])
+        : loadProjectMeta(id)
+    )),
     Promise.all(projectIds.map(id => loadProjectLog(id)))
   ]);
 
