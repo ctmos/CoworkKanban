@@ -1,3 +1,7 @@
+<!-- CoworkOS Dashboard v1.1 | 2026-03-24 | implement 13 Kanban categories -->
+<!-- CHANGELOG
+  v1.1 | 2026-03-24 | implement 13 Kanban categories (Heute, Barmelweid, PSP WB, Patienten, Finanzen, Familie, Freunde, Projekte, Events, Erinnerungen, Explore, MOSER.AI, Tagebuch)
+-->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -1021,20 +1025,19 @@ async function pushToGitHub(token, path, content, message) {
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const LANES = [
+  {id:'HE', name:'Heute',     isHeute:true},
   {id:'BA', name:'Barmelweid', isBA:true},
-  {id:'PA', name:'Patienten-Admin'},
-  {id:'WB', name:'Weiterbildung'},
-  {id:'SI', name:'Selbst & Identität'},
+  {id:'WB', name:'PSP WB'},
+  {id:'PA', name:'Patienten'},
   {id:'FI', name:'Finanzen'},
-  {id:'FR', name:'Freizeit & Familie'},
-  {id:'EV', name:'Events & Termine'},
-  {id:'FA', name:'Familie & Beziehungen'},
-  {id:'KI', name:'KI & Tech'},
-  {id:'CO', name:'Coaching'},
-  {id:'IK', name:'Interkantonales'},
-  {id:'ER', name:'Ernährung & Sport'},
-  {id:'TA', name:'Tagesstruktur'},
-  {id:'HE', name:'Heute', isHeute:true}
+  {id:'FA', name:'Familie'},
+  {id:'FR', name:'Freunde'},
+  {id:'PR', name:'Projekte'},
+  {id:'EV', name:'Events'},
+  {id:'EM', name:'Erinnerungen'},
+  {id:'EX', name:'Explore'},
+  {id:'MA', name:'MOSER.AI'},
+  {id:'TB', name:'Tagebuch'}
 ];
 
 const BA_TPLS = [
@@ -1400,9 +1403,12 @@ function renderKanban() {
   const grid    = document.getElementById('kanban-grid');
   const collapsed = ls('cowork_collapsed', {});
 
+  const todayISO = new Date().toISOString().split('T')[0];
   grid.innerHTML = LANES.map(lane => {
     const laneCards = Object.values(cards)
-      .filter(c => c.lane === lane.id && !c.archived)
+      .filter(c => !c.archived && (lane.isHeute
+        ? (c.todayFlag || c.deadline === todayISO || c.lane === 'HE')
+        : c.lane === lane.id))
       .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id));
     const isCollapsed = collapsed[lane.id];
 
