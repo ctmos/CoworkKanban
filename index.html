@@ -1,7 +1,8 @@
 <!-- CoworkOS Dashboard v1.6 | 2026-03-24 | migrate all localStorage to GitHub API storage -->
 <!-- CHANGELOG
   v1.6 | 2026-03-24 | add light/dark theme toggle in settings
-    v1.5 | 2026-03-24 | migrate all localStorage to GitHub API storage
+    v1.6 | 2026-03-24 | add Einkaufsliste lane (EK) at end of Kanban
+  v1.5 | 2026-03-24 | migrate all localStorage to GitHub API storage
   v1.3 | 2026-03-24 | colored card backgrounds, date badges (D/createdAt), done-archive per lane, desc-dropdown
   v1.2 | 2026-03-24 | add ImperialKI lane (IK) between WB and PA
   v1.1 | 2026-03-24 | implement 13 Kanban categories (Heute, Barmelweid, PSP WB, Patienten, Finanzen, Familie, Freunde, Projekte, Events, Erinnerungen, Explore, MOSER.AI, Tagebuch)
@@ -1418,7 +1419,8 @@ const LANES = [
   {id:'EM', name:'Erinnerungen',              color:'#e599f7'},
   {id:'EX', name:'Explore',                   color:'#ff8787'},
   {id:'MA', name:'MOSER.AI',                  color:'#748ffc'},
-  {id:'TB', name:'Tagebuch',                  color:'#868e96'}
+  {id:'TB', name:'Tagebuch',                  color:'#868e96'},
+  {id:'EK', name:'🛒 Einkaufsliste',          color:'#2f9e44'}
 ];
 
 const BA_TPLS = [
@@ -1451,7 +1453,7 @@ const _appState = {
   collapsed: {},
   budget: 100,
   gh_token: '',
-  seqs: { HE:0, BA:0, WB:0, IK:0, PA:0, FI:0, FA:0, FR:0, PR:0, EV:0, EM:0, EX:0, MA:0, TB:0 }
+  seqs: { HE:0, BA:0, WB:0, IK:0, PA:0, FI:0, FA:0, FR:0, PR:0, EV:0, EM:0, EX:0, MA:0, TB:0, EK:0 }
 };
 
 // Convenience accessors (replaces ls/lsSet)
