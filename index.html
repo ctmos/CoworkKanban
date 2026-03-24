@@ -1,4 +1,4 @@
-﻿<!-- CoworkOS Dashboard v1.1 | 2026-03-24 | implement 13 Kanban categories -->
+﻿﻿<!-- CoworkOS Dashboard v1.1 | 2026-03-24 | implement 13 Kanban categories -->
 <!-- CHANGELOG
   v1.1 | 2026-03-24 | implement 13 Kanban categories (Heute, Barmelweid, PSP WB, Patienten, Finanzen, Familie, Freunde, Projekte, Events, Erinnerungen, Explore, MOSER.AI, Tagebuch)
 -->
@@ -1099,6 +1099,7 @@ nav::-webkit-scrollbar { display: none; }
       </div>
     </div>
     <div class="modal-footer">
+      <div id="pjm-error" style="color:#ef4444;font-size:12px;margin-bottom:6px;width:100%;display:none"></div>
       <button class="btn-secondary" id="pjm-cancel">Abbrechen</button>
       <button class="btn-primary" id="pjm-save">Erstellen</button>
     </div>
@@ -1460,8 +1461,9 @@ function renderStatusTab() {
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  // --- Column 1: Heute (todayFlag or lane==='HE') ---
-  const heuteCards = Object.values(cards).filter(c => !c.archived && (c.todayFlag || c.lane === 'HE'));
+  // --- Column 1: Heute (todayFlag or lane==='HE' or deadline===today) ---
+  const todayISO = new Date().toISOString().split('T')[0];
+  const heuteCards = Object.values(cards).filter(c => !c.archived && (c.todayFlag || c.lane === 'HE' || c.deadline === todayISO));
   const heuteList = document.getElementById('heute-list');
   if (heuteList) {
     if (heuteCards.length === 0) {
@@ -2416,6 +2418,8 @@ function openCreateProjectModal() {
   document.getElementById('pjm-desc').value  = '';
   document.getElementById('pjm-status').value = 'aktiv';
   document.querySelectorAll('.proj-color-swatch').forEach((s, i) => s.classList.toggle('selected', i === 0));
+  const errEl = document.getElementById('pjm-error');
+  if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
   document.getElementById('proj-modal-overlay').classList.add('open');
   setTimeout(() => document.getElementById('pjm-name').focus(), 50);
 }
@@ -2454,7 +2458,12 @@ document.getElementById('pjm-save').addEventListener('click', async () => {
     document.getElementById('proj-modal-overlay').classList.remove('open');
     showToast('Projekt erstellt');
     showProjectsTab();
-  } catch(e) { showToast('Fehler: ' + e.message, true); }
+  } catch(e) {
+    console.error('[saveProject]', e);
+    const errEl = document.getElementById('pjm-error');
+    if (errEl) { errEl.textContent = 'Fehler: ' + e.message; errEl.style.display = 'block'; }
+    showToast('Fehler: ' + e.message, true);
+  }
   btn.disabled = false; btn.textContent = 'Erstellen';
 });
 
