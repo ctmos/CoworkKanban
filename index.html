@@ -1,5 +1,6 @@
-﻿﻿<!-- CoworkOS Dashboard v1.3 | 2026-03-24 | colored cards, date badges, done-archive, desc-dropdown -->
+﻿﻿<!-- CoworkOS Dashboard v1.4 | 2026-03-24 | dark theme restored, calendar fire-and-forget fix -->
 <!-- CHANGELOG
+  v1.4 | 2026-03-24 | dark theme restored, loadCalendarEvents fire-and-forget, graceful fallback
   v1.3 | 2026-03-24 | colored card backgrounds, date badges (D/createdAt), done-archive per lane, desc-dropdown
   v1.2 | 2026-03-24 | add ImperialKI lane (IK) between WB and PA
   v1.1 | 2026-03-24 | implement 13 Kanban categories (Heute, Barmelweid, PSP WB, Patienten, Finanzen, Familie, Freunde, Projekte, Events, Erinnerungen, Explore, MOSER.AI, Tagebuch)
@@ -15,15 +16,15 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #f9f9f8;
-  --surface: #ffffff;
-  --border: #e5e5e3;
-  --text: #1a1a1a;
-  --text-muted: #6b6b6b;
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --border: #2a2d3a;
+  --text: #e8eaf0;
+  --text-muted: #8b8fa8;
   --accent: #cc785c;
   --accent-dark: #b8674d;
-  --nav-bg: #f3f3f2;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --nav-bg: #13151f;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4);
   --radius: 8px;
 }
 
@@ -1487,6 +1488,7 @@ function moveFromToday(cardId) {
 
 // â”€â”€â”€ CALENDAR HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function loadCalendarEvents() {
+  if (!window._calEvents) window._calEvents = { events: [] };
   const token = getGHToken();
   if (!token) return;
   try {
@@ -2649,7 +2651,7 @@ async function initApp() {
   initBacklog();
   updateALBadge();
   await loadFromGitHub();
-  await loadCalendarEvents();
+  loadCalendarEvents().catch(function(e) { console.warn('calendar load failed', e); });
   renderHeute();
 }
 
