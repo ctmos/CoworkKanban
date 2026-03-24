@@ -11,7 +11,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>CoworkDashboard</title>
+<title>CoworkSpace</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -417,6 +417,8 @@ nav::-webkit-scrollbar { display: none; }
   display: block;
 }
 .lane-body.collapsed { display: none; }
+.lane.collapsed .lane-body { display: none; }
+.lane.collapsed { min-width:180px; max-width:180px; max-height:none; }
 
 .lane-footer {
   padding: 6px 8px;
@@ -445,7 +447,7 @@ nav::-webkit-scrollbar { display: none; }
 
 .vorlagen-dropdown {
   display: none;
-  position: absolute; bottom: 100%; left: 0;
+  position: absolute; top: 100%; left: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -466,9 +468,9 @@ nav::-webkit-scrollbar { display: none; }
 .vorlagen-item:hover { background: var(--bg); }
 
 /* ── CARD DATE BADGES ── */
-.card-dates { display: flex; gap: 8px; margin-top: 4px; }
-.card-date-dl { font-size: 10px; color: #ff6b6b; white-space: nowrap; }
-.card-date-cr { font-size: 10px; color: #868e96; white-space: nowrap; }
+.card-dates { display: flex; justify-content: space-between; margin-top: 4px; }
+.card-date-dl { font-size: 0.7rem; opacity: 0.6; white-space: nowrap; }
+.card-date-cr { font-size: 0.7rem; opacity: 0.6; white-space: nowrap; }
 
 /* ── DONE ARCHIVE ── */
 .done-archive-toggle {
@@ -835,6 +837,15 @@ nav::-webkit-scrollbar { display: none; }
 .confirm-modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
 .confirm-modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
 .confirm-btns { display: flex; gap: 8px; justify-content: center; }
+
+/* ── CALENDAR SECTIONS ── */
+.cal-section { background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:12px 14px; margin-bottom:16px; }
+.cal-section h3 { font-size:14px; font-weight:700; color:#15803d; margin-bottom:10px; }
+.cal-chip { background:#dcfce7; border-left:3px solid #22c55e; border-radius:4px; padding:5px 10px; margin-bottom:5px; font-size:13px; }
+.cal-time { font-weight:600; color:#166534; margin-right:6px; }
+.cal-empty { color:#86efac; font-size:13px; font-style:italic; }
+.cal-day-group { margin-bottom:12px; }
+.cal-day-label { font-size:13px; font-weight:600; color:#475569; margin-bottom:6px; padding-bottom:3px; border-bottom:1px solid #bbf7d0; }
 </style>
 </head>
 <body>
@@ -842,7 +853,7 @@ nav::-webkit-scrollbar { display: none; }
 <!-- PIN SCREEN -->
 <div id="pin-screen">
   <div class="pin-card">
-    <h1 id="pin-title">CoworkDashboard</h1>
+    <h1 id="pin-title">CoworkSpace</h1>
     <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
     <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••••" autocomplete="off" inputmode="numeric">
     <div id="pin-confirm-group" style="display:none">
@@ -856,18 +867,23 @@ nav::-webkit-scrollbar { display: none; }
 <!-- APP -->
 <div id="app">
   <nav>
-    <span class="brand">CoworkDashboard</span>
+    <span class="brand">CoworkSpace</span>
     <button class="tab-btn active" data-tab="heute">Start</button>
-    <button class="tab-btn" data-tab="kanban">Kanban</button>
+    <button class="tab-btn" data-tab="wochenplan">Wochenplan</button>
+    <button class="tab-btn" data-tab="projekte">Kanban</button>
     <button class="tab-btn" data-tab="patienten">Patienten</button>
-    <button class="tab-btn" data-tab="autonomy">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
+    <button class="tab-btn" data-tab="projekte_new">Projekte</button>
     <button class="tab-btn" data-tab="backlog">Backlog</button>
-    <button class="tab-btn" data-tab="projekte">Projekte</button>
+    <button class="tab-btn" data-tab="autonomie_log">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
     <button class="tab-btn" data-tab="settings">Einstellungen</button>
   </nav>
 
   <!-- HEUTE TAB -->
   <div id="tab-heute" class="tab-content active">
+    <div id="heuteCalSection" class="cal-section" style="max-width:900px;margin:16px auto 0;padding:12px 14px;">
+      <h3>📅 Kalender heute</h3>
+      <div id="heuteCalContent"></div>
+    </div>
     <div class="status-grid">
       <!-- Column 1: Heute -->
       <div class="status-col" id="status-heute">
@@ -888,6 +904,14 @@ nav::-webkit-scrollbar { display: none; }
       </div>
     </div>
   </div>
+  <!-- WOCHENPLAN TAB -->
+  <div id="tab-wochenplan" class="tab-content">
+    <div id="wochenCalSection" class="cal-section" style="max-width:900px;margin:16px auto 0;">
+      <h3>📅 Kalender Woche</h3>
+      <div id="wochenCalContent"></div>
+    </div>
+  </div>
+
   <!-- KANBAN TAB -->
   <div id="tab-kanban" class="tab-content">
     <div class="kanban-grid" id="kanban-grid"></div>
@@ -991,6 +1015,11 @@ nav::-webkit-scrollbar { display: none; }
     </div>
   </div>
 </div>
+
+  <!-- PROJEKTE (new placeholder) TAB -->
+  <div class="tab-content" id="tab-projekte_new" style="padding:16px;"><div style="max-width:500px;margin:0 auto;"><h2>Projekte</h2><p style="color:#94a3b8;margin-top:12px;">Dieser Bereich ist noch in Entwicklung.</p></div></div>
+  <!-- AUTONOMIE-LOG (new placeholder) TAB -->
+  <div class="tab-content" id="tab-autonomie_log" style="padding:16px;"><div style="max-width:500px;margin:0 auto;"><h2>Autonomie-Log</h2><p style="color:#94a3b8;margin-top:12px;">Dieser Bereich ist noch in Entwicklung.</p></div></div>
 
 <!-- BACKLOG MODAL -->
 <div class="modal-overlay" id="bl-modal-overlay">
@@ -1291,6 +1320,8 @@ const LANES = [
   {id:'TB', name:'Tagebuch',                  color:'#868e96'}
 ];
 
+const collapsedLanes = new Set(LANES.filter(l => !l.isHeute && !l.isBA).map(l => l.id));
+
 const BA_TPLS = [
   'Verlaufsbericht',
   'Erstgespräch-Bericht',
@@ -1328,7 +1359,7 @@ function showPinError(msg) {
 }
 
 function showPinUnlockUI(stored) {
-  document.getElementById('pin-title').textContent = 'CoworkDashboard';
+  document.getElementById('pin-title').textContent = 'CoworkSpace';
   document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
   document.getElementById('pin-confirm-group').style.display = 'none';
   document.getElementById('pin-btn').textContent = 'Entsperren';
@@ -1444,6 +1475,8 @@ function nextCardId(laneId) {
 let currentTab = 'heute';
 
 function switchTab(id) {
+  const tabEl = document.getElementById('tab-' + id);
+  if (!tabEl) return;
   currentTab = id;
   document.querySelectorAll('.tab-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === id);
@@ -1451,7 +1484,8 @@ function switchTab(id) {
   document.querySelectorAll('.tab-content').forEach(c => {
     c.classList.toggle('active', c.id === 'tab-' + id);
   });
-  if (id === 'heute')     renderHeute();
+  if (id === 'heute')      renderHeute();
+  if (id === 'wochenplan') renderWochenCalSection();
   if (id === 'kanban')    renderKanban();
   if (id === 'patienten') renderPatients();
   if (id === 'autonomy')  renderAL();
@@ -1694,7 +1728,43 @@ function renderStatusTab() {
 }
 
 // renderHeute is now an alias for renderStatusTab (for backward compat with other code)
-function renderHeute() { renderStatusTab(); }
+function renderHeute() { renderStatusTab(); renderHeuteCalSection(); }
+
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+function renderHeuteCalSection() {
+  const el = document.getElementById('heuteCalContent');
+  if (!el) return;
+  const evs = getEventsForDay(todayStr());
+  if (!evs.length) {
+    el.innerHTML = '<div class="cal-empty">Keine Kalendereinträge für heute.</div>';
+    return;
+  }
+  el.innerHTML = evs.map(renderCalEventChip).join('');
+}
+
+function renderWochenCalSection() {
+  const el = document.getElementById('wochenCalContent');
+  if (!el) return;
+  const weekStart = getWeekStart();
+  let html = '';
+  const DAY_NAMES = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart.getTime() + i * 86400000);
+    const iso = d.toISOString().split('T')[0];
+    const evs = getEventsForDay(iso);
+    const label = DAY_NAMES[i] + ', ' + d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit'});
+    html += '<div class="cal-day-group">';
+    html += '<div class="cal-day-label">' + label + '</div>';
+    if (!evs.length) {
+      html += '<div class="cal-empty">–</div>';
+    } else {
+      html += evs.map(renderCalEventChip).join('');
+    }
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
 
 function getWeekStart() {
   const d = new Date(); const day = d.getDay();
@@ -1717,8 +1787,9 @@ function renderCardItem(card, laneColor) {
     ? '<span class="card-date-dl">D: ' + fmtDateShort(card.deadline) + '</span>' : '';
   const crBadge = card.createdAt
     ? '<span class="card-date-cr">* ' + fmtDateShort(card.createdAt) + '</span>' : '';
-  const datesHtml = (dlBadge || crBadge)
-    ? '<div class="card-dates">' + dlBadge + crBadge + '</div>' : '';
+  const datesHtml = (dlBadge || crBadge) ? '<div class="card-dates">' + dlBadge + crBadge + '</div>' : '';
+
+
   const hasDesc = !!(card.desc && card.desc.trim());
   const cardId = esc(card.id);
   const descExpanded = hasDesc && (descExpandState[cardId] || false);
@@ -1776,7 +1847,7 @@ function renderKanban() {
       .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id));
     const doneCards   = allLaneCards.filter(c => c.status === 'erledigt')
       .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id));
-    const isCollapsed  = collapsed[lane.id];
+    const isCollapsed  = (lane.id in collapsed) ? collapsed[lane.id] : collapsedLanes.has(lane.id);
     const doneExpanded = doneExpandState[lane.id] || false;
 
     const cardsHtml = activeCards.map(c => renderCardItem(c, lane.color)).join('') ||
@@ -1796,19 +1867,17 @@ function renderKanban() {
         </div>
       </div>` : '';
 
-    return `<div class="lane" id="lane-${lane.id}">
+    return `<div class="lane${isCollapsed ? ' collapsed' : ''}" id="lane-${lane.id}">
       <div class="lane-header">
         <span class="lane-title">${esc(lane.name)}</span>
         <span class="lane-count">${activeCards.length}</span>
+        <button class="btn-add-card" onclick="openCardModal(null,'${lane.id}')" title="Karte hinzufügen" style="padding:2px 7px;font-size:15px;line-height:1">＋</button>
+        ${voorlagenBtn}
         <button class="lane-collapse" onclick="toggleCollapse('${lane.id}')">${isCollapsed ? '▶' : '▼'}</button>
       </div>
       <div class="lane-body${isCollapsed ? ' collapsed' : ''}" id="lb-${lane.id}">
         ${cardsHtml}
         ${doneHtml}
-      </div>
-      <div class="lane-footer">
-        <button class="btn-add-card" onclick="openCardModal(null,'${lane.id}')">＋ Karte</button>
-        ${voorlagenBtn}
       </div>
     </div>`;
   }).join('');
@@ -1821,7 +1890,9 @@ function renderKanban() {
 
 function toggleCollapse(laneId) {
   const collapsed = ls('cowork_collapsed', {});
-  collapsed[laneId] = !collapsed[laneId];
+  const currentlyCollapsed = (laneId in collapsed) ? collapsed[laneId] : collapsedLanes.has(laneId);
+  collapsed[laneId] = !currentlyCollapsed;
+  if (collapsed[laneId]) collapsedLanes.add(laneId); else collapsedLanes.delete(laneId);
   lsSet('cowork_collapsed', collapsed);
   renderKanban();
 }
@@ -2021,7 +2092,7 @@ function initAL() {
       id: 'al001',
       ts: new Date().toISOString(),
       title: 'System gestartet',
-      desc: 'CoworkDashboard v10 erfolgreich initialisiert. Alle Daten werden lokal gespeichert.',
+      desc: 'CoworkSpace v10 erfolgreich initialisiert. Alle Daten werden lokal gespeichert.',
       badge: '✅',
       read: false
     }];
