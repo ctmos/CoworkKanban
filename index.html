@@ -1109,16 +1109,11 @@ function showPinSetupUI() {
     localStorage.removeItem('cowork_pin_set');
     history.replaceState(null, '', location.pathname);
   }
-  
+
 async function initPinScreen() {
   // Always sync PIN from GitHub in background
   fetchFromGitHub('settings/pin.json').then(remote => {
-    if (remote) {
-      try {
-        const d = JSON.parse(remote.content);
-        if (d.pin_hash) localStorage.setItem('cowork_pin', d.pin_hash);
-      } catch(e) {}
-    }
+    if (remote) { try { const d = JSON.parse(remote.content); if (d.pin_hash) localStorage.setItem('cowork_pin', d.pin_hash); } catch(e) {} }
   }).catch(() => {});
   const stored = localStorage.getItem('cowork_pin');
   if (stored) {
@@ -1700,8 +1695,19 @@ function getBacklog() {
 }
 function saveBacklog(b) { lsSet('cowork_backlog', b); }
 
-function initBacklog() {
+async function initBacklog() {
   if (!getBacklog()) {
+    // Try to load from GitHub first
+    const remote = await fetchFromGitHub('data/backlog.json');
+    if (remote) {
+      try {
+        const items = JSON.parse(remote.content);
+        if (Array.isArray(items) && items.length > 0) {
+          saveBacklog(items);
+          return;
+        }
+      } catch(e) {}
+    }
     saveBacklog(BL_DEMOS);
   }
 }
