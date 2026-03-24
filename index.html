@@ -1485,6 +1485,48 @@ function moveFromToday(cardId) {
   if (typeof renderKanban === 'function') renderKanban();
 }
 
+// â”€â”€â”€ CALENDAR HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+async function loadCalendarEvents() {
+  const token = getGHToken();
+  if (!token) return;
+  try {
+    const r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/calendar.json',
+      { headers: { Authorization: 'token ' + token } });
+    if (!r.ok) return;
+    const d = await r.json();
+    window._calEvents = JSON.parse(atob(d.content.replace(/\n/g,'')));
+  } catch(e) { console.warn('calendar load failed', e); }
+}
+
+const CAL_COLORS = { christian: '#a78bfa', hannah: '#f9a8d4', kikurs: '#fb923c' };
+const CAL_NAMES  = { christian: 'Christian', hannah: 'Hannah', kikurs: 'KI Kurs' };
+
+function getEventsForDay(isoDate) {
+  if (!window._calEvents) return [];
+  return (window._calEvents.events || [])
+    .filter(e => {
+      const d = e.allDay ? e.start : e.start.substring(0,10);
+      return d === isoDate;
+    })
+    .sort((a,b) => (a.start||'').localeCompare(b.start||''));
+}
+
+function formatEventTime(e) {
+  if (e.allDay) return '\uD83D\uDCC5';
+  const t = new Date(e.start);
+  return t.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+}
+
+function renderCalEventChip(e) {
+  const color = CAL_COLORS[e.calendar] || '#888';
+  const name  = CAL_NAMES[e.calendar]  || e.calendar;
+  const time  = formatEventTime(e);
+  return '<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;margin:2px 0;border-radius:6px;background:rgba(0,0,0,0.03);border-left:3px solid ' + color + ';font-size:12px;">'
+    + '<span style="color:' + color + ';font-size:10px;min-width:32px">' + time + '</span>'
+    + '<span style="color:var(--text);flex:1">' + esc(e.summary || '') + '</span>'
+    + '<span style="color:' + color + ';font-size:9px;opacity:0.7">' + name + '</span>'
+    + '</div>';
+}
 function renderStatusTab() {
   const cards = getCards();
   const events = JSON.parse(localStorage.getItem('cowork_events') || '[]');
@@ -1513,6 +1555,21 @@ function renderStatusTab() {
           + '</div>';
       }).join('');
   }
+  }
+  // Calendar events for today
+  if (heuteList) {
+    const todayCalEvs = getEventsForDay(todayISO);
+    if (todayCalEvs.length > 0) {
+      let calHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">';
+      calHtml += '<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\uD83D\uDCC5 Kalender heute</div>';
+      calHtml += todayCalEvs.map(renderCalEventChip).join('');
+      if (window._calEvents && window._calEvents.syncedAt) {
+        const diffMin = Math.round((Date.now() - new Date(window._calEvents.syncedAt)) / 60000);
+        calHtml += '<div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:0.6">Sync: vor ' + diffMin + ' Min.</div>';
+      }
+      calHtml += '</div>';
+      heuteList.innerHTML += calHtml;
+    }
   }
 
   // --- Column 2: Wochenplan (deadline in next 7 days) ---
@@ -1581,6 +1638,14 @@ function renderStatusTab() {
               + '</div>';
           }
         });
+        // Calendar events for this labeled day
+        const _isoMap = {
+          'Heute': todayISO,
+          'Morgen': new Date(todayStart.getTime()+86400000).toISOString().split('T')[0],
+          '\u00dcbermorgen': new Date(todayStart.getTime()+2*86400000).toISOString().split('T')[0]
+        };
+        const _lblISO = _isoMap[lbl];
+        if (_lblISO) { getEventsForDay(_lblISO).forEach(e => { html += renderCalEventChip(e); }); }
       });
       wocheList.innerHTML = html;
     }
@@ -2584,6 +2649,7 @@ async function initApp() {
   initBacklog();
   updateALBadge();
   await loadFromGitHub();
+  await loadCalendarEvents();
   renderHeute();
 }
 
