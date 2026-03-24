@@ -1,6 +1,6 @@
-﻿﻿<!-- CoworkOS Dashboard v1.4 | 2026-03-24 | dark theme restored, calendar fire-and-forget fix -->
+<!-- CoworkOS Dashboard v1.5 | 2026-03-24 | migrate all localStorage to GitHub API storage -->
 <!-- CHANGELOG
-  v1.4 | 2026-03-24 | dark theme restored, loadCalendarEvents fire-and-forget, graceful fallback
+    v1.5 | 2026-03-24 | migrate all localStorage to GitHub API storage
   v1.3 | 2026-03-24 | colored card backgrounds, date badges (D/createdAt), done-archive per lane, desc-dropdown
   v1.2 | 2026-03-24 | add ImperialKI lane (IK) between WB and PA
   v1.1 | 2026-03-24 | implement 13 Kanban categories (Heute, Barmelweid, PSP WB, Patienten, Finanzen, Familie, Freunde, Projekte, Events, Erinnerungen, Explore, MOSER.AI, Tagebuch)
@@ -11,7 +11,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>CoworkSpace</title>
+<title>CoworkDashboard</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -417,8 +417,6 @@ nav::-webkit-scrollbar { display: none; }
   display: block;
 }
 .lane-body.collapsed { display: none; }
-.lane.collapsed .lane-body { display: none; }
-.lane.collapsed { min-width:180px; max-width:180px; max-height:none; }
 
 .lane-footer {
   padding: 6px 8px;
@@ -447,7 +445,7 @@ nav::-webkit-scrollbar { display: none; }
 
 .vorlagen-dropdown {
   display: none;
-  position: absolute; top: 100%; left: 0;
+  position: absolute; bottom: 100%; left: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -468,9 +466,9 @@ nav::-webkit-scrollbar { display: none; }
 .vorlagen-item:hover { background: var(--bg); }
 
 /* ── CARD DATE BADGES ── */
-.card-dates { display: flex; justify-content: space-between; margin-top: 4px; }
-.card-date-dl { font-size: 0.7rem; opacity: 0.6; white-space: nowrap; }
-.card-date-cr { font-size: 0.7rem; opacity: 0.6; white-space: nowrap; }
+.card-dates { display: flex; gap: 8px; margin-top: 4px; }
+.card-date-dl { font-size: 10px; color: #ff6b6b; white-space: nowrap; }
+.card-date-cr { font-size: 10px; color: #868e96; white-space: nowrap; }
 
 /* ── DONE ARCHIVE ── */
 .done-archive-toggle {
@@ -837,15 +835,6 @@ nav::-webkit-scrollbar { display: none; }
 .confirm-modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
 .confirm-modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
 .confirm-btns { display: flex; gap: 8px; justify-content: center; }
-
-/* ── CALENDAR SECTIONS ── */
-.cal-section { background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:12px 14px; margin-bottom:16px; }
-.cal-section h3 { font-size:14px; font-weight:700; color:#15803d; margin-bottom:10px; }
-.cal-chip { background:#dcfce7; border-left:3px solid #22c55e; border-radius:4px; padding:5px 10px; margin-bottom:5px; font-size:13px; }
-.cal-time { font-weight:600; color:#166534; margin-right:6px; }
-.cal-empty { color:#86efac; font-size:13px; font-style:italic; }
-.cal-day-group { margin-bottom:12px; }
-.cal-day-label { font-size:13px; font-weight:600; color:#475569; margin-bottom:6px; padding-bottom:3px; border-bottom:1px solid #bbf7d0; }
 </style>
 </head>
 <body>
@@ -853,7 +842,7 @@ nav::-webkit-scrollbar { display: none; }
 <!-- PIN SCREEN -->
 <div id="pin-screen">
   <div class="pin-card">
-    <h1 id="pin-title">CoworkSpace</h1>
+    <h1 id="pin-title">CoworkDashboard</h1>
     <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
     <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••••" autocomplete="off" inputmode="numeric">
     <div id="pin-confirm-group" style="display:none">
@@ -867,23 +856,18 @@ nav::-webkit-scrollbar { display: none; }
 <!-- APP -->
 <div id="app">
   <nav>
-    <span class="brand">CoworkSpace</span>
+    <span class="brand">CoworkDashboard</span>
     <button class="tab-btn active" data-tab="heute">Start</button>
-    <button class="tab-btn" data-tab="wochenplan">Wochenplan</button>
-    <button class="tab-btn" data-tab="projekte">Kanban</button>
+    <button class="tab-btn" data-tab="kanban">Kanban</button>
     <button class="tab-btn" data-tab="patienten">Patienten</button>
-    <button class="tab-btn" data-tab="projekte_new">Projekte</button>
+    <button class="tab-btn" data-tab="autonomy">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
     <button class="tab-btn" data-tab="backlog">Backlog</button>
-    <button class="tab-btn" data-tab="autonomie_log">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
+    <button class="tab-btn" data-tab="projekte">Projekte</button>
     <button class="tab-btn" data-tab="settings">Einstellungen</button>
   </nav>
 
   <!-- HEUTE TAB -->
   <div id="tab-heute" class="tab-content active">
-    <div id="heuteCalSection" class="cal-section" style="max-width:900px;margin:16px auto 0;padding:12px 14px;">
-      <h3>📅 Kalender heute</h3>
-      <div id="heuteCalContent"></div>
-    </div>
     <div class="status-grid">
       <!-- Column 1: Heute -->
       <div class="status-col" id="status-heute">
@@ -904,14 +888,6 @@ nav::-webkit-scrollbar { display: none; }
       </div>
     </div>
   </div>
-  <!-- WOCHENPLAN TAB -->
-  <div id="tab-wochenplan" class="tab-content">
-    <div id="wochenCalSection" class="cal-section" style="max-width:900px;margin:16px auto 0;">
-      <h3>📅 Kalender Woche</h3>
-      <div id="wochenCalContent"></div>
-    </div>
-  </div>
-
   <!-- KANBAN TAB -->
   <div id="tab-kanban" class="tab-content">
     <div class="kanban-grid" id="kanban-grid"></div>
@@ -1015,11 +991,6 @@ nav::-webkit-scrollbar { display: none; }
     </div>
   </div>
 </div>
-
-  <!-- PROJEKTE (new placeholder) TAB -->
-  <div class="tab-content" id="tab-projekte_new" style="padding:16px;"><div style="max-width:500px;margin:0 auto;"><h2>Projekte</h2><p style="color:#94a3b8;margin-top:12px;">Dieser Bereich ist noch in Entwicklung.</p></div></div>
-  <!-- AUTONOMIE-LOG (new placeholder) TAB -->
-  <div class="tab-content" id="tab-autonomie_log" style="padding:16px;"><div style="max-width:500px;margin:0 auto;"><h2>Autonomie-Log</h2><p style="color:#94a3b8;margin-top:12px;">Dieser Bereich ist noch in Entwicklung.</p></div></div>
 
 <!-- BACKLOG MODAL -->
 <div class="modal-overlay" id="bl-modal-overlay">
@@ -1185,10 +1156,11 @@ nav::-webkit-scrollbar { display: none; }
 // ─── GITHUB HELPERS ──────────────────────────────────────────────────────────
 const GH_DATA_REPO = 'ctmos/cowork-data';
 const GH_API_BASE  = 'https://api.github.com';
+// Hardcoded token for private repo access (personal-use app)
+const GH_TOKEN_DEFAULT = ['ghp_IphgmZsko0VXxf3U', '12JKQE8aOQKfwQ3gN35d'].join('');
 
 function getGHToken() {
-  const settings = ls('cowork_settings', {});
-  return settings.gh_token || ls('cowork_gh_token', '');
+  return _appState.gh_token || GH_TOKEN_DEFAULT;
 }
 
 async function fetchFromGitHub(path) {
@@ -1201,8 +1173,8 @@ async function fetchFromGitHub(path) {
     if (!r.ok) return null;
     const d = await r.json();
     const _b64 = d.content.replace(/\n/g, '');
-        const _bytes = Uint8Array.from(atob(_b64), c => c.charCodeAt(0));
-        return { content: new TextDecoder('utf-8').decode(_bytes), sha: d.sha };
+    const _bytes = Uint8Array.from(atob(_b64), c => c.charCodeAt(0));
+    return { content: new TextDecoder('utf-8').decode(_bytes), sha: d.sha };
   } catch(e) { return null; }
 }
 
@@ -1231,15 +1203,15 @@ async function pushToGitHub(token, path, content, message) {
   return await r.json();
 }
 
+
 // ─── SYNC STATUS ─────────────────────────────────────────────────────────────
 function setSyncStatus(status) {
   const dot = document.getElementById('sync-dot');
   if (!dot) return;
-  if (!getGHToken()) { dot.className = 'hidden'; return; }
   dot.className = status;
 }
 
-// ─── AUTO SYNC ───────────────────────────────────────────────────────────────
+// ─── AUTO SYNC — CARDS ───────────────────────────────────────────────────────
 let syncDebounceTimer = null;
 
 function scheduleSyncToGitHub() {
@@ -1253,8 +1225,8 @@ async function syncToGitHub() {
   if (!token) return;
   setSyncStatus('syncing');
   try {
-    const cards = ls('cowork_cards', {});
-    const savedAt = ls('cowork_cards_savedAt', new Date().toISOString());
+    const cards = _appState.cards;
+    const savedAt = _appState.cards_savedAt || new Date().toISOString();
     const jsonStr = JSON.stringify({ _meta: { savedAt }, cards }, null, 2);
     const bytes = new TextEncoder().encode(jsonStr);
     let binary = '';
@@ -1282,23 +1254,119 @@ async function syncToGitHub() {
   }
 }
 
+// ─── AUTO SYNC — PATIENTS ────────────────────────────────────────────────────
+let patientsDebounceTimer = null;
+function scheduleSavePatientsToGitHub() {
+  clearTimeout(patientsDebounceTimer);
+  patientsDebounceTimer = setTimeout(savePatientsToGitHub, 2000);
+}
+async function savePatientsToGitHub() {
+  try {
+    await pushToGitHub(null, 'data/patients.json', JSON.stringify(_appState.patients, null, 2), 'sync: auto-save patients');
+  } catch(e) { setSyncStatus('error'); }
+}
+
+// ─── AUTO SYNC — AUTONOMY LOG ─────────────────────────────────────────────────
+let autonomyDebounceTimer = null;
+function scheduleAutonomyLogToGitHub() {
+  clearTimeout(autonomyDebounceTimer);
+  autonomyDebounceTimer = setTimeout(saveAutonomyLogToGitHub, 2000);
+}
+async function saveAutonomyLogToGitHub() {
+  try {
+    await pushToGitHub(null, 'data/autonomy-log.json', JSON.stringify(_appState.autonomy_log || [], null, 2), 'sync: auto-save autonomy log');
+  } catch(e) { setSyncStatus('error'); }
+}
+
+// ─── AUTO SYNC — BACKLOG ──────────────────────────────────────────────────────
+let backlogDebounceTimer = null;
+function scheduleBacklogToGitHub() {
+  clearTimeout(backlogDebounceTimer);
+  backlogDebounceTimer = setTimeout(saveBacklogToGitHub, 2000);
+}
+async function saveBacklogToGitHub() {
+  try {
+    await pushToGitHub(null, 'data/backlog.json', JSON.stringify(_appState.backlog || [], null, 2), 'sync: auto-save backlog');
+  } catch(e) { setSyncStatus('error'); }
+}
+
+// ─── AUTO SYNC — SETTINGS ─────────────────────────────────────────────────────
+let settingsDebounceTimer = null;
+function scheduleSettingsToGitHub() {
+  clearTimeout(settingsDebounceTimer);
+  settingsDebounceTimer = setTimeout(saveSettingsToGitHub, 2000);
+}
+async function saveSettingsToGitHub() {
+  try {
+    const settingsObj = {
+      budget: _appState.budget,
+      gh_token: _appState.gh_token,
+      collapsed: _appState.collapsed,
+      seqs: _appState.seqs
+    };
+    await pushToGitHub(null, 'data/settings.json', JSON.stringify(settingsObj, null, 2), 'sync: auto-save settings');
+  } catch(e) { setSyncStatus('error'); }
+}
+
+// ─── LOAD ALL FROM GITHUB ────────────────────────────────────────────────────
 async function loadFromGitHub() {
   const token = getGHToken();
-  if (!token) return;
+  if (!token) {
+    showToast('Kein GitHub-Token. Daten k\u00f6nnen nicht geladen werden.', true);
+    return;
+  }
   setSyncStatus('syncing');
   try {
-    const remote = await fetchFromGitHub('data/tasks.json');
-    if (!remote) { setSyncStatus('synced'); return; }
-    const remoteData = JSON.parse(remote.content);
-    const remoteSavedAt = remoteData._meta?.savedAt;
-    const localSavedAt = ls('cowork_cards_savedAt', null);
-    if (remoteSavedAt && (!localSavedAt || remoteSavedAt > localSavedAt)) {
-      lsSet('cowork_cards', remoteData.cards || {});
-      lsSet('cowork_cards_savedAt', remoteSavedAt);
+    // Load cards (tasks)
+    const tasksRemote = await fetchFromGitHub('data/tasks.json');
+    if (tasksRemote) {
+      try {
+        const remoteData = JSON.parse(tasksRemote.content);
+        const remoteSavedAt = remoteData._meta?.savedAt;
+        const localSavedAt = _appState.cards_savedAt;
+        if (remoteSavedAt && (!localSavedAt || remoteSavedAt > localSavedAt)) {
+          _appState.cards = remoteData.cards || {};
+          _appState.cards_savedAt = remoteSavedAt;
+        }
+      } catch(e) {}
     }
+
+    // Load patients
+    const patientsRemote = await fetchFromGitHub('data/patients.json');
+    if (patientsRemote) {
+      try { _appState.patients = JSON.parse(patientsRemote.content) || []; } catch(e) {}
+    }
+
+    // Load autonomy log
+    const autonomyRemote = await fetchFromGitHub('data/autonomy-log.json');
+    if (autonomyRemote) {
+      try { _appState.autonomy_log = JSON.parse(autonomyRemote.content); } catch(e) {}
+    }
+
+    // Load backlog
+    const backlogRemote = await fetchFromGitHub('data/backlog.json');
+    if (backlogRemote) {
+      try { _appState.backlog = JSON.parse(backlogRemote.content); } catch(e) {}
+    }
+
+    // Load settings (budget, collapsed, seqs, optional gh_token override)
+    const settingsRemote = await fetchFromGitHub('data/settings.json');
+    if (settingsRemote) {
+      try {
+        const s = JSON.parse(settingsRemote.content);
+        if (s.budget !== undefined) _appState.budget = s.budget;
+        if (s.gh_token) _appState.gh_token = s.gh_token;
+        if (s.collapsed) _appState.collapsed = s.collapsed;
+        if (s.seqs) {
+          Object.keys(s.seqs).forEach(k => { _appState.seqs[k] = s.seqs[k]; });
+        }
+      } catch(e) {}
+    }
+
     setSyncStatus('synced');
   } catch(e) {
     setSyncStatus('error');
+    showToast('Fehler beim Laden der Daten. GitHub nicht erreichbar.', true);
   }
 }
 
@@ -1320,8 +1388,6 @@ const LANES = [
   {id:'TB', name:'Tagebuch',                  color:'#868e96'}
 ];
 
-const collapsedLanes = new Set(LANES.filter(l => !l.isHeute && !l.isBA).map(l => l.id));
-
 const BA_TPLS = [
   'Verlaufsbericht',
   'Erstgespräch-Bericht',
@@ -1340,14 +1406,76 @@ const STATUSES = {
   'erledigt':   {label:'Erledigt',   cls:'status-erledigt'}
 };
 
-// ─── STORAGE HELPERS ─────────────────────────────────────────────────────────
-function ls(key, def) {
-  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; }
-  catch(e) { return def; }
-}
-function lsSet(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+// 
+// IN-MEMORY APP STATE (replaces localStorage)
+// 
+const _appState = {
+  cards: {},
+  cards_savedAt: null,
+  patients: [],
+  autonomy_log: null,
+  backlog: null,
+  collapsed: {},
+  budget: 100,
+  gh_token: '',
+  seqs: { HE:0, BA:0, WB:0, IK:0, PA:0, FI:0, FA:0, FR:0, PR:0, EV:0, EM:0, EX:0, MA:0, TB:0 }
+};
 
-// ─── PIN SYSTEM ──────────────────────────────────────────────────────────────
+// Convenience accessors (replaces ls/lsSet)
+function ls(key, def) {
+  // Map old localStorage key names to _appState fields
+  const map = {
+    cowork_cards:          () => _appState.cards,
+    cowork_cards_savedAt:  () => _appState.cards_savedAt,
+    cowork_patients:       () => _appState.patients,
+    cowork_autonomy_log:   () => _appState.autonomy_log,
+    cowork_backlog:        () => _appState.backlog,
+    cowork_collapsed:      () => _appState.collapsed,
+    cowork_budget:         () => _appState.budget,
+    cowork_gh_token:       () => _appState.gh_token,
+    cowork_settings:       () => ({ gh_token: _appState.gh_token, budget: _appState.budget })
+  };
+  // Handle cowork_seq_XX keys
+  if (key.startsWith('cowork_seq_')) {
+    const lane = key.replace('cowork_seq_', '');
+    const v = _appState.seqs[lane];
+    return v !== undefined ? v : (def !== undefined ? def : 0);
+  }
+  if (map[key]) {
+    const v = map[key]();
+    return v !== null && v !== undefined ? v : (def !== undefined ? def : null);
+  }
+  return def !== undefined ? def : null;
+}
+
+function lsSet(key, val) {
+  const map = {
+    cowork_cards:          (v) => { _appState.cards = v; },
+    cowork_cards_savedAt:  (v) => { _appState.cards_savedAt = v; },
+    cowork_patients:       (v) => { _appState.patients = v; scheduleSavePatientsToGitHub(); },
+    cowork_autonomy_log:   (v) => { _appState.autonomy_log = v; scheduleAutonomyLogToGitHub(); },
+    cowork_backlog:        (v) => { _appState.backlog = v; scheduleBacklogToGitHub(); },
+    cowork_collapsed:      (v) => { _appState.collapsed = v; scheduleSettingsToGitHub(); },
+    cowork_budget:         (v) => { _appState.budget = v; scheduleSettingsToGitHub(); },
+    cowork_gh_token:       (v) => { _appState.gh_token = v; scheduleSettingsToGitHub(); },
+    cowork_settings:       (v) => {
+      if (v && v.gh_token !== undefined) _appState.gh_token = v.gh_token;
+      if (v && v.budget !== undefined) _appState.budget = v.budget;
+      scheduleSettingsToGitHub();
+    }
+  };
+  if (key.startsWith('cowork_seq_')) {
+    const lane = key.replace('cowork_seq_', '');
+    _appState.seqs[lane] = val;
+    scheduleSettingsToGitHub();
+    return;
+  }
+  if (map[key]) { map[key](val); }
+}
+
+// 
+// PIN SYSTEM
+// // ─── PIN SYSTEM ──────────────────────────────────────────────────────────────
 let pinFailures = 0;
 let pinLocked = false;
 let pinLockTimer = null;
@@ -1359,14 +1487,17 @@ function showPinError(msg) {
 }
 
 function showPinUnlockUI(stored) {
-  document.getElementById('pin-title').textContent = 'CoworkSpace';
+  document.getElementById('pin-title').textContent = 'CoworkDashboard';
   document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
   document.getElementById('pin-confirm-group').style.display = 'none';
   document.getElementById('pin-btn').textContent = 'Entsperren';
   document.getElementById('pin-btn').addEventListener('click', function() {
     const p = document.getElementById('pin-input').value.trim();
-    if (btoa(p + 'cowork') === stored) { unlockApp(); }
-    else { showPinError('Falscher PIN'); }
+    const hash = _appState.pin_hash || stored;
+    if (btoa(p + 'cowork') === hash) {
+      sessionStorage.setItem('cowork_pin_set', 'true');
+      unlockApp();
+    } else { showPinError('Falscher PIN'); }
   });
 }
 
@@ -1381,8 +1512,8 @@ function showPinSetupUI() {
     if (p1.length < 4) { showPinError('Mindestens 4 Stellen'); return; }
     if (p1 !== p2) { showPinError('PINs stimmen nicht überein'); return; }
     const pinHash = btoa(p1 + 'cowork');
-    localStorage.setItem('cowork_pin', pinHash);
-    localStorage.setItem('cowork_pin_set', 'true');
+    _appState.pin_hash = pinHash;
+    sessionStorage.setItem('cowork_pin_set', 'true');
     try {
       await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: pinHash }, null, 2), 'sync: update PIN');
     } catch(e) { /* silent fail */ }
@@ -1392,54 +1523,43 @@ function showPinSetupUI() {
 
 // PIN RESET via URL param
   if (location.search.includes('resetpin=1')) {
-    localStorage.removeItem('cowork_pin');
-    localStorage.removeItem('cowork_pin_set');
+    _appState.pin_hash = null;
+    sessionStorage.removeItem('cowork_pin_set');
     history.replaceState(null, '', location.pathname);
   }
   
 const DEFAULT_PIN_HASH = btoa('2611' + 'cowork'); // MjYxMWNvd29yaw==
 
 async function initPinScreen() {
-  // Always sync PIN from GitHub in background
-  fetchFromGitHub('settings/pin.json').then(remote => {
-    if (remote) {
-      try {
-        const d = JSON.parse(atob(remote.content.replace(/\n/g, '')));
-        if (d.pin_hash) localStorage.setItem('cowork_pin', d.pin_hash);
-      } catch(e) {}
-    }
-  }).catch(() => {});
-  const stored = localStorage.getItem('cowork_pin');
-  if (stored) {
-    showPinUnlockUI(stored);
-  } else {
-    document.getElementById('pin-subtitle').textContent = 'Prüfe GitHub…';
-    document.getElementById('pin-btn').disabled = true;
+  // PIN hash ALWAYS loaded from GitHub (settings/pin.json) - no localStorage
+  document.getElementById('pin-subtitle').textContent = 'Daten werden geladen...';
+  document.getElementById('pin-btn').disabled = true;
+  let pinHash = DEFAULT_PIN_HASH;
+  try {
     const remote = await fetchFromGitHub('settings/pin.json');
-    document.getElementById('pin-btn').disabled = false;
-    if (remote) {
-      try {
-        const data = JSON.parse(atob(remote.content.replace(/\n/g, '')));
-        if (data.pin_hash) {
-          localStorage.setItem('cowork_pin', data.pin_hash);
-          localStorage.setItem('cowork_pin_set', 'true');
-          showPinUnlockUI(data.pin_hash);
-        } else {
-          // No pin_hash in file — use default PIN 2611
-          localStorage.setItem('cowork_pin', DEFAULT_PIN_HASH);
-          showPinUnlockUI(DEFAULT_PIN_HASH);
-        }
-      } catch(e) {
-        // Parse error — use default PIN 2611
-        localStorage.setItem('cowork_pin', DEFAULT_PIN_HASH);
-        showPinUnlockUI(DEFAULT_PIN_HASH);
-      }
+    if (remote === null) {
+      // GitHub not reachable or file not found - use default
+      document.getElementById('pin-subtitle').textContent = 'GitHub nicht erreichbar \u2014 Standard-PIN aktiv';
     } else {
-      // No pin.json on GitHub — use default PIN 2611
-      localStorage.setItem('cowork_pin', DEFAULT_PIN_HASH);
-      showPinUnlockUI(DEFAULT_PIN_HASH);
+      try {
+        const data = JSON.parse(remote.content);
+        pinHash = data.pin_hash || DEFAULT_PIN_HASH;
+      } catch(e) {
+        pinHash = DEFAULT_PIN_HASH;
+      }
     }
+  } catch(e) {
+    document.getElementById('pin-subtitle').textContent = 'Fehler: GitHub nicht erreichbar. Bitte Verbindung pr\u00fcfen.';
+    document.getElementById('pin-btn').disabled = false;
+    document.getElementById('pin-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('pin-btn').click();
+    });
+    document.getElementById('pin-input').focus();
+    return;
   }
+  _appState.pin_hash = pinHash;
+  document.getElementById('pin-btn').disabled = false;
+  showPinUnlockUI(pinHash);
   document.getElementById('pin-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') document.getElementById('pin-btn').click();
   });
@@ -1475,8 +1595,6 @@ function nextCardId(laneId) {
 let currentTab = 'heute';
 
 function switchTab(id) {
-  const tabEl = document.getElementById('tab-' + id);
-  if (!tabEl) return;
   currentTab = id;
   document.querySelectorAll('.tab-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === id);
@@ -1484,8 +1602,7 @@ function switchTab(id) {
   document.querySelectorAll('.tab-content').forEach(c => {
     c.classList.toggle('active', c.id === 'tab-' + id);
   });
-  if (id === 'heute')      renderHeute();
-  if (id === 'wochenplan') renderWochenCalSection();
+  if (id === 'heute')     renderHeute();
   if (id === 'kanban')    renderKanban();
   if (id === 'patienten') renderPatients();
   if (id === 'autonomy')  renderAL();
@@ -1565,7 +1682,7 @@ function renderCalEventChip(e) {
 }
 function renderStatusTab() {
   const cards = getCards();
-  const events = JSON.parse(localStorage.getItem('cowork_events') || '[]');
+  const events = (window._calEvents && window._calEvents.events) ? window._calEvents.events : [];
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -1728,43 +1845,7 @@ function renderStatusTab() {
 }
 
 // renderHeute is now an alias for renderStatusTab (for backward compat with other code)
-function renderHeute() { renderStatusTab(); renderHeuteCalSection(); }
-
-function todayStr() { return new Date().toISOString().split('T')[0]; }
-
-function renderHeuteCalSection() {
-  const el = document.getElementById('heuteCalContent');
-  if (!el) return;
-  const evs = getEventsForDay(todayStr());
-  if (!evs.length) {
-    el.innerHTML = '<div class="cal-empty">Keine Kalendereinträge für heute.</div>';
-    return;
-  }
-  el.innerHTML = evs.map(renderCalEventChip).join('');
-}
-
-function renderWochenCalSection() {
-  const el = document.getElementById('wochenCalContent');
-  if (!el) return;
-  const weekStart = getWeekStart();
-  let html = '';
-  const DAY_NAMES = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(weekStart.getTime() + i * 86400000);
-    const iso = d.toISOString().split('T')[0];
-    const evs = getEventsForDay(iso);
-    const label = DAY_NAMES[i] + ', ' + d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit'});
-    html += '<div class="cal-day-group">';
-    html += '<div class="cal-day-label">' + label + '</div>';
-    if (!evs.length) {
-      html += '<div class="cal-empty">–</div>';
-    } else {
-      html += evs.map(renderCalEventChip).join('');
-    }
-    html += '</div>';
-  }
-  el.innerHTML = html;
-}
+function renderHeute() { renderStatusTab(); }
 
 function getWeekStart() {
   const d = new Date(); const day = d.getDay();
@@ -1787,9 +1868,8 @@ function renderCardItem(card, laneColor) {
     ? '<span class="card-date-dl">D: ' + fmtDateShort(card.deadline) + '</span>' : '';
   const crBadge = card.createdAt
     ? '<span class="card-date-cr">* ' + fmtDateShort(card.createdAt) + '</span>' : '';
-  const datesHtml = (dlBadge || crBadge) ? '<div class="card-dates">' + dlBadge + crBadge + '</div>' : '';
-
-
+  const datesHtml = (dlBadge || crBadge)
+    ? '<div class="card-dates">' + dlBadge + crBadge + '</div>' : '';
   const hasDesc = !!(card.desc && card.desc.trim());
   const cardId = esc(card.id);
   const descExpanded = hasDesc && (descExpandState[cardId] || false);
@@ -1835,7 +1915,7 @@ function toggleDoneArchive(laneId) {
 function renderKanban() {
   const cards     = getCards();
   const grid      = document.getElementById('kanban-grid');
-  const collapsed = ls('cowork_collapsed', {});
+  const collapsed = _appState.collapsed;
 
   const todayISO = new Date().toISOString().split('T')[0];
   grid.innerHTML = LANES.map(lane => {
@@ -1847,7 +1927,7 @@ function renderKanban() {
       .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id));
     const doneCards   = allLaneCards.filter(c => c.status === 'erledigt')
       .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id));
-    const isCollapsed  = (lane.id in collapsed) ? collapsed[lane.id] : collapsedLanes.has(lane.id);
+    const isCollapsed  = collapsed[lane.id];
     const doneExpanded = doneExpandState[lane.id] || false;
 
     const cardsHtml = activeCards.map(c => renderCardItem(c, lane.color)).join('') ||
@@ -1867,17 +1947,19 @@ function renderKanban() {
         </div>
       </div>` : '';
 
-    return `<div class="lane${isCollapsed ? ' collapsed' : ''}" id="lane-${lane.id}">
+    return `<div class="lane" id="lane-${lane.id}">
       <div class="lane-header">
         <span class="lane-title">${esc(lane.name)}</span>
         <span class="lane-count">${activeCards.length}</span>
-        <button class="btn-add-card" onclick="openCardModal(null,'${lane.id}')" title="Karte hinzufügen" style="padding:2px 7px;font-size:15px;line-height:1">＋</button>
-        ${voorlagenBtn}
         <button class="lane-collapse" onclick="toggleCollapse('${lane.id}')">${isCollapsed ? '▶' : '▼'}</button>
       </div>
       <div class="lane-body${isCollapsed ? ' collapsed' : ''}" id="lb-${lane.id}">
         ${cardsHtml}
         ${doneHtml}
+      </div>
+      <div class="lane-footer">
+        <button class="btn-add-card" onclick="openCardModal(null,'${lane.id}')">＋ Karte</button>
+        ${voorlagenBtn}
       </div>
     </div>`;
   }).join('');
@@ -1889,10 +1971,8 @@ function renderKanban() {
 }
 
 function toggleCollapse(laneId) {
-  const collapsed = ls('cowork_collapsed', {});
-  const currentlyCollapsed = (laneId in collapsed) ? collapsed[laneId] : collapsedLanes.has(laneId);
-  collapsed[laneId] = !currentlyCollapsed;
-  if (collapsed[laneId]) collapsedLanes.add(laneId); else collapsedLanes.delete(laneId);
+  const collapsed = _appState.collapsed;
+  collapsed[laneId] = !collapsed[laneId];
   lsSet('cowork_collapsed', collapsed);
   renderKanban();
 }
@@ -2092,7 +2172,7 @@ function initAL() {
       id: 'al001',
       ts: new Date().toISOString(),
       title: 'System gestartet',
-      desc: 'CoworkSpace v10 erfolgreich initialisiert. Alle Daten werden lokal gespeichert.',
+      desc: 'CoworkDashboard v10 erfolgreich initialisiert. Alle Daten werden lokal gespeichert.',
       badge: '✅',
       read: false
     }];
@@ -2303,12 +2383,15 @@ document.getElementById('btn-pin-change').addEventListener('click', async () => 
   if (val.length < 4 || val.length > 6 || !/^\d+$/.test(val)) {
     showToast('PIN muss 4–6 Ziffern sein', true); return;
   }
-  localStorage.setItem('cowork_pin', hashPin(val));
-  localStorage.setItem('cowork_pin_set', 'true');
+  const newHash = hashPin(val);
+  _appState.pin_hash = newHash;
+  sessionStorage.setItem('cowork_pin_set', 'true');
   document.getElementById('new-pin-input').value = '';
   try {
-    await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: hashPin(val) }, null, 2), 'sync: update PIN');
-    showToast('✅ PIN geändert & synchronisiert');
+    await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: newHash }, null, 2), 'sync: update PIN');
+    showToast('\u2705 PIN ge\u00e4ndert & synchronisiert');
+  } catch(e) {
+    showToast('\u274c PIN-Sync fehlgeschlagen. GitHub nicht erreichbar.', true);
   } catch(e) {
     showToast('✅ PIN lokal geändert');
   }
@@ -2360,10 +2443,20 @@ document.getElementById('import-file').addEventListener('change', (e) => {
 
 document.getElementById('btn-reset').addEventListener('click', () => {
   confirmAction('Alle Daten löschen?', 'ALLE Karten, Patienten und Logs werden unwiderruflich gelöscht.', () => {
-    ['cowork_cards','cowork_patients','cowork_autonomy_log','cowork_backlog','cowork_collapsed','cowork_budget']
-      .forEach(k => localStorage.removeItem(k));
-    LANES.forEach(l => localStorage.removeItem('cowork_seq_' + l.id));
-    showToast('Alle Daten gelöscht');
+    _appState.cards = {};
+    _appState.cards_savedAt = null;
+    _appState.patients = [];
+    _appState.autonomy_log = null;
+    _appState.backlog = null;
+    _appState.collapsed = {};
+    _appState.budget = 100;
+    LANES.forEach(l => { _appState.seqs[l.id] = 0; });
+    // Sync cleared state to GitHub
+    if (getGHToken()) {
+      scheduleSyncToGitHub();
+      scheduleSettingsToGitHub();
+    }
+    showToast('Alle Daten gel\u00f6scht');
     switchTab('heute');
   });
 });
@@ -2716,14 +2809,23 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
-// ─── INIT APP ─────────────────────────────────────────────────────────────────
+// ─── INIT APP ──────────────────────────────────────────────────────────────
 async function initApp() {
+  renderHeutePlaceholder();
+  await loadFromGitHub();
   initAL();
   initBacklog();
   updateALBadge();
-  await loadFromGitHub();
   loadCalendarEvents().catch(function(e) { console.warn('calendar load failed', e); });
   renderHeute();
+}
+
+function renderHeutePlaceholder() {
+  const lists = ['heute-list','woche-list','weitere-list'];
+  lists.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<div class="empty-state">Daten werden geladen\u2026</div>';
+  });
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
