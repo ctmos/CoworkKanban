@@ -1,4 +1,4 @@
-<!-- CoworkOS Dashboard v1.1 | 2026-03-24 | implement 13 Kanban categories -->
+﻿<!-- CoworkOS Dashboard v1.1 | 2026-03-24 | implement 13 Kanban categories -->
 <!-- CHANGELOG
   v1.1 | 2026-03-24 | implement 13 Kanban categories (Heute, Barmelweid, PSP WB, Patienten, Finanzen, Familie, Freunde, Projekte, Events, Erinnerungen, Explore, MOSER.AI, Tagebuch)
 -->
@@ -683,6 +683,23 @@ nav::-webkit-scrollbar { display: none; }
 .bl-card-meta { font-size:12px; color:var(--text-muted); display:flex; gap:12px; }
 .bl-desc { font-size:13px; color:var(--text-muted); margin-top:6px; }
 
+/* ── SYNC DOT ── */
+#sync-dot {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  z-index: 1000;
+  transition: background 0.3s;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.8);
+}
+#sync-dot.synced  { background: #22c55e; }
+#sync-dot.syncing { background: #f59e0b; }
+#sync-dot.error   { background: #ef4444; }
+#sync-dot.hidden  { display: none; }
+
 /* Confirm modal */
 #confirm-overlay {
   display: none; position: fixed; inset: 0;
@@ -960,6 +977,9 @@ nav::-webkit-scrollbar { display: none; }
   </div>
 </div>
 
+<!-- SYNC STATUS DOT -->
+<div id="sync-dot" class="hidden"></div>
+
 <!-- CONFIRM MODAL -->
 <div id="confirm-overlay">
   <div class="confirm-modal">
@@ -1021,6 +1041,77 @@ async function pushToGitHub(token, path, content, message) {
   });
   if (!r.ok) throw new Error('GitHub push failed: ' + r.status);
   return await r.json();
+}
+
+// ─── SYNC STATUS ─────────────────────────────────────────────────────────────
+function setSyncStatus(status) {
+  const dot = document.getElementById('sync-dot');
+  if (!dot) return;
+  if (!getGHToken()) { dot.className = 'hidden'; return; }
+  dot.className = status;
+}
+
+// ─── AUTO SYNC ───────────────────────────────────────────────────────────────
+let syncDebounceTimer = null;
+
+function scheduleSyncToGitHub() {
+  clearTimeout(syncDebounceTimer);
+  setSyncStatus('syncing');
+  syncDebounceTimer = setTimeout(syncToGitHub, 2000);
+}
+
+async function syncToGitHub() {
+  const token = getGHToken();
+  if (!token) return;
+  setSyncStatus('syncing');
+  try {
+    const cards = ls('cowork_cards', {});
+    const savedAt = ls('cowork_cards_savedAt', new Date().toISOString());
+    const jsonStr = JSON.stringify({ _meta: { savedAt }, cards }, null, 2);
+    const bytes = new TextEncoder().encode(jsonStr);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    const content = btoa(binary);
+    const res = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/data/tasks.json`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    const existing = res.ok ? await res.json() : {};
+    const body = { message: 'sync: auto-save kanban cards', content };
+    if (existing.sha) body.sha = existing.sha;
+    const putRes = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/data/tasks.json`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `token ${token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify(body)
+    });
+    if (!putRes.ok) throw new Error('Push failed: ' + putRes.status);
+    setSyncStatus('synced');
+  } catch(e) {
+    setSyncStatus('error');
+  }
+}
+
+async function loadFromGitHub() {
+  const token = getGHToken();
+  if (!token) return;
+  setSyncStatus('syncing');
+  try {
+    const remote = await fetchFromGitHub('data/tasks.json');
+    if (!remote) { setSyncStatus('synced'); return; }
+    const remoteData = JSON.parse(remote.content);
+    const remoteSavedAt = remoteData._meta?.savedAt;
+    const localSavedAt = ls('cowork_cards_savedAt', null);
+    if (remoteSavedAt && (!localSavedAt || remoteSavedAt > localSavedAt)) {
+      lsSet('cowork_cards', remoteData.cards || {});
+      lsSet('cowork_cards_savedAt', remoteSavedAt);
+    }
+    setSyncStatus('synced');
+  } catch(e) {
+    setSyncStatus('error');
+  }
 }
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
@@ -1172,7 +1263,11 @@ function unlockApp() {
 
 // ─── APP DATA ─────────────────────────────────────────────────────────────────
 function getCards()    { return ls('cowork_cards', {}); }
-function saveCards(c)  { lsSet('cowork_cards', c); }
+function saveCards(c) {
+  lsSet('cowork_cards', c);
+  lsSet('cowork_cards_savedAt', new Date().toISOString());
+  scheduleSyncToGitHub();
+}
 function getPatients() { return ls('cowork_patients', []); }
 function savePatients(p) { lsSet('cowork_patients', p); }
 function getALLog()    { return ls('cowork_autonomy_log', null); }
@@ -1976,10 +2071,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 // ─── INIT APP ─────────────────────────────────────────────────────────────────
-function initApp() {
+async function initApp() {
   initAL();
   initBacklog();
   updateALBadge();
+  await loadFromGitHub();
   renderHeute();
 }
 
@@ -1988,3 +2084,4 @@ initPinScreen();
 </script>
 </body>
 </html>
+
