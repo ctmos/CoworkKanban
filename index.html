@@ -1,5 +1,6 @@
-<!-- CoworkOS Dashboard v1.5 | 2026-03-24 | migrate all localStorage to GitHub API storage -->
+<!-- CoworkOS Dashboard v1.6 | 2026-03-24 | migrate all localStorage to GitHub API storage -->
 <!-- CHANGELOG
+  v1.6 | 2026-03-24 | add light/dark theme toggle in settings
     v1.5 | 2026-03-24 | migrate all localStorage to GitHub API storage
   v1.3 | 2026-03-24 | colored card backgrounds, date badges (D/createdAt), done-archive per lane, desc-dropdown
   v1.2 | 2026-03-24 | add ImperialKI lane (IK) between WB and PA
@@ -12,6 +13,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>CoworkDashboard</title>
+<script>
+(function(){var t=localStorage.getItem("cowork_theme")||"dark";if(t==="light")document.documentElement.classList.add("light-theme");}());
+</script>
+
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -26,6 +31,18 @@
   --nav-bg: #13151f;
   --shadow: 0 1px 3px rgba(0,0,0,0.4);
   --radius: 8px;
+}
+:root.light-theme {
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --surface2: #f0f1f3;
+  --text: #1a1d27;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #7c3aed;
+  --accent-dark: #6d28d9;
+  --nav-bg: #ffffff;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 body {
@@ -636,6 +653,11 @@ nav::-webkit-scrollbar { display: none; }
   padding: 20px;
   margin-bottom: 16px;
 }
+.theme-toggle-row { display: flex; gap: 8px; margin-top: 8px; }
+.theme-btn { flex: 1; padding: 8px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 13px; transition: background 0.2s, border-color 0.2s, color 0.2s; }
+.theme-btn:hover { border-color: var(--accent); }
+.theme-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
 .settings-section h3 { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
 
 .settings-row { margin-bottom: 14px; }
@@ -938,6 +960,17 @@ nav::-webkit-scrollbar { display: none; }
   <!-- EINSTELLUNGEN TAB -->
   <div id="tab-settings" class="tab-content">
     <h2>Einstellungen</h2>
+
+    <div class="settings-section">
+      <h3>Design</h3>
+      <div class="settings-row">
+        <label class="settings-label">Farbschema</label>
+        <div class="theme-toggle-row">
+          <button class="theme-btn" id="btn-theme-dark">🌙 Dunkel</button>
+          <button class="theme-btn" id="btn-theme-light">☀️ Hell</button>
+        </div>
+      </div>
+    </div>
 
     <div class="settings-section">
       <h3>GitHub</h3>
@@ -2829,6 +2862,37 @@ function renderHeutePlaceholder() {
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
+
+// ─── THEME ───────────────────────────────────────────────────────────────────
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.documentElement.classList.add("light-theme");
+  } else {
+    document.documentElement.classList.remove("light-theme");
+  }
+  localStorage.setItem("cowork_theme", theme);
+  const btnDark = document.getElementById("btn-theme-dark");
+  const btnLight = document.getElementById("btn-theme-light");
+  if (btnDark) btnDark.classList.toggle("active", theme !== "light");
+  if (btnLight) btnLight.classList.toggle("active", theme === "light");
+}
+// Apply saved theme immediately (before DOM ready)
+(function() {
+  var t = localStorage.getItem("cowork_theme") || "dark";
+  if (t === "light") document.documentElement.classList.add("light-theme");
+})();
+
+document.getElementById("btn-theme-dark").addEventListener("click", function() { applyTheme("dark"); });
+document.getElementById("btn-theme-light").addEventListener("click", function() { applyTheme("light"); });
+// Sync button active state
+(function() {
+  var t = localStorage.getItem("cowork_theme") || "dark";
+  var btnDark = document.getElementById("btn-theme-dark");
+  var btnLight = document.getElementById("btn-theme-light");
+  if (btnDark) btnDark.classList.toggle("active", t !== "light");
+  if (btnLight) btnLight.classList.toggle("active", t === "light");
+})();
+
 initPinScreen();
 </script>
 </body>
