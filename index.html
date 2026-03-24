@@ -699,13 +699,6 @@ nav::-webkit-scrollbar { display: none; }
 .confirm-modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
 .confirm-modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
 .confirm-btns { display: flex; gap: 8px; justify-content: center; }
-
-.archiv-section{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1);}
-.archiv-toggle{width:100%;text-align:left;background:transparent;border:none;color:rgba(255,255,255,0.38);font-size:0.78rem;cursor:pointer;padding:3px 2px;}
-.archiv-toggle:hover{color:rgba(255,255,255,0.7);}
-.archiv-body>*{opacity:0.55;}
-.arc-btn{background:transparent;border:none;cursor:pointer;font-size:0.85rem;padding:1px 4px;color:rgba(255,255,255,0.45);}
-.arc-btn:hover{color:#fff;background:rgba(255,255,255,0.12);border-radius:3px;}
 </style>
 </head>
 <body>
@@ -1028,19 +1021,20 @@ async function pushToGitHub(token, path, content, message) {
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const LANES = [
-  {id: 'HE',    name: 'Heute',      isHeute: true},
-  {id: 'BA',    name: 'Barmelweid', isBA: true},
-  {id: 'PSPWB', name: 'PSP WB'},
-  {id: 'PA',    name: 'Patienten'},
-  {id: 'FI',    name: 'Finanzen'},
-  {id: 'FA',    name: 'Familie'},
-  {id: 'FRD',   name: 'Freunde'},
-  {id: 'PJ',    name: 'Projekte'},
-  {id: 'EV',    name: 'Events'},
-  {id: 'EM',    name: 'Erinnerungen'},
-  {id: 'EX',    name: 'Explore'},
-  {id: 'MA',    name: 'MOSER.AI'},
-  {id: 'TA',    name: 'Tagebuch'}
+  {id:'BA', name:'Barmelweid', isBA:true},
+  {id:'PA', name:'Patienten-Admin'},
+  {id:'WB', name:'Weiterbildung'},
+  {id:'SI', name:'Selbst & Identität'},
+  {id:'FI', name:'Finanzen'},
+  {id:'FR', name:'Freizeit & Familie'},
+  {id:'EV', name:'Events & Termine'},
+  {id:'FA', name:'Familie & Beziehungen'},
+  {id:'KI', name:'KI & Tech'},
+  {id:'CO', name:'Coaching'},
+  {id:'IK', name:'Interkantonales'},
+  {id:'ER', name:'Ernährung & Sport'},
+  {id:'TA', name:'Tagesstruktur'},
+  {id:'HE', name:'Heute', isHeute:true}
 ];
 
 const BA_TPLS = [
@@ -1119,48 +1113,44 @@ function showPinSetupUI() {
   }
   
 async function initPinScreen() {
-  if (window.location.search.indexOf('resetpin=1') > -1) {
-    localStorage.removeItem('cowork_pin');
-  }
-  fetch('https://raw.githubusercontent.com/ctmos/cowork-data/main/settings/pin.json')
-    .then(function(r) { return r.json(); })
-    .then(function(data) { if (data && data.hash) { localStorage.setItem('cowork_pin', data.hash); } })
-    .catch(function() {});
-  var storedHash = localStorage.getItem('cowork_pin');
-  if (!storedHash) { storedHash = 'MjYxMWNvd29yaw=='; localStorage.setItem('cowork_pin', storedHash); }
-  var ov = document.createElement('div');
-  ov.id = 'pin-overlay';
-  ov.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0f0e17;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:#fff;font-family:inherit;';
-  ov.innerHTML = '<h2 style="margin-bottom:1.5rem;font-size:1.4rem;font-weight:600;">Enter PIN</h2>'
-    + '<input id="pin-inp" type="password" inputmode="numeric" maxlength="8" autocomplete="off" '
-    + 'style="font-size:2rem;width:160px;text-align:center;padding:.5rem;border-radius:8px;border:2px solid #555;background:#1a1a2e;color:#fff;letter-spacing:.4em;" placeholder="\u2022\u2022\u2022\u2022">'
-    + '<button id="pin-btn" style="margin-top:1rem;padding:.7rem 2rem;font-size:1rem;background:#ff8906;color:#0f0e17;border:none;border-radius:8px;cursor:pointer;font-weight:700;">Unlock</button>'
-    + '<p id="pin-err" style="color:#e53170;margin-top:.8rem;display:none;">Incorrect PIN</p>';
-  document.body.appendChild(ov);
-  setTimeout(function() { var el = document.getElementById('pin-inp'); if (el) el.focus(); }, 100);
-  function tryU() {
-    var val = (document.getElementById('pin-inp') || {}).value || '';
-    val = val.trim();
-    if (btoa(val + 'cowork') === localStorage.getItem('cowork_pin')) {
-      ov.remove();
-      var fns = ['loadApp','initApp','showDashboard','renderApp','startApp','initMain','main'];
-      var done = false;
-      for (var i = 0; i < fns.length; i++) { if (typeof window[fns[i]] === 'function') { window[fns[i]](); done = true; break; } }
-      if (!done) { document.dispatchEvent(new CustomEvent('pinUnlocked')); }
+  // Always sync PIN from GitHub in background
+  fetchFromGitHub('settings/pin.json').then(remote => {
+    if (remote) {
+      try {
+        const d = JSON.parse(remote.content);
+        if (d.pin_hash) localStorage.setItem('cowork_pin', d.pin_hash);
+      } catch(e) {}
+    }
+  }).catch(() => {});
+  const stored = localStorage.getItem('cowork_pin');
+  if (stored) {
+    showPinUnlockUI(stored);
+  } else {
+    document.getElementById('pin-subtitle').textContent = 'Prüfe GitHub…';
+    document.getElementById('pin-btn').disabled = true;
+    const remote = await fetchFromGitHub('settings/pin.json');
+    document.getElementById('pin-btn').disabled = false;
+    if (remote) {
+      try {
+        const data = JSON.parse(atob(remote.content.replace(/\n/g, '')));
+        if (data.pin_hash) {
+          localStorage.setItem('cowork_pin', data.pin_hash);
+          localStorage.setItem('cowork_pin_set', 'true');
+          showPinUnlockUI(data.pin_hash);
+        } else {
+          showPinSetupUI();
+        }
+      } catch(e) {
+        showPinSetupUI();
+      }
     } else {
-      var err = document.getElementById('pin-err');
-      if (err) err.style.display = 'block';
-      var inp = document.getElementById('pin-inp');
-      if (inp) { inp.value = ''; inp.focus(); }
+      showPinSetupUI();
     }
   }
-  var btn = document.getElementById('pin-btn');
-  if (btn) btn.addEventListener('click', tryU);
-  var inp2 = document.getElementById('pin-inp');
-  if (inp2) inp2.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') tryU();
-    else { var er = document.getElementById('pin-err'); if (er) er.style.display = 'none'; }
+  document.getElementById('pin-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('pin-btn').click();
   });
+  document.getElementById('pin-input').focus();
 }
 
 function unlockApp() {
@@ -1397,24 +1387,6 @@ function renderCardItem(card) {
     + '</div>';
 }
 // ─── KANBAN ───────────────────────────────────────────────────────────────────
-function archiveCard(el) {
-  var id = typeof el === 'string' ? el : el.getAttribute('data-aid');
-  var cs = getCards(); if (cs[id]) { cs[id].archived = true; saveCards(cs); renderKanban(); }
-}
-function unarchiveCard(el) {
-  var id = typeof el === 'string' ? el : el.getAttribute('data-aid');
-  var cs = getCards(); if (cs[id]) { cs[id].archived = false; saveCards(cs); renderKanban(); }
-}
-function toggleArchiveSection(laneId) {
-  var el = document.getElementById('archiv-body-' + laneId);
-  var btn = document.getElementById('archiv-btn-' + laneId);
-  if (el) {
-    var show = el.style.display === 'none';
-    el.style.display = show ? '' : 'none';
-    if (btn) btn.textContent = (show ? '▾ ' : '▸ ') + 'Archiv (' + btn.getAttribute('data-count') + ')';
-  }
-}
-
 function renderKanban() {
   const cards   = getCards();
   const grid    = document.getElementById('kanban-grid');
@@ -1427,14 +1399,6 @@ function renderKanban() {
     const isCollapsed = collapsed[lane.id];
 
     const cardsHtml = laneCards.map(c => renderCardItem(c)).join('') ||
-    const archivedCards = Object.values(cards).filter(c => c.lane === lane.id && !!c.archived);
-    const archiveSectionHtml = archivedCards.length === 0 ? '' : ('<div class="archiv-section">' +
-      '<button id="archiv-btn-' + lane.id + '" class="archiv-toggle" data-count="' + archivedCards.length + '"' +
-      ' onclick="toggleArchiveSection(\'' + lane.id + '\')">' +
-      '▸ Archiv (' + archivedCards.length + ')</button>' +
-      '<div id="archiv-body-' + lane.id + '" class="archiv-body" style="display:none">' +
-      archivedCards.map(function(c){ return renderCardItem(c); }).join('') +
-      '</div></div>');
       '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
 
     const voorlagenBtn = lane.isBA ? `
@@ -1445,10 +1409,7 @@ function renderKanban() {
         </div>
       </div>` : '';
 
-  
-  const archiveBtn = card.archived
-    ? `<button class="arc-btn" onclick="event.stopPropagation();unarchiveCard(this)" data-aid="${esc(card.id)}" title="Wiederherstellen">&#8617;</button>`
-    : `<button class="arc-btn" onclick="event.stopPropagation();archiveCard(this)" data-aid="${esc(card.id)}" title="Archivieren">&#10003;</button>`;  return `<div class="lane" id="lane-${lane.id}">
+    return `<div class="lane" id="lane-${lane.id}">
       <div class="lane-header">
         <span class="lane-title">${esc(lane.name)}</span>
         <span class="lane-count">${laneCards.length}</span>
@@ -1460,7 +1421,6 @@ function renderKanban() {
       <div class="lane-footer">
         <button class="btn-add-card" onclick="openCardModal(null,'${lane.id}')">＋ Karte</button>
         ${voorlagenBtn}
-      ${archiveSectionHtml}
       </div>
     </div>`;
   }).join('');
