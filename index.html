@@ -988,7 +988,9 @@ async function fetchFromGitHub(path) {
     });
     if (!r.ok) return null;
     const d = await r.json();
-    return { content: atob(d.content.replace(/\n/g, '')), sha: d.sha };
+    const _b64 = d.content.replace(/\n/g, '');
+        const _bytes = Uint8Array.from(atob(_b64), c => c.charCodeAt(0));
+        return { content: new TextDecoder('utf-8').decode(_bytes), sha: d.sha };
   } catch(e) { return null; }
 }
 
