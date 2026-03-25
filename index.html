@@ -2656,7 +2656,7 @@ async function showProjectsTab() {
 
   const [metas, logs] = await Promise.all([
     Promise.all(projectIds.map(id =>
-      _localProjectsMeta[id] && !ghIds.includes(id)
+      _localProjectsMeta[id]
         ? Promise.resolve(_localProjectsMeta[id])
         : loadProjectMeta(id)
     )),
