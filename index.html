@@ -1,5 +1,6 @@
-﻿<!-- CoworkKanban v1.7 | 2026-03-25 | data safety + UI overhaul - light theme, GitHub sync, dashboard redesign -->
+﻿<!-- CoworkKanban v1.8 | 2026-03-25 | data-loss prevention: pre-push safety, backup system, read-before-write, status bar -->
 <!-- CHANGELOG
+  v1.8 | 2026-03-25 | data-loss prevention: pre-push safety check, localStorage backup, read-before-write, sync status bar
   v1.7 | 2026-03-25 | light theme default, Claude-Blue accent, GitHub-sync constants, calendar columns, brand rename
   v1.6 | 2026-03-24 | add light/dark theme toggle in settings
   v1.6 | 2026-03-24 | add Einkaufsliste lane (EK) at end of Kanban
@@ -862,6 +863,34 @@ nav::-webkit-scrollbar { display: none; }
 #sync-dot.error   { background: #ef4444; }
 #sync-dot.hidden  { display: none; }
 
+/* ── SYNC STATUS BAR ── */
+#sync-status-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  background: #1e293b;
+  color: #f8f9fb;
+  font-size: 12px;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 28px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+#sync-status-bar.warning {
+  background: #ef4444;
+  color: #fff;
+  font-weight: 600;
+}
+#sync-status-bar #ssb-text { flex: 1; }
+#sync-status-bar #ssb-count { font-weight: 600; }
+
+/* push app content below status bar */
+body { padding-top: 28px; }
+
 /* Confirm modal */
 #confirm-overlay {
   display: none; position: fixed; inset: 0;
@@ -1216,6 +1245,12 @@ nav::-webkit-scrollbar { display: none; }
 <!-- SYNC STATUS DOT -->
 <div id="sync-dot" class="hidden"></div>
 
+<!-- SYNC STATUS BAR -->
+<div id="sync-status-bar">
+  <span id="ssb-text">💾 Letzte Sync: —</span>
+  <span id="ssb-count"></span>
+</div>
+
 <!-- CONFIRM MODAL -->
 <div id="confirm-overlay">
   <div class="confirm-modal">
@@ -1319,22 +1354,92 @@ function scheduleSyncToGitHub() {
   syncDebounceTimer = setTimeout(syncToGitHub, 2000);
 }
 
+// ─── SYNC STATUS BAR ─────────────────────────────────────────────────────────
+function updateSyncStatusBar(cardCount, timestamp, warning) {
+  const bar = document.getElementById('sync-status-bar');
+  const txt = document.getElementById('ssb-text');
+  const cnt = document.getElementById('ssb-count');
+  if (!bar || !txt) return;
+  const ts = timestamp ? new Date(timestamp).toLocaleTimeString('de-DE') : '—';
+  txt.textContent = '\uD83D\uDCBE Letzte Sync: ' + ts;
+  if (cnt) cnt.textContent = cardCount !== null ? cardCount + ' Cards' : '';
+  if (warning) {
+    bar.classList.add('warning');
+    txt.textContent = '\u26A0\uFE0F WARNUNG: ' + warning;
+  } else {
+    bar.classList.remove('warning');
+  }
+}
+
+// ─── BACKUP HELPERS ───────────────────────────────────────────────────────────
+function saveBackupToLocalStorage(data) {
+  try {
+    const key = 'cowork_backup_' + Date.now();
+    localStorage.setItem(key, JSON.stringify(data));
+    // Keep only 5 most recent backups
+    const keys = Object.keys(localStorage)
+      .filter(k => k.startsWith('cowork_backup_'))
+      .sort();
+    while (keys.length > 5) {
+      localStorage.removeItem(keys.shift());
+    }
+  } catch(e) { /* storage full — ignore */ }
+}
+
 async function syncToGitHub() {
   const token = getGHToken();
   if (!token) return;
   setSyncStatus('syncing');
   try {
-    const cards = _appState.cards;
-    const savedAt = _appState.cards_savedAt || new Date().toISOString();
-    const jsonStr = JSON.stringify({ _meta: { savedAt }, cards }, null, 2);
-    const bytes = new TextEncoder().encode(jsonStr);
-    let binary = '';
-    bytes.forEach(b => binary += String.fromCharCode(b));
-    const content = btoa(binary);
+    // ── STEP 1: Read-before-write — fetch current remote state ────────────────
     const res = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/data/tasks.json`, {
       headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
     });
     const existing = res.ok ? await res.json() : {};
+
+    // Parse current remote card count for safety check
+    let remoteCardCount = 0;
+    let remoteCards = {};
+    if (existing.content) {
+      try {
+        const rawB64 = existing.content.replace(/\n/g, '');
+        const bytes = Uint8Array.from(atob(rawB64), c => c.charCodeAt(0));
+        const remoteStr = new TextDecoder('utf-8').decode(bytes);
+        const remoteData = JSON.parse(remoteStr);
+        remoteCards = remoteData.cards || {};
+        remoteCardCount = Object.keys(remoteCards).length;
+
+        // ── STEP B: Backup remote data before overwriting ─────────────────────
+        saveBackupToLocalStorage({ source: 'pre-push-remote', data: remoteData, ts: new Date().toISOString() });
+      } catch(e) { /* parse error — skip backup */ }
+    }
+
+    // ── STEP 2: Merge — keep existing cards, add/update local ones ───────────
+    // Local cards take precedence, but we never drop remote cards that are
+    // not present locally (they may have been written by another session).
+    const localCards = _appState.cards || {};
+    const mergedCards = Object.assign({}, remoteCards, localCards);
+
+    const localCardCount = Object.keys(localCards).length;
+    const mergedCardCount = Object.keys(mergedCards).length;
+
+    // ── STEP A: Pre-push safety check ─────────────────────────────────────────
+    if (localCardCount < remoteCardCount) {
+      const errMsg = 'BLOCKED: w\u00fcrde ' + remoteCardCount + ' Cards auf ' + localCardCount + ' reduzieren';
+      setSyncStatus('error');
+      updateSyncStatusBar(remoteCardCount, null, errMsg);
+      console.error('[syncToGitHub] ' + errMsg);
+      throw new Error(errMsg);
+    }
+
+    const savedAt = new Date().toISOString();
+    _appState.cards_savedAt = savedAt;
+    const jsonStr = JSON.stringify({ _meta: { savedAt }, cards: mergedCards }, null, 2);
+    const bytes = new TextEncoder().encode(jsonStr);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    const content = btoa(binary);
+
     const body = { message: 'sync: auto-save kanban cards', content };
     if (existing.sha) body.sha = existing.sha;
     const putRes = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/data/tasks.json`, {
@@ -1348,6 +1453,9 @@ async function syncToGitHub() {
     });
     if (!putRes.ok) throw new Error('Push failed: ' + putRes.status);
     setSyncStatus('synced');
+
+    // ── STEP D: Update status bar ─────────────────────────────────────────────
+    updateSyncStatusBar(mergedCardCount, savedAt, null);
   } catch(e) {
     setSyncStatus('error');
   }
