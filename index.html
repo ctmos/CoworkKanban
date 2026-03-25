@@ -1648,7 +1648,7 @@ async function loadFromGitHub() {
       try {
         const s = JSON.parse(settingsRemote.content);
         if (s.budget !== undefined) _appState.budget = s.budget;
-        if (s.gh_token) _appState.gh_token = s.gh_token;
+        if (s.gh_token) _appState.gh_token = s.gh_token.replace(/^"|"$/g, '');
         if (s.collapsed) _appState.collapsed = s.collapsed;
         if (s.seqs) {
           Object.keys(s.seqs).forEach(k => { _appState.seqs[k] = s.seqs[k]; });
@@ -1727,8 +1727,8 @@ function ls(key, def) {
     cowork_backlog:        () => _appState.backlog,
     cowork_collapsed:      () => _appState.collapsed,
     cowork_budget:         () => _appState.budget,
-    cowork_gh_token:       () => _appState.gh_token,
-    cowork_settings:       () => ({ gh_token: _appState.gh_token, budget: _appState.budget })
+    cowork_gh_token:       () => (_appState.gh_token || '').replace(/^"|"$/g, ''),
+    cowork_settings:       () => ({ gh_token: (_appState.gh_token || '').replace(/^"|"$/g, ''), budget: _appState.budget })
   };
   // Handle cowork_seq_XX keys
   if (key.startsWith('cowork_seq_')) {
@@ -1752,9 +1752,9 @@ function lsSet(key, val) {
     cowork_backlog:        (v) => { _appState.backlog = v; scheduleBacklogToGitHub(); },
     cowork_collapsed:      (v) => { _appState.collapsed = v; scheduleSettingsToGitHub(); },
     cowork_budget:         (v) => { _appState.budget = v; scheduleSettingsToGitHub(); },
-    cowork_gh_token:       (v) => { _appState.gh_token = v; scheduleSettingsToGitHub(); },
+    cowork_gh_token:       (v) => { _appState.gh_token = (v||'').replace(/^"|"$/g, ''); scheduleSettingsToGitHub(); },
     cowork_settings:       (v) => {
-      if (v && v.gh_token !== undefined) _appState.gh_token = v.gh_token;
+      if (v && v.gh_token !== undefined) _appState.gh_token = (v.gh_token||'').replace(/^"|"$/g, '');
       if (v && v.budget !== undefined) _appState.budget = v.budget;
       scheduleSettingsToGitHub();
     }
@@ -2647,7 +2647,7 @@ function initSettings() {
   document.getElementById('gh-token-input').value = token;
   // If we found a token in real localStorage but not in _appState, load it
   if (!_appState.gh_token && token) {
-    _appState.gh_token = token;
+    _appState.gh_token = token.replace(/^"|"$/g, '');
   }
   const budget = settings.budget || ls('cowork_budget', 100);
   document.getElementById('budget-input').value = budget;
@@ -2657,7 +2657,7 @@ function initSettings() {
 (function loadGhTokenFromLocalStorage() {
   const saved = localStorage.getItem('cowork_gh_token');
   if (saved && !_appState.gh_token) {
-    _appState.gh_token = saved;
+    _appState.gh_token = saved.replace(/^"|"$/g, '');
   }
 })();
 
