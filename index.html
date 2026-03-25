@@ -1,4 +1,4 @@
-<!-- CoworkKanban v1.9 | 2026-03-25 | WriteGuard: maximales Schreibschutzsystem, DataGuard Floor, Startup Integrity, 10s Debounce, Atomic Rollback -->
+﻿<!-- CoworkKanban v1.9 | 2026-03-25 | WriteGuard: maximales Schreibschutzsystem, DataGuard Floor, Startup Integrity, 10s Debounce, Atomic Rollback -->
 
 <!-- CHANGELOG
   v1.9 | 2026-03-25 | WriteGuard (6 Pre-Push-Checks), DataGuard Floor, Startup Integrity Check, _pushInProgress Lock, 10s Debounce, Atomic Rollback
@@ -1230,6 +1230,734 @@ nav::-webkit-scrollbar { display: none; }
   margin-bottom: 8px;
 
   display: flex; align-items: center; gap: 12px;
+</style>
+
+</head>
+
+<body>
+
+
+
+<!-- PIN SCREEN -->
+
+<div id="pin-screen">
+
+  <div class="pin-card">
+
+    <h1 id="pin-title">CoworkKanban</h1>
+
+    <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
+
+    <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••••" autocomplete="off" inputmode="numeric">
+
+    <div id="pin-confirm-group" style="display:none">
+
+      <input type="password" id="pin-confirm" class="pin-input" maxlength="6" placeholder="PIN bestätigen" autocomplete="off" inputmode="numeric">
+
+    </div>
+
+    <button class="pin-btn" id="pin-btn">Entsperren</button>
+
+    <div class="pin-error" id="pin-error"></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- APP -->
+
+<div id="app">
+
+  <nav>
+
+    <span class="brand">CoworkKanban</span>
+
+    <button class="tab-btn active" data-tab="heute">Start</button>
+
+    <button class="tab-btn" data-tab="kanban">Kanban</button>
+
+    <button class="tab-btn" data-tab="patienten">Patienten</button>
+
+    <button class="tab-btn" data-tab="projekte">Projekte</button>
+
+    <button class="tab-btn" data-tab="backlog">Backlog</button>
+
+    <button class="tab-btn" data-tab="autonomy">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
+
+    <button class="tab-btn" data-tab="settings">Einstellungen</button>
+
+  </nav>
+
+
+
+  <!-- HEUTE TAB -->
+
+  <div id="tab-heute" class="tab-content active">
+
+    <div class="status-grid">
+
+      <!-- Group 1: Heute + Kalender heute -->
+
+      <div class="status-group">
+
+        <div class="status-col" id="status-heute">
+
+          <div class="status-col-header">Heute</div>
+
+          <div id="heute-list" class="status-list">
+
+            <div class="empty-state">Keine heutigen Items — ziehe Karten hierher</div>
+
+          </div>
+
+        </div>
+
+        <div class="status-col" id="status-cal-heute">
+
+          <div class="status-col-header">Kalender heute</div>
+
+          <div class="status-list">
+
+            <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Group 2: Wochenplan + Kalender Woche -->
+
+      <div class="status-group">
+
+        <div class="status-col" id="status-woche">
+
+          <div class="status-col-header">Wochenplan</div>
+
+          <div id="woche-list" class="status-list"></div>
+
+        </div>
+
+        <div class="status-col" id="status-cal-woche">
+
+          <div class="status-col-header">Kalender Woche</div>
+
+          <div class="status-list">
+
+            <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Group 3: Weitere Plaene -->
+
+      <div class="status-group">
+
+        <div class="status-col" id="status-weitere">
+
+          <div class="status-col-header">Weitere Pläne</div>
+
+          <div id="weitere-list" class="status-list"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- KANBAN TAB -->
+
+  <div id="tab-kanban" class="tab-content">
+
+    <div class="kanban-grid" id="kanban-grid"></div>
+
+  </div>
+
+
+
+  <!-- PATIENTEN TAB -->
+
+  <div id="tab-patienten" class="tab-content">
+
+    <div class="pat-header">
+
+      <h2>Patienten</h2>
+
+      <div style="display:flex;gap:8px;align-items:center">
+
+        <input type="search" class="search-input" id="pat-search" placeholder="Suchen…">
+
+        <button class="btn-secondary" id="sync-patients-btn">↑ Sync</button>
+
+        <button class="btn-primary" id="btn-pat-add">+ Patient</button>
+
+      </div>
+
+    </div>
+
+    <div id="pat-list"></div>
+
+  </div>
+
+
+
+  <!-- AUTONOMIE-LOG TAB -->
+
+  <div id="tab-autonomy" class="tab-content">
+
+    <div class="al-header">
+
+      <h2>Autonomie-Log</h2>
+
+    </div>
+
+    <div id="al-list"></div>
+
+  </div>
+
+
+
+  <!-- BACKLOG TAB -->
+
+  <div id="tab-backlog" class="tab-content">
+
+    <div class="bl-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 16px 12px;max-width:900px;margin:0 auto;flex-wrap:wrap;gap:8px;">
+
+      <h2 style="font-size:16px;font-weight:600">Build-Backlog</h2>
+
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+
+        <select id="bl-filter" class="form-select" style="width:auto;padding:7px 10px;font-size:13px;">
+
+          <option value="">Alle Prioritäten</option>
+
+          <option value="hoch">🔴 Hoch</option>
+
+          <option value="mittel">🟡 Mittel</option>
+
+          <option value="niedrig">🟢 Niedrig</option>
+
+        </select>
+
+        <button class="btn-primary" id="btn-bl-add">+ Eintrag</button>
+
+      </div>
+
+    </div>
+
+    <div id="bl-list" style="padding:0 16px 20px;max-width:900px;margin:0 auto;"></div>
+
+  </div>
+
+
+
+  <!-- PROJEKTE TAB -->
+
+  <div id="tab-projekte" class="tab-content">
+
+    <div id="projekte-view"></div>
+
+  </div>
+
+
+
+  <!-- EINSTELLUNGEN TAB -->
+
+  <div id="tab-settings" class="tab-content">
+
+    <h2>Einstellungen</h2>
+
+
+
+    <div class="settings-section">
+
+      <h3>Design</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Farbschema</label>
+
+        <div class="theme-toggle-row">
+
+          <button class="theme-btn" id="btn-theme-dark">🌙 Dunkel</button>
+
+          <button class="theme-btn" id="btn-theme-light">☀️ Hell</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>GitHub</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Personal Access Token</label>
+
+        <div class="settings-input-row">
+
+          <input type="password" class="settings-input" id="gh-token-input" placeholder="ghp_...">
+
+          <button class="btn-primary" id="btn-gh-save">Speichern</button>
+
+        </div>
+
+        <p class="settings-desc">Für GitHub-Sync (optional)</p>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>PIN</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Neuen PIN setzen</label>
+
+        <div class="settings-input-row">
+
+          <input type="password" class="settings-input" id="new-pin-input" maxlength="6" placeholder="Neuer PIN (4–6 Ziffern)" inputmode="numeric">
+
+          <button class="btn-primary" id="btn-pin-change">Ändern</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>Notfall-Wiederherstellung</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Backup wiederherstellen</label>
+
+        <button id="btn-recovery" style="background:#ef4444;color:white;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px">&#x1F198; Daten wiederherstellen</button>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>Wochenbudget</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Max. Aufgaben/Woche</label>
+
+        <div class="settings-input-row">
+
+          <input type="number" class="settings-input" id="budget-input" placeholder="100" min="1" max="1000">
+
+          <button class="btn-primary" id="btn-budget-save">Speichern</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>Daten</h3>
+
+      <div class="settings-row">
+
+        <button class="btn-secondary" id="btn-export" style="width:100%;margin-bottom:8px">Daten exportieren (JSON)</button>
+
+        <button class="btn-secondary" id="btn-import" style="width:100%;margin-bottom:8px">Daten importieren (JSON)</button>
+
+        <input type="file" id="import-file" accept=".json" style="display:none">
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section danger-zone">
+
+      <h3>Danger Zone</h3>
+
+      <div class="settings-row">
+
+        <button class="btn-danger" id="btn-reset" style="width:100%">Alle Daten löschen</button>
+
+        <p class="settings-desc">Löscht alle Karten, Patienten und Logs unwiderruflich.</p>
+
+      </div>
+
+      <div class="settings-row">
+
+        <button class="btn-secondary" id="btn-cache-reset" style="width:100%">Cache leeren &amp; von GitHub neu laden</button>
+
+        <p class="settings-desc">Löscht lokalen Cache (Floor, Backups) und lädt Daten frisch von GitHub.</p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- BACKLOG MODAL -->
+
+<div class="modal-overlay" id="bl-modal-overlay">
+
+  <div class="modal">
+
+    <h2 id="bl-modal-title">Backlog-Eintrag</h2>
+
+    <div class="form-group">
+
+      <label class="form-label">Titel</label>
+
+      <input type="text" class="form-input" id="blm-title" placeholder="Feature oder Projekt…">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Priorität</label>
+
+      <select class="form-select" id="blm-prio">
+
+        <option value="hoch">🔴 Hoch</option>
+
+        <option value="mittel">🟡 Mittel</option>
+
+        <option value="niedrig">🟢 Niedrig</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Kategorie</label>
+
+      <input type="text" class="form-input" id="blm-cat" placeholder="z.B. KI, Integration, UI…">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Status</label>
+
+      <select class="form-select" id="blm-status">
+
+        <option value="geplant">Geplant</option>
+
+        <option value="in-arbeit">In Arbeit</option>
+
+        <option value="abgeschlossen">Abgeschlossen</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Beschreibung</label>
+
+      <textarea class="form-textarea" id="blm-desc" placeholder="Details…"></textarea>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button class="btn-danger" id="blm-delete" style="margin-right:auto">Löschen</button>
+
+      <button class="btn-secondary" id="blm-cancel">Abbrechen</button>
+
+      <button class="btn-primary" id="blm-save">Speichern</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- CARD MODAL -->
+
+<div class="modal-overlay" id="card-modal-overlay">
+
+  <div class="modal">
+
+    <h2 id="card-modal-title">Karte</h2>
+
+    <div class="form-group">
+
+      <label class="form-label">Titel</label>
+
+      <input type="text" class="form-input" id="cm-title" placeholder="Aufgabe beschreiben…">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Status</label>
+
+      <div class="status-options">
+
+        <label class="status-option"><input type="radio" name="cm-status" value="offen" checked> <span class="status-dot status-offen"></span> Offen</label>
+
+        <label class="status-option"><input type="radio" name="cm-status" value="blockiert"> <span class="status-dot status-blockiert"></span> Blockiert</label>
+
+        <label class="status-option"><input type="radio" name="cm-status" value="in-arbeit"> <span class="status-dot status-in-arbeit"></span> In Arbeit</label>
+
+        <label class="status-option"><input type="radio" name="cm-status" value="erledigt"> <span class="status-dot status-erledigt"></span> Erledigt</label>
+
+      </div>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Deadline</label>
+
+      <input type="date" class="form-input" id="cm-deadline">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Beschreibung</label>
+
+      <textarea class="form-textarea" id="cm-desc" placeholder="Details…"></textarea>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button class="btn-danger" id="cm-delete" style="margin-right:auto">Löschen</button>
+
+      <button class="btn-secondary" id="cm-heute" style="display:none">→ Heute</button>
+
+      <button class="btn-secondary" id="cm-cancel">Abbrechen</button>
+
+      <button class="btn-primary" id="cm-save">Speichern</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- PATIENT MODAL -->
+
+<div class="modal-overlay" id="pat-modal-overlay">
+
+  <div class="modal">
+
+    <h2 id="pat-modal-title">Patient</h2>
+
+    <div class="form-group">
+
+      <label class="form-label">Code (XXX-MMYY)</label>
+
+      <input type="text" class="form-input" id="pm-code" placeholder="z.B. MUS-0325">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Aufnahmedatum</label>
+
+      <input type="date" class="form-input" id="pm-aufnahme">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Status</label>
+
+      <select class="form-select" id="pm-status">
+
+        <option value="aktiv">Aktiv</option>
+
+        <option value="entlassen">Entlassen</option>
+
+        <option value="pause">Pause</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Notizen</label>
+
+      <textarea class="form-textarea" id="pm-notizen" placeholder="Klinische Notizen…"></textarea>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button class="btn-danger" id="pm-delete" style="margin-right:auto">Löschen</button>
+
+      <button class="btn-secondary" id="pm-cancel">Abbrechen</button>
+
+      <button class="btn-primary" id="pm-save">Speichern</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- PROJEKT ERSTELLEN MODAL -->
+
+<div class="modal-overlay" id="proj-modal-overlay">
+
+  <div class="modal">
+
+    <h2>Neues Projekt</h2>
+
+    <div class="form-group">
+
+      <label class="form-label">Name *</label>
+
+      <input type="text" class="form-input" id="pjm-name" placeholder="Projektname…">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Beschreibung</label>
+
+      <textarea class="form-textarea" id="pjm-desc" placeholder="Kurze Beschreibung…" style="min-height:60px"></textarea>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Status</label>
+
+      <select class="form-select" id="pjm-status">
+
+        <option value="aktiv">Aktiv</option>
+
+        <option value="pausiert">Pausiert</option>
+
+        <option value="abgeschlossen">Abgeschlossen</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Farbe</label>
+
+      <div class="proj-color-options">
+
+        <div class="proj-color-swatch selected" style="background:#cc785c" data-color="#cc785c" onclick="selectProjColor(this)"></div>
+
+        <div class="proj-color-swatch" style="background:#6366f1" data-color="#6366f1" onclick="selectProjColor(this)"></div>
+
+        <div class="proj-color-swatch" style="background:#22c55e" data-color="#22c55e" onclick="selectProjColor(this)"></div>
+
+        <div class="proj-color-swatch" style="background:#f59e0b" data-color="#f59e0b" onclick="selectProjColor(this)"></div>
+
+        <div class="proj-color-swatch" style="background:#ef4444" data-color="#ef4444" onclick="selectProjColor(this)"></div>
+
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <div id="pjm-error" style="color:#ef4444;font-size:12px;margin-bottom:6px;width:100%;display:none"></div>
+
+      <button class="btn-secondary" id="pjm-cancel">Abbrechen</button>
+
+      <button class="btn-primary" id="pjm-save">Erstellen</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- SYNC STATUS DOT -->
+
+<div id="sync-dot" class="hidden"></div>
+
+
+
+<!-- SYNC STATUS BAR -->
+
+<div id="sync-status-bar">
+
+  <span id="ssb-text">💾 Letzte Sync: —</span>
+
+  <span id="ssb-count"></span>
+
+</div>
+
+
+
+<!-- CONFIRM MODAL -->
+
+<div id="confirm-overlay">
+
+  <div class="confirm-modal">
+
+    <h3 id="confirm-title">Bestätigen</h3>
+
+    <p id="confirm-msg"></p>
+
+    <div class="confirm-btns">
+
+      <button class="btn-secondary" id="confirm-no">Abbrechen</button>
+
+      <button class="btn-danger" id="confirm-yes">Löschen</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
 <script>
 
 // ============================================================
