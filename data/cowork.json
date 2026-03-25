@@ -1,95 +1,16 @@
 {
   "tasks": [
-    {
-      "id": "ba001",
-      "title": "OpenClaw konfigurieren",
-      "description": "OpenClaw auf CoworkClaw01 (3.76.208.107) vollständig konfigurieren — .env erstellen, config.json prüfen, systemd service, start",
-      "lane": "BA",
-      "priority": "high",
-      "tag": "tech",
-      "status": "open",
-      "created": 1742900200000
-    },
-    {
-      "id": "ba002",
-      "title": "Handy-Test Safety System",
-      "description": "Dashboard Safety System v1.9 auf Handy testen und SYSTEM-STATE.md aktualisieren",
-      "lane": "BA",
-      "priority": "high",
-      "tag": "tech",
-      "status": "open",
-      "created": 1742900300000
-    },
-    {
-      "id": "ba003",
-      "title": "Gmail Draft senden",
-      "description": "BuildBacklog-Email an christian.moser@barmelweid.ch senden (Draft ID: r-4584735836089172569)",
-      "lane": "BA",
-      "priority": "medium",
-      "tag": "tech",
-      "status": "open",
-      "created": 1742900400000
-    },
-    {
-      "id": "he001",
-      "title": "Barmelweid Wochenplanung",
-      "description": "Nächste Woche Barmelweid vorbereiten und Aufgaben priorisieren",
-      "lane": "HE",
-      "priority": "high",
-      "tag": "health",
-      "status": "open",
-      "created": 1742900500000
-    },
-    {
-      "id": "he002",
-      "title": "Patienten-Daten prüfen",
-      "description": "Patientendaten im Dashboard kontrollieren und ggf. ergänzen",
-      "lane": "HE",
-      "priority": "medium",
-      "tag": "health",
-      "status": "open",
-      "created": 1742900600000
-    },
-    {
-      "id": "pr001",
-      "title": "Persönliche Akte für Claude anlegen",
-      "description": "Ausführliche Akte über Christian erstellen damit Claude proaktiv und personalisiert handeln kann — Interessen, Arbeitsweise, Ziele, Präferenzen, Gesundheit, Familie. Details werden gemeinsam erarbeitet.",
-      "lane": "PR",
-      "priority": "high",
-      "tag": "project",
-      "status": "open",
-      "created": 1742900100000
-    },
-    {
-      "id": "pr002",
-      "title": "MODOLIN Projekt Setup",
-      "description": "MODOLIN Projekt initialisieren und Kanban-Lane befüllen",
-      "lane": "PR",
-      "priority": "medium",
-      "tag": "project",
-      "status": "open",
-      "created": 1742900700000
-    },
-    {
-      "id": "wb001",
-      "title": "Retrospektive Lernsystem",
-      "description": "Session-Start Ritual einführen: RETROSPECTIVES.md lesen vor jeder Session",
-      "lane": "WB",
-      "priority": "medium",
-      "tag": "tech",
-      "status": "open",
-      "created": 1742900800000
-    }
+    {"id":"BA001","title":"Morgenrunde dokumentieren","lane":"BA","priority":"high","tags":["barmelweid"],"createdAt":"2026-03-25T06:00:00Z","updatedAt":"2026-03-25T06:00:00Z"},
+    {"id":"BA002","title":"Visite vorbereiten","lane":"BA","priority":"high","tags":["barmelweid"],"createdAt":"2026-03-25T06:00:00Z","updatedAt":"2026-03-25T06:00:00Z"},
+    {"id":"BA003","title":"Patientenberichte nachführen","lane":"BA","priority":"medium","tags":["barmelweid"],"createdAt":"2026-03-25T06:00:00Z","updatedAt":"2026-03-25T06:00:00Z"},
+    {"id":"HE001","title":"Emails beantworten","lane":"HE","priority":"high","tags":[],"createdAt":"2026-03-25T06:00:00Z","updatedAt":"2026-03-25T06:00:00Z"},
+    {"id":"HE002","title":"CoworkDashboard stabilisieren","lane":"HE","priority":"high","tags":["cowork","tech"],"createdAt":"2026-03-25T06:00:00Z","updatedAt":"2026-03-25T06:00:00Z"},
+    {"id":"PR001","title":"Persoenliche Akte fuer Claude anlegen","lane":"PR","priority":"medium","tags":["claude","setup"],"createdAt":"2026-03-25T06:00:00Z","updatedAt":"2026-03-25T06:00:00Z"},
+    {"id":"PR002","title":"OpenClaw Telegram Bot fertigstellen","lane":"PR","priority":"medium","tags":["openclaw","telegram"],"createdAt":"2026-03-25T06:00:00Z","updatedAt":"2026-03-25T06:00:00Z"},
+    {"id":"WB001","title":"Wochenplanung ueberarbeiten","lane":"WB","priority":"low","tags":[],"createdAt":"2026-03-25T06:00:00Z","updatedAt":"2026-03-25T06:00:00Z"}
   ],
   "diary": [],
   "patients": [],
-  "categories": [
-    { "id": "cat1", "name": "tech",    "color": "#6366f1" },
-    { "id": "cat2", "name": "health",  "color": "#10b981" },
-    { "id": "cat3", "name": "finance", "color": "#f59e0b" },
-    { "id": "cat4", "name": "family",  "color": "#ec4899" },
-    { "id": "cat5", "name": "project", "color": "#8b5cf6" },
-    { "id": "cat6", "name": "social",  "color": "#06b6d4" }
-  ],
-  "updatedAt": 1742901000000
+  "categories": [],
+  "updatedAt": "2026-03-25T10:00:00Z"
 }
