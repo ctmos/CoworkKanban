@@ -1507,6 +1507,27 @@ async function syncToGitHub() {
       throw new Error(dgMsg);
     }
 
+    // LANE INTEGRITY CHECK — niemals BB-Restore-Items in BA-Lane erlauben
+    function validateTaskLanes(tasks) {
+      var errors = [];
+      tasks.forEach(function(task) {
+        if (task.id && task.id.match(/^[Bb][Bb]\d+$/) && task.lane === 'BA') {
+          errors.push('Task ' + task.id + ' hat BB-ID aber BA-Lane — blockiert');
+        }
+      });
+      return errors;
+    }
+    var allTasksFlat = Object.keys(mergedCards).reduce(function(acc, lane) {
+      var cards = mergedCards[lane];
+      if (Array.isArray(cards)) cards.forEach(function(c) { acc.push(Object.assign({}, c, { lane: lane })); });
+      return acc;
+    }, []);
+    var laneErrors = validateTaskLanes(allTasksFlat);
+    if (laneErrors.length > 0) {
+      console.error('LANE INTEGRITY BLOCKED:', laneErrors);
+      throw new Error('Lane-Integrity-Check fehlgeschlagen: ' + laneErrors.join(', '));
+    }
+
     const savedAt = new Date().toISOString();
     _appState.cards_savedAt = savedAt;
     const jsonStr = JSON.stringify({ _meta: { savedAt }, cards: mergedCards }, null, 2);
