@@ -339,6 +339,16 @@
       "tag": "tech",
       "status": "open",
       "created": 1700000034000
+    },
+    {
+      "id": "bb035",
+      "title": "Persönliche Akte für Claude anlegen",
+      "description": "Ausführliche Akte über Christian erstellen damit Claude proaktiv und personalisiert handeln kann — Interessen, Arbeitsweise, Ziele, Präferenzen, Gesundheit, Familie. Details werden gemeinsam erarbeitet.",
+      "lane": "BA",
+      "priority": "high",
+      "tag": "project",
+      "status": "open",
+      "created": 1742900100000
     }
   ],
   "diary": [],
