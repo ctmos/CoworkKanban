@@ -1,6 +1,8 @@
-﻿<!-- CoworkKanban v1.9 | 2026-03-25 | WriteGuard: maximales Schreibschutzsystem, DataGuard Floor, Startup Integrity, 10s Debounce, Atomic Rollback -->
+﻿<!-- CoworkKanban v2.0 | 2026-03-25 | Stabilization: AUTHORIZED_DATA_REPO lock, DataGuard forceSetFloor, HIGH_RISK detection, pre-write backup, repo lock in safeWriteToGitHub -->
 
 <!-- CHANGELOG
+  v2.0 | 2026-03-25 | STABILIZATION: Layer 1 pre-write backup to data/backups/, Layer 2 HIGH_RISK write detection (>20%/5+ lanes), Layer 3 DataGuard forceSetFloor after loads, Layer 4 AUTHORIZED_DATA_REPO lock, WriteGuard v2.0
+
   v1.9 | 2026-03-25 | WriteGuard (6 Pre-Push-Checks), DataGuard Floor, Startup Integrity Check, _pushInProgress Lock, 10s Debounce, Atomic Rollback
 
   fix | 2026-03-25 | UTF-8 encoding fix — consistent TextDecoder chain for all GitHub API reads
@@ -1977,27 +1979,56 @@ const GH_DATA_REPO = 'ctmos/cowork-data';
 const GH_API_BASE  = 'https://api.github.com';
 const GH_TOKEN_DEFAULT = GH_TOKEN;
 
-// ─── DATA GUARD (v1.9: Schreibschutz Floor) ──────────────────────────────────
+// ─── LAYER 4: AUTHORIZED WRITE TARGETS ──────────────────────────────────────
+// CRITICAL: All write operations MUST target exactly these repo/path.
+// Any deviation throws immediately and NEVER proceeds silently.
+// These constants are the single source of truth for write authorization.
+const AUTHORIZED_DATA_REPO = 'ctmos/cowork-data';
+const AUTHORIZED_DATA_FILE = 'data/tasks.json';
+// Runtime assertion — fails fast on misconfiguration before any write
+if (GH_DATA_REPO !== AUTHORIZED_DATA_REPO) {
+  console.error('[REPO LOCK] CRITICAL: GH_DATA_REPO (' + GH_DATA_REPO +
+    ') !== AUTHORIZED_DATA_REPO (' + AUTHORIZED_DATA_REPO + '). Code misconfigured!');
+}
+
+// ─── DATA GUARD (v2.0: Schreibschutz Floor + forceSetFloor) ──────────────────
 const DataGuard = {
   minTasksFloor: 5,
   get floor() {
     var stored = parseInt(localStorage.getItem('cowork_dg_floor') || '0');
     return Math.max(stored, this.minTasksFloor);
   },
+
+  // setFloor: Upward-only (Math.max). Use ONLY when pushing data upward (count increases).
+  // Preserves high-water mark across the session.
   setFloor(count) {
     var newFloor = Math.max(this.floor, count, this.minTasksFloor);
-    try { localStorage.setItem('cowork_dg_floor', newFloor); } catch(e) {}
+    try { localStorage.setItem('cowork_dg_floor', String(newFloor)); } catch(e) {}
   },
+
+  // forceSetFloor: Resets floor to exact loaded/pushed count.
+  // ALWAYS call this after a successful GitHub load — GitHub is the authoritative source.
+  // Overrides stale floor values from previous sessions.
+  // Also call after a successful push (to track current state including deletions).
+  forceSetFloor(count) {
+    var newFloor = Math.max(count, this.minTasksFloor);
+    var prev = this.floor;
+    try { localStorage.setItem('cowork_dg_floor', String(newFloor)); } catch(e) {}
+    console.log('[DataGuard] forceSetFloor: ' + prev + ' → ' + newFloor);
+  },
+
+  // canPush: Only blocks catastrophic data wipe (< minTasksFloor).
+  // HIGH_RISK detection (>20% reduction) is handled by WriteGuard.assessRisk().
+  // The floor NEVER blocks a load from GitHub — it only applies to push operations.
   canPush(newCount) {
-    var floor = this.floor;
-    if (newCount < floor) {
-      console.error('[DataGuard] BLOCKED: ' + newCount + ' cards < floor ' + floor);
+    if (newCount < this.minTasksFloor) {
+      console.error('[DataGuard] BLOCKED: ' + newCount + ' < minTasksFloor ' + this.minTasksFloor);
       return false;
     }
     return true;
   },
   canPushSilent(newCount) {
-    return newCount >= this.floor;
+    return newCount >= this.minTasksFloor;
   }
 };
 
@@ -2037,6 +2068,8 @@ const WriteGuard = {
       badge.className = 'wg-badge wg-yellow'; badge.textContent = '\u2191 Push';
     } else if (last.status === 'blocked') {
       badge.className = 'wg-badge wg-red'; badge.textContent = '\u26D4 Blocked';
+    } else if (last.status === 'high_risk') {
+      badge.className = 'wg-badge wg-orange'; badge.textContent = '\u26A0\uFE0F HIGH_RISK';
     } else {
       badge.className = 'wg-badge wg-red'; badge.textContent = '\u2717 Fehler';
     }
@@ -2053,12 +2086,41 @@ const WriteGuard = {
     badge.id = 'wg-badge';
     badge.className = 'wg-badge';
     badge.textContent = '\uD83D\uDEE1\uFE0F';
-    badge.title = 'WriteGuard v1.9 — Schreibschutz aktiv';
+    badge.title = 'WriteGuard v2.0 — Schreibschutz aktiv';
     badge.style.cssText = 'position:fixed;bottom:10px;right:10px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;cursor:default;z-index:9000;background:rgba(80,80,80,0.75);color:#fff;transition:background 0.3s;';
     document.body.appendChild(badge);
     var s = document.createElement('style');
-    s.textContent = '.wg-badge.wg-green{background:#22c55e!important}.wg-badge.wg-yellow{background:#eab308!important}.wg-badge.wg-red{background:#ef4444!important}';
+    s.textContent = '.wg-badge.wg-green{background:#22c55e!important}.wg-badge.wg-yellow{background:#eab308!important}.wg-badge.wg-red{background:#ef4444!important}.wg-badge.wg-orange{background:#f97316!important}';
     document.head.appendChild(s);
+  },
+
+  // ── LAYER 2: HIGH_RISK Write Assessment ──────────────────────────────────
+  // Detects writes that could indicate accidental bulk data manipulation.
+  // Does NOT block human UI edits — only logs, warns, and flags for agents.
+  // OpenClaw and other automated agents MUST check isHighRisk and abort if true.
+  assessRisk(newCards, previousCards) {
+    var prevCount = Object.keys(previousCards || {}).length;
+    var newCount = Object.keys(newCards || {}).length;
+    var risks = [];
+
+    // Risk 1: Task count reduction > 20%
+    if (prevCount > 0 && newCount < prevCount * 0.8) {
+      var pct = Math.round((1 - newCount / prevCount) * 100);
+      risks.push('COUNT_REDUCTION: ' + prevCount + ' → ' + newCount + ' (-' + pct + '%)');
+    }
+
+    // Risk 2: More than 5 tasks change lane in a single write
+    var laneChanges = 0;
+    Object.keys(newCards || {}).forEach(function(id) {
+      var prev = (previousCards || {})[id];
+      var curr = newCards[id];
+      if (prev && curr && prev.lane !== curr.lane) laneChanges++;
+    });
+    if (laneChanges > 5) {
+      risks.push('BULK_LANE_CHANGE: ' + laneChanges + ' tasks changed lane');
+    }
+
+    return { risks: risks, isHighRisk: risks.length > 0 };
   }
 };
 
@@ -2157,6 +2219,66 @@ async function fetchFromGitHub(path) {
   }
 }
 
+// ─── LAYER 1: PRE-WRITE BACKUP ──────────────────────────────────────────────
+// Before every cards write, saves current cards as a timestamped backup.
+// Backups live in data/backups/ in ctmos/cowork-data.
+// Backup failure is NON-FATAL: the main write proceeds even if backup fails.
+// Restore: fetch any data/backups/tasks_YYYY-MM-DD_HHMMSS.json via GitHub API.
+
+async function createTasksBackup(cards) {
+  try {
+    var now = new Date();
+    var ts = now.getUTCFullYear()
+      + '-' + String(now.getUTCMonth()+1).padStart(2,'0')
+      + '-' + String(now.getUTCDate()).padStart(2,'0')
+      + '_' + String(now.getUTCHours()).padStart(2,'0')
+      + String(now.getUTCMinutes()).padStart(2,'0')
+      + String(now.getUTCSeconds()).padStart(2,'0');
+    var backupPath = 'data/backups/tasks_' + ts + '.json';
+    var cardCount = Object.keys(cards || {}).length;
+    var backupContent = JSON.stringify({
+      _meta: {
+        backupOf: AUTHORIZED_DATA_FILE,
+        backedUpAt: now.toISOString(),
+        cardCount: cardCount,
+        note: 'Auto-backup created by WriteGuard before write'
+      },
+      cards: cards
+    }, null, 2);
+    await writeBackupToGitHub(backupPath, backupContent);
+    console.log('[Backup] Created:', backupPath, '(' + cardCount + ' cards)');
+  } catch(e) {
+    // Backup failure is non-fatal — write continues
+    console.warn('[Backup] Failed (non-fatal, write will continue):', e.message);
+  }
+}
+
+async function writeBackupToGitHub(path, content) {
+  var token = getGHToken();
+  if (!token) throw new Error('No token for backup');
+  var bytes = new TextEncoder().encode(content);
+  var binary = '';
+  bytes.forEach(function(b) { binary += String.fromCharCode(b); });
+  var encoded = btoa(binary);
+  var res = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/contents/' + path, {
+    method: 'PUT',
+    headers: {
+      Authorization: 'token ' + token,
+      'Content-Type': 'application/json',
+      Accept: 'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify({
+      message: 'backup: pre-write snapshot ' + new Date().toISOString().slice(0,19) + 'Z',
+      content: encoded
+    })
+  });
+  if (!res.ok) {
+    var errText = '';
+    try { errText = await res.text(); } catch(e2) {}
+    throw new Error('Backup PUT failed HTTP ' + res.status + ': ' + errText.slice(0, 100));
+  }
+}
+
 // ─── FIX 1: SAFE WRITE WITH SHA-RETRY ───────────────────────────────────────
 // Every write: read current SHA -> apply changes -> write with SHA
 // On 409 conflict: retry up to 3 times with fresh SHA
@@ -2166,6 +2288,15 @@ async function safeWriteToGitHub(path, content, message, maxRetries) {
     console.warn('[safeWriteToGitHub] Blocked: data not yet loaded. Path: ' + path);
     return;
   }
+
+  // LAYER 4: Repo lock — verify write target matches authorized constants
+  if (GH_DATA_REPO !== AUTHORIZED_DATA_REPO) {
+    var lockMsg = '[REPO LOCK] BLOCKED: GH_DATA_REPO (' + GH_DATA_REPO +
+      ') !== AUTHORIZED (' + AUTHORIZED_DATA_REPO + '). Write aborted.';
+    console.error(lockMsg);
+    throw new Error(lockMsg);
+  }
+
   var token = getGHToken();
   if (!token) throw new Error('No GitHub token');
   var retries = maxRetries || 3;
@@ -2273,7 +2404,7 @@ async function syncToGitHub() {
   WriteGuard._pushInProgress = true;
   setSyncStatus('syncing');
 
-  // Atomic backup for rollback
+  // Atomic backup for rollback (in-memory)
   var backupCards = JSON.parse(JSON.stringify(_appState.cards || {}));
 
   try {
@@ -2292,16 +2423,33 @@ async function syncToGitHub() {
     // ── DataGuard: Floor check ─────────────────────────────────────────────────
     var totalCards = Object.values(cards).length;
     if (!DataGuard.canPush(totalCards)) {
-      WriteGuard.log({ status: 'blocked', reason: 'DataGuard floor ' + totalCards + '<' + DataGuard.floor });
+      WriteGuard.log({ status: 'blocked', reason: 'DataGuard floor: ' + totalCards + ' < min ' + DataGuard.minTasksFloor });
       setSyncStatus('error');
       return;
     }
+
+    // ── LAYER 2: HIGH_RISK assessment ─────────────────────────────────────────
+    // Does NOT block human UI edits. Logs and warns. Automated agents must check this.
+    var riskResult = WriteGuard.assessRisk(cards, backupCards);
+    if (riskResult.isHighRisk) {
+      var riskMsg = riskResult.risks.join(' | ');
+      console.warn('[WriteGuard] HIGH_RISK write detected:', riskMsg);
+      WriteGuard.log({ status: 'high_risk', reason: riskMsg, count: totalCards });
+      showToast('\u26A0\uFE0F HIGH_RISK: ' + riskMsg, true);
+      // Human UI: proceed with write but show warning
+      // Automated agents: check WriteGuard.writeLog[0].status === 'high_risk' and abort
+    }
+
+    // ── LAYER 1: Pre-write backup to data/backups/ ─────────────────────────────
+    await createTasksBackup(cards);
 
     var savedAt = new Date().toISOString();
     _appState.cards_savedAt = savedAt;
     var jsonStr = JSON.stringify({ _meta: { savedAt: savedAt }, cards: cards }, null, 2);
     await safeWriteToGitHub('data/tasks.json', jsonStr, 'sync: auto-save kanban cards');
-    DataGuard.setFloor(totalCards);
+
+    // ── LAYER 3: forceSetFloor after successful push (tracks exact current count)
+    DataGuard.forceSetFloor(totalCards);
     WriteGuard.log({ status: 'ok', reason: 'auto-sync', count: totalCards });
   } catch(e) {
     // Rollback auf Backup-State
@@ -2426,6 +2574,9 @@ async function loadFromGitHub() {
         } else {
           _appState.cards = loadedCards;
         }
+        // LAYER 3: forceSetFloor after GitHub load — GitHub is authoritative.
+        // Resets any stale floor from previous sessions to reflect actual loaded count.
+        DataGuard.forceSetFloor(Object.values(_appState.cards).length);
         _appState.cards_savedAt = (remoteData._meta && remoteData._meta.savedAt) || null;
       } catch(e) {
         console.error('[loadFromGitHub] tasks parse error:', e);
@@ -3097,7 +3248,9 @@ async function initApp() {
       WriteGuard.log({ status: 'error', reason: 'startup: ' + issues[0] });
     } else {
       var taskCount = tasks.length;
-      DataGuard.setFloor(taskCount);
+      // LAYER 3: forceSetFloor (not setFloor) — GitHub load is authoritative.
+      // forceSetFloor resets stale floor values from previous sessions.
+      DataGuard.forceSetFloor(taskCount);
       WriteGuard.log({ status: 'ok', reason: 'startup OK, ' + taskCount + ' Tasks' });
       console.log('[startupIntegrity] OK:', taskCount, 'Tasks, floor:', DataGuard.floor);
     }
