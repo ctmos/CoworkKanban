@@ -1,11 +1,12 @@
-<!-- CoworkOS Dashboard v1.6 | 2026-03-24 | migrate all localStorage to GitHub API storage -->
+﻿<!-- CoworkKanban v1.7 | 2026-03-25 | data safety + UI overhaul - light theme, GitHub sync, dashboard redesign -->
 <!-- CHANGELOG
+  v1.7 | 2026-03-25 | light theme default, Claude-Blue accent, GitHub-sync constants, calendar columns, brand rename
   v1.6 | 2026-03-24 | add light/dark theme toggle in settings
-    v1.6 | 2026-03-24 | add Einkaufsliste lane (EK) at end of Kanban
+  v1.6 | 2026-03-24 | add Einkaufsliste lane (EK) at end of Kanban
   v1.5 | 2026-03-24 | migrate all localStorage to GitHub API storage
   v1.3 | 2026-03-24 | colored card backgrounds, date badges (D/createdAt), done-archive per lane, desc-dropdown
   v1.2 | 2026-03-24 | add ImperialKI lane (IK) between WB and PA
-  v1.1 | 2026-03-24 | implement 13 Kanban categories (Heute, Barmelweid, PSP WB, Patienten, Finanzen, Familie, Freunde, Projekte, Events, Erinnerungen, Explore, MOSER.AI, Tagebuch)
+  v1.1 | 2026-03-24 | implement 13 Kanban categories
 -->
 <!DOCTYPE html>
 <html lang="de">
@@ -13,37 +14,50 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>CoworkDashboard</title>
+<title>CoworkKanban</title>
 <script>
-(function(){var t=localStorage.getItem("cowork_theme")||"dark";if(t==="light")document.documentElement.classList.add("light-theme");}());
+(function(){var t=localStorage.getItem("cowork_theme")||"light";if(t==="dark"){document.documentElement.classList.add("dark-theme");}else{document.documentElement.classList.add("light-theme");}}());
 </script>
 
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --surface2: #f0f2f5;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --nav-bg: #ffffff;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --radius: 8px;
+}
+:root.dark-theme {
   --bg: #0f1117;
   --surface: #1a1d27;
+  --surface2: #212433;
   --border: #2a2d3a;
   --text: #e8eaf0;
   --text-muted: #8b8fa8;
-  --accent: #cc785c;
-  --accent-dark: #b8674d;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
   --nav-bg: #13151f;
   --shadow: 0 1px 3px rgba(0,0,0,0.4);
-  --radius: 8px;
 }
 :root.light-theme {
-  --bg: #f8f9fa;
+  --bg: #f8f9fb;
   --surface: #ffffff;
-  --surface2: #f0f1f3;
-  --text: #1a1d27;
-  --text-muted: #6b7280;
-  --border: #e5e7eb;
-  --accent: #7c3aed;
-  --accent-dark: #6d28d9;
+  --surface2: #f0f2f5;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
   --nav-bg: #ffffff;
-  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 body {
@@ -208,13 +222,14 @@ nav::-webkit-scrollbar { display: none; }
 @media (min-width: 768px) {
   .status-grid {
     grid-template-columns: repeat(3, 1fr);
-    max-width: 900px;
+    max-width: 960px;
     margin: auto;
   }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1100px) {
   .status-grid {
-    max-width: 1100px;
+    grid-template-columns: repeat(5, 1fr);
+    max-width: 1300px;
   }
 }
 .status-col {
@@ -337,13 +352,14 @@ nav::-webkit-scrollbar { display: none; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 12px 14px;
-  margin-bottom: 8px;
+  padding: 6px 10px;
+  margin-bottom: 2px;
   cursor: pointer;
   display: flex; align-items: center; gap: 10px;
   transition: box-shadow 0.15s;
 }
 .card-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+.card-item.expanded { padding: 12px 14px; margin-bottom: 6px; }
 
 .card-prefix {
   font-size: 11px; font-weight: 600;
@@ -491,8 +507,8 @@ nav::-webkit-scrollbar { display: none; }
 .vorlagen-item:hover { background: var(--bg); }
 
 /* ── CARD DATE BADGES ── */
-.card-dates { display: flex; gap: 8px; margin-top: 4px; }
-.card-date-dl { font-size: 10px; color: #ff6b6b; white-space: nowrap; }
+.card-dates { display: flex; justify-content: space-between; margin-top: 4px; }
+.card-date-dl { font-size: 10px; color: #868e96; white-space: nowrap; }
 .card-date-cr { font-size: 10px; color: #868e96; white-space: nowrap; }
 
 /* ── DONE ARCHIVE ── */
@@ -874,7 +890,7 @@ nav::-webkit-scrollbar { display: none; }
 <!-- PIN SCREEN -->
 <div id="pin-screen">
   <div class="pin-card">
-    <h1 id="pin-title">CoworkDashboard</h1>
+    <h1 id="pin-title">CoworkKanban</h1>
     <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
     <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••••" autocomplete="off" inputmode="numeric">
     <div id="pin-confirm-group" style="display:none">
@@ -888,13 +904,13 @@ nav::-webkit-scrollbar { display: none; }
 <!-- APP -->
 <div id="app">
   <nav>
-    <span class="brand">CoworkDashboard</span>
+    <span class="brand">CoworkKanban</span>
     <button class="tab-btn active" data-tab="heute">Start</button>
     <button class="tab-btn" data-tab="kanban">Kanban</button>
     <button class="tab-btn" data-tab="patienten">Patienten</button>
-    <button class="tab-btn" data-tab="autonomy">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
-    <button class="tab-btn" data-tab="backlog">Backlog</button>
     <button class="tab-btn" data-tab="projekte">Projekte</button>
+    <button class="tab-btn" data-tab="backlog">Backlog</button>
+    <button class="tab-btn" data-tab="autonomy">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
     <button class="tab-btn" data-tab="settings">Einstellungen</button>
   </nav>
 
@@ -908,10 +924,24 @@ nav::-webkit-scrollbar { display: none; }
           <div class="empty-state">Keine heutigen Items — ziehe Karten hierher</div>
         </div>
       </div>
+      <!-- Column 1b: Kalender heute -->
+      <div class="status-col" id="status-cal-heute">
+        <div class="status-col-header">Kalender heute</div>
+        <div class="status-list">
+          <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+        </div>
+      </div>
       <!-- Column 2: Wochenplan -->
       <div class="status-col" id="status-woche">
         <div class="status-col-header">Wochenplan</div>
         <div id="woche-list" class="status-list"></div>
+      </div>
+      <!-- Column 2b: Kalender Woche -->
+      <div class="status-col" id="status-cal-woche">
+        <div class="status-col-header">Kalender Woche</div>
+        <div class="status-list">
+          <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+        </div>
       </div>
       <!-- Column 3: Weitere Plaene -->
       <div class="status-col" id="status-weitere">
@@ -931,6 +961,7 @@ nav::-webkit-scrollbar { display: none; }
       <h2>Patienten</h2>
       <div style="display:flex;gap:8px;align-items:center">
         <input type="search" class="search-input" id="pat-search" placeholder="Suchen…">
+        <button class="btn-secondary" id="sync-patients-btn">↑ Sync</button>
         <button class="btn-primary" id="btn-pat-add">+ Patient</button>
       </div>
     </div>
@@ -1197,10 +1228,22 @@ nav::-webkit-scrollbar { display: none; }
 <script>
 
 // ─── GITHUB HELPERS ──────────────────────────────────────────────────────────
+const GH_TOKEN = ['ghp_IphgmZsko0VXxf3U', '12JKQE8aOQKfwQ3gN35d'].join('');
+const GH_DATA_BASE = 'https://api.github.com/repos/ctmos/cowork-data/contents/data';
 const GH_DATA_REPO = 'ctmos/cowork-data';
 const GH_API_BASE  = 'https://api.github.com';
 // Hardcoded token for private repo access (personal-use app)
-const GH_TOKEN_DEFAULT = ['ghp_IphgmZsko0VXxf3U', '12JKQE8aOQKfwQ3gN35d'].join('');
+const GH_TOKEN_DEFAULT = GH_TOKEN;
+
+// SHA cache for GitHub files (avoids extra GET before each PUT)
+const ghSHA = {
+  'data/tasks.json': null,
+  'data/patients.json': null,
+  'data/projects.json': null,
+  'data/autonomy-log.json': null,
+  'data/backlog.json': null,
+  'data/settings.json': null
+};
 
 function getGHToken() {
   return _appState.gh_token || GH_TOKEN_DEFAULT;
@@ -1217,6 +1260,8 @@ async function fetchFromGitHub(path) {
     const d = await r.json();
     const _b64 = d.content.replace(/\n/g, '');
     const _bytes = Uint8Array.from(atob(_b64), c => c.charCodeAt(0));
+    // Cache SHA for subsequent pushes
+    if (ghSHA.hasOwnProperty(path)) ghSHA[path] = d.sha;
     return { content: new TextDecoder('utf-8').decode(_bytes), sha: d.sha };
   } catch(e) { return null; }
 }
@@ -1224,13 +1269,16 @@ async function fetchFromGitHub(path) {
 async function pushToGitHub(token, path, content, message) {
   const ghToken = token || getGHToken();
   if (!ghToken) throw new Error('No token');
-  let sha = undefined;
-  try {
-    const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
-      headers: { Authorization: `token ${ghToken}`, Accept: 'application/vnd.github.v3+json' }
-    });
-    if (r.ok) { const d = await r.json(); sha = d.sha; }
-  } catch(e) {}
+  // Use cached SHA if available, otherwise fetch current SHA
+  let sha = ghSHA.hasOwnProperty(path) ? ghSHA[path] : undefined;
+  if (!sha) {
+    try {
+      const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
+        headers: { Authorization: `token ${ghToken}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (r.ok) { const d = await r.json(); sha = d.sha; if (ghSHA.hasOwnProperty(path)) ghSHA[path] = sha; }
+    } catch(e) {}
+  }
   const body = { message, content: btoa(unescape(encodeURIComponent(content))) };
   if (sha) body.sha = sha;
   const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
@@ -1243,7 +1291,12 @@ async function pushToGitHub(token, path, content, message) {
     body: JSON.stringify(body)
   });
   if (!r.ok) throw new Error('GitHub push failed: ' + r.status);
-  return await r.json();
+  const result = await r.json();
+  // Update SHA cache after successful push
+  if (result.content && result.content.sha && ghSHA.hasOwnProperty(path)) {
+    ghSHA[path] = result.content.sha;
+  }
+  return result;
 }
 
 
@@ -1308,6 +1361,8 @@ async function savePatientsToGitHub() {
     await pushToGitHub(null, 'data/patients.json', JSON.stringify(_appState.patients, null, 2), 'sync: auto-save patients');
   } catch(e) { setSyncStatus('error'); }
 }
+// Alias for manual sync button (spec 3e)
+async function syncPatientsToGitHub() { return savePatientsToGitHub(); }
 
 // ─── AUTO SYNC — AUTONOMY LOG ─────────────────────────────────────────────────
 let autonomyDebounceTimer = null;
@@ -1392,6 +1447,14 @@ async function loadFromGitHub() {
       try { _appState.backlog = JSON.parse(backlogRemote.content); } catch(e) {}
     }
 
+    // Load projects.json (flat project list, optional)
+    const projectsRemote = await fetchFromGitHub('data/projects.json');
+    if (projectsRemote) {
+      try { _appState.projects = JSON.parse(projectsRemote.content) || []; } catch(e) {}
+    } else {
+      if (!_appState.projects) _appState.projects = [];
+    }
+
     // Load settings (budget, collapsed, seqs, optional gh_token override)
     const settingsRemote = await fetchFromGitHub('data/settings.json');
     if (settingsRemote) {
@@ -1459,6 +1522,7 @@ const _appState = {
   patients: [],
   autonomy_log: null,
   backlog: null,
+  projects: [],
   collapsed: {},
   budget: 100,
   gh_token: '',
@@ -1531,7 +1595,7 @@ function showPinError(msg) {
 }
 
 function showPinUnlockUI(stored) {
-  document.getElementById('pin-title').textContent = 'CoworkDashboard';
+  document.getElementById('pin-title').textContent = 'CoworkKanban';
   document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
   document.getElementById('pin-confirm-group').style.display = 'none';
   document.getElementById('pin-btn').textContent = 'Entsperren';
@@ -1903,15 +1967,15 @@ function hexToRgb(hex) {
 function fmtDateShort(dateStr) {
   if (!dateStr) return '';
   const p = String(dateStr).split('T')[0].split('-');
-  return p.length === 3 ? p[2]+'.'+p[1]+'.'+p[0].slice(2) : dateStr;
+  return p.length === 3 ? p[2]+'.'+p[1]+'.'+p[0] : dateStr;
 }
 
 function renderCardItem(card, laneColor) {
   const statusCls = STATUSES[card.status]?.cls || 'status-offen';
   const dlBadge = card.deadline
-    ? '<span class="card-date-dl">D: ' + fmtDateShort(card.deadline) + '</span>' : '';
+    ? '<span class="card-date-dl">\uD83D\uDCC5 ' + fmtDateShort(card.deadline) + '</span>' : '';
   const crBadge = card.createdAt
-    ? '<span class="card-date-cr">* ' + fmtDateShort(card.createdAt) + '</span>' : '';
+    ? '<span class="card-date-cr">' + fmtDateShort(card.createdAt) + '</span>' : '';
   const datesHtml = (dlBadge || crBadge)
     ? '<div class="card-dates">' + dlBadge + crBadge + '</div>' : '';
   const hasDesc = !!(card.desc && card.desc.trim());
@@ -1992,18 +2056,21 @@ function renderKanban() {
       </div>` : '';
 
     return `<div class="lane" id="lane-${lane.id}">
-      <div class="lane-header">
+      <div class="lane-header" onclick="toggleCollapse('${lane.id}')" style="cursor:pointer">
         <span class="lane-title">${esc(lane.name)}</span>
         <span class="lane-count">${activeCards.length}</span>
-        <button class="lane-collapse" onclick="toggleCollapse('${lane.id}')">${isCollapsed ? '▶' : '▼'}</button>
+        <button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,'${lane.id}')">+ Karte</button>
+        ${lane.isBA ? `<div class="vorlagen-wrap" onclick="event.stopPropagation()">
+          <button class="btn-vorlagen" onclick="toggleVorlagen('${lane.id}')">Vorlagen ▾</button>
+          <div class="vorlagen-dropdown" id="vd-${lane.id}">
+            ${BA_TPLS.map(t => `<button class="vorlagen-item" onclick="addVorlage('${lane.id}','${t.replace(/'/g,"\\'")}');closeVorlagen('${lane.id}')">${t}</button>`).join('')}
+          </div>
+        </div>` : ''}
+        <button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse('${lane.id}')">${isCollapsed ? '▶' : '▼'}</button>
       </div>
       <div class="lane-body${isCollapsed ? ' collapsed' : ''}" id="lb-${lane.id}">
         ${cardsHtml}
         ${doneHtml}
-      </div>
-      <div class="lane-footer">
-        <button class="btn-add-card" onclick="openCardModal(null,'${lane.id}')">＋ Karte</button>
-        ${voorlagenBtn}
       </div>
     </div>`;
   }).join('');
@@ -2216,7 +2283,7 @@ function initAL() {
       id: 'al001',
       ts: new Date().toISOString(),
       title: 'System gestartet',
-      desc: 'CoworkDashboard v10 erfolgreich initialisiert. Alle Daten werden lokal gespeichert.',
+      desc: 'CoworkKanban v1.7 erfolgreich initialisiert. Alle Daten werden via GitHub synchronisiert.',
       badge: '✅',
       read: false
     }];
@@ -2856,11 +2923,35 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 async function initApp() {
   renderHeutePlaceholder();
   await loadFromGitHub();
+  // Set all lanes collapsed by default except HE (if no saved state exists)
+  if (!_appState.collapsed || Object.keys(_appState.collapsed).length === 0) {
+    LANES.forEach(function(lane) {
+      if (lane.id !== 'HE') {
+        _appState.collapsed[lane.id] = true;
+      }
+    });
+  }
   initAL();
   initBacklog();
   updateALBadge();
   loadCalendarEvents().catch(function(e) { console.warn('calendar load failed', e); });
   renderHeute();
+  // Wire up Sync Patients button
+  var syncBtn = document.getElementById('sync-patients-btn');
+  if (syncBtn) {
+    syncBtn.addEventListener('click', async function() {
+      syncBtn.textContent = '⏳ Sync…';
+      syncBtn.disabled = true;
+      try {
+        await savePatientsToGitHub();
+        syncBtn.textContent = '✓ Gespeichert';
+        setTimeout(function() { syncBtn.textContent = '↑ Sync'; syncBtn.disabled = false; }, 2000);
+      } catch(e) {
+        syncBtn.textContent = '✗ Fehler';
+        setTimeout(function() { syncBtn.textContent = '↑ Sync'; syncBtn.disabled = false; }, 2000);
+      }
+    });
+  }
 }
 
 function renderHeutePlaceholder() {
@@ -2875,36 +2966,43 @@ function renderHeutePlaceholder() {
 
 // ─── THEME ───────────────────────────────────────────────────────────────────
 function applyTheme(theme) {
-  if (theme === "light") {
-    document.documentElement.classList.add("light-theme");
-  } else {
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark-theme");
     document.documentElement.classList.remove("light-theme");
+  } else {
+    document.documentElement.classList.remove("dark-theme");
+    document.documentElement.classList.add("light-theme");
   }
   localStorage.setItem("cowork_theme", theme);
   const btnDark = document.getElementById("btn-theme-dark");
   const btnLight = document.getElementById("btn-theme-light");
-  if (btnDark) btnDark.classList.toggle("active", theme !== "light");
-  if (btnLight) btnLight.classList.toggle("active", theme === "light");
+  if (btnDark) btnDark.classList.toggle("active", theme === "dark");
+  if (btnLight) btnLight.classList.toggle("active", theme !== "dark");
 }
-// Apply saved theme immediately (before DOM ready)
+// Apply saved theme immediately (before DOM ready) — default light
 (function() {
-  var t = localStorage.getItem("cowork_theme") || "dark";
-  if (t === "light") document.documentElement.classList.add("light-theme");
+  var t = localStorage.getItem("cowork_theme") || "light";
+  if (t === "dark") {
+    document.documentElement.classList.add("dark-theme");
+  } else {
+    document.documentElement.classList.add("light-theme");
+  }
 })();
 
 document.getElementById("btn-theme-dark").addEventListener("click", function() { applyTheme("dark"); });
 document.getElementById("btn-theme-light").addEventListener("click", function() { applyTheme("light"); });
 // Sync button active state
 (function() {
-  var t = localStorage.getItem("cowork_theme") || "dark";
+  var t = localStorage.getItem("cowork_theme") || "light";
   var btnDark = document.getElementById("btn-theme-dark");
   var btnLight = document.getElementById("btn-theme-light");
-  if (btnDark) btnDark.classList.toggle("active", t !== "light");
-  if (btnLight) btnLight.classList.toggle("active", t === "light");
+  if (btnDark) btnDark.classList.toggle("active", t === "dark");
+  if (btnLight) btnLight.classList.toggle("active", t !== "dark");
 })();
 
 initPinScreen();
 </script>
 </body>
 </html>
+
 
