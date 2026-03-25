@@ -1,49 +1,95 @@
 {
   "tasks": [
     {
-      "id": "bb035",
+      "id": "ba001",
+      "title": "OpenClaw konfigurieren",
+      "description": "OpenClaw auf CoworkClaw01 (3.76.208.107) vollständig konfigurieren — .env erstellen, config.json prüfen, systemd service, start",
+      "lane": "BA",
+      "priority": "high",
+      "tag": "tech",
+      "status": "open",
+      "created": 1742900200000
+    },
+    {
+      "id": "ba002",
+      "title": "Handy-Test Safety System",
+      "description": "Dashboard Safety System v1.9 auf Handy testen und SYSTEM-STATE.md aktualisieren",
+      "lane": "BA",
+      "priority": "high",
+      "tag": "tech",
+      "status": "open",
+      "created": 1742900300000
+    },
+    {
+      "id": "ba003",
+      "title": "Gmail Draft senden",
+      "description": "BuildBacklog-Email an christian.moser@barmelweid.ch senden (Draft ID: r-4584735836089172569)",
+      "lane": "BA",
+      "priority": "medium",
+      "tag": "tech",
+      "status": "open",
+      "created": 1742900400000
+    },
+    {
+      "id": "he001",
+      "title": "Barmelweid Wochenplanung",
+      "description": "Nächste Woche Barmelweid vorbereiten und Aufgaben priorisieren",
+      "lane": "HE",
+      "priority": "high",
+      "tag": "health",
+      "status": "open",
+      "created": 1742900500000
+    },
+    {
+      "id": "he002",
+      "title": "Patienten-Daten prüfen",
+      "description": "Patientendaten im Dashboard kontrollieren und ggf. ergänzen",
+      "lane": "HE",
+      "priority": "medium",
+      "tag": "health",
+      "status": "open",
+      "created": 1742900600000
+    },
+    {
+      "id": "pr001",
       "title": "Persönliche Akte für Claude anlegen",
       "description": "Ausführliche Akte über Christian erstellen damit Claude proaktiv und personalisiert handeln kann — Interessen, Arbeitsweise, Ziele, Präferenzen, Gesundheit, Familie. Details werden gemeinsam erarbeitet.",
-      "lane": "BA",
+      "lane": "PR",
       "priority": "high",
       "tag": "project",
       "status": "open",
       "created": 1742900100000
+    },
+    {
+      "id": "pr002",
+      "title": "MODOLIN Projekt Setup",
+      "description": "MODOLIN Projekt initialisieren und Kanban-Lane befüllen",
+      "lane": "PR",
+      "priority": "medium",
+      "tag": "project",
+      "status": "open",
+      "created": 1742900700000
+    },
+    {
+      "id": "wb001",
+      "title": "Retrospektive Lernsystem",
+      "description": "Session-Start Ritual einführen: RETROSPECTIVES.md lesen vor jeder Session",
+      "lane": "WB",
+      "priority": "medium",
+      "tag": "tech",
+      "status": "open",
+      "created": 1742900800000
     }
   ],
   "diary": [],
   "patients": [],
   "categories": [
-    {
-      "id": "cat1",
-      "name": "tech",
-      "color": "#6366f1"
-    },
-    {
-      "id": "cat2",
-      "name": "health",
-      "color": "#10b981"
-    },
-    {
-      "id": "cat3",
-      "name": "finance",
-      "color": "#f59e0b"
-    },
-    {
-      "id": "cat4",
-      "name": "family",
-      "color": "#ec4899"
-    },
-    {
-      "id": "cat5",
-      "name": "project",
-      "color": "#8b5cf6"
-    },
-    {
-      "id": "cat6",
-      "name": "social",
-      "color": "#06b6d4"
-    }
+    { "id": "cat1", "name": "tech",    "color": "#6366f1" },
+    { "id": "cat2", "name": "health",  "color": "#10b981" },
+    { "id": "cat3", "name": "finance", "color": "#f59e0b" },
+    { "id": "cat4", "name": "family",  "color": "#ec4899" },
+    { "id": "cat5", "name": "project", "color": "#8b5cf6" },
+    { "id": "cat6", "name": "social",  "color": "#06b6d4" }
   ],
-  "updatedAt": 1742900000000
+  "updatedAt": 1742901000000
 }
