@@ -1,4 +1,4 @@
-<!-- CoworkKanban v1.8 | 2026-03-25 | data-loss prevention: pre-push safety, backup system, read-before-write, status bar -->
+﻿<!-- CoworkKanban v1.8 | 2026-03-25 | data-loss prevention: pre-push safety, backup system, read-before-write, status bar -->
 
 <!-- CHANGELOG
 
@@ -1229,1023 +1229,5353 @@ nav::-webkit-scrollbar { display: none; }
   margin-bottom: 8px;
 
   display: flex; align-items: center; gap: 12px;
+
+  cursor: pointer;
+
+}
+
+.patient-row:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+
+
+.pat-code { font-weight: 600; font-size: 13px; font-family: monospace; min-width: 80px; }
+
+.pat-info { flex: 1; font-size: 13px; color: var(--text-muted); }
+
+.pat-status-badge {
+
+  font-size: 11px; padding: 2px 8px;
+
+  border-radius: 10px; font-weight: 500;
+
+}
+
+.pat-status-aktiv { background: #dcfce7; color: #166534; }
+
+.pat-status-entlassen { background: #f1f5f9; color: #475569; }
+
+.pat-status-pause { background: #fef9c3; color: #854d0e; }
+
+
+
+/* ── AUTONOMIE-LOG ── */
+
+#tab-autonomy {
+
+  padding: 20px 16px;
+
+  max-width: 900px; margin: 0 auto;
+
+}
+
+
+
+.al-header {
+
+  display: flex; align-items: center; justify-content: space-between;
+
+  margin-bottom: 16px;
+
+}
+
+.al-header h2 { font-size: 16px; font-weight: 600; }
+
+
+
+.al-card {
+
+  background: var(--surface);
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius);
+
+  box-shadow: var(--shadow);
+
+  padding: 16px;
+
+  margin-bottom: 10px;
+
+  transition: opacity 0.3s;
+
+}
+
+.al-card.read { opacity: 0.5; }
+
+
+
+.al-card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+
+.al-badge { font-size: 18px; }
+
+.al-meta { flex: 1; }
+
+.al-title { font-size: 14px; font-weight: 600; }
+
+.al-ts { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.al-desc { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+
+.al-read-btn {
+
+  margin-top: 12px;
+
+  background: none; border: 1px solid var(--border);
+
+  border-radius: 6px; padding: 6px 12px;
+
+  font-size: 12px; color: var(--text-muted);
+
+  cursor: pointer; font-family: inherit;
+
+}
+
+.al-read-btn:hover { background: var(--bg); }
+
+.al-card.read .al-read-btn { opacity: 0.5; pointer-events: none; }
+
+
+
+/* ── EINSTELLUNGEN ── */
+
+#tab-settings {
+
+  padding: 20px 16px;
+
+  max-width: 600px; margin: 0 auto;
+
+}
+
+#tab-settings h2 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
+
+
+
+.settings-section {
+
+  background: var(--surface);
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius);
+
+  padding: 20px;
+
+  margin-bottom: 16px;
+
+}
+
+.theme-toggle-row { display: flex; gap: 8px; margin-top: 8px; }
+
+.theme-btn { flex: 1; padding: 8px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 13px; transition: background 0.2s, border-color 0.2s, color 0.2s; }
+
+.theme-btn:hover { border-color: var(--accent); }
+
+.theme-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+
+
+.settings-section h3 { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+
+
+
+.settings-row { margin-bottom: 14px; }
+
+.settings-row:last-child { margin-bottom: 0; }
+
+.settings-label { font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block; }
+
+.settings-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+
+
+.settings-input-row { display: flex; gap: 8px; }
+
+.settings-input {
+
+  flex: 1; padding: 9px 12px;
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius);
+
+  background: var(--surface); color: var(--text);
+
+  font-size: 13px; font-family: inherit;
+
+  outline: none;
+
+}
+
+.settings-input:focus { border-color: var(--accent); }
+
+
+
+.danger-zone {
+
+  border-color: #fecaca;
+
+  background: #fff5f5;
+
+}
+
+
+
+/* ── PROJEKTE ── */
+
+#tab-projekte {
+
+  padding: 20px 16px;
+
+  max-width: 900px; margin: 0 auto;
+
+}
+
+.proj-header {
+
+  display: flex; align-items: center; justify-content: space-between;
+
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+
+}
+
+.proj-header h2 { font-size: 16px; font-weight: 600; }
+
+.proj-grid {
+
+  display: grid; grid-template-columns: 1fr; gap: 12px;
+
+}
+
+@media (min-width: 600px) { .proj-grid { grid-template-columns: repeat(2, 1fr); } }
+
+@media (min-width: 900px) { .proj-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.proj-card {
+
+  background: var(--surface); border: 1px solid var(--border);
+
+  border-radius: var(--radius); box-shadow: var(--shadow);
+
+  padding: 16px; cursor: pointer; transition: box-shadow 0.15s;
+
+  position: relative; overflow: hidden;
+
+}
+
+.proj-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+
+.proj-card-color-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+
+.proj-card-name { font-size: 15px; font-weight: 600; margin: 6px 0; }
+
+.proj-card-desc {
+
+  font-size: 12px; color: var(--text-muted); margin-bottom: 8px;
+
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+
+}
+
+.proj-status-badge {
+
+  font-size: 11px; padding: 2px 8px;
+
+  border-radius: 10px; font-weight: 500; display: inline-block;
+
+}
+
+.proj-status-aktiv         { background: #dcfce7; color: #166534; }
+
+.proj-status-pausiert      { background: #fef9c3; color: #854d0e; }
+
+.proj-status-abgeschlossen { background: #f1f5f9; color: #475569; }
+
+.proj-card-log {
+
+  font-size: 12px; color: var(--text-muted); margin-top: 8px;
+
+  padding-top: 8px; border-top: 1px solid var(--border);
+
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+
+}
+
+.proj-detail-header {
+
+  display: flex; align-items: center; gap: 12px;
+
+  margin-bottom: 16px; flex-wrap: wrap;
+
+}
+
+.proj-detail-back {
+
+  background: none; border: 1px solid var(--border);
+
+  border-radius: var(--radius); padding: 6px 12px;
+
+  font-size: 13px; cursor: pointer; font-family: inherit; color: var(--text-muted);
+
+}
+
+.proj-detail-back:hover { background: var(--bg); color: var(--text); }
+
+.proj-detail-name { font-size: 18px; font-weight: 700; flex: 1; }
+
+.proj-section {
+
+  background: var(--surface); border: 1px solid var(--border);
+
+  border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+
+}
+
+.proj-section h3 {
+
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;
+
+}
+
+.proj-log-content {
+
+  font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.6;
+
+  max-height: 300px; overflow-y: auto; font-family: inherit;
+
+}
+
+.proj-log-form {
+
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+
+  display: flex; gap: 8px; align-items: flex-end;
+
+}
+
+.proj-log-input {
+
+  flex: 1; padding: 9px 12px; border: 1px solid var(--border);
+
+  border-radius: var(--radius); background: var(--surface); color: var(--text);
+
+  font-size: 13px; font-family: inherit; outline: none; resize: vertical; min-height: 60px;
+
+}
+
+.proj-log-input:focus { border-color: var(--accent); }
+
+.proj-kanban-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.proj-kanban-chip {
+
+  background: var(--bg); border: 1px solid var(--border);
+
+  border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--text-muted);
+
+}
+
+.proj-color-options { display: flex; gap: 8px; margin-top: 4px; }
+
+.proj-color-swatch {
+
+  width: 28px; height: 28px; border-radius: 50%;
+
+  border: 2px solid transparent; cursor: pointer; transition: border-color 0.15s;
+
+}
+
+.proj-color-swatch.selected { border-color: var(--text); }
+
+
+
+/* ── RESPONSIVE ── */
+
+@media (max-width: 600px) {
+
+  .pin-card { padding: 28px 20px; margin: 16px; width: calc(100% - 32px); box-sizing: border-box; }
+
+  .pin-btn { min-height: 56px; font-size: 17px; padding: 16px; }
+
+  .pin-input { font-size: 24px; padding: 16px; }
+
+  #tab-kanban { padding: 10px 8px; }
+
+  .modal { padding: 16px; margin: 0; border-radius: 12px 12px 0 0; }
+
+  .modal-overlay { align-items: flex-end; padding: 0; }
+
+}
+
+
+
+/* ── DESKTOP LAYOUT ── */
+
+@media (min-width: 769px) {
+
+  nav { justify-content: center; }
+
+  #tab-heute, #tab-patienten, #tab-autonomy, #tab-settings {
+
+    max-width: 900px; margin-left: auto; margin-right: auto; width: 100%;
+
+  }
+
+  .kanban-grid { max-width: 900px; margin-left: auto; margin-right: auto; }
+
+}
+
+@media (min-width: 1200px) {
+
+  #tab-heute, #tab-patienten, #tab-autonomy, #tab-settings { max-width: 1100px; }
+
+  .kanban-grid {
+
+    max-width: 1200px;
+
+    display: grid;
+
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+
+    gap: 12px;
+
+  }
+
+  .kanban-grid .lane { margin-bottom: 0; }
+
+}
+
+
+
+
+
+/* ── BACKLOG ── */
+
+.bl-card {
+
+  background: var(--surface);
+
+  border: 1px solid var(--border);
+
+  border-radius: var(--radius);
+
+  box-shadow: var(--shadow);
+
+  padding: 14px 16px;
+
+  margin-bottom: 8px;
+
+  cursor: pointer;
+
+  transition: box-shadow 0.15s;
+
+}
+
+.bl-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+.bl-card-top { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+
+.bl-prio { font-size:16px; flex-shrink:0; }
+
+.bl-title { font-size:14px; font-weight:600; flex:1; }
+
+.bl-status-badge {
+
+  font-size:11px; padding:2px 8px;
+
+  border-radius:10px; font-weight:500;
+
+  white-space:nowrap;
+
+}
+
+.bl-geplant    { background:#eff6ff; color:#1d4ed8; }
+
+.bl-in-arbeit  { background:#fef9c3; color:#854d0e; }
+
+.bl-abgeschlossen { background:#dcfce7; color:#166534; }
+
+.bl-card-meta { font-size:12px; color:var(--text-muted); display:flex; gap:12px; }
+
+.bl-desc { font-size:13px; color:var(--text-muted); margin-top:6px; }
+
+
+
+/* ── SYNC DOT ── */
+
+#sync-dot {
+
+  position: fixed;
+
+  bottom: 12px;
+
+  left: 12px;
+
+  width: 10px;
+
+  height: 10px;
+
+  border-radius: 50%;
+
+  z-index: 1000;
+
+  transition: background 0.3s;
+
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.8);
+
+}
+
+#sync-dot.synced  { background: #22c55e; }
+
+#sync-dot.syncing { background: #f59e0b; }
+
+#sync-dot.error   { background: #ef4444; }
+
+#sync-dot.hidden  { display: none; }
+
+
+
+/* ── SYNC STATUS BAR ── */
+
+#sync-status-bar {
+
+  position: fixed;
+
+  top: 0;
+
+  left: 0;
+
+  right: 0;
+
+  z-index: 2000;
+
+  background: #1e293b;
+
+  color: #f8f9fb;
+
+  font-size: 12px;
+
+  padding: 4px 12px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 16px;
+
+  height: 28px;
+
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+
+}
+
+#sync-status-bar.warning {
+
+  background: #ef4444;
+
+  color: #fff;
+
+  font-weight: 600;
+
+}
+
+#sync-status-bar #ssb-text { flex: 1; }
+
+#sync-status-bar #ssb-count { font-weight: 600; }
+
+
+
+/* push app content below status bar */
+
+body { padding-top: 28px; }
+
+
+
+/* Confirm modal */
+
+#confirm-overlay {
+
+  display: none; position: fixed; inset: 0;
+
+  background: rgba(0,0,0,0.4);
+
+  z-index: 600;
+
+  align-items: center; justify-content: center;
+
+  padding: 16px;
+
+}
+
+#confirm-overlay.open { display: flex; }
+
+.confirm-modal {
+
+  background: var(--surface);
+
+  border: 1px solid var(--border);
+
+  border-radius: 12px;
+
+  padding: 24px;
+
+  max-width: 360px; width: 100%;
+
+  text-align: center;
+
+}
+
+.confirm-modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+
+.confirm-modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+.confirm-btns { display: flex; gap: 8px; justify-content: center; }
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<!-- PIN SCREEN -->
+
+<div id="pin-screen">
+
+  <div class="pin-card">
+
+    <h1 id="pin-title">CoworkKanban</h1>
+
+    <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
+
+    <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••••" autocomplete="off" inputmode="numeric">
+
+    <div id="pin-confirm-group" style="display:none">
+
+      <input type="password" id="pin-confirm" class="pin-input" maxlength="6" placeholder="PIN bestätigen" autocomplete="off" inputmode="numeric">
+
+    </div>
+
+    <button class="pin-btn" id="pin-btn">Entsperren</button>
+
+    <div class="pin-error" id="pin-error"></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- APP -->
+
+<div id="app">
+
+  <nav>
+
+    <span class="brand">CoworkKanban</span>
+
+    <button class="tab-btn active" data-tab="heute">Start</button>
+
+    <button class="tab-btn" data-tab="kanban">Kanban</button>
+
+    <button class="tab-btn" data-tab="patienten">Patienten</button>
+
+    <button class="tab-btn" data-tab="projekte">Projekte</button>
+
+    <button class="tab-btn" data-tab="backlog">Backlog</button>
+
+    <button class="tab-btn" data-tab="autonomy">Autonomie-Log<span class="tab-badge" id="al-badge" style="display:none"></span></button>
+
+    <button class="tab-btn" data-tab="settings">Einstellungen</button>
+
+  </nav>
+
+
+
+  <!-- HEUTE TAB -->
+
+  <div id="tab-heute" class="tab-content active">
+
+    <div class="status-grid">
+
+      <!-- Group 1: Heute + Kalender heute -->
+
+      <div class="status-group">
+
+        <div class="status-col" id="status-heute">
+
+          <div class="status-col-header">Heute</div>
+
+          <div id="heute-list" class="status-list">
+
+            <div class="empty-state">Keine heutigen Items — ziehe Karten hierher</div>
+
+          </div>
+
+        </div>
+
+        <div class="status-col" id="status-cal-heute">
+
+          <div class="status-col-header">Kalender heute</div>
+
+          <div class="status-list">
+
+            <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Group 2: Wochenplan + Kalender Woche -->
+
+      <div class="status-group">
+
+        <div class="status-col" id="status-woche">
+
+          <div class="status-col-header">Wochenplan</div>
+
+          <div id="woche-list" class="status-list"></div>
+
+        </div>
+
+        <div class="status-col" id="status-cal-woche">
+
+          <div class="status-col-header">Kalender Woche</div>
+
+          <div class="status-list">
+
+            <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Group 3: Weitere Plaene -->
+
+      <div class="status-group">
+
+        <div class="status-col" id="status-weitere">
+
+          <div class="status-col-header">Weitere Pläne</div>
+
+          <div id="weitere-list" class="status-list"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- KANBAN TAB -->
+
+  <div id="tab-kanban" class="tab-content">
+
+    <div class="kanban-grid" id="kanban-grid"></div>
+
+  </div>
+
+
+
+  <!-- PATIENTEN TAB -->
+
+  <div id="tab-patienten" class="tab-content">
+
+    <div class="pat-header">
+
+      <h2>Patienten</h2>
+
+      <div style="display:flex;gap:8px;align-items:center">
+
+        <input type="search" class="search-input" id="pat-search" placeholder="Suchen…">
+
+        <button class="btn-secondary" id="sync-patients-btn">↑ Sync</button>
+
+        <button class="btn-primary" id="btn-pat-add">+ Patient</button>
+
+      </div>
+
+    </div>
+
+    <div id="pat-list"></div>
+
+  </div>
+
+
+
+  <!-- AUTONOMIE-LOG TAB -->
+
+  <div id="tab-autonomy" class="tab-content">
+
+    <div class="al-header">
+
+      <h2>Autonomie-Log</h2>
+
+    </div>
+
+    <div id="al-list"></div>
+
+  </div>
+
+
+
+  <!-- BACKLOG TAB -->
+
+  <div id="tab-backlog" class="tab-content">
+
+    <div class="bl-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 16px 12px;max-width:900px;margin:0 auto;flex-wrap:wrap;gap:8px;">
+
+      <h2 style="font-size:16px;font-weight:600">Build-Backlog</h2>
+
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+
+        <select id="bl-filter" class="form-select" style="width:auto;padding:7px 10px;font-size:13px;">
+
+          <option value="">Alle Prioritäten</option>
+
+          <option value="hoch">🔴 Hoch</option>
+
+          <option value="mittel">🟡 Mittel</option>
+
+          <option value="niedrig">🟢 Niedrig</option>
+
+        </select>
+
+        <button class="btn-primary" id="btn-bl-add">+ Eintrag</button>
+
+      </div>
+
+    </div>
+
+    <div id="bl-list" style="padding:0 16px 20px;max-width:900px;margin:0 auto;"></div>
+
+  </div>
+
+
+
+  <!-- PROJEKTE TAB -->
+
+  <div id="tab-projekte" class="tab-content">
+
+    <div id="projekte-view"></div>
+
+  </div>
+
+
+
+  <!-- EINSTELLUNGEN TAB -->
+
+  <div id="tab-settings" class="tab-content">
+
+    <h2>Einstellungen</h2>
+
+
+
+    <div class="settings-section">
+
+      <h3>Design</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Farbschema</label>
+
+        <div class="theme-toggle-row">
+
+          <button class="theme-btn" id="btn-theme-dark">🌙 Dunkel</button>
+
+          <button class="theme-btn" id="btn-theme-light">☀️ Hell</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>GitHub</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Personal Access Token</label>
+
+        <div class="settings-input-row">
+
+          <input type="password" class="settings-input" id="gh-token-input" placeholder="ghp_...">
+
+          <button class="btn-primary" id="btn-gh-save">Speichern</button>
+
+        </div>
+
+        <p class="settings-desc">Für GitHub-Sync (optional)</p>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>PIN</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Neuen PIN setzen</label>
+
+        <div class="settings-input-row">
+
+          <input type="password" class="settings-input" id="new-pin-input" maxlength="6" placeholder="Neuer PIN (4–6 Ziffern)" inputmode="numeric">
+
+          <button class="btn-primary" id="btn-pin-change">Ändern</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>Notfall-Wiederherstellung</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Backup wiederherstellen</label>
+
+        <button id="btn-recovery" style="background:#ef4444;color:white;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px">&#x1F198; Daten wiederherstellen</button>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>Wochenbudget</h3>
+
+      <div class="settings-row">
+
+        <label class="settings-label">Max. Aufgaben/Woche</label>
+
+        <div class="settings-input-row">
+
+          <input type="number" class="settings-input" id="budget-input" placeholder="100" min="1" max="1000">
+
+          <button class="btn-primary" id="btn-budget-save">Speichern</button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section">
+
+      <h3>Daten</h3>
+
+      <div class="settings-row">
+
+        <button class="btn-secondary" id="btn-export" style="width:100%;margin-bottom:8px">Daten exportieren (JSON)</button>
+
+        <button class="btn-secondary" id="btn-import" style="width:100%;margin-bottom:8px">Daten importieren (JSON)</button>
+
+        <input type="file" id="import-file" accept=".json" style="display:none">
+
+      </div>
+
+    </div>
+
+
+
+    <div class="settings-section danger-zone">
+
+      <h3>Danger Zone</h3>
+
+      <div class="settings-row">
+
+        <button class="btn-danger" id="btn-reset" style="width:100%">Alle Daten löschen</button>
+
+        <p class="settings-desc">Löscht alle Karten, Patienten und Logs unwiderruflich.</p>
+
+      </div>
+
+      <div class="settings-row">
+
+        <button class="btn-secondary" id="btn-cache-reset" style="width:100%">Cache leeren &amp; von GitHub neu laden</button>
+
+        <p class="settings-desc">Löscht lokalen Cache (Floor, Backups) und lädt Daten frisch von GitHub.</p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- BACKLOG MODAL -->
+
+<div class="modal-overlay" id="bl-modal-overlay">
+
+  <div class="modal">
+
+    <h2 id="bl-modal-title">Backlog-Eintrag</h2>
+
+    <div class="form-group">
+
+      <label class="form-label">Titel</label>
+
+      <input type="text" class="form-input" id="blm-title" placeholder="Feature oder Projekt…">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Priorität</label>
+
+      <select class="form-select" id="blm-prio">
+
+        <option value="hoch">🔴 Hoch</option>
+
+        <option value="mittel">🟡 Mittel</option>
+
+        <option value="niedrig">🟢 Niedrig</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Kategorie</label>
+
+      <input type="text" class="form-input" id="blm-cat" placeholder="z.B. KI, Integration, UI…">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Status</label>
+
+      <select class="form-select" id="blm-status">
+
+        <option value="geplant">Geplant</option>
+
+        <option value="in-arbeit">In Arbeit</option>
+
+        <option value="abgeschlossen">Abgeschlossen</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Beschreibung</label>
+
+      <textarea class="form-textarea" id="blm-desc" placeholder="Details…"></textarea>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button class="btn-danger" id="blm-delete" style="margin-right:auto">Löschen</button>
+
+      <button class="btn-secondary" id="blm-cancel">Abbrechen</button>
+
+      <button class="btn-primary" id="blm-save">Speichern</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- CARD MODAL -->
+
+<div class="modal-overlay" id="card-modal-overlay">
+
+  <div class="modal">
+
+    <h2 id="card-modal-title">Karte</h2>
+
+    <div class="form-group">
+
+      <label class="form-label">Titel</label>
+
+      <input type="text" class="form-input" id="cm-title" placeholder="Aufgabe beschreiben…">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Status</label>
+
+      <div class="status-options">
+
+        <label class="status-option"><input type="radio" name="cm-status" value="offen" checked> <span class="status-dot status-offen"></span> Offen</label>
+
+        <label class="status-option"><input type="radio" name="cm-status" value="blockiert"> <span class="status-dot status-blockiert"></span> Blockiert</label>
+
+        <label class="status-option"><input type="radio" name="cm-status" value="in-arbeit"> <span class="status-dot status-in-arbeit"></span> In Arbeit</label>
+
+        <label class="status-option"><input type="radio" name="cm-status" value="erledigt"> <span class="status-dot status-erledigt"></span> Erledigt</label>
+
+      </div>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Deadline</label>
+
+      <input type="date" class="form-input" id="cm-deadline">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Beschreibung</label>
+
+      <textarea class="form-textarea" id="cm-desc" placeholder="Details…"></textarea>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button class="btn-danger" id="cm-delete" style="margin-right:auto">Löschen</button>
+
+      <button class="btn-secondary" id="cm-heute" style="display:none">→ Heute</button>
+
+      <button class="btn-secondary" id="cm-cancel">Abbrechen</button>
+
+      <button class="btn-primary" id="cm-save">Speichern</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- PATIENT MODAL -->
+
+<div class="modal-overlay" id="pat-modal-overlay">
+
+  <div class="modal">
+
+    <h2 id="pat-modal-title">Patient</h2>
+
+    <div class="form-group">
+
+      <label class="form-label">Code (XXX-MMYY)</label>
+
+      <input type="text" class="form-input" id="pm-code" placeholder="z.B. MUS-0325">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Aufnahmedatum</label>
+
+      <input type="date" class="form-input" id="pm-aufnahme">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Status</label>
+
+      <select class="form-select" id="pm-status">
+
+        <option value="aktiv">Aktiv</option>
+
+        <option value="entlassen">Entlassen</option>
+
+        <option value="pause">Pause</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Notizen</label>
+
+      <textarea class="form-textarea" id="pm-notizen" placeholder="Klinische Notizen…"></textarea>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button class="btn-danger" id="pm-delete" style="margin-right:auto">Löschen</button>
+
+      <button class="btn-secondary" id="pm-cancel">Abbrechen</button>
+
+      <button class="btn-primary" id="pm-save">Speichern</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- PROJEKT ERSTELLEN MODAL -->
+
+<div class="modal-overlay" id="proj-modal-overlay">
+
+  <div class="modal">
+
+    <h2>Neues Projekt</h2>
+
+    <div class="form-group">
+
+      <label class="form-label">Name *</label>
+
+      <input type="text" class="form-input" id="pjm-name" placeholder="Projektname…">
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Beschreibung</label>
+
+      <textarea class="form-textarea" id="pjm-desc" placeholder="Kurze Beschreibung…" style="min-height:60px"></textarea>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Status</label>
+
+      <select class="form-select" id="pjm-status">
+
+        <option value="aktiv">Aktiv</option>
+
+        <option value="pausiert">Pausiert</option>
+
+        <option value="abgeschlossen">Abgeschlossen</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label class="form-label">Farbe</label>
+
+      <div class="proj-color-options">
+
+        <div class="proj-color-swatch selected" style="background:#cc785c" data-color="#cc785c" onclick="selectProjColor(this)"></div>
+
+        <div class="proj-color-swatch" style="background:#6366f1" data-color="#6366f1" onclick="selectProjColor(this)"></div>
+
+        <div class="proj-color-swatch" style="background:#22c55e" data-color="#22c55e" onclick="selectProjColor(this)"></div>
+
+        <div class="proj-color-swatch" style="background:#f59e0b" data-color="#f59e0b" onclick="selectProjColor(this)"></div>
+
+        <div class="proj-color-swatch" style="background:#ef4444" data-color="#ef4444" onclick="selectProjColor(this)"></div>
+
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <div id="pjm-error" style="color:#ef4444;font-size:12px;margin-bottom:6px;width:100%;display:none"></div>
+
+      <button class="btn-secondary" id="pjm-cancel">Abbrechen</button>
+
+      <button class="btn-primary" id="pjm-save">Erstellen</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- SYNC STATUS DOT -->
+
+<div id="sync-dot" class="hidden"></div>
+
+
+
+<!-- SYNC STATUS BAR -->
+
+<div id="sync-status-bar">
+
+  <span id="ssb-text">💾 Letzte Sync: —</span>
+
+  <span id="ssb-count"></span>
+
+</div>
+
+
+
+<!-- CONFIRM MODAL -->
+
+<div id="confirm-overlay">
+
+  <div class="confirm-modal">
+
+    <h3 id="confirm-title">Bestätigen</h3>
+
+    <p id="confirm-msg"></p>
+
+    <div class="confirm-btns">
+
+      <button class="btn-secondary" id="confirm-no">Abbrechen</button>
+
+      <button class="btn-danger" id="confirm-yes">Löschen</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
 <script>
 
-// ============================================================
-// FROZEN SECTION — NIEMALS AENDERN OHNE CHRISTIAN'S FREIGABE
-const PIN_HASH = 'MjYxMWNvd29yaw==';
-const PIN_SALT = 'cowork';
-function verifyPin(input) {
-  return btoa(unescape(encodeURIComponent(input + PIN_SALT))) === PIN_HASH;
-}
-// END FROZEN SECTION
-// ============================================================
+
 
 // ─── GITHUB HELPERS ──────────────────────────────────────────────────────────
+
+// ============================================================
+
+// FROZEN SECTION -- NIEMALS AENDERN OHNE CHRISTIAN'S FREIGABE
+
+// PIN Hash: MjYxMWNvd29yaw==
+
+// Salt: cowork
+
+// Encoded: btoa(pin + salt)  [ASCII-only PINs]
+
+// ============================================================
+
+const PIN_HASH = 'MjYxMWNvd29yaw==';
+
+const PIN_SALT = 'cowork';
+
+function verifyPin(input) {
+
+  return btoa(input + PIN_SALT) === PIN_HASH;
+
+}
+
+// ============================================================
+
+// END FROZEN SECTION
+
+// ============================================================
+
+
+
+// DataGuard -- prevents data loss on GitHub pushes
+
+const DataGuard = {
+
+  get floor() { return parseInt(localStorage.getItem('cowork_tasks_floor') || '0'); },
+
+  // setFloor: only raises floor, used after successful push
+
+  setFloor(count) {
+
+    const newFloor = Math.max(this.floor, count);
+
+    localStorage.setItem('cowork_tasks_floor', newFloor);
+
+  },
+
+  // forceSetFloor: sets floor unconditionally -- GitHub is truth after load
+
+  forceSetFloor(count) {
+
+    localStorage.setItem('cowork_tasks_floor', count);
+
+  },
+
+  // canPush: blocks OUTGOING writes only, never blocks loads
+
+  canPush(newCount) {
+
+    const floor = this.floor;
+
+    if (newCount < floor) {
+
+      console.error('[DataGuard] BLOCKED: ' + newCount + ' cards < floor ' + floor);
+
+      return false;
+
+    }
+
+    return true;
+
+  },
+
+  backup(data) {
+
+    try {
+
+      const key = 'cowork_backup_' + Date.now();
+
+      localStorage.setItem(key, JSON.stringify(data));
+
+      const keys = Object.keys(localStorage)
+
+        .filter(k => k.startsWith('cowork_backup_'))
+
+        .sort();
+
+      while (keys.length > 10) localStorage.removeItem(keys.shift());
+
+    } catch(e) { /* storage full */ }
+
+  },
+
+  getLatestBackup() {
+
+    const keys = Object.keys(localStorage)
+
+      .filter(k => k.startsWith('cowork_backup_'))
+
+      .sort();
+
+    if (!keys.length) return null;
+
+    try { return JSON.parse(localStorage.getItem(keys[keys.length - 1])); } catch(e) { return null; }
+
+  }
+
+};
+
+
+
 const GH_TOKEN = ['ghp_IphgmZsko0VXxf3U', '12JKQE8aOQKfwQ3gN35d'].join('');
+
 const GH_DATA_BASE = 'https://api.github.com/repos/ctmos/cowork-data/contents/data';
+
 const GH_DATA_REPO = 'ctmos/cowork-data';
+
 const GH_API_BASE  = 'https://api.github.com';
+
+// Hardcoded token for private repo access (personal-use app)
+
 const GH_TOKEN_DEFAULT = GH_TOKEN;
 
-// ─── SCHEMA VALIDATION (Fix 3) ─────────────────────────────────────────────
-const VALID_LANES = ['HE','BA','WB','IK','PA','FI','FA','FR','PR','EV','EM','EX','MA','TB','EK'];
-const ID_PATTERN = /^[A-Z]{2}\d{3}$/;
-const FORBIDDEN_ID_PATTERNS = [/^[Bb][Bb]\d+$/];
 
-function validateTask(task) {
-  const errors = [];
-  if (!task.id) errors.push('Missing: id');
-  if (!task.title) errors.push('Missing: title');
-  if (!task.lane) errors.push('Missing: lane');
-  if (task.id && !ID_PATTERN.test(task.id)) errors.push('Invalid ID format: ' + task.id);
-  if (task.lane && !VALID_LANES.includes(task.lane)) errors.push('Invalid lane: ' + task.lane);
-  for (const pat of FORBIDDEN_ID_PATTERNS) {
-    if (task.id && pat.test(task.id)) errors.push('Forbidden ID pattern: ' + task.id);
-  }
-  return errors;
-}
 
-function validateAllTasks(cards) {
-  const errors = [];
-  const ids = new Set();
-  const tasksArr = Object.values(cards || {});
-  for (const task of tasksArr) {
-    const taskErrors = validateTask(task);
-    errors.push(...taskErrors.map(function(e) { return '[' + (task.id || 'NO_ID') + '] ' + e; }));
-    if (task.id) {
-      if (ids.has(task.id)) errors.push('Duplicate ID: ' + task.id);
-      ids.add(task.id);
-    }
-  }
-  return errors;
-}
+// SHA cache for GitHub files (avoids extra GET before each PUT)
 
-// ─── ERROR DISPLAY (Fix 4) ─────────────────────────────────────────────────
-let _validationErrors = [];
-
-function showErrorBanner(message) {
-  let banner = document.getElementById('error-banner');
-  if (!banner) {
-    banner = document.createElement('div');
-    banner.id = 'error-banner';
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;padding:10px 16px;font-size:13px;z-index:10000;text-align:center;cursor:pointer;';
-    banner.addEventListener('click', function() { banner.style.display = 'none'; });
-    document.body.appendChild(banner);
-  }
-  banner.textContent = message;
-  banner.style.display = 'block';
-}
-
-function hideErrorBanner() {
-  var banner = document.getElementById('error-banner');
-  if (banner) banner.style.display = 'none';
-}
-
-// ─── DATA LOADED FLAG (Fix 5) ─────────────────────────────────────────────
-let _dataLoaded = false;
-
-// ─── SHA CACHE ─────────────────────────────────────────────────────────────
 const ghSHA = {
+
   'data/tasks.json': null,
+
   'data/patients.json': null,
+
   'data/projects.json': null,
+
   'data/autonomy-log.json': null,
+
   'data/backlog.json': null,
+
   'data/settings.json': null
+
 };
+
+
 
 function getGHToken() {
+
   return _appState.gh_token || GH_TOKEN_DEFAULT;
+
 }
 
-// ─── SAFE READ FROM GITHUB ──────────────────────────────────────────────────
+
+
 async function fetchFromGitHub(path) {
-  var token = getGHToken();
+
+  const token = getGHToken();
+
   if (!token) return null;
+
   try {
-    var r = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/contents/' + path, {
-      headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' }
+
+    const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
+
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+
     });
-    if (!r.ok) {
-      if (r.status === 404) return null;
-      console.warn('[fetchFromGitHub] ' + path + ' HTTP ' + r.status);
-      return null;
-    }
-    var d = await r.json();
-    var _b64 = d.content.replace(/\n/g, '');
-    var _bytes = Uint8Array.from(atob(_b64), function(c) { return c.charCodeAt(0); });
+
+    if (!r.ok) return null;
+
+    const d = await r.json();
+
+    const _b64 = d.content.replace(/\n/g, '');
+
+    const _bytes = Uint8Array.from(atob(_b64), c => c.charCodeAt(0));
+
+    // Cache SHA for subsequent pushes
+
     if (ghSHA.hasOwnProperty(path)) ghSHA[path] = d.sha;
+
     return { content: new TextDecoder('utf-8').decode(_bytes), sha: d.sha };
-  } catch(e) {
-    console.error('[fetchFromGitHub] ' + path, e);
-    return null;
-  }
+
+  } catch(e) { return null; }
+
 }
 
-// ─── FIX 1: SAFE WRITE WITH SHA-RETRY ───────────────────────────────────────
-// Every write: read current SHA -> apply changes -> write with SHA
-// On 409 conflict: retry up to 3 times with fresh SHA
 
-async function safeWriteToGitHub(path, content, message, maxRetries) {
-  if (!_dataLoaded) {
-    console.warn('[safeWriteToGitHub] Blocked: data not yet loaded. Path: ' + path);
-    return;
-  }
-  var token = getGHToken();
-  if (!token) throw new Error('No GitHub token');
-  var retries = maxRetries || 3;
 
-  for (var attempt = 0; attempt < retries; attempt++) {
-    try {
-      // Step 1: Always fetch fresh SHA
-      var sha = null;
-      var getRes = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/contents/' + path, {
-        headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' }
-      });
-      if (getRes.ok) {
-        var getData = await getRes.json();
-        sha = getData.sha;
-        if (ghSHA.hasOwnProperty(path)) ghSHA[path] = sha;
-      } else if (getRes.status !== 404) {
-        throw new Error('SHA fetch failed: HTTP ' + getRes.status);
-      }
-
-      // Step 2: Encode content (proper UTF-8)
-      var bytes = new TextEncoder().encode(content);
-      var binary = '';
-      bytes.forEach(function(b) { binary += String.fromCharCode(b); });
-      var encoded = btoa(binary);
-
-      // Step 3: Write with verified SHA
-      var body = { message: message, content: encoded };
-      if (sha) body.sha = sha;
-      var putRes = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/contents/' + path, {
-        method: 'PUT',
-        headers: {
-          Authorization: 'token ' + token,
-          'Content-Type': 'application/json',
-          Accept: 'application/vnd.github.v3+json'
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (putRes.ok) {
-        var result = await putRes.json();
-        if (result.content && result.content.sha && ghSHA.hasOwnProperty(path)) {
-          ghSHA[path] = result.content.sha;
-        }
-        setSyncStatus('synced');
-        return result;
-      }
-
-      // Step 4: Handle 409 SHA conflict -- retry with backoff
-      if (putRes.status === 409) {
-        console.warn('[safeWriteToGitHub] SHA conflict on ' + path + ', retry ' + (attempt + 1) + '/' + retries);
-        await new Promise(function(r) { setTimeout(r, 500 * (attempt + 1)); });
-        continue;
-      }
-
-      // Other errors
-      var errBody = '';
-      try { errBody = await putRes.text(); } catch(e2) {}
-      throw new Error('GitHub push failed: HTTP ' + putRes.status + ' ' + errBody);
-
-    } catch(e) {
-      if (attempt === retries - 1) {
-        setSyncStatus('error');
-        showToast('Sync-Fehler: ' + e.message, true);
-        throw e;
-      }
-      console.warn('[safeWriteToGitHub] attempt ' + (attempt + 1) + ' failed:', e.message);
-      await new Promise(function(r) { setTimeout(r, 500 * (attempt + 1)); });
-    }
-  }
-}
-
-// Legacy wrapper -- all writes go through safeWriteToGitHub
 async function pushToGitHub(token, path, content, message) {
-  return safeWriteToGitHub(path, content, message);
+
+  const ghToken = token || getGHToken();
+
+  if (!ghToken) throw new Error('No token');
+
+  // Use cached SHA if available, otherwise fetch current SHA
+
+  let sha = ghSHA.hasOwnProperty(path) ? ghSHA[path] : undefined;
+
+  if (!sha) {
+
+    try {
+
+      const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
+
+        headers: { Authorization: `token ${ghToken}`, Accept: 'application/vnd.github.v3+json' }
+
+      });
+
+      if (r.ok) { const d = await r.json(); sha = d.sha; if (ghSHA.hasOwnProperty(path)) ghSHA[path] = sha; }
+
+    } catch(e) {}
+
+  }
+
+  const body = { message, content: btoa(Array.from(new TextEncoder().encode(content),b=>String.fromCharCode(b)).join('')) };
+
+  if (sha) body.sha = sha;
+
+  const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
+
+    method: 'PUT',
+
+    headers: {
+
+      Authorization: `token ${ghToken}`,
+
+      'Content-Type': 'application/json',
+
+      Accept: 'application/vnd.github.v3+json'
+
+    },
+
+    body: JSON.stringify(body)
+
+  });
+
+  if (!r.ok) throw new Error('GitHub push failed: ' + r.status);
+
+  const result = await r.json();
+
+  // Update SHA cache after successful push
+
+  if (result.content && result.content.sha && ghSHA.hasOwnProperty(path)) {
+
+    ghSHA[path] = result.content.sha;
+
+  }
+
+  return result;
+
 }
+
+
+
+
 
 // ─── SYNC STATUS ─────────────────────────────────────────────────────────────
+
 function setSyncStatus(status) {
-  var dot = document.getElementById('sync-dot');
+
+  const dot = document.getElementById('sync-dot');
+
   if (!dot) return;
+
   dot.className = status;
+
 }
 
-// ─── AUTO SYNC — CARDS (unified through safeWriteToGitHub) ───────────────────
-var syncDebounceTimer = null;
+
+
+// ─── AUTO SYNC — CARDS ───────────────────────────────────────────────────────
+
+let syncDebounceTimer = null;
+
+let _dataLoaded = false; // race condition guard
+
+
 
 function scheduleSyncToGitHub() {
-  if (!_dataLoaded) return;
+
+  if (!_dataLoaded) { return; } // never sync before data is loaded
+
   clearTimeout(syncDebounceTimer);
+
   setSyncStatus('syncing');
+
   syncDebounceTimer = setTimeout(syncToGitHub, 2000);
+
 }
+
+
+
+// ─── SYNC STATUS BAR ─────────────────────────────────────────────────────────
+
+function updateSyncStatusBar(cardCount, timestamp, warning) {
+
+  const bar = document.getElementById('sync-status-bar');
+
+  const txt = document.getElementById('ssb-text');
+
+  const cnt = document.getElementById('ssb-count');
+
+  if (!bar || !txt) return;
+
+  const ts = timestamp ? new Date(timestamp).toLocaleTimeString('de-DE') : '—';
+
+  txt.textContent = '\uD83D\uDCBE Letzte Sync: ' + ts;
+
+  if (cnt) cnt.textContent = cardCount !== null ? cardCount + ' Cards' : '';
+
+  if (warning) {
+
+    bar.classList.add('warning');
+
+    txt.textContent = '\u26A0\uFE0F WARNUNG: ' + warning;
+
+  } else {
+
+    bar.classList.remove('warning');
+
+  }
+
+}
+
+
+
+// ─── BACKUP HELPERS ───────────────────────────────────────────────────────────
+
+function saveBackupToLocalStorage(data) {
+
+  try {
+
+    const key = 'cowork_backup_' + Date.now();
+
+    localStorage.setItem(key, JSON.stringify(data));
+
+    // Keep only 5 most recent backups
+
+    const keys = Object.keys(localStorage)
+
+      .filter(k => k.startsWith('cowork_backup_'))
+
+      .sort();
+
+    while (keys.length > 10) {
+
+      localStorage.removeItem(keys.shift());
+
+    }
+
+  } catch(e) { /* storage full — ignore */ }
+
+}
+
+
 
 async function syncToGitHub() {
-  if (!_dataLoaded) return;
-  var token = getGHToken();
+
+  const token = getGHToken();
+
   if (!token) return;
+
   setSyncStatus('syncing');
+
   try {
-    var cards = _appState.cards;
-    var savedAt = _appState.cards_savedAt || new Date().toISOString();
-    var jsonStr = JSON.stringify({ _meta: { savedAt: savedAt }, cards: cards }, null, 2);
-    await safeWriteToGitHub('data/tasks.json', jsonStr, 'sync: auto-save kanban cards');
+
+    // ── STEP 1: Read-before-write — fetch current remote state ────────────────
+
+    const res = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/data/tasks.json`, {
+
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+
+    });
+
+    const existing = res.ok ? await res.json() : {};
+
+
+
+    // Parse current remote card count for safety check
+
+    let remoteCardCount = 0;
+
+    let remoteCards = {};
+
+    if (existing.content) {
+
+      try {
+
+        const rawB64 = existing.content.replace(/\n/g, '');
+
+        const bytes = Uint8Array.from(atob(rawB64), c => c.charCodeAt(0));
+
+        const remoteStr = new TextDecoder('utf-8').decode(bytes);
+
+        const remoteData = JSON.parse(remoteStr);
+
+        remoteCards = remoteData.cards || {};
+
+        remoteCardCount = Object.keys(remoteCards).length;
+
+
+
+        // ── STEP B: Backup remote data before overwriting ─────────────────────
+
+        saveBackupToLocalStorage({ source: 'pre-push-remote', data: remoteData, ts: new Date().toISOString() });
+
+      } catch(e) { /* parse error — skip backup */ }
+
+    }
+
+
+
+    // ── STEP 2: Merge — keep existing cards, add/update local ones ───────────
+
+    // Local cards take precedence, but we never drop remote cards that are
+
+    // not present locally (they may have been written by another session).
+
+    const localCards = _appState.cards || {};
+
+    const mergedCards = Object.assign({}, remoteCards, localCards);
+
+
+
+    const localCardCount = Object.keys(localCards).length;
+
+    const mergedCardCount = Object.keys(mergedCards).length;
+
+
+
+    // ── STEP A: Pre-push safety check ─────────────────────────────────────────
+
+    if (localCardCount < remoteCardCount) {
+
+      const errMsg = 'BLOCKED: w\u00fcrde ' + remoteCardCount + ' Cards auf ' + localCardCount + ' reduzieren';
+
+      setSyncStatus('error');
+
+      updateSyncStatusBar(remoteCardCount, null, errMsg);
+
+      console.error('[syncToGitHub] ' + errMsg);
+
+      throw new Error(errMsg);
+
+    }
+
+    // DataGuard: count individual cards across all lanes
+
+    const totalMergedCards = Object.values(mergedCards).reduce(function(s, lane) {
+
+      if (Array.isArray(lane)) return s + lane.length;
+
+      if (lane && typeof lane === 'object') return s + Object.keys(lane).length;
+
+      return s;
+
+    }, 0);
+
+    if (!DataGuard.canPush(totalMergedCards)) {
+
+      const dgMsg = 'DataGuard BLOCKED: ' + totalMergedCards + ' < floor ' + DataGuard.floor;
+
+      setSyncStatus('error');
+
+      updateSyncStatusBar(null, null, dgMsg);
+
+      throw new Error(dgMsg);
+
+    }
+
+
+
+    // LANE INTEGRITY CHECK — niemals BB-Restore-Items in BA-Lane erlauben
+    function validateTaskLanes(tasks) {
+      var errors = [];
+      tasks.forEach(function(task) {
+        if (task.id && task.id.match(/^[Bb][Bb]\d+$/) && task.lane === 'BA') {
+          errors.push('Task ' + task.id + ' hat BB-ID aber BA-Lane — blockiert');
+        }
+      });
+      return errors;
+    }
+    var allTasksFlat = Object.keys(mergedCards).reduce(function(acc, lane) {
+      var cards = mergedCards[lane];
+      if (Array.isArray(cards)) cards.forEach(function(c) { acc.push(Object.assign({}, c, { lane: lane })); });
+      return acc;
+    }, []);
+    var laneErrors = validateTaskLanes(allTasksFlat);
+    if (laneErrors.length > 0) {
+      console.error('LANE INTEGRITY BLOCKED:', laneErrors);
+      throw new Error('Lane-Integrity-Check fehlgeschlagen: ' + laneErrors.join(', '));
+    }
+
+    const savedAt = new Date().toISOString();
+
+    _appState.cards_savedAt = savedAt;
+
+    const jsonStr = JSON.stringify({ _meta: { savedAt }, cards: mergedCards }, null, 2);
+
+    const bytes = new TextEncoder().encode(jsonStr);
+
+    let binary = '';
+
+    bytes.forEach(b => binary += String.fromCharCode(b));
+
+    const content = btoa(binary);
+
+
+
+    const body = { message: 'sync: auto-save kanban cards', content };
+
+    if (existing.sha) body.sha = existing.sha;
+
+    const putRes = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/data/tasks.json`, {
+
+      method: 'PUT',
+
+      headers: {
+
+        Authorization: `token ${token}`,
+
+        'Content-Type': 'application/json',
+
+        Accept: 'application/vnd.github.v3+json'
+
+      },
+
+      body: JSON.stringify(body)
+
+    });
+
+    if (!putRes.ok) throw new Error('Push failed: ' + putRes.status);
+
+    setSyncStatus('synced');
+
+    DataGuard.setFloor(totalMergedCards);
+
+
+
+    // ── STEP D: Update status bar ─────────────────────────────────────────────
+
+    updateSyncStatusBar(mergedCardCount, savedAt, null);
+
   } catch(e) {
-    console.error('[syncToGitHub]', e);
+
     setSyncStatus('error');
-    showToast('Sync fehlgeschlagen: ' + e.message, true);
+
   }
+
 }
+
+
 
 // ─── AUTO SYNC — PATIENTS ────────────────────────────────────────────────────
-var patientsDebounceTimer = null;
+
+let patientsDebounceTimer = null;
+
 function scheduleSavePatientsToGitHub() {
-  if (!_dataLoaded) return;
+
   clearTimeout(patientsDebounceTimer);
+
   patientsDebounceTimer = setTimeout(savePatientsToGitHub, 2000);
+
 }
+
 async function savePatientsToGitHub() {
+
   try {
-    await safeWriteToGitHub('data/patients.json', JSON.stringify(_appState.patients, null, 2), 'sync: auto-save patients');
-  } catch(e) {
-    console.error('[savePatientsToGitHub]', e);
-    setSyncStatus('error');
-    showToast('Patienten-Sync fehlgeschlagen', true);
-  }
+
+    await pushToGitHub(null, 'data/patients.json', JSON.stringify(_appState.patients, null, 2), 'sync: auto-save patients');
+
+  } catch(e) { setSyncStatus('error'); }
+
 }
+
+// Alias for manual sync button (spec 3e)
+
 async function syncPatientsToGitHub() { return savePatientsToGitHub(); }
 
+
+
 // ─── AUTO SYNC — AUTONOMY LOG ─────────────────────────────────────────────────
-var autonomyDebounceTimer = null;
+
+let autonomyDebounceTimer = null;
+
 function scheduleAutonomyLogToGitHub() {
-  if (!_dataLoaded) return;
+
   clearTimeout(autonomyDebounceTimer);
+
   autonomyDebounceTimer = setTimeout(saveAutonomyLogToGitHub, 2000);
+
 }
+
 async function saveAutonomyLogToGitHub() {
+
   try {
-    await safeWriteToGitHub('data/autonomy-log.json', JSON.stringify(_appState.autonomy_log || [], null, 2), 'sync: auto-save autonomy log');
-  } catch(e) {
-    console.error('[saveAutonomyLogToGitHub]', e);
-    setSyncStatus('error');
-  }
+
+    await pushToGitHub(null, 'data/autonomy-log.json', JSON.stringify(_appState.autonomy_log || [], null, 2), 'sync: auto-save autonomy log');
+
+  } catch(e) { setSyncStatus('error'); }
+
 }
+
+
 
 // ─── AUTO SYNC — BACKLOG ──────────────────────────────────────────────────────
-var backlogDebounceTimer = null;
+
+let backlogDebounceTimer = null;
+
 function scheduleBacklogToGitHub() {
-  if (!_dataLoaded) return;
+
   clearTimeout(backlogDebounceTimer);
+
   backlogDebounceTimer = setTimeout(saveBacklogToGitHub, 2000);
+
 }
+
 async function saveBacklogToGitHub() {
+
   try {
-    await safeWriteToGitHub('data/backlog.json', JSON.stringify(_appState.backlog || [], null, 2), 'sync: auto-save backlog');
-  } catch(e) {
-    console.error('[saveBacklogToGitHub]', e);
-    setSyncStatus('error');
-  }
+
+    await pushToGitHub(null, 'data/backlog.json', JSON.stringify(_appState.backlog || [], null, 2), 'sync: auto-save backlog');
+
+  } catch(e) { setSyncStatus('error'); }
+
 }
+
+
 
 // ─── AUTO SYNC — SETTINGS ─────────────────────────────────────────────────────
-var settingsDebounceTimer = null;
+
+let settingsDebounceTimer = null;
+
 function scheduleSettingsToGitHub() {
-  if (!_dataLoaded) return;
+
   clearTimeout(settingsDebounceTimer);
+
   settingsDebounceTimer = setTimeout(saveSettingsToGitHub, 2000);
-}
-async function saveSettingsToGitHub() {
-  try {
-    var settingsObj = {
-      budget: _appState.budget,
-      gh_token: _appState.gh_token,
-      collapsed: _appState.collapsed,
-      seqs: _appState.seqs
-    };
-    await safeWriteToGitHub('data/settings.json', JSON.stringify(settingsObj, null, 2), 'sync: auto-save settings');
-  } catch(e) {
-    console.error('[saveSettingsToGitHub]', e);
-    setSyncStatus('error');
-  }
+
 }
 
-// ─── FIX 5: LOAD ALL FROM GITHUB (clean startup, no localStorage) ───────────
-async function loadFromGitHub() {
-  var token = getGHToken();
-  if (!token) {
-    showToast('Kein GitHub-Token. Daten k\u00f6nnen nicht geladen werden.', true);
-    return;
-  }
-  setSyncStatus('syncing');
+async function saveSettingsToGitHub() {
+
   try {
-    // Load cards -- ALWAYS use GitHub as source of truth, no localStorage comparison
-    var tasksRemote = await fetchFromGitHub('data/tasks.json');
+
+    const settingsObj = {
+
+      budget: _appState.budget,
+
+      gh_token: _appState.gh_token,
+
+      collapsed: _appState.collapsed,
+
+      seqs: _appState.seqs
+
+    };
+
+    await pushToGitHub(null, 'data/settings.json', JSON.stringify(settingsObj, null, 2), 'sync: auto-save settings');
+
+  } catch(e) { setSyncStatus('error'); }
+
+}
+
+
+
+// ─── LOAD ALL FROM GITHUB ────────────────────────────────────────────────────
+
+async function loadFromGitHub() {
+
+  const token = getGHToken();
+
+  if (!token) {
+
+    showToast('Kein GitHub-Token. Daten k\u00f6nnen nicht geladen werden.', true);
+
+    return;
+
+  }
+
+  setSyncStatus('syncing');
+
+  try {
+
+    // Load cards (tasks)
+
+    const tasksRemote = await fetchFromGitHub('data/tasks.json');
+
     if (tasksRemote) {
+
       try {
-        var remoteData = JSON.parse(tasksRemote.content);
-        var loadedCards = remoteData.cards || {};
-        // Fix 3: Schema validation before accepting
-        var validationErrors = validateAllTasks(loadedCards);
-        if (validationErrors.length > 0) {
-          console.warn('[loadFromGitHub] Validation errors:', validationErrors);
-          _validationErrors = validationErrors;
-          // Filter out forbidden tasks (e.g. BB items)
-          var cleanCards = {};
-          Object.keys(loadedCards).forEach(function(key) {
-            var task = loadedCards[key];
-            var taskErrors = validateTask(task);
-            var hasForbidden = taskErrors.some(function(e) { return e.startsWith('Forbidden'); });
-            if (!hasForbidden) {
-              cleanCards[key] = task;
-            }
-          });
-          _appState.cards = cleanCards;
-          if (validationErrors.length <= 5) {
-            showToast('Warnung: ' + validationErrors.length + ' Validierungsfehler', true);
-          } else {
-            showErrorBanner(validationErrors.length + ' Validierungsfehler in Tasks');
-          }
-        } else {
-          _appState.cards = loadedCards;
-        }
-        _appState.cards_savedAt = (remoteData._meta && remoteData._meta.savedAt) || null;
-      } catch(e) {
-        console.error('[loadFromGitHub] tasks parse error:', e);
-        showToast('Fehler beim Parsen der Tasks', true);
-      }
+
+        const remoteData = JSON.parse(tasksRemote.content);
+
+        const remoteSavedAt = remoteData._meta?.savedAt;
+
+        // GitHub is always truth: always load remote data, ignore local savedAt
+
+        _appState.cards = remoteData.cards || {};
+
+        _appState.cards_savedAt = remoteSavedAt || new Date().toISOString();
+
+      } catch(e) {}
+
     }
+
+
 
     // Load patients
-    var patientsRemote = await fetchFromGitHub('data/patients.json');
+
+    const patientsRemote = await fetchFromGitHub('data/patients.json');
+
     if (patientsRemote) {
-      try { _appState.patients = JSON.parse(patientsRemote.content) || []; }
-      catch(e) { console.error('[loadFromGitHub] patients parse:', e); }
+
+      try { _appState.patients = JSON.parse(patientsRemote.content) || []; } catch(e) {}
+
     }
+
+
 
     // Load autonomy log
-    var autonomyRemote = await fetchFromGitHub('data/autonomy-log.json');
+
+    const autonomyRemote = await fetchFromGitHub('data/autonomy-log.json');
+
     if (autonomyRemote) {
-      try { _appState.autonomy_log = JSON.parse(autonomyRemote.content); }
-      catch(e) { console.error('[loadFromGitHub] autonomy parse:', e); }
+
+      try { _appState.autonomy_log = JSON.parse(autonomyRemote.content); } catch(e) {}
+
     }
+
+
 
     // Load backlog
-    var backlogRemote = await fetchFromGitHub('data/backlog.json');
+
+    const backlogRemote = await fetchFromGitHub('data/backlog.json');
+
     if (backlogRemote) {
-      try { _appState.backlog = JSON.parse(backlogRemote.content); }
-      catch(e) { console.error('[loadFromGitHub] backlog parse:', e); }
+
+      try { _appState.backlog = JSON.parse(backlogRemote.content); } catch(e) {}
+
     }
 
-    // Load projects
-    var projectsRemote = await fetchFromGitHub('data/projects.json');
+
+
+    // Load projects.json (flat project list, optional)
+
+    const projectsRemote = await fetchFromGitHub('data/projects.json');
+
     if (projectsRemote) {
-      try { _appState.projects = JSON.parse(projectsRemote.content) || []; }
-      catch(e) { console.error('[loadFromGitHub] projects parse:', e); }
+
+      try { _appState.projects = JSON.parse(projectsRemote.content) || []; } catch(e) {}
+
     } else {
+
       if (!_appState.projects) _appState.projects = [];
+
     }
 
-    // Load settings
-    var settingsRemote = await fetchFromGitHub('data/settings.json');
+
+
+    // Load settings (budget, collapsed, seqs, optional gh_token override)
+
+    const settingsRemote = await fetchFromGitHub('data/settings.json');
+
     if (settingsRemote) {
+
       try {
-        var s = JSON.parse(settingsRemote.content);
+
+        const s = JSON.parse(settingsRemote.content);
+
         if (s.budget !== undefined) _appState.budget = s.budget;
-        if (s.gh_token) _appState.gh_token = s.gh_token;
+
+        if (s.gh_token) _appState.gh_token = s.gh_token.replace(/^"|"$/g, '');
+
         if (s.collapsed) _appState.collapsed = s.collapsed;
+
         if (s.seqs) {
-          Object.keys(s.seqs).forEach(function(k) { _appState.seqs[k] = s.seqs[k]; });
+
+          Object.keys(s.seqs).forEach(k => { _appState.seqs[k] = s.seqs[k]; });
+
         }
-      } catch(e) { console.error('[loadFromGitHub] settings parse:', e); }
+
+      } catch(e) {}
+
     }
 
-    // FIX 5: Mark data as loaded -- writes now allowed
-    _dataLoaded = true;
+
+
     setSyncStatus('synced');
+
   } catch(e) {
-    console.error('[loadFromGitHub] fatal:', e);
+
     setSyncStatus('error');
-    showErrorBanner('Fehler beim Laden. GitHub nicht erreichbar.');
+
+    showToast('Fehler beim Laden der Daten. GitHub nicht erreichbar.', true);
+
   }
+
 }
+
+
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
+
 const LANES = [
+
   {id:'HE', name:'Heute',       isHeute:true, color:'#ff6b6b'},
+
   {id:'BA', name:'Barmelweid',  isBA:true,    color:'#ffa94d'},
+
   {id:'WB', name:'PSP WB',                    color:'#69db7c'},
+
   {id:'IK', name:'ImperialKI',                color:'#4a90d9'},
+
   {id:'PA', name:'Patienten',                 color:'#74c0fc'},
+
   {id:'FI', name:'Finanzen',                  color:'#ffd43b'},
+
   {id:'FA', name:'Familie',                   color:'#f783ac'},
+
   {id:'FR', name:'Freunde',                   color:'#a9e34b'},
+
   {id:'PR', name:'Projekte',                  color:'#9775fa'},
+
   {id:'EV', name:'Events',                    color:'#63e6be'},
+
   {id:'EM', name:'Erinnerungen',              color:'#e599f7'},
+
   {id:'EX', name:'Explore',                   color:'#ff8787'},
+
   {id:'MA', name:'MOSER.AI',                  color:'#748ffc'},
+
   {id:'TB', name:'Tagebuch',                  color:'#868e96'},
-  {id:'EK', name:'Einkaufsliste',             color:'#2f9e44'}
+
+  {id:'EK', name:'🛒 Einkaufsliste',          color:'#2f9e44'}
+
 ];
+
+
 
 const BA_TPLS = [
+
   'Verlaufsbericht',
-  'Erstgespr\u00e4ch-Bericht',
+
+  'Erstgespräch-Bericht',
+
   'Austrittsbericht',
+
   'Verlaufs-/Austrittsbericht',
+
   'Gruppen-Verlaufsbericht',
+
   'Arzneimittelabgabe',
+
   'Dosisanpassung',
+
   'Notfall-Protokoll'
+
 ];
 
+
+
 const STATUSES = {
+
   'offen':      {label:'Offen',      cls:'status-offen'},
+
   'blockiert':  {label:'Blockiert',  cls:'status-blockiert'},
+
   'in-arbeit':  {label:'In Arbeit',  cls:'status-in-arbeit'},
+
   'erledigt':   {label:'Erledigt',   cls:'status-erledigt'}
+
 };
 
-// ─── IN-MEMORY APP STATE (Fix 2: localStorage auf Minimum) ──────────────────
+
+
+// 
+
+// IN-MEMORY APP STATE (replaces localStorage)
+
+// 
+
 const _appState = {
+
   cards: {},
+
   cards_savedAt: null,
+
   patients: [],
+
   autonomy_log: null,
+
   backlog: null,
+
   projects: [],
+
   collapsed: {},
+
   budget: 100,
+
   gh_token: '',
+
   seqs: { HE:0, BA:0, WB:0, IK:0, PA:0, FI:0, FA:0, FR:0, PR:0, EV:0, EM:0, EX:0, MA:0, TB:0, EK:0 }
+
 };
 
-// Fix 2: Clean up stale localStorage keys on boot
-(function cleanupLocalStorage() {
-  var staleKeys = ['cowork_tasks_floor', 'cowork_backups', 'cowork_state',
-                   'cowork_cards', 'cowork_patients', 'cowork_autonomy_log',
-                   'cowork_backlog', 'cowork_collapsed', 'cowork_budget',
-                   'cowork_settings', 'cowork_last_sha'];
-  staleKeys.forEach(function(k) { try { localStorage.removeItem(k); } catch(e) {} });
-  VALID_LANES.forEach(function(lane) { try { localStorage.removeItem('cowork_seq_' + lane); } catch(e) {} });
-})();
 
-// Convenience accessors (maps old key names to _appState)
+
+// Convenience accessors (replaces ls/lsSet)
+
 function ls(key, def) {
-  var map = {
-    cowork_cards:          function() { return _appState.cards; },
-    cowork_cards_savedAt:  function() { return _appState.cards_savedAt; },
-    cowork_patients:       function() { return _appState.patients; },
-    cowork_autonomy_log:   function() { return _appState.autonomy_log; },
-    cowork_backlog:        function() { return _appState.backlog; },
-    cowork_collapsed:      function() { return _appState.collapsed; },
-    cowork_budget:         function() { return _appState.budget; },
-    cowork_gh_token:       function() { return _appState.gh_token; },
-    cowork_settings:       function() { return { gh_token: _appState.gh_token, budget: _appState.budget }; }
+
+  // Map old localStorage key names to _appState fields
+
+  const map = {
+
+    cowork_cards:          () => _appState.cards,
+
+    cowork_cards_savedAt:  () => _appState.cards_savedAt,
+
+    cowork_patients:       () => _appState.patients,
+
+    cowork_autonomy_log:   () => _appState.autonomy_log,
+
+    cowork_backlog:        () => _appState.backlog,
+
+    cowork_collapsed:      () => _appState.collapsed,
+
+    cowork_budget:         () => _appState.budget,
+
+    cowork_gh_token:       () => (_appState.gh_token || '').replace(/^"|"$/g, ''),
+
+    cowork_settings:       () => ({ gh_token: (_appState.gh_token || '').replace(/^"|"$/g, ''), budget: _appState.budget })
+
   };
+
+  // Handle cowork_seq_XX keys
+
   if (key.startsWith('cowork_seq_')) {
-    var lane = key.replace('cowork_seq_', '');
-    var v = _appState.seqs[lane];
+
+    const lane = key.replace('cowork_seq_', '');
+
+    const v = _appState.seqs[lane];
+
     return v !== undefined ? v : (def !== undefined ? def : 0);
+
   }
+
   if (map[key]) {
-    var v2 = map[key]();
-    return v2 !== null && v2 !== undefined ? v2 : (def !== undefined ? def : null);
+
+    const v = map[key]();
+
+    return v !== null && v !== undefined ? v : (def !== undefined ? def : null);
+
   }
+
   return def !== undefined ? def : null;
+
 }
+
+
 
 function lsSet(key, val) {
-  var map = {
-    cowork_cards:          function(v) { _appState.cards = v; },
-    cowork_cards_savedAt:  function(v) { _appState.cards_savedAt = v; },
-    cowork_patients:       function(v) { _appState.patients = v; scheduleSavePatientsToGitHub(); },
-    cowork_autonomy_log:   function(v) { _appState.autonomy_log = v; scheduleAutonomyLogToGitHub(); },
-    cowork_backlog:        function(v) { _appState.backlog = v; scheduleBacklogToGitHub(); },
-    cowork_collapsed:      function(v) { _appState.collapsed = v; scheduleSettingsToGitHub(); },
-    cowork_budget:         function(v) { _appState.budget = v; scheduleSettingsToGitHub(); },
-    cowork_gh_token:       function(v) { _appState.gh_token = v; scheduleSettingsToGitHub(); },
-    cowork_settings:       function(v) {
-      if (v && v.gh_token !== undefined) _appState.gh_token = v.gh_token;
+
+  const map = {
+
+    cowork_cards:          (v) => { _appState.cards = v; },
+
+    cowork_cards_savedAt:  (v) => { _appState.cards_savedAt = v; },
+
+    cowork_patients:       (v) => { _appState.patients = v; scheduleSavePatientsToGitHub(); },
+
+    cowork_autonomy_log:   (v) => { _appState.autonomy_log = v; scheduleAutonomyLogToGitHub(); },
+
+    cowork_backlog:        (v) => { _appState.backlog = v; scheduleBacklogToGitHub(); },
+
+    cowork_collapsed:      (v) => { _appState.collapsed = v; scheduleSettingsToGitHub(); },
+
+    cowork_budget:         (v) => { _appState.budget = v; scheduleSettingsToGitHub(); },
+
+    cowork_gh_token:       (v) => { _appState.gh_token = (v||'').replace(/^"|"$/g, ''); scheduleSettingsToGitHub(); },
+
+    cowork_settings:       (v) => {
+
+      if (v && v.gh_token !== undefined) _appState.gh_token = (v.gh_token||'').replace(/^"|"$/g, '');
+
       if (v && v.budget !== undefined) _appState.budget = v.budget;
+
       scheduleSettingsToGitHub();
+
     }
+
   };
+
   if (key.startsWith('cowork_seq_')) {
-    var lane = key.replace('cowork_seq_', '');
+
+    const lane = key.replace('cowork_seq_', '');
+
     _appState.seqs[lane] = val;
+
     scheduleSettingsToGitHub();
+
     return;
+
   }
+
   if (map[key]) { map[key](val); }
+
 }
 
-// ─── PIN SYSTEM ──────────────────────────────────────────────────────────────
-var pinFailures = 0;
-var pinLocked = false;
 
-function hashPin(pin) { return btoa(pin + 'cowork'); }
+
+// 
+
+// PIN SYSTEM
+
+// // ─── PIN SYSTEM ──────────────────────────────────────────────────────────────
+
+let pinFailures = 0;
+
+let pinLocked = false;
+
+let pinLockTimer = null;
+
+
+
+function hashPin(pin) { return btoa(pin + PIN_SALT); }
+
+
 
 function showPinError(msg) {
+
   document.getElementById('pin-error').textContent = msg;
+
 }
+
+
 
 function showPinUnlockUI(stored) {
+
   document.getElementById('pin-title').textContent = 'CoworkKanban';
+
   document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
+
   document.getElementById('pin-confirm-group').style.display = 'none';
+
   document.getElementById('pin-btn').textContent = 'Entsperren';
+
   document.getElementById('pin-btn').addEventListener('click', function() {
-    var p = document.getElementById('pin-input').value.trim();
-    var hash = _appState.pin_hash || stored;
-    if (btoa(p + 'cowork') === hash) {
+
+    const p = document.getElementById('pin-input').value.trim();
+
+    const hash = _appState.pin_hash || stored;
+
+    if (verifyPin(p)) {
+
       sessionStorage.setItem('cowork_pin_set', 'true');
+
       unlockApp();
+
     } else { showPinError('Falscher PIN'); }
+
   });
+
 }
+
+
 
 function showPinSetupUI() {
+
   document.getElementById('pin-title').textContent = 'PIN einrichten';
-  document.getElementById('pin-subtitle').textContent = 'W\u00e4hle einen PIN (4\u20136 Stellen)';
+
+  document.getElementById('pin-subtitle').textContent = 'Wähle einen PIN (4–6 Stellen)';
+
   document.getElementById('pin-confirm-group').style.display = 'block';
+
   document.getElementById('pin-btn').textContent = 'PIN einrichten';
+
   document.getElementById('pin-btn').addEventListener('click', async function() {
-    var p1 = document.getElementById('pin-input').value;
-    var p2 = document.getElementById('pin-confirm').value;
+
+    const p1 = document.getElementById('pin-input').value;
+
+    const p2 = document.getElementById('pin-confirm').value;
+
     if (p1.length < 4) { showPinError('Mindestens 4 Stellen'); return; }
-    if (p1 !== p2) { showPinError('PINs stimmen nicht \u00fcberein'); return; }
-    var pinHash = btoa(p1 + 'cowork');
+
+    if (p1 !== p2) { showPinError('PINs stimmen nicht überein'); return; }
+
+    const pinHash = btoa(p1 + 'cowork');
+
     _appState.pin_hash = pinHash;
+
     sessionStorage.setItem('cowork_pin_set', 'true');
+
     try {
-      var tmpLoaded = _dataLoaded; _dataLoaded = true;
-      await safeWriteToGitHub('settings/pin.json', JSON.stringify({ pin_hash: pinHash }, null, 2), 'sync: update PIN');
-      _dataLoaded = tmpLoaded;
-    } catch(e) { showToast('PIN-Sync fehlgeschlagen', true); }
+
+      await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: pinHash }, null, 2), 'sync: update PIN');
+
+    } catch(e) { /* silent fail */ }
+
     unlockApp();
+
   });
+
 }
 
-if (location.search.includes('resetpin=1')) {
-  _appState.pin_hash = null;
-  sessionStorage.removeItem('cowork_pin_set');
-  history.replaceState(null, '', location.pathname);
-}
 
-var DEFAULT_PIN_HASH = btoa('2611' + 'cowork');
+
+// PIN RESET via URL param
+
+  if (location.search.includes('resetpin=1')) {
+
+    _appState.pin_hash = null;
+
+    sessionStorage.removeItem('cowork_pin_set');
+
+    history.replaceState(null, '', location.pathname);
+
+  }
+
+  
+
+const DEFAULT_PIN_HASH = btoa('2611' + 'cowork'); // MjYxMWNvd29yaw==
+
+
 
 async function initPinScreen() {
+
+  // PIN hash ALWAYS loaded from GitHub (settings/pin.json) - no localStorage
+
   document.getElementById('pin-subtitle').textContent = 'Daten werden geladen...';
+
   document.getElementById('pin-btn').disabled = true;
-  var pinHash = DEFAULT_PIN_HASH;
+
+  let pinHash = DEFAULT_PIN_HASH;
+
   try {
-    var remote = await fetchFromGitHub('settings/pin.json');
+
+    const remote = await fetchFromGitHub('settings/pin.json');
+
     if (remote === null) {
+
+      // GitHub not reachable or file not found - use default
+
       document.getElementById('pin-subtitle').textContent = 'GitHub nicht erreichbar \u2014 Standard-PIN aktiv';
+
     } else {
+
       try {
-        var data = JSON.parse(remote.content);
+
+        const data = JSON.parse(remote.content);
+
         pinHash = data.pin_hash || DEFAULT_PIN_HASH;
-      } catch(e) { pinHash = DEFAULT_PIN_HASH; }
+
+      } catch(e) {
+
+        pinHash = DEFAULT_PIN_HASH;
+
+      }
+
     }
+
   } catch(e) {
-    document.getElementById('pin-subtitle').textContent = 'Fehler: GitHub nicht erreichbar.';
+
+    document.getElementById('pin-subtitle').textContent = 'Fehler: GitHub nicht erreichbar. Bitte Verbindung pr\u00fcfen.';
+
     document.getElementById('pin-btn').disabled = false;
-    document.getElementById('pin-input').addEventListener('keydown', function(ev) {
-      if (ev.key === 'Enter') document.getElementById('pin-btn').click();
+
+    document.getElementById('pin-input').addEventListener('keydown', function(e) {
+
+      if (e.key === 'Enter') document.getElementById('pin-btn').click();
+
     });
+
     document.getElementById('pin-input').focus();
+
     return;
+
   }
+
   _appState.pin_hash = pinHash;
+
   document.getElementById('pin-btn').disabled = false;
+
   showPinUnlockUI(pinHash);
-  document.getElementById('pin-input').addEventListener('keydown', function(ev) {
-    if (ev.key === 'Enter') document.getElementById('pin-btn').click();
+
+  document.getElementById('pin-input').addEventListener('keydown', function(e) {
+
+    if (e.key === 'Enter') document.getElementById('pin-btn').click();
+
   });
+
   document.getElementById('pin-input').focus();
+
 }
+
+
 
 function unlockApp() {
+
   document.getElementById('pin-screen').style.display = 'none';
+
   document.getElementById('app').style.display = 'block';
+
   initApp();
+
 }
+
+
 
 // ─── APP DATA ─────────────────────────────────────────────────────────────────
+
 function getCards()    { return ls('cowork_cards', {}); }
+
 function saveCards(c) {
+
   lsSet('cowork_cards', c);
+
   lsSet('cowork_cards_savedAt', new Date().toISOString());
+
   scheduleSyncToGitHub();
+
 }
+
 function getPatients() { return ls('cowork_patients', []); }
+
 function savePatients(p) { lsSet('cowork_patients', p); }
+
 function getALLog()    { return ls('cowork_autonomy_log', null); }
+
 function saveALLog(l)  { lsSet('cowork_autonomy_log', l); }
 
+
+
 function nextCardId(laneId) {
-  var key = 'cowork_seq_' + laneId;
-  var n = (ls(key, 0)) + 1;
+
+  const key = 'cowork_seq_' + laneId;
+
+  const n = (ls(key, 0)) + 1;
+
   lsSet(key, n);
+
   return laneId + String(n).padStart(3, '0');
+
 }
 
+
+
 // ─── TABS ─────────────────────────────────────────────────────────────────────
-var currentTab = 'heute';
+
+let currentTab = 'heute';
+
+
 
 function switchTab(id) {
+
   currentTab = id;
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === id); });
-  document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.toggle('active', c.id === 'tab-' + id); });
+
+  document.querySelectorAll('.tab-btn').forEach(b => {
+
+    b.classList.toggle('active', b.dataset.tab === id);
+
+  });
+
+  document.querySelectorAll('.tab-content').forEach(c => {
+
+    c.classList.toggle('active', c.id === 'tab-' + id);
+
+  });
+
   if (id === 'heute')     renderHeute();
+
   if (id === 'kanban')    renderKanban();
+
   if (id === 'patienten') renderPatients();
+
   if (id === 'autonomy')  renderAL();
+
   if (id === 'backlog')   renderBacklog();
+
   if (id === 'projekte')  showProjectsTab();
+
   if (id === 'settings')  initSettings();
+
 }
 
 // ─── HEUTE / STATUS ───────────────────────────────────────────────────────────
+
 function moveToToday(cardId) {
-  var cards = getCards();
+
+  const cards = getCards();
+
   if (!cards[cardId]) return;
-  var card = cards[cardId];
-  if (!card.originalLane) card.originalLane = card.lane || 'BA';
+
+  const card = cards[cardId];
+
+  if (!card.originalLane) {
+
+    card.originalLane = card.lane || 'BA';
+
+  }
+
   card.lane = 'HE';
+
   card.todayFlag = true;
+
   saveCards(cards);
+
   renderStatusTab();
-  renderKanban();
+
+  if (typeof renderKanban === 'function') renderKanban();
+
 }
+
+
 
 function moveFromToday(cardId) {
-  var cards = getCards();
+
+  const cards = getCards();
+
   if (!cards[cardId]) return;
-  var card = cards[cardId];
+
+  const card = cards[cardId];
+
   card.lane = card.originalLane || 'BA';
+
   card.todayFlag = false;
+
   delete card.originalLane;
+
   saveCards(cards);
+
   renderStatusTab();
-  renderKanban();
+
+  if (typeof renderKanban === 'function') renderKanban();
+
 }
 
-// ─── CALENDAR ────────────────────────────────────────────────────────────────
+
+
+// â”€â”€â”€ CALENDAR HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 async function loadCalendarEvents() {
+
   if (!window._calEvents) window._calEvents = { events: [] };
-  var token = getGHToken();
+
+  const token = getGHToken();
+
   if (!token) return;
+
   try {
-    var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/calendar.json',
+
+    const r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/calendar.json',
+
       { headers: { Authorization: 'token ' + token } });
+
     if (!r.ok) return;
-    var d = await r.json();
-    window._calEvents = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+
+    const d = await r.json();
+
+    window._calEvents = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(d.content.replace(/\n/g,'')), c => c.charCodeAt(0))));
+
   } catch(e) { console.warn('calendar load failed', e); }
+
 }
 
-var CAL_COLORS = { christian: '#a78bfa', hannah: '#f9a8d4', kikurs: '#fb923c' };
-var CAL_NAMES  = { christian: 'Christian', hannah: 'Hannah', kikurs: 'KI Kurs' };
+
+
+const CAL_COLORS = { christian: '#a78bfa', hannah: '#f9a8d4', kikurs: '#fb923c' };
+
+const CAL_NAMES  = { christian: 'Christian', hannah: 'Hannah', kikurs: 'KI Kurs' };
+
+
 
 function getEventsForDay(isoDate) {
+
   if (!window._calEvents) return [];
+
   return (window._calEvents.events || [])
-    .filter(function(e) { var d = e.allDay ? e.start : e.start.substring(0,10); return d === isoDate; })
-    .sort(function(a,b) { return (a.start||'').localeCompare(b.start||''); });
+
+    .filter(e => {
+
+      const d = e.allDay ? e.start : e.start.substring(0,10);
+
+      return d === isoDate;
+
+    })
+
+    .sort((a,b) => (a.start||'').localeCompare(b.start||''));
+
 }
+
+
 
 function formatEventTime(e) {
+
   if (e.allDay) return '\uD83D\uDCC5';
-  return new Date(e.start).toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+
+  const t = new Date(e.start);
+
+  return t.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+
 }
 
+
+
 function renderCalEventChip(e) {
-  var color = CAL_COLORS[e.calendar] || '#888';
-  var name  = CAL_NAMES[e.calendar]  || e.calendar;
-  var time  = formatEventTime(e);
-  return '<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;margin:2px 0;border-radius:6px;background:rgba(0,0,0,0.03);border-left:3px solid '+color+';font-size:12px;">'
-    +'<span style="color:'+color+';font-size:10px;min-width:32px">'+time+'</span>'
-    +'<span style="color:var(--text);flex:1">'+esc(e.summary||'')+'</span>'
-    +'<span style="color:'+color+';font-size:9px;opacity:0.7">'+name+'</span></div>';
+
+  const color = CAL_COLORS[e.calendar] || '#888';
+
+  const name  = CAL_NAMES[e.calendar]  || e.calendar;
+
+  const time  = formatEventTime(e);
+
+  return '<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;margin:2px 0;border-radius:6px;background:rgba(0,0,0,0.03);border-left:3px solid ' + color + ';font-size:12px;">'
+
+    + '<span style="color:' + color + ';font-size:10px;min-width:32px">' + time + '</span>'
+
+    + '<span style="color:var(--text);flex:1">' + esc(e.summary || '') + '</span>'
+
+    + '<span style="color:' + color + ';font-size:9px;opacity:0.7">' + name + '</span>'
+
+    + '</div>';
+
 }
 
 function renderStatusTab() {
-  var cards = getCards();
-  var events = (window._calEvents && window._calEvents.events) ? window._calEvents.events : [];
-  var now = new Date();
-  var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  var todayISO = now.toISOString().split('T')[0];
 
-  var heuteCards = Object.values(cards).filter(function(c) { return !c.archived && (c.todayFlag || c.lane === 'HE' || c.deadline === todayISO); });
-  var heuteList = document.getElementById('heute-list');
+  const cards = getCards();
+
+  const events = (window._calEvents && window._calEvents.events) ? window._calEvents.events : [];
+
+  const now = new Date();
+
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+
+
+  // --- Column 1: Heute (todayFlag or lane==='HE' or deadline===today) ---
+
+  const todayISO = new Date().toISOString().split('T')[0];
+
+  const heuteCards = Object.values(cards).filter(c => !c.archived && (c.todayFlag || c.lane === 'HE' || c.deadline === todayISO));
+
+  const heuteList = document.getElementById('heute-list');
+
   if (heuteList) {
+
     if (heuteCards.length === 0) {
-      heuteList.innerHTML = '<div class="empty-state">Keine heutigen Items</div>';
+
+      heuteList.innerHTML = '<div class="empty-state">Keine heutigen Items \u2014 ziehe Karten hierher</div>';
+
     } else {
-      heuteList.innerHTML = heuteCards.map(function(c) {
-        var orig = c.originalLane ? '<div class="card-meta">Von: '+esc(c.originalLane)+'</div>' : '';
-        return '<div class="status-card"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+esc(c.id||'')+'</span><span class="card-title">'+esc(c.title||'')+'</span></div>'+orig+'</div><button class="today-btn is-today" onclick="moveFromToday(\''+esc(c.id)+'\')" title="Zur\u00fcck">\u21a9</button></div>';
+
+      heuteList.innerHTML = heuteCards.map(c => {
+
+        const origLaneMeta = c.originalLane ? '<div class="card-meta">Von: ' + esc(c.originalLane) + '</div>' : '';
+
+        return '<div class="status-card">'
+
+          + '<div style="flex:1;min-width:0;">'
+
+          + '<div style="display:flex;align-items:center;gap:6px;">'
+
+          + '<span class="card-prefix">' + esc(c.id || '') + '</span>'
+
+          + '<span class="card-title">' + esc(c.title || '') + '</span>'
+
+          + '</div>'
+
+          + origLaneMeta
+
+          + '</div>'
+
+          + '<button class="today-btn is-today" onclick="moveFromToday(\'' + esc(c.id) + '\')" title="Zurück">↩</button>'
+
+          + '</div>';
+
       }).join('');
-    }
-    var todayCalEvs = getEventsForDay(todayISO);
+
+  }
+
+  }
+
+  // Calendar events for today
+
+  if (heuteList) {
+
+    const todayCalEvs = getEventsForDay(todayISO);
+
     if (todayCalEvs.length > 0) {
-      var calHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\uD83D\uDCC5 Kalender heute</div>';
+
+      let calHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">';
+
+      calHtml += '<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\uD83D\uDCC5 Kalender heute</div>';
+
       calHtml += todayCalEvs.map(renderCalEventChip).join('');
+
       if (window._calEvents && window._calEvents.syncedAt) {
-        calHtml += '<div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:0.6">Sync: vor '+Math.round((Date.now()-new Date(window._calEvents.syncedAt))/60000)+' Min.</div>';
+
+        const diffMin = Math.round((Date.now() - new Date(window._calEvents.syncedAt)) / 60000);
+
+        calHtml += '<div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:0.6">Sync: vor ' + diffMin + ' Min.</div>';
+
       }
+
       calHtml += '</div>';
+
       heuteList.innerHTML += calHtml;
+
     }
+
   }
 
-  var in7 = new Date(todayStart.getTime() + 7*86400000);
-  var weekCards = Object.values(cards).filter(function(c) { if (c.archived || !c.deadline) return false; var d=new Date(c.deadline); return d>=todayStart && d<in7; });
-  function dayLabel(dateStr) { var d=new Date(dateStr); var diff=Math.floor((d-todayStart)/86400000); if(diff===0) return 'Heute'; if(diff===1) return 'Morgen'; if(diff===2) return '\u00dcbermorgen'; return 'Diese Woche'; }
-  var grouped = {};
-  weekCards.forEach(function(c) { var lbl=dayLabel(c.deadline); if(!grouped[lbl]) grouped[lbl]=[]; grouped[lbl].push(c); });
-  events.filter(function(e) { if(!e.start) return false; var d=new Date(e.start); return d>=todayStart && d<in7; }).forEach(function(e) { var lbl=dayLabel(e.start); if(!grouped[lbl]) grouped[lbl]=[]; grouped[lbl].push(Object.assign({},e,{_isEvent:true})); });
 
-  var order = ['Heute','Morgen','\u00dcbermorgen','Diese Woche'];
-  var wocheList = document.getElementById('woche-list');
+
+  // --- Column 2: Wochenplan (deadline in next 7 days) ---
+
+  const in7 = new Date(todayStart.getTime() + 7 * 86400000);
+
+  const weekCards = Object.values(cards).filter(c => {
+
+    if (c.archived) return false;
+
+    if (!c.deadline) return false;
+
+    const d = new Date(c.deadline);
+
+    return d >= todayStart && d < in7;
+
+  });
+
+
+
+  function dayLabel(dateStr) {
+
+    const d = new Date(dateStr);
+
+    const diff = Math.floor((d - todayStart) / 86400000);
+
+    if (diff === 0) return 'Heute';
+
+    if (diff === 1) return 'Morgen';
+
+    if (diff === 2) return '\u00dcbermorgen';
+
+    return 'Diese Woche';
+
+  }
+
+
+
+  const grouped = {};
+
+  weekCards.forEach(c => {
+
+    const lbl = dayLabel(c.deadline);
+
+    if (!grouped[lbl]) grouped[lbl] = [];
+
+    grouped[lbl].push(c);
+
+  });
+
+
+
+  const weekEvents = events.filter(e => {
+
+    if (!e.start) return false;
+
+    const d = new Date(e.start);
+
+    return d >= todayStart && d < in7;
+
+  });
+
+  weekEvents.forEach(e => {
+
+    const lbl = dayLabel(e.start);
+
+    if (!grouped[lbl]) grouped[lbl] = [];
+
+    grouped[lbl].push({ ...e, _isEvent: true });
+
+  });
+
+
+
+  const order = ['Heute', 'Morgen', '\u00dcbermorgen', 'Diese Woche'];
+
+  const wocheList = document.getElementById('woche-list');
+
   if (wocheList) {
+
     if (Object.keys(grouped).length === 0) {
+
       wocheList.innerHTML = '<div class="empty-state">Keine F\u00e4lligkeiten diese Woche</div>';
+
     } else {
-      var html = '';
-      order.forEach(function(lbl) {
+
+      let html = '';
+
+      order.forEach(lbl => {
+
         if (!grouped[lbl]) return;
-        html += '<div class="day-group-header">'+lbl+'</div>';
-        grouped[lbl].forEach(function(c) {
+
+        html += `<div class="day-group-header">${lbl}</div>`;
+
+        grouped[lbl].forEach(c => {
+
           if (c._isEvent) {
-            html += '<div class="status-card"><div style="flex:1;min-width:0;"><div class="card-title">\ud83d\udcc5 '+esc(c.title||c.summary||'')+'</div></div></div>';
+
+            html += `<div class="status-card"><div style="flex:1;min-width:0;"><div class="card-title">\ud83d\udcc5 ${esc(c.title || c.summary || '')}</div></div></div>`;
+
           } else {
-            var isHE=c.todayFlag||c.lane==='HE'; var cId=esc(c.id||'');
-            html += '<div class="status-card"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div></div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+
+            const isHE = c.todayFlag || c.lane === 'HE';
+
+            const cId = esc(c.id || '');
+
+            const onclickW = isHE ? "moveFromToday('" + cId + "')" : "moveToToday('" + cId + "')";
+
+            const titleW = isHE ? 'Zur\u00fcck' : 'Heute';
+
+            const iconW = isHE ? '\u21a9' : '\u2192';
+
+            const clsW = isHE ? ' is-today' : '';
+
+            html += '<div class="status-card">'
+
+              + '<div style="flex:1;min-width:0;">'
+
+              + '<div style="display:flex;align-items:center;gap:6px;">'
+
+              + '<span class="card-prefix">' + esc(c.id || '') + '</span>'
+
+              + '<span class="card-title">' + esc(c.title || '') + '</span>'
+
+              + '</div></div>'
+
+              + '<button class="today-btn' + clsW + '" onclick="' + onclickW + '" title="' + titleW + '">' + iconW + '</button>'
+
+              + '</div>';
+
           }
+
         });
-        var _isoMap={'Heute':todayISO,'Morgen':new Date(todayStart.getTime()+86400000).toISOString().split('T')[0],'\u00dcbermorgen':new Date(todayStart.getTime()+2*86400000).toISOString().split('T')[0]};
-        if(_isoMap[lbl]) getEventsForDay(_isoMap[lbl]).forEach(function(e){html+=renderCalEventChip(e);});
+
+        // Calendar events for this labeled day
+
+        const _isoMap = {
+
+          'Heute': todayISO,
+
+          'Morgen': new Date(todayStart.getTime()+86400000).toISOString().split('T')[0],
+
+          '\u00dcbermorgen': new Date(todayStart.getTime()+2*86400000).toISOString().split('T')[0]
+
+        };
+
+        const _lblISO = _isoMap[lbl];
+
+        if (_lblISO) { getEventsForDay(_lblISO).forEach(e => { html += renderCalEventChip(e); }); }
+
       });
+
       wocheList.innerHTML = html;
+
     }
+
   }
 
-  var weitereCards = Object.values(cards).filter(function(c) { if(c.archived) return false; if(c.todayFlag||c.lane==='HE') return false; if(c.deadline){return new Date(c.deadline)>=in7;} return c.priority==='hoch'||c.priority==='high'; });
-  var weitereList = document.getElementById('weitere-list');
-  if (weitereList) {
-    if (weitereCards.length === 0) {
-      weitereList.innerHTML = '<div class="empty-state">Keine weiteren Pl\u00e4ne</div>';
-    } else {
-      weitereList.innerHTML = weitereCards.map(function(c) {
-        var isHE=c.todayFlag||c.lane==='HE'; var cId=esc(c.id||'');
-        var dl=c.deadline?'<div class="card-meta">'+esc(c.deadline)+'</div>':'';
-        return '<div class="status-card"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div>'+dl+'</div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
-      }).join('');
+
+
+  // --- Column 3: Weitere Plaene (deadline > 7 days OR no deadline but high priority) ---
+
+  const weitereCards = Object.values(cards).filter(c => {
+
+    if (c.archived) return false;
+
+    const isHE = c.todayFlag || c.lane === 'HE';
+
+    if (isHE) return false;
+
+    if (c.deadline) {
+
+      const d = new Date(c.deadline);
+
+      return d >= in7;
+
     }
+
+    return c.priority === 'hoch' || c.priority === 'high' || c.status === '\ud83d\udd34' || c.priority === '\ud83d\udd34';
+
+  });
+
+
+
+  const weitereList = document.getElementById('weitere-list');
+
+  if (weitereList) {
+
+    if (weitereCards.length === 0) {
+
+      weitereList.innerHTML = '<div class="empty-state">Keine weiteren Pl\u00e4ne</div>';
+
+    } else {
+
+      weitereList.innerHTML = weitereCards.map(c => {
+
+        const isHE = c.todayFlag || c.lane === 'HE';
+
+        const cId = esc(c.id || '');
+
+        const onclickWE = isHE ? "moveFromToday('" + cId + "')" : "moveToToday('" + cId + "')";
+
+        const titleWE = isHE ? 'Zur\u00fcck' : 'Heute';
+
+        const iconWE = isHE ? '\u21a9' : '\u2192';
+
+        const clsWE = isHE ? ' is-today' : '';
+
+        const deadlineMeta = c.deadline ? '<div class="card-meta">' + esc(c.deadline) + '</div>' : '';
+
+        return '<div class="status-card">'
+
+          + '<div style="flex:1;min-width:0;">'
+
+          + '<div style="display:flex;align-items:center;gap:6px;">'
+
+          + '<span class="card-prefix">' + esc(c.id || '') + '</span>'
+
+          + '<span class="card-title">' + esc(c.title || '') + '</span>'
+
+          + '</div>'
+
+          + deadlineMeta
+
+          + '</div>'
+
+          + '<button class="today-btn' + clsWE + '" onclick="' + onclickWE + '" title="' + titleWE + '">' + iconWE + '</button>'
+
+          + '</div>';
+
+      }).join('');
+
+    }
+
   }
+
 }
 
+
+
+// renderHeute is now an alias for renderStatusTab (for backward compat with other code)
+
 function renderHeute() { renderStatusTab(); }
-function getWeekStart() { var d=new Date(); var day=d.getDay(); d.setDate(d.getDate()-(day===0?6:day-1)); d.setHours(0,0,0,0); return d; }
-function hexToRgb(hex) { return parseInt(hex.slice(1,3),16)+','+parseInt(hex.slice(3,5),16)+','+parseInt(hex.slice(5,7),16); }
-function fmtDateShort(dateStr) { if(!dateStr) return ''; var p=String(dateStr).split('T')[0].split('-'); return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:dateStr; }
+
+
+
+function getWeekStart() {
+
+  const d = new Date(); const day = d.getDay();
+
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+
+  d.setHours(0,0,0,0); return d;
+
+}
+
+
+
+function hexToRgb(hex) {
+
+  return parseInt(hex.slice(1,3),16)+','+parseInt(hex.slice(3,5),16)+','+parseInt(hex.slice(5,7),16);
+
+}
+
+function fmtDateShort(dateStr) {
+
+  if (!dateStr) return '';
+
+  const p = String(dateStr).split('T')[0].split('-');
+
+  return p.length === 3 ? p[2]+'.'+p[1]+'.'+p[0] : dateStr;
+
+}
+
+
 
 function renderCardItem(card, laneColor) {
-  var statusCls=(STATUSES[card.status]&&STATUSES[card.status].cls)||'status-offen';
-  var dlBadge=card.deadline?'<span class="card-date-dl">\uD83D\uDCC5 '+fmtDateShort(card.deadline)+'</span>':'';
-  var crBadge=card.createdAt?'<span class="card-date-cr">'+fmtDateShort(card.createdAt)+'</span>':'';
-  var datesHtml=(dlBadge||crBadge)?'<div class="card-dates">'+dlBadge+crBadge+'</div>':'';
-  var hasDesc=!!(card.desc&&card.desc.trim());
-  var cardId=esc(card.id);
-  var descExpanded=hasDesc&&(descExpandState[cardId]||false);
-  var descToggle=hasDesc?'<span class="card-desc-toggle" onclick="event.stopPropagation();toggleDescExpand(\''+cardId+'\')">(...)</span>':'';
-  var descBox=descExpanded?'<div class="card-desc-box">'+esc(card.desc)+'</div>':'';
-  var isHE=card.todayFlag||card.lane==='HE';
-  var bgStyle=laneColor?'background:rgba('+hexToRgb(laneColor)+',0.08);':'';
-  return '<div class="card-item" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+
+  const statusCls = STATUSES[card.status]?.cls || 'status-offen';
+
+  const dlBadge = card.deadline
+
+    ? '<span class="card-date-dl">\uD83D\uDCC5 ' + fmtDateShort(card.deadline) + '</span>' : '';
+
+  const crBadge = card.createdAt
+
+    ? '<span class="card-date-cr">' + fmtDateShort(card.createdAt) + '</span>' : '';
+
+  const datesHtml = (dlBadge || crBadge)
+
+    ? '<div class="card-dates">' + dlBadge + crBadge + '</div>' : '';
+
+  const hasDesc = !!(card.desc && card.desc.trim());
+
+  const cardId = esc(card.id);
+
+  const descExpanded = hasDesc && (descExpandState[cardId] || false);
+
+  const descToggle = hasDesc
+
+    ? '<span class="card-desc-toggle" onclick="event.stopPropagation();toggleDescExpand(\'' + cardId + '\')">(...)</span>'
+
+    : '';
+
+  const descBox = descExpanded
+
+    ? '<div class="card-desc-box">' + esc(card.desc) + '</div>' : '';
+
+  const isHE = card.todayFlag || card.lane === 'HE';
+
+  const onclickFn = isHE ? 'moveFromToday(\'' + cardId + '\')' : 'moveToToday(\'' + cardId + '\')';
+
+  const titleAttr = isHE ? 'Zur\u00fcck' : 'Heute';
+
+  const btnIcon = isHE ? '\u21a9' : '\u2192';
+
+  const todayCls = isHE ? ' is-today' : '';
+
+  const bgStyle = laneColor ? 'background:rgba(' + hexToRgb(laneColor) + ',0.08);' : '';
+
+  return '<div class="card-item" data-id="' + cardId + '" style="position:relative;' + bgStyle + '">'
+
+    + '<div style="flex:1;min-width:0;">'
+
+    + '<div style="display:flex;align-items:center;gap:10px;">'
+
+    + '<span class="card-prefix">' + esc(card.id) + '</span>'
+
+    + '<span class="card-title">' + esc(card.title || '(kein Titel)') + '</span>'
+
+    + descToggle
+
+    + '<span class="status-dot ' + statusCls + '"></span>'
+
+    + '</div>'
+
+    + datesHtml
+
+    + descBox
+
+    + '</div>'
+
+    + '<button class="kanban-today-btn' + todayCls + '" onclick="event.stopPropagation(); ' + onclickFn + '" title="' + titleAttr + '">' + btnIcon + '</button>'
+
+    + '</div>';
+
 }
 
 // ─── KANBAN ───────────────────────────────────────────────────────────────────
-var doneExpandState = {};
-var descExpandState = {};
-function toggleDescExpand(cardId) { descExpandState[cardId]=!descExpandState[cardId]; renderKanban(); }
-function toggleDoneArchive(laneId) { doneExpandState[laneId]=!doneExpandState[laneId]; renderKanban(); }
+
+const doneExpandState = {};
+
+const descExpandState = {};
+
+
+
+function toggleDescExpand(cardId) {
+
+  descExpandState[cardId] = !descExpandState[cardId];
+
+  renderKanban();
+
+}
+
+
+
+function toggleDoneArchive(laneId) {
+
+  doneExpandState[laneId] = !doneExpandState[laneId];
+
+  renderKanban();
+
+}
+
+
 
 function renderKanban() {
-  var cards=getCards(); var grid=document.getElementById('kanban-grid'); var collapsed=_appState.collapsed;
-  var todayISO=new Date().toISOString().split('T')[0];
-  grid.innerHTML = LANES.map(function(lane) {
-    var all=Object.values(cards).filter(function(c){return !c.archived&&(lane.isHeute?(c.todayFlag||c.deadline===todayISO||c.lane==='HE'):c.lane===lane.id);});
-    var active=all.filter(function(c){return c.status!=='erledigt';}).sort(function(a,b){return(a.order-b.order)||a.id.localeCompare(b.id);});
-    var done=all.filter(function(c){return c.status==='erledigt';}).sort(function(a,b){return(a.order-b.order)||a.id.localeCompare(b.id);});
-    var isCol=collapsed[lane.id]; var doneExp=doneExpandState[lane.id]||false;
-    var ch=active.map(function(c){return renderCardItem(c,lane.color);}).join('')||'<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
-    var dh=done.length>0?'<button class="done-archive-toggle" onclick="event.stopPropagation();toggleDoneArchive(\''+lane.id+'\')">Erledigt ('+done.length+') '+(doneExp?'\u25b4':'\u25be')+'</button>'+(doneExp?'<div class="done-archive-list">'+done.map(function(c){return renderCardItem(c,lane.color);}).join('')+'</div>':''):'';
-    var vh='';
-    if(lane.isBA){vh='<div class="vorlagen-wrap" onclick="event.stopPropagation()"><button class="btn-vorlagen" onclick="toggleVorlagen(\''+lane.id+'\')">Vorlagen \u25be</button><div class="vorlagen-dropdown" id="vd-'+lane.id+'">'+BA_TPLS.map(function(t){return '<button class="vorlagen-item" onclick="addVorlage(\''+lane.id+'\',\''+t.replace(/'/g,"\\'")+'\');closeVorlagen(\''+lane.id+'\')">'+t+'</button>';}).join('')+'</div></div>';}
-    return '<div class="lane" id="lane-'+lane.id+'"><div class="lane-header" onclick="toggleCollapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,\''+lane.id+'\')">+ Karte</button>'+vh+'<button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'" id="lb-'+lane.id+'">'+ch+dh+'</div></div>';
+
+  const cards     = getCards();
+
+  const grid      = document.getElementById('kanban-grid');
+
+  const collapsed = _appState.collapsed;
+
+
+
+  const todayISO = new Date().toISOString().split('T')[0];
+
+  grid.innerHTML = LANES.map(lane => {
+
+    const allLaneCards = Object.values(cards)
+
+      .filter(c => !c.archived && (lane.isHeute
+
+        ? (c.todayFlag || c.deadline === todayISO || c.lane === 'HE')
+
+        : c.lane === lane.id));
+
+    const activeCards = allLaneCards.filter(c => c.status !== 'erledigt')
+
+      .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id));
+
+    const doneCards   = allLaneCards.filter(c => c.status === 'erledigt')
+
+      .sort((a,b) => a.order - b.order || a.id.localeCompare(b.id));
+
+    const isCollapsed  = collapsed[lane.id];
+
+    const doneExpanded = doneExpandState[lane.id] || false;
+
+
+
+    const cardsHtml = activeCards.map(c => renderCardItem(c, lane.color)).join('') ||
+
+      '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
+
+    const doneHtml = doneCards.length > 0
+
+      ? '<button class="done-archive-toggle" onclick="event.stopPropagation();toggleDoneArchive(\'' + lane.id + '\')">'
+
+        + 'Erledigt (' + doneCards.length + ') ' + (doneExpanded ? '\u25b4' : '\u25be')
+
+        + '</button>'
+
+        + (doneExpanded ? '<div class="done-archive-list">' + doneCards.map(c => renderCardItem(c, lane.color)).join('') + '</div>' : '')
+
+      : '';
+
+
+
+    const voorlagenBtn = lane.isBA ? `
+
+      <div class="vorlagen-wrap">
+
+        <button class="btn-vorlagen" onclick="toggleVorlagen('${lane.id}')">Vorlagen ▾</button>
+
+        <div class="vorlagen-dropdown" id="vd-${lane.id}">
+
+          ${BA_TPLS.map(t => `<button class="vorlagen-item" onclick="addVorlage('${lane.id}','${t.replace(/'/g,"\\'")}');closeVorlagen('${lane.id}')">${t}</button>`).join('')}
+
+        </div>
+
+      </div>` : '';
+
+
+
+    return `<div class="lane" id="lane-${lane.id}">
+
+      <div class="lane-header" onclick="toggleCollapse('${lane.id}')" style="cursor:pointer">
+
+        <span class="lane-title">${esc(lane.name)}</span>
+
+        <span class="lane-count">${activeCards.length}</span>
+
+        <button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,'${lane.id}')">+ Karte</button>
+
+        ${lane.isBA ? `<div class="vorlagen-wrap" onclick="event.stopPropagation()">
+
+          <button class="btn-vorlagen" onclick="toggleVorlagen('${lane.id}')">Vorlagen ▾</button>
+
+          <div class="vorlagen-dropdown" id="vd-${lane.id}">
+
+            ${BA_TPLS.map(t => `<button class="vorlagen-item" onclick="addVorlage('${lane.id}','${t.replace(/'/g,"\\'")}');closeVorlagen('${lane.id}')">${t}</button>`).join('')}
+
+          </div>
+
+        </div>` : ''}
+
+        <button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse('${lane.id}')">${isCollapsed ? '▶' : '▼'}</button>
+
+      </div>
+
+      <div class="lane-body${isCollapsed ? ' collapsed' : ''}" id="lb-${lane.id}">
+
+        ${cardsHtml}
+
+        ${doneHtml}
+
+      </div>
+
+    </div>`;
+
   }).join('');
-  grid.querySelectorAll('.card-item').forEach(function(el){el.addEventListener('click',function(){openCardModal(el.dataset.id);});});
+
+
+
+  // Bind card clicks
+
+  grid.querySelectorAll('.card-item').forEach(el => {
+
+    el.addEventListener('click', () => openCardModal(el.dataset.id));
+
+  });
+
 }
 
-function toggleCollapse(laneId) { _appState.collapsed[laneId]=!_appState.collapsed[laneId]; lsSet('cowork_collapsed',_appState.collapsed); renderKanban(); }
-function toggleVorlagen(laneId) { var dd=document.getElementById('vd-'+laneId); if(dd) dd.classList.toggle('open'); }
-function closeVorlagen(laneId) { var dd=document.getElementById('vd-'+laneId); if(dd) dd.classList.remove('open'); }
-function addVorlage(laneId,title) { var cards=getCards(); var id=nextCardId(laneId); cards[id]={id:id,lane:laneId,title:title,status:'offen',deadline:'',desc:'',archived:false,order:Date.now()}; saveCards(cards); renderKanban(); }
-document.addEventListener('click',function(e){if(!e.target.closest('.vorlagen-wrap')){document.querySelectorAll('.vorlagen-dropdown.open').forEach(function(d){d.classList.remove('open');});}});
+
+
+function toggleCollapse(laneId) {
+
+  const collapsed = _appState.collapsed;
+
+  collapsed[laneId] = !collapsed[laneId];
+
+  lsSet('cowork_collapsed', collapsed);
+
+  renderKanban();
+
+}
+
+
+
+function toggleVorlagen(laneId) {
+
+  const dd = document.getElementById('vd-' + laneId);
+
+  if (dd) dd.classList.toggle('open');
+
+}
+
+function closeVorlagen(laneId) {
+
+  const dd = document.getElementById('vd-' + laneId);
+
+  if (dd) dd.classList.remove('open');
+
+}
+
+
+
+function addVorlage(laneId, title) {
+
+  const cards = getCards();
+
+  const id = nextCardId(laneId);
+
+  cards[id] = { id, lane: laneId, title, status: 'offen', deadline:'', desc:'', archived:false, order: Date.now() };
+
+  saveCards(cards);
+
+  renderKanban();
+
+}
+
+
+
+// Close dropdowns on outside click
+
+document.addEventListener('click', (e) => {
+
+  if (!e.target.closest('.vorlagen-wrap')) {
+
+    document.querySelectorAll('.vorlagen-dropdown.open').forEach(d => d.classList.remove('open'));
+
+  }
+
+});
+
+
 
 // ─── CARD MODAL ───────────────────────────────────────────────────────────────
-var cmCardId=null; var cmLaneId=null;
-function openCardModal(cardId,laneId) {
-  cmCardId=cardId; cmLaneId=laneId;
-  var cards=getCards(); var card=cardId?cards[cardId]:null; var isNew=!card;
-  document.getElementById('card-modal-title').textContent=isNew?'Neue Karte':card.id;
-  document.getElementById('cm-title').value=(card&&card.title)||'';
-  document.getElementById('cm-deadline').value=(card&&card.deadline)||'';
-  document.getElementById('cm-desc').value=(card&&card.desc)||'';
-  var status=(card&&card.status)||'offen';
-  document.querySelectorAll('[name=cm-status]').forEach(function(r){r.checked=r.value===status;});
-  document.getElementById('cm-delete').style.display=isNew?'none':'';
-  document.getElementById('cm-heute').style.display=(card&&card.lane!=='HE')?'':'none';
-  document.getElementById('card-modal-overlay').classList.add('open');
+
+let cmCardId   = null;
+
+let cmLaneId   = null;
+
+
+
+function openCardModal(cardId, laneId) {
+
+  cmCardId = cardId;
+
+  cmLaneId = laneId;
+
+  const modal    = document.getElementById('card-modal-overlay');
+
+  const cards    = getCards();
+
+  const card     = cardId ? cards[cardId] : null;
+
+  const isNew    = !card;
+
+
+
+  document.getElementById('card-modal-title').textContent = isNew ? 'Neue Karte' : card.id;
+
+  document.getElementById('cm-title').value    = card?.title    || '';
+
+  document.getElementById('cm-deadline').value = card?.deadline || '';
+
+  document.getElementById('cm-desc').value     = card?.desc     || '';
+
+
+
+  const status = card?.status || 'offen';
+
+  document.querySelectorAll('[name=cm-status]').forEach(r => {
+
+    r.checked = r.value === status;
+
+  });
+
+
+
+  document.getElementById('cm-delete').style.display = isNew ? 'none' : '';
+
+  document.getElementById('cm-heute').style.display  = (card && card.lane !== 'HE') ? '' : 'none';
+
+
+
+  modal.classList.add('open');
+
 }
-function closeCardModal() { document.getElementById('card-modal-overlay').classList.remove('open'); cmCardId=null; cmLaneId=null; }
-document.getElementById('cm-cancel').addEventListener('click',closeCardModal);
-document.getElementById('card-modal-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeCardModal();});
-document.getElementById('cm-save').addEventListener('click',function() {
-  var title=document.getElementById('cm-title').value.trim(); var deadline=document.getElementById('cm-deadline').value;
-  var desc=document.getElementById('cm-desc').value.trim(); var se=document.querySelector('[name=cm-status]:checked'); var status=se?se.value:'offen';
-  if(!title){document.getElementById('cm-title').focus();return;}
-  var cards=getCards();
-  if(cmCardId){Object.assign(cards[cmCardId],{title:title,deadline:deadline,desc:desc,status:status});if(!cards[cmCardId].createdAt)cards[cmCardId].createdAt=new Date().toISOString();}
-  else{var id=nextCardId(cmLaneId);cards[id]={id:id,lane:cmLaneId,title:title,deadline:deadline,desc:desc,status:status,archived:false,order:Date.now(),createdAt:new Date().toISOString()};}
-  saveCards(cards); closeCardModal(); if(currentTab==='heute')renderHeute(); if(currentTab==='kanban')renderKanban();
+
+
+
+function closeCardModal() {
+
+  document.getElementById('card-modal-overlay').classList.remove('open');
+
+  cmCardId = null; cmLaneId = null;
+
+}
+
+
+
+document.getElementById('cm-cancel').addEventListener('click', closeCardModal);
+
+document.getElementById('card-modal-overlay').addEventListener('click', (e) => {
+
+  if (e.target === e.currentTarget) closeCardModal();
+
 });
-document.getElementById('cm-delete').addEventListener('click',function(){confirmAction('Karte l\u00f6schen?','Diese Karte wird unwiderruflich gel\u00f6scht.',function(){var cards=getCards();if(cmCardId){cards[cmCardId].archived=true;saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});});
-document.getElementById('cm-heute').addEventListener('click',function(){var cards=getCards();if(cmCardId&&cards[cmCardId]){cards[cmCardId].lane='HE';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});
+
+
+
+document.getElementById('cm-save').addEventListener('click', () => {
+
+  const title    = document.getElementById('cm-title').value.trim();
+
+  const deadline = document.getElementById('cm-deadline').value;
+
+  const desc     = document.getElementById('cm-desc').value.trim();
+
+  const status   = document.querySelector('[name=cm-status]:checked')?.value || 'offen';
+
+
+
+  if (!title) { document.getElementById('cm-title').focus(); return; }
+
+
+
+  const cards = getCards();
+
+  if (cmCardId) {
+
+    Object.assign(cards[cmCardId], { title, deadline, desc, status });
+
+    if (!cards[cmCardId].createdAt) cards[cmCardId].createdAt = new Date().toISOString();
+
+  } else {
+
+    const id = nextCardId(cmLaneId);
+
+    cards[id] = { id, lane: cmLaneId, title, deadline, desc, status, archived:false, order: Date.now(), createdAt: new Date().toISOString() };
+
+  }
+
+  saveCards(cards);
+
+  closeCardModal();
+
+  if (currentTab === 'heute') renderHeute();
+
+  if (currentTab === 'kanban') renderKanban();
+
+});
+
+
+
+document.getElementById('cm-delete').addEventListener('click', () => {
+
+  confirmAction('Karte löschen?', 'Diese Karte wird unwiderruflich gelöscht.', () => {
+
+    const cards = getCards();
+
+    if (cmCardId) { cards[cmCardId].archived = true; saveCards(cards); }
+
+    closeCardModal();
+
+    if (currentTab === 'heute') renderHeute();
+
+    if (currentTab === 'kanban') renderKanban();
+
+  });
+
+});
+
+
+
+document.getElementById('cm-heute').addEventListener('click', () => {
+
+  const cards = getCards();
+
+  if (cmCardId && cards[cmCardId]) {
+
+    cards[cmCardId].lane = 'HE';
+
+    saveCards(cards);
+
+  }
+
+  closeCardModal();
+
+  if (currentTab === 'heute') renderHeute();
+
+  if (currentTab === 'kanban') renderKanban();
+
+});
+
+
 
 // ─── PATIENTEN ────────────────────────────────────────────────────────────────
+
 function renderPatients(filter) {
-  var patients=getPatients(); var q=filter||document.getElementById('pat-search').value.trim().toLowerCase();
-  if(q) patients=patients.filter(function(p){return p.code.toLowerCase().includes(q)||(p.notizen||'').toLowerCase().includes(q);});
-  var list=document.getElementById('pat-list');
-  if(patients.length===0){list.innerHTML='<div class="empty-state">Keine Patienten gefunden.</div>';return;}
-  list.innerHTML=patients.map(function(p){return '<div class="patient-row" onclick="openPatModal(\''+esc(p.id)+'\')"><span class="pat-code">'+esc(p.code)+'</span><span class="pat-info">'+esc(p.aufnahme||'')+(p.notizen?' \u00b7 '+esc(p.notizen.substring(0,40)):'')+'</span><span class="pat-status-badge pat-status-'+(p.status||'aktiv')+'">'+(p.status||'aktiv')+'</span></div>';}).join('');
+
+  let patients = getPatients();
+
+  const q = filter || document.getElementById('pat-search').value.trim().toLowerCase();
+
+  if (q) patients = patients.filter(p =>
+
+    p.code.toLowerCase().includes(q) ||
+
+    (p.notizen||'').toLowerCase().includes(q)
+
+  );
+
+  const list = document.getElementById('pat-list');
+
+  if (patients.length === 0) {
+
+    list.innerHTML = '<div class="empty-state">Keine Patienten gefunden.</div>';
+
+    return;
+
+  }
+
+  list.innerHTML = patients.map(p => `
+
+    <div class="patient-row" data-id="${esc(p.id)}" onclick="openPatModal('${esc(p.id)}')">
+
+      <span class="pat-code">${esc(p.code)}</span>
+
+      <span class="pat-info">${esc(p.aufnahme||'')} ${p.notizen ? '· ' + esc(p.notizen.substring(0,40)) : ''}</span>
+
+      <span class="pat-status-badge pat-status-${p.status||'aktiv'}">${p.status||'aktiv'}</span>
+
+    </div>`).join('');
+
 }
-document.getElementById('pat-search').addEventListener('input',function(){renderPatients();});
-document.getElementById('btn-pat-add').addEventListener('click',function(){openPatModal(null);});
-var pmPatId=null;
-function openPatModal(patId){pmPatId=patId;var patients=getPatients();var pat=patId?patients.find(function(p){return p.id===patId;}):null;var isNew=!pat;document.getElementById('pat-modal-title').textContent=isNew?'Neuer Patient':pat.code;document.getElementById('pm-code').value=(pat&&pat.code)||'';document.getElementById('pm-aufnahme').value=(pat&&pat.aufnahme)||'';document.getElementById('pm-status').value=(pat&&pat.status)||'aktiv';document.getElementById('pm-notizen').value=(pat&&pat.notizen)||'';document.getElementById('pm-delete').style.display=isNew?'none':'';document.getElementById('pat-modal-overlay').classList.add('open');}
-function closePatModal(){document.getElementById('pat-modal-overlay').classList.remove('open');pmPatId=null;}
-document.getElementById('pm-cancel').addEventListener('click',closePatModal);
-document.getElementById('pat-modal-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closePatModal();});
-document.getElementById('pm-save').addEventListener('click',function(){var code=document.getElementById('pm-code').value.trim();var aufnahme=document.getElementById('pm-aufnahme').value;var status=document.getElementById('pm-status').value;var notizen=document.getElementById('pm-notizen').value.trim();if(!code){document.getElementById('pm-code').focus();return;}var patients=getPatients();if(pmPatId){var idx=patients.findIndex(function(p){return p.id===pmPatId;});if(idx!==-1)patients[idx]=Object.assign({},patients[idx],{code:code,aufnahme:aufnahme,status:status,notizen:notizen});}else{patients.push({id:'PAT'+Date.now(),code:code,aufnahme:aufnahme,status:status,notizen:notizen});}savePatients(patients);closePatModal();renderPatients();});
-document.getElementById('pm-delete').addEventListener('click',function(){confirmAction('Patient l\u00f6schen?','Dieser Patient wird unwiderruflich gel\u00f6scht.',function(){var patients=getPatients();patients=patients.filter(function(p){return p.id!==pmPatId;});savePatients(patients);closePatModal();renderPatients();});});
+
+
+
+document.getElementById('pat-search').addEventListener('input', () => renderPatients());
+
+document.getElementById('btn-pat-add').addEventListener('click', () => openPatModal(null));
+
+
+
+let pmPatId = null;
+
+
+
+function openPatModal(patId) {
+
+  pmPatId = patId;
+
+  const patients = getPatients();
+
+  const pat = patId ? patients.find(p => p.id === patId) : null;
+
+  const isNew = !pat;
+
+
+
+  document.getElementById('pat-modal-title').textContent = isNew ? 'Neuer Patient' : pat.code;
+
+  document.getElementById('pm-code').value     = pat?.code     || '';
+
+  document.getElementById('pm-aufnahme').value  = pat?.aufnahme || '';
+
+  document.getElementById('pm-status').value    = pat?.status   || 'aktiv';
+
+  document.getElementById('pm-notizen').value   = pat?.notizen  || '';
+
+  document.getElementById('pm-delete').style.display = isNew ? 'none' : '';
+
+
+
+  document.getElementById('pat-modal-overlay').classList.add('open');
+
+}
+
+
+
+function closePatModal() {
+
+  document.getElementById('pat-modal-overlay').classList.remove('open');
+
+  pmPatId = null;
+
+}
+
+
+
+document.getElementById('pm-cancel').addEventListener('click', closePatModal);
+
+document.getElementById('pat-modal-overlay').addEventListener('click', (e) => {
+
+  if (e.target === e.currentTarget) closePatModal();
+
+});
+
+
+
+document.getElementById('pm-save').addEventListener('click', () => {
+
+  const code    = document.getElementById('pm-code').value.trim();
+
+  const aufnahme = document.getElementById('pm-aufnahme').value;
+
+  const status  = document.getElementById('pm-status').value;
+
+  const notizen = document.getElementById('pm-notizen').value.trim();
+
+
+
+  if (!code) { document.getElementById('pm-code').focus(); return; }
+
+
+
+  let patients = getPatients();
+
+  if (pmPatId) {
+
+    const idx = patients.findIndex(p => p.id === pmPatId);
+
+    if (idx !== -1) patients[idx] = { ...patients[idx], code, aufnahme, status, notizen };
+
+  } else {
+
+    patients.push({ id: 'PAT' + Date.now(), code, aufnahme, status, notizen });
+
+  }
+
+  savePatients(patients);
+
+  closePatModal();
+
+  renderPatients();
+
+});
+
+
+
+document.getElementById('pm-delete').addEventListener('click', () => {
+
+  confirmAction('Patient löschen?', 'Dieser Patient wird unwiderruflich gelöscht.', () => {
+
+    let patients = getPatients();
+
+    patients = patients.filter(p => p.id !== pmPatId);
+
+    savePatients(patients);
+
+    closePatModal();
+
+    renderPatients();
+
+  });
+
+});
+
+
 
 // ─── AUTONOMIE-LOG ────────────────────────────────────────────────────────────
-function initAL(){var log=getALLog();if(!log){log=[{id:'al001',ts:new Date().toISOString(),title:'System gestartet',desc:'CoworkKanban v2.0 mit strukturellen Fixes initialisiert.',badge:'\u2705',read:false}];saveALLog(log);}}
-function renderAL(){var log=getALLog()||[];var list=document.getElementById('al-list');var unread=log.filter(function(e){return !e.read;}).length;var badge=document.getElementById('al-badge');if(unread>0){badge.style.display='';badge.textContent=unread;}else{badge.style.display='none';}if(log.length===0){list.innerHTML='<div class="empty-state">Keine Eintr\u00e4ge.</div>';return;}list.innerHTML=log.map(function(e){return '<div class="al-card'+(e.read?' read':'')+'" id="alc-'+e.id+'"><div class="al-card-header"><span class="al-badge">'+(e.badge||'\uD83D\uDCCB')+'</span><div class="al-meta"><div class="al-title">'+esc(e.title)+'</div><div class="al-ts">'+new Date(e.ts).toLocaleString('de-CH')+'</div></div></div><div class="al-desc">'+esc(e.desc||'')+'</div>'+(!e.read?'<button class="al-read-btn" onclick="markALRead(\''+e.id+'\')">Okay, gelesen \u2713</button>':'<button class="al-read-btn">Gelesen \u2713</button>')+'</div>';}).join('');}
-function markALRead(id){var log=getALLog()||[];var entry=log.find(function(e){return e.id===id;});if(entry)entry.read=true;saveALLog(log);renderAL();updateALBadge();}
-function updateALBadge(){var log=getALLog()||[];var unread=log.filter(function(e){return !e.read;}).length;var badge=document.getElementById('al-badge');if(unread>0){badge.style.display='';badge.textContent=unread;}else badge.style.display='none';}
+
+function initAL() {
+
+  let log = getALLog();
+
+  if (!log) {
+
+    log = [{
+
+      id: 'al001',
+
+      ts: new Date().toISOString(),
+
+      title: 'System gestartet',
+
+      desc: 'CoworkKanban v1.7 erfolgreich initialisiert. Alle Daten werden via GitHub synchronisiert.',
+
+      badge: '✅',
+
+      read: false
+
+    }];
+
+    saveALLog(log);
+
+  }
+
+}
+
+
+
+function renderAL() {
+
+  const log = getALLog() || [];
+
+  const list = document.getElementById('al-list');
+
+  const unread = log.filter(e => !e.read).length;
+
+  const badge = document.getElementById('al-badge');
+
+  if (unread > 0) {
+
+    badge.style.display = '';
+
+    badge.textContent = unread;
+
+  } else {
+
+    badge.style.display = 'none';
+
+  }
+
+
+
+  if (log.length === 0) {
+
+    list.innerHTML = '<div class="empty-state">Keine Einträge.</div>';
+
+    return;
+
+  }
+
+
+
+  list.innerHTML = log.map(e => `
+
+    <div class="al-card${e.read ? ' read' : ''}" id="alc-${e.id}">
+
+      <div class="al-card-header">
+
+        <span class="al-badge">${e.badge || '📋'}</span>
+
+        <div class="al-meta">
+
+          <div class="al-title">${esc(e.title)}</div>
+
+          <div class="al-ts">${new Date(e.ts).toLocaleString('de-CH')}</div>
+
+        </div>
+
+      </div>
+
+      <div class="al-desc">${esc(e.desc || '')}</div>
+
+      ${!e.read ? `<button class="al-read-btn" onclick="markALRead('${e.id}')">Okay, gelesen ✓</button>` : '<button class="al-read-btn">Gelesen ✓</button>'}
+
+    </div>`).join('');
+
+}
+
+
+
+function markALRead(id) {
+
+  const log = getALLog() || [];
+
+  const entry = log.find(e => e.id === id);
+
+  if (entry) entry.read = true;
+
+  saveALLog(log);
+
+  renderAL();
+
+  updateALBadge();
+
+}
+
+
+
+function updateALBadge() {
+
+  const log = getALLog() || [];
+
+  const unread = log.filter(e => !e.read).length;
+
+  const badge = document.getElementById('al-badge');
+
+  if (unread > 0) { badge.style.display = ''; badge.textContent = unread; }
+
+  else badge.style.display = 'none';
+
+}
+
+
 
 // ─── BACKLOG ──────────────────────────────────────────────────────────────────
-var BL_DEMOS=[{id:'bl001',title:'Nacht-Autopilot aktivieren',prio:'hoch',cat:'KI',status:'geplant',desc:'Automatische Aufgaben-Priorisierung nach 22 Uhr.'},{id:'bl002',title:'Google Drive Integration',prio:'mittel',cat:'Integration',status:'geplant',desc:'Berichte direkt in Drive speichern.'},{id:'bl003',title:'Patienten-Timeline Variante C',prio:'hoch',cat:'Patienten',status:'in-arbeit',desc:'Chronologische Verlaufsansicht pro Patient.'},{id:'bl004',title:'Offline-Modus & PWA-Install',prio:'mittel',cat:'Tech',status:'geplant',desc:'Service Worker f\u00fcr Offline-Nutzung.'},{id:'bl005',title:'Wochenr\u00fcckblick-Report (PDF)',prio:'niedrig',cat:'Reporting',status:'geplant',desc:'Automatisch generierter PDF-Report.'}];
-function getBacklog(){return ls('cowork_backlog',null);}
-function saveBacklog(b){lsSet('cowork_backlog',b);}
-function initBacklog(){if(!getBacklog()){saveBacklog(BL_DEMOS);}}
-var PRIO_LABELS={hoch:'\uD83D\uDD34 Hoch',mittel:'\uD83D\uDFE1 Mittel',niedrig:'\uD83D\uDFE2 Niedrig'};
-var PRIO_ORDER={hoch:0,mittel:1,niedrig:2};
-var BL_STATUS_CLS={geplant:'bl-geplant','in-arbeit':'bl-in-arbeit',abgeschlossen:'bl-abgeschlossen'};
-var BL_STATUS_LABELS={geplant:'Geplant','in-arbeit':'In Arbeit',abgeschlossen:'Abgeschlossen'};
-function renderBacklog(){var bl=getBacklog()||[];var filter=document.getElementById('bl-filter').value;if(filter)bl=bl.filter(function(e){return e.prio===filter;});bl=bl.slice().sort(function(a,b){return(PRIO_ORDER[a.prio]||1)-(PRIO_ORDER[b.prio]||1);});var list=document.getElementById('bl-list');if(bl.length===0){list.innerHTML='<div class="empty-state">Keine Eintr\u00e4ge.</div>';return;}list.innerHTML=bl.map(function(e){return '<div class="bl-card" onclick="openBLModal(\''+esc(e.id)+'\')"><div class="bl-card-top"><span class="bl-prio">'+((PRIO_LABELS[e.prio]||'').slice(0,2)||'\uD83D\uDCCB')+'</span><span class="bl-title">'+esc(e.title)+'</span><span class="bl-status-badge '+(BL_STATUS_CLS[e.status]||'bl-geplant')+'">'+(BL_STATUS_LABELS[e.status]||e.status)+'</span></div><div class="bl-card-meta"><span>'+(PRIO_LABELS[e.prio]||e.prio)+'</span>'+(e.cat?'<span>'+esc(e.cat)+'</span>':'')+'</div>'+(e.desc?'<div class="bl-desc">'+esc(e.desc.substring(0,120))+(e.desc.length>120?'\u2026':'')+'</div>':'')+'</div>';}).join('');}
-document.getElementById('bl-filter').addEventListener('change',renderBacklog);
-document.getElementById('btn-bl-add').addEventListener('click',function(){openBLModal(null);});
-var blEntryId=null;
-function openBLModal(entryId){blEntryId=entryId;var bl=getBacklog()||[];var entry=entryId?bl.find(function(e){return e.id===entryId;}):null;var isNew=!entry;document.getElementById('bl-modal-title').textContent=isNew?'Neuer Eintrag':entry.title;document.getElementById('blm-title').value=(entry&&entry.title)||'';document.getElementById('blm-prio').value=(entry&&entry.prio)||'mittel';document.getElementById('blm-cat').value=(entry&&entry.cat)||'';document.getElementById('blm-status').value=(entry&&entry.status)||'geplant';document.getElementById('blm-desc').value=(entry&&entry.desc)||'';document.getElementById('blm-delete').style.display=isNew?'none':'';document.getElementById('bl-modal-overlay').classList.add('open');}
-function closeBLModal(){document.getElementById('bl-modal-overlay').classList.remove('open');blEntryId=null;}
-document.getElementById('blm-cancel').addEventListener('click',closeBLModal);
-document.getElementById('bl-modal-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeBLModal();});
-document.getElementById('blm-save').addEventListener('click',function(){var title=document.getElementById('blm-title').value.trim();var prio=document.getElementById('blm-prio').value;var cat=document.getElementById('blm-cat').value.trim();var status=document.getElementById('blm-status').value;var desc=document.getElementById('blm-desc').value.trim();if(!title){document.getElementById('blm-title').focus();return;}var bl=getBacklog()||[];if(blEntryId){var idx=bl.findIndex(function(e){return e.id===blEntryId;});if(idx!==-1)bl[idx]=Object.assign({},bl[idx],{title:title,prio:prio,cat:cat,status:status,desc:desc});}else{bl.push({id:'bl'+Date.now(),title:title,prio:prio,cat:cat,status:status,desc:desc});}saveBacklog(bl);closeBLModal();renderBacklog();});
-document.getElementById('blm-delete').addEventListener('click',function(){confirmAction('Eintrag l\u00f6schen?','Dieser Backlog-Eintrag wird gel\u00f6scht.',function(){var bl=getBacklog()||[];bl=bl.filter(function(e){return e.id!==blEntryId;});saveBacklog(bl);closeBLModal();renderBacklog();});});
+
+const BL_DEMOS = [
+
+  { id:'bl001', title:'Nacht-Autopilot aktivieren',       prio:'hoch',    cat:'KI',          status:'geplant',    desc:'Automatische Aufgaben-Priorisierung nach 22 Uhr basierend auf Kalender.' },
+
+  { id:'bl002', title:'Google Drive Integration',         prio:'mittel',  cat:'Integration', status:'geplant',    desc:'Berichte direkt in Drive-Ordner speichern und teilen.' },
+
+  { id:'bl003', title:'Patienten-Timeline Variante C',    prio:'hoch',    cat:'Patienten',   status:'in-arbeit',  desc:'Chronologische Verlaufsansicht pro Patient mit Meilensteinen.' },
+
+  { id:'bl004', title:'Offline-Modus & PWA-Install',     prio:'mittel',  cat:'Tech',        status:'geplant',    desc:'Service Worker für Offline-Nutzung und App-Installation auf Homescreen.' },
+
+  { id:'bl005', title:'Wochenrückblick-Report (PDF)',     prio:'niedrig', cat:'Reporting',   status:'geplant',    desc:'Automatisch generierter PDF-Report aller erledigten Aufgaben pro Woche.' }
+
+];
+
+
+
+function getBacklog() {
+
+  return ls('cowork_backlog', null);
+
+}
+
+function saveBacklog(b) { lsSet('cowork_backlog', b); }
+
+
+
+function initBacklog() {
+
+  if (!getBacklog()) {
+
+    saveBacklog(BL_DEMOS);
+
+  }
+
+}
+
+
+
+const PRIO_LABELS = { hoch:'🔴 Hoch', mittel:'🟡 Mittel', niedrig:'🟢 Niedrig' };
+
+const PRIO_ORDER  = { hoch:0, mittel:1, niedrig:2 };
+
+const BL_STATUS_CLS = { geplant:'bl-geplant', 'in-arbeit':'bl-in-arbeit', abgeschlossen:'bl-abgeschlossen' };
+
+const BL_STATUS_LABELS = { geplant:'Geplant', 'in-arbeit':'In Arbeit', abgeschlossen:'Abgeschlossen' };
+
+
+
+function renderBacklog() {
+
+  let bl = getBacklog() || [];
+
+  const filter = document.getElementById('bl-filter').value;
+
+  if (filter) bl = bl.filter(e => e.prio === filter);
+
+  bl = [...bl].sort((a,b) => (PRIO_ORDER[a.prio]||1) - (PRIO_ORDER[b.prio]||1));
+
+
+
+  const list = document.getElementById('bl-list');
+
+  if (bl.length === 0) {
+
+    list.innerHTML = '<div class="empty-state">Keine Einträge.</div>'; return;
+
+  }
+
+  list.innerHTML = bl.map(e => `
+
+    <div class="bl-card" onclick="openBLModal('${esc(e.id)}')">
+
+      <div class="bl-card-top">
+
+        <span class="bl-prio">${PRIO_LABELS[e.prio]?.slice(0,2)||'📋'}</span>
+
+        <span class="bl-title">${esc(e.title)}</span>
+
+        <span class="bl-status-badge ${BL_STATUS_CLS[e.status]||'bl-geplant'}">${BL_STATUS_LABELS[e.status]||e.status}</span>
+
+      </div>
+
+      <div class="bl-card-meta">
+
+        <span>${PRIO_LABELS[e.prio]||e.prio}</span>
+
+        ${e.cat ? `<span>${esc(e.cat)}</span>` : ''}
+
+      </div>
+
+      ${e.desc ? `<div class="bl-desc">${esc(e.desc.substring(0,120))}${e.desc.length>120?'…':''}</div>` : ''}
+
+    </div>`).join('');
+
+}
+
+
+
+document.getElementById('bl-filter').addEventListener('change', renderBacklog);
+
+document.getElementById('btn-bl-add').addEventListener('click', () => openBLModal(null));
+
+
+
+let blEntryId = null;
+
+
+
+function openBLModal(entryId) {
+
+  blEntryId = entryId;
+
+  const bl   = getBacklog() || [];
+
+  const entry = entryId ? bl.find(e => e.id === entryId) : null;
+
+  const isNew = !entry;
+
+
+
+  document.getElementById('bl-modal-title').textContent = isNew ? 'Neuer Eintrag' : entry.title;
+
+  document.getElementById('blm-title').value  = entry?.title  || '';
+
+  document.getElementById('blm-prio').value   = entry?.prio   || 'mittel';
+
+  document.getElementById('blm-cat').value    = entry?.cat    || '';
+
+  document.getElementById('blm-status').value = entry?.status || 'geplant';
+
+  document.getElementById('blm-desc').value   = entry?.desc   || '';
+
+  document.getElementById('blm-delete').style.display = isNew ? 'none' : '';
+
+
+
+  document.getElementById('bl-modal-overlay').classList.add('open');
+
+}
+
+
+
+function closeBLModal() {
+
+  document.getElementById('bl-modal-overlay').classList.remove('open');
+
+  blEntryId = null;
+
+}
+
+
+
+document.getElementById('blm-cancel').addEventListener('click', closeBLModal);
+
+document.getElementById('bl-modal-overlay').addEventListener('click', (e) => {
+
+  if (e.target === e.currentTarget) closeBLModal();
+
+});
+
+
+
+document.getElementById('blm-save').addEventListener('click', () => {
+
+  const title  = document.getElementById('blm-title').value.trim();
+
+  const prio   = document.getElementById('blm-prio').value;
+
+  const cat    = document.getElementById('blm-cat').value.trim();
+
+  const status = document.getElementById('blm-status').value;
+
+  const desc   = document.getElementById('blm-desc').value.trim();
+
+
+
+  if (!title) { document.getElementById('blm-title').focus(); return; }
+
+
+
+  let bl = getBacklog() || [];
+
+  if (blEntryId) {
+
+    const idx = bl.findIndex(e => e.id === blEntryId);
+
+    if (idx !== -1) bl[idx] = { ...bl[idx], title, prio, cat, status, desc };
+
+  } else {
+
+    bl.push({ id:'bl'+Date.now(), title, prio, cat, status, desc });
+
+  }
+
+  saveBacklog(bl);
+
+  closeBLModal();
+
+  renderBacklog();
+
+});
+
+
+
+document.getElementById('blm-delete').addEventListener('click', () => {
+
+  confirmAction('Eintrag löschen?', 'Dieser Backlog-Eintrag wird unwiderruflich gelöscht.', () => {
+
+    let bl = getBacklog() || [];
+
+    bl = bl.filter(e => e.id !== blEntryId);
+
+    saveBacklog(bl);
+
+    closeBLModal();
+
+    renderBacklog();
+
+  });
+
+});
+
+
 
 // ─── EINSTELLUNGEN ────────────────────────────────────────────────────────────
-function initSettings(){var settings=ls('cowork_settings',{});var token=settings.gh_token||ls('cowork_gh_token','')||localStorage.getItem('cowork_gh_token')||'';document.getElementById('gh-token-input').value=token;if(!_appState.gh_token&&token){_appState.gh_token=token;}document.getElementById('budget-input').value=settings.budget||ls('cowork_budget',100);}
-(function(){var saved=localStorage.getItem('cowork_gh_token');if(saved&&!_appState.gh_token){_appState.gh_token=saved;}})();
-document.getElementById('btn-gh-save').addEventListener('click',async function(){var v=document.getElementById('gh-token-input').value.trim();lsSet('cowork_gh_token',v);localStorage.setItem('cowork_gh_token',v);if(v){try{await safeWriteToGitHub('settings/config.json',JSON.stringify({updated:new Date().toISOString()},null,2),'sync: update config');showToast('\u2705 Token gespeichert & synchronisiert');}catch(e){showToast('\u2705 Token lokal gespeichert');}}else{showToast('\u2705 Token gespeichert');}});
-document.getElementById('btn-budget-save').addEventListener('click',function(){var v=parseInt(document.getElementById('budget-input').value)||100;lsSet('cowork_budget',v);showToast('\u2705 Budget gespeichert');if(currentTab==='heute')renderHeute();});
-document.getElementById('btn-pin-change').addEventListener('click',async function(){var val=document.getElementById('new-pin-input').value.trim();if(val.length<4||val.length>6||!/^\d+$/.test(val)){showToast('PIN muss 4\u20136 Ziffern sein',true);return;}var newHash=hashPin(val);_appState.pin_hash=newHash;sessionStorage.setItem('cowork_pin_set','true');document.getElementById('new-pin-input').value='';try{await safeWriteToGitHub('settings/pin.json',JSON.stringify({pin_hash:newHash},null,2),'sync: update PIN');showToast('\u2705 PIN ge\u00e4ndert & synchronisiert');}catch(e){showToast('\u274c PIN-Sync fehlgeschlagen',true);}});
-document.getElementById('btn-export').addEventListener('click',function(){var data={cards:ls('cowork_cards',{}),patients:ls('cowork_patients',[]),autonomy:ls('cowork_autonomy_log',[]),backlog:ls('cowork_backlog',[]),seqs:_appState.seqs,exportedAt:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='cowork-export-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);});
-document.getElementById('btn-import').addEventListener('click',function(){document.getElementById('import-file').click();});
-document.getElementById('import-file').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var data=JSON.parse(ev.target.result);if(data.cards)lsSet('cowork_cards',data.cards);if(data.patients)lsSet('cowork_patients',data.patients);if(data.autonomy)lsSet('cowork_autonomy_log',data.autonomy);if(data.backlog)lsSet('cowork_backlog',data.backlog);showToast('Daten importiert');switchTab(currentTab);}catch(err){showToast('Fehler beim Importieren',true);}};reader.readAsText(file);e.target.value='';});
-document.getElementById('btn-reset').addEventListener('click',function(){confirmAction('Alle Daten l\u00f6schen?','ALLE Karten, Patienten und Logs werden gel\u00f6scht.',function(){_appState.cards={};_appState.cards_savedAt=null;_appState.patients=[];_appState.autonomy_log=null;_appState.backlog=null;_appState.collapsed={};_appState.budget=100;LANES.forEach(function(l){_appState.seqs[l.id]=0;});if(getGHToken()){scheduleSyncToGitHub();scheduleSettingsToGitHub();}showToast('Alle Daten gel\u00f6scht');switchTab('heute');});});
 
-// ─── CONFIRM / TOAST ──────────────────────────────────────────────────────────
-var confirmCallback=null;
-function confirmAction(title,msg,cb){document.getElementById('confirm-title').textContent=title;document.getElementById('confirm-msg').textContent=msg;confirmCallback=cb;document.getElementById('confirm-overlay').classList.add('open');}
-document.getElementById('confirm-no').addEventListener('click',function(){document.getElementById('confirm-overlay').classList.remove('open');confirmCallback=null;});
-document.getElementById('confirm-yes').addEventListener('click',function(){document.getElementById('confirm-overlay').classList.remove('open');if(confirmCallback){confirmCallback();confirmCallback=null;}});
-var toastTimer=null;
-function showToast(msg,isError){var t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;transition:opacity 0.3s;';document.body.appendChild(t);}t.textContent=msg;t.style.background=isError?'#ef4444':'#1a1a1a';t.style.color='#fff';t.style.opacity='1';clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.style.opacity='0';},2500);}
+function initSettings() {
+
+  // Load token: prefer in-memory _appState, fall back to real localStorage
+
+  const settings = ls('cowork_settings', {});
+
+  const token = settings.gh_token || ls('cowork_gh_token', '') || localStorage.getItem('cowork_gh_token') || '';
+
+  document.getElementById('gh-token-input').value = token;
+
+  // If we found a token in real localStorage but not in _appState, load it
+
+  if (!_appState.gh_token && token) {
+
+    _appState.gh_token = token.replace(/^"|"$/g, '');
+
+  }
+
+  const budget = settings.budget || ls('cowork_budget', 100);
+
+  document.getElementById('budget-input').value = budget;
+
+}
+
+
+
+// Auto-load GitHub token from localStorage on page load into _appState
+
+(function loadGhTokenFromLocalStorage() {
+
+  const saved = localStorage.getItem('cowork_gh_token');
+
+  if (saved && !_appState.gh_token) {
+
+    _appState.gh_token = saved.replace(/^"|"$/g, '');
+
+  }
+
+})();
+
+
+
+document.getElementById('btn-gh-save').addEventListener('click', async () => {
+
+  const v = document.getElementById('gh-token-input').value.trim();
+
+  // Save to in-memory state
+
+  lsSet('cowork_gh_token', v);
+
+  const settings = ls('cowork_settings', {});
+
+  settings.gh_token = v;
+
+  lsSet('cowork_settings', settings);
+
+  // Also persist to real localStorage for auto-load on next visit
+
+  localStorage.setItem('cowork_gh_token', v);
+
+  if (v) {
+
+    try {
+
+      await pushToGitHub(v, 'settings/config.json', JSON.stringify({ updated: new Date().toISOString() }, null, 2), 'sync: update config');
+
+      showToast('2705 Token gespeichert & synchronisiert');
+
+    } catch(e) {
+
+      showToast('2705 Token lokal gespeichert');
+
+    }
+
+  } else {
+
+    showToast('2705 Token gespeichert');
+
+  }
+
+});
+
+
+
+document.getElementById('btn-budget-save').addEventListener('click', () => {
+
+  const v = parseInt(document.getElementById('budget-input').value) || 100;
+
+  lsSet('cowork_budget', v);
+
+  const settings = ls('cowork_settings', {});
+
+  settings.budget = v;
+
+  lsSet('cowork_settings', settings);
+
+  showToast('2705 Budget gespeichert');
+
+  if (currentTab === 'heute') renderHeute();
+
+});
+
+
+
+document.getElementById('btn-pin-change').addEventListener('click', async () => {
+
+  const val = document.getElementById('new-pin-input').value.trim();
+
+  if (val.length < 4 || val.length > 6 || !/^\d+$/.test(val)) {
+
+    showToast('PIN muss 4–6 Ziffern sein', true); return;
+
+  }
+
+  const newHash = hashPin(val);
+
+  _appState.pin_hash = newHash;
+
+  sessionStorage.setItem('cowork_pin_set', 'true');
+
+  document.getElementById('new-pin-input').value = '';
+
+  try {
+
+    await pushToGitHub(null, 'settings/pin.json', JSON.stringify({ pin_hash: newHash }, null, 2), 'sync: update PIN');
+
+    showToast('\u2705 PIN ge\u00e4ndert & synchronisiert');
+
+  } catch(e) {
+
+    showToast('\u274c PIN-Sync fehlgeschlagen. GitHub nicht erreichbar.', true);
+
+    showToast('✅ PIN lokal geändert');
+
+  }
+
+});
+
+
+
+document.getElementById('btn-export').addEventListener('click', () => {
+
+  const data = {
+
+    cards:       ls('cowork_cards', {}),
+
+    patients:    ls('cowork_patients', []),
+
+    autonomy:    ls('cowork_autonomy_log', []),
+
+    backlog:     ls('cowork_backlog', []),
+
+    seqs:        Object.fromEntries(
+
+                   LANES.map(l => [`cowork_seq_${l.id}`, ls(`cowork_seq_${l.id}`, 0)])
+
+                 ),
+
+    exportedAt: new Date().toISOString()
+
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+
+  const url  = URL.createObjectURL(blob);
+
+  const a    = document.createElement('a');
+
+  a.href = url; a.download = `cowork-export-${new Date().toISOString().slice(0,10)}.json`;
+
+  a.click(); URL.revokeObjectURL(url);
+
+});
+
+
+
+document.getElementById('btn-import').addEventListener('click', () => {
+
+  document.getElementById('import-file').click();
+
+});
+
+
+
+document.getElementById('import-file').addEventListener('change', (e) => {
+
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = (ev) => {
+
+    try {
+
+      const data = JSON.parse(ev.target.result);
+
+      if (data.cards)    lsSet('cowork_cards', data.cards);
+
+      if (data.patients) lsSet('cowork_patients', data.patients);
+
+      if (data.autonomy) lsSet('cowork_autonomy_log', data.autonomy);
+
+      if (data.backlog)  lsSet('cowork_backlog', data.backlog);
+
+      if (data.seqs) Object.entries(data.seqs).forEach(([k,v]) => lsSet(k,v));
+
+      showToast('Daten importiert');
+
+      switchTab(currentTab);
+
+    } catch(err) {
+
+      showToast('Fehler beim Importieren', true);
+
+    }
+
+  };
+
+  reader.readAsText(file);
+
+  e.target.value = '';
+
+});
+
+
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+
+  confirmAction('Alle Daten löschen?', 'ALLE Karten, Patienten und Logs werden unwiderruflich gelöscht.', () => {
+
+    _appState.cards = {};
+
+    _appState.cards_savedAt = null;
+
+    _appState.patients = [];
+
+    _appState.autonomy_log = null;
+
+    _appState.backlog = null;
+
+    _appState.collapsed = {};
+
+    _appState.budget = 100;
+
+    LANES.forEach(l => { _appState.seqs[l.id] = 0; });
+
+    // Sync cleared state to GitHub
+
+    if (getGHToken()) {
+
+      scheduleSyncToGitHub();
+
+      scheduleSettingsToGitHub();
+
+    }
+
+    showToast('Alle Daten gel\u00f6scht');
+
+    switchTab('heute');
+
+  });
+
+});
+
+
+
+document.getElementById('btn-cache-reset').addEventListener('click', () => {
+
+  confirmAction(
+
+    'Cache leeren & von GitHub neu laden?',
+
+    'Lokaler Cache (Floor, Backups) wird geleert und Daten frisch von GitHub geladen.',
+
+    async () => {
+
+      localStorage.removeItem('cowork_tasks_floor');
+
+      localStorage.removeItem('cowork_state');
+
+      Object.keys(localStorage)
+
+        .filter(k => k.startsWith('cowork_backup_'))
+
+        .forEach(k => localStorage.removeItem(k));
+
+      _appState.cards = {};
+
+      _appState.cards_savedAt = null;
+
+      showToast('Cache geleert — lade von GitHub...');
+
+      await loadFromGitHub();
+
+      const freshCount = Object.keys(_appState.cards || {}).length;
+
+      DataGuard.forceSetFloor(freshCount);
+
+      renderKanban();
+
+      renderHeute();
+
+      showToast('Fertig — ' + freshCount + ' Karten von GitHub geladen');
+
+    }
+
+  );
+
+});
+
+
+
+// ─── CONFIRM DIALOG ───────────────────────────────────────────────────────────
+
+let confirmCallback = null;
+
+
+
+function confirmAction(title, msg, cb) {
+
+  document.getElementById('confirm-title').textContent = title;
+
+  document.getElementById('confirm-msg').textContent   = msg;
+
+  confirmCallback = cb;
+
+  document.getElementById('confirm-overlay').classList.add('open');
+
+}
+
+
+
+document.getElementById('confirm-no').addEventListener('click', () => {
+
+  document.getElementById('confirm-overlay').classList.remove('open');
+
+  confirmCallback = null;
+
+});
+
+
+
+document.getElementById('confirm-yes').addEventListener('click', () => {
+
+  document.getElementById('confirm-overlay').classList.remove('open');
+
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+
+});
+
+
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+
+let toastTimer = null;
+
+
+
+function showToast(msg, isError) {
+
+  let t = document.getElementById('toast');
+
+  if (!t) {
+
+    t = document.createElement('div');
+
+    t.id = 'toast';
+
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;transition:opacity 0.3s;';
+
+    document.body.appendChild(t);
+
+  }
+
+  t.textContent = msg;
+
+  t.style.background = isError ? '#ef4444' : '#1a1a1a';
+
+  t.style.color = '#fff';
+
+  t.style.opacity = '1';
+
+  clearTimeout(toastTimer);
+
+  toastTimer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+
+}
+
+
 
 // ─── PROJEKTE ─────────────────────────────────────────────────────────────────
-var _localProjectsMeta={};
-async function loadProjects(){var token=getGHToken();if(!token)return null;try{var r=await fetch(GH_API_BASE+'/repos/'+GH_DATA_REPO+'/contents/projects',{headers:{Authorization:'token '+token,Accept:'application/vnd.github.v3+json'}});if(r.status===404)return[];if(!r.ok)return null;var items=await r.json();return items.filter(function(i){return i.type==='dir';}).map(function(i){return i.name;});}catch(e){console.error('[loadProjects]',e);return null;}}
-async function loadProjectMeta(id){var result=await fetchFromGitHub('projects/'+id+'/meta.json');if(!result)return null;try{return JSON.parse(result.content);}catch(e){return null;}}
-async function loadProjectLog(id){var result=await fetchFromGitHub('projects/'+id+'/log.md');if(!result)return{content:'',sha:null};return result;}
-async function saveProject(meta){await safeWriteToGitHub('projects/'+meta.id+'/meta.json',JSON.stringify(meta,null,2),'project: save '+meta.name);_localProjectsMeta[meta.id]=meta;var existingLog=await fetchFromGitHub('projects/'+meta.id+'/log.md');if(!existingLog){await safeWriteToGitHub('projects/'+meta.id+'/log.md','','project: init log for '+meta.name);}}
-async function updateProjectLog(projectId,text){var now=new Date();var dateStr=now.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});var entry='\n\n---\n**['+dateStr+']** '+text;var currentContent='';var existing=await fetchFromGitHub('projects/'+projectId+'/log.md');if(existing)currentContent=existing.content;await safeWriteToGitHub('projects/'+projectId+'/log.md',entry+currentContent,'project: log entry for '+projectId);}
 
-async function showProjectsTab(){
-  var container=document.getElementById('projekte-view');var token=getGHToken();
-  var hdr='<div class="proj-header"><h2>Projekte</h2><button class="btn-primary" onclick="openCreateProjectModal()">+ Neues Projekt</button></div>';
-  if(!token){container.innerHTML=hdr+'<div class="empty-state">Bitte GitHub Token eintragen.</div>';return;}
-  container.innerHTML=hdr+'<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Lade Projekte\u2026</div>';
-  try{
-    var ghIds=await loadProjects();if(ghIds===null){container.innerHTML=hdr+'<div class="empty-state">Fehler beim Laden.</div>';return;}
-    var localOnly=Object.keys(_localProjectsMeta).filter(function(id){return !ghIds.includes(id);});var pIds=ghIds.concat(localOnly);
-    if(pIds.length===0){container.innerHTML=hdr+'<div class="empty-state">Noch keine Projekte.</div>';return;}
-    var metas=await Promise.all(pIds.map(function(id){return _localProjectsMeta[id]?Promise.resolve(_localProjectsMeta[id]):loadProjectMeta(id);}));
-    var logs=await Promise.all(pIds.map(function(id){return loadProjectLog(id);}));
-    var sCls={aktiv:'proj-status-aktiv',pausiert:'proj-status-pausiert',abgeschlossen:'proj-status-abgeschlossen'};
-    var sLbl={aktiv:'Aktiv',pausiert:'Pausiert',abgeschlossen:'Abgeschlossen'};
-    var cards='';
-    pIds.forEach(function(id,i){var meta=metas[i];if(!meta)return;var lc=(logs[i]&&logs[i].content)||'';var fl=lc.split('\n').map(function(l){return l.trim();}).find(function(l){return l&&l!=='---'&&!l.startsWith('**[');})||'';
-    cards+='<div class="proj-card" onclick="showProjectDetail(\''+esc(id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name">'+esc(meta.name||id)+'</div><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';});
-    container.innerHTML=hdr+'<div class="proj-grid">'+cards+'</div>';
-  }catch(e){container.innerHTML=hdr+'<div class="empty-state">Fehler: '+esc(e.message)+'</div>';}
+
+
+// In-memory cache: newly created projects before GitHub propagation catches up
+
+const _localProjectsMeta = {};
+
+
+
+async function loadProjects() {
+
+  const token = getGHToken();
+
+  if (!token) return null;
+
+  try {
+
+    const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/projects`, {
+
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+
+    });
+
+    console.log('[loadProjects] HTTP', r.status);
+
+    if (r.status === 404) { console.log('[loadProjects] projects/ not found yet \u2192 []'); return []; }
+
+    if (!r.ok) { console.warn('[loadProjects] unexpected status', r.status); return null; }
+
+    const items = await r.json();
+
+    console.log('[loadProjects] dirs:', items.filter(i => i.type === 'dir').map(i => i.name));
+
+    return items.filter(i => i.type === 'dir').map(i => i.name);
+
+  } catch(e) { console.error('[loadProjects]', e); return null; }
+
 }
 
-async function showProjectDetail(projectId){
-  var container=document.getElementById('projekte-view');
-  container.innerHTML='<div style="padding:32px;text-align:center;color:var(--text-muted)">Lade\u2026</div>';
-  try{
-    var meta=await loadProjectMeta(projectId);if(!meta){container.innerHTML='<div class="empty-state">Nicht gefunden.</div>';return;}
-    var logData=await loadProjectLog(projectId);var logContent=(logData&&logData.content)||'';
-    var cards=getCards();var linked=(meta.kanbanCards||[]).map(function(id){return cards[id];}).filter(Boolean);
-    var sCls={aktiv:'proj-status-aktiv',pausiert:'proj-status-pausiert',abgeschlossen:'proj-status-abgeschlossen'};
-    var sLbl={aktiv:'Aktiv',pausiert:'Pausiert',abgeschlossen:'Abgeschlossen'};
-    var cb=meta.color?' style="border-top:4px solid '+esc(meta.color)+'"':'';
-    container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span></div>'
-      +'<div class="proj-section"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status</label><select class="form-select" id="pjd-status" style="width:auto"><option value="aktiv"'+(meta.status==='aktiv'?' selected':'')+'>Aktiv</option><option value="pausiert"'+(meta.status==='pausiert'?' selected':'')+'>Pausiert</option><option value="abgeschlossen"'+(meta.status==='abgeschlossen'?' selected':'')+'>Abgeschlossen</option></select></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
-      +'<div class="proj-section"><h3>Log</h3><pre class="proj-log-content" id="pjd-log-display">'+(logContent?esc(logContent):'<span style="color:var(--text-muted)">Noch keine Eintr\u00e4ge.</span>')+'</pre><div class="proj-log-form"><textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><button class="btn-primary" id="pjd-log-btn" style="flex-shrink:0">Eintrag hinzuf\u00fcgen</button></div></div>'
-      +'<div class="proj-section"><h3>Verkn\u00fcpfte Karten</h3>'+(linked.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine</div>':'<div class="proj-kanban-chips">'+linked.map(function(c){return '<span class="proj-kanban-chip"><strong>'+esc(c.id)+'</strong> '+esc(c.title||'')+'</span>';}).join('')+'</div>')+'</div>';
-    document.getElementById('pjd-save-btn').addEventListener('click',async function(){var btn=document.getElementById('pjd-save-btn');var st=document.getElementById('pjd-save-status');var nn=document.getElementById('pjd-name').value.trim();var ns=document.getElementById('pjd-status').value;if(!nn){showToast('Name darf nicht leer sein',true);return;}btn.disabled=true;st.textContent='Speichert\u2026';try{await saveProject(Object.assign({},meta,{name:nn,status:ns,updatedAt:new Date().toISOString()}));st.textContent='Gespeichert \u2713';showToast('Projekt gespeichert');setTimeout(function(){if(st)st.textContent='';},3000);}catch(e){showToast('Fehler',true);st.textContent='';}btn.disabled=false;});
-    document.getElementById('pjd-log-btn').addEventListener('click',async function(){var btn=document.getElementById('pjd-log-btn');var text=document.getElementById('pjd-log-entry').value.trim();if(!text){document.getElementById('pjd-log-entry').focus();return;}btn.disabled=true;btn.textContent='Speichert\u2026';try{await updateProjectLog(projectId,text);document.getElementById('pjd-log-entry').value='';showToast('Eintrag hinzugef\u00fcgt');var nl=await loadProjectLog(projectId);var pre=document.getElementById('pjd-log-display');if(pre)pre.textContent=(nl&&nl.content)||'';}catch(e){showToast('Fehler',true);}btn.disabled=false;btn.textContent='Eintrag hinzuf\u00fcgen';});
-  }catch(e){container.innerHTML='<div class="empty-state">Fehler: '+esc(e.message)+'</div>';}
+
+
+async function loadProjectMeta(id) {
+
+  const result = await fetchFromGitHub('projects/' + id + '/meta.json');
+
+  if (!result) return null;
+
+  try { return JSON.parse(result.content); } catch(e) { return null; }
+
 }
 
-function openCreateProjectModal(){document.getElementById('pjm-name').value='';document.getElementById('pjm-desc').value='';document.getElementById('pjm-status').value='aktiv';document.querySelectorAll('.proj-color-swatch').forEach(function(s,i){s.classList.toggle('selected',i===0);});var errEl=document.getElementById('pjm-error');if(errEl){errEl.textContent='';errEl.style.display='none';}document.getElementById('proj-modal-overlay').classList.add('open');setTimeout(function(){document.getElementById('pjm-name').focus();},50);}
-function selectProjColor(el){document.querySelectorAll('.proj-color-swatch').forEach(function(s){s.classList.remove('selected');});el.classList.add('selected');}
-document.getElementById('pjm-cancel').addEventListener('click',function(){document.getElementById('proj-modal-overlay').classList.remove('open');});
-document.getElementById('proj-modal-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)document.getElementById('proj-modal-overlay').classList.remove('open');});
-document.getElementById('pjm-save').addEventListener('click',async function(){var name=document.getElementById('pjm-name').value.trim();if(!name){document.getElementById('pjm-name').focus();return;}var token=getGHToken();if(!token){showToast('Bitte Token eintragen',true);return;}var desc=document.getElementById('pjm-desc').value.trim();var status=document.getElementById('pjm-status').value;var colorEl=document.querySelector('.proj-color-swatch.selected');var color=colorEl?colorEl.dataset.color:'#cc785c';var slug=name.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');var id=slug+'-'+Date.now().toString(36);var meta={id:id,name:name,description:desc,status:status,color:color,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),kanbanCards:[]};var btn=document.getElementById('pjm-save');btn.disabled=true;btn.textContent='Erstellt\u2026';try{await saveProject(meta);document.getElementById('proj-modal-overlay').classList.remove('open');showToast('Projekt erstellt');showProjectsTab();}catch(e){var errEl=document.getElementById('pjm-error');if(errEl){errEl.textContent='Fehler: '+e.message;errEl.style.display='block';}showToast('Fehler: '+e.message,true);}btn.disabled=false;btn.textContent='Erstellen';});
+
+
+async function loadProjectLog(id) {
+
+  const result = await fetchFromGitHub('projects/' + id + '/log.md');
+
+  if (!result) return { content: '', sha: null };
+
+  return result;
+
+}
+
+
+
+async function saveProject(meta) {
+
+  const token = getGHToken();
+
+  if (!token) throw new Error('No token');
+
+  await pushToGitHub(token, 'projects/' + meta.id + '/meta.json',
+
+    JSON.stringify(meta, null, 2), 'project: save ' + meta.name);
+
+  // Cache immediately so UI shows the project before GitHub propagation
+
+  _localProjectsMeta[meta.id] = meta;
+
+  // Create empty log.md if it doesn't exist yet
+
+  const existingLog = await fetchFromGitHub('projects/' + meta.id + '/log.md');
+
+  if (!existingLog) {
+
+    await pushToGitHub(token, 'projects/' + meta.id + '/log.md',
+
+      '', 'project: init log for ' + meta.name);
+
+  }
+
+}
+
+
+
+async function updateProjectLog(projectId, text) {
+
+  const token = getGHToken();
+
+  if (!token) throw new Error('No token');
+
+  const now = new Date();
+
+  const dateStr = now.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' })
+
+    + ' ' + now.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+
+  const entry = '\n\n---\n**[' + dateStr + ']** ' + text;
+
+  // Fetch current SHA and content
+
+  let sha, currentContent = '';
+
+  try {
+
+    const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/projects/${projectId}/log.md`, {
+
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+
+    });
+
+    if (r.ok) {
+
+      const d = await r.json();
+
+      sha = d.sha;
+
+      const bytes = Uint8Array.from(atob(d.content.replace(/\n/g,'')), c => c.charCodeAt(0));
+
+      currentContent = new TextDecoder('utf-8').decode(bytes);
+
+    }
+
+  } catch(e) {}
+
+  const newContent = entry + currentContent;
+
+  const body = { message: 'project: log entry for ' + projectId,
+
+    content: btoa(Array.from(new TextEncoder().encode(newContent),b=>String.fromCharCode(b)).join('')) };
+
+  if (sha) body.sha = sha;
+
+  const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/projects/${projectId}/log.md`, {
+
+    method: 'PUT',
+
+    headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json',
+
+      Accept: 'application/vnd.github.v3+json' },
+
+    body: JSON.stringify(body)
+
+  });
+
+  if (!r.ok) throw new Error('Log update failed: ' + r.status);
+
+}
+
+
+
+async function showProjectsTab() {
+
+  const container = document.getElementById('projekte-view');
+
+  const token = getGHToken();
+
+  const headerHtml = '<div class="proj-header"><h2>Projekte</h2>'
+
+    + '<button class="btn-primary" onclick="openCreateProjectModal()">+ Neues Projekt</button></div>';
+
+
+
+  if (!token) {
+
+    container.innerHTML = headerHtml
+
+      + '<div class="empty-state">Bitte GitHub Token in Einstellungen eintragen.</div>';
+
+    return;
+
+  }
+
+  container.innerHTML = headerHtml
+
+    + '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Lade Projekte\u2026</div>';
+
+
+
+  const ghIds = await loadProjects();
+
+  if (ghIds === null) {
+
+    container.innerHTML = headerHtml
+
+      + '<div class="empty-state">Fehler beim Laden. Bitte Token pr\u00fcfen.</div>';
+
+    return;
+
+  }
+
+  // Merge: include locally cached projects not yet visible in GitHub listing
+
+  const localOnlyIds = Object.keys(_localProjectsMeta).filter(id => !ghIds.includes(id));
+
+  const projectIds = [...ghIds, ...localOnlyIds];
+
+
+
+  if (projectIds.length === 0) {
+
+    container.innerHTML = headerHtml
+
+      + '<div class="empty-state">Noch keine Projekte. Erstelle dein erstes Projekt!</div>';
+
+    return;
+
+  }
+
+
+
+  const [metas, logs] = await Promise.all([
+
+    Promise.all(projectIds.map(id =>
+
+      _localProjectsMeta[id]
+
+        ? Promise.resolve(_localProjectsMeta[id])
+
+        : loadProjectMeta(id)
+
+    )),
+
+    Promise.all(projectIds.map(id => loadProjectLog(id)))
+
+  ]);
+
+
+
+  const statusCls = { aktiv:'proj-status-aktiv', pausiert:'proj-status-pausiert', abgeschlossen:'proj-status-abgeschlossen' };
+
+  const statusLbl = { aktiv:'Aktiv', pausiert:'Pausiert', abgeschlossen:'Abgeschlossen' };
+
+
+
+  let cards = '';
+
+  projectIds.forEach((id, i) => {
+
+    const meta = metas[i];
+
+    if (!meta) return;
+
+    const logContent = logs[i]?.content || '';
+
+    const firstLine = logContent.split('\n').map(l => l.trim())
+
+      .find(l => l && l !== '---' && !l.startsWith('**[')) || '';
+
+    const colorBar = meta.color
+
+      ? `<div class="proj-card-color-bar" style="background:${esc(meta.color)}"></div>` : '';
+
+    const badge = `<span class="proj-status-badge ${statusCls[meta.status]||'proj-status-aktiv'}">`
+
+      + `${statusLbl[meta.status]||esc(meta.status)}</span>`;
+
+    cards += `<div class="proj-card" onclick="showProjectDetail('${esc(id)}')">
+
+      ${colorBar}
+
+      <div class="proj-card-name">${esc(meta.name||id)}</div>
+
+      ${badge}
+
+      ${meta.description ? `<div class="proj-card-desc">${esc(meta.description)}</div>` : ''}
+
+      ${firstLine ? `<div class="proj-card-log">${esc(firstLine)}</div>` : ''}
+
+    </div>`;
+
+  });
+
+
+
+  container.innerHTML = headerHtml + `<div class="proj-grid">${cards}</div>`;
+
+}
+
+
+
+async function showProjectDetail(projectId) {
+
+  const container = document.getElementById('projekte-view');
+
+  container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted);font-size:13px">Lade Projekt\u2026</div>';
+
+
+
+  const meta = await loadProjectMeta(projectId);
+
+  if (!meta) {
+
+    container.innerHTML = '<div class="empty-state">Projekt nicht gefunden.</div>';
+
+    return;
+
+  }
+
+  const logData = await loadProjectLog(projectId);
+
+  const logContent = logData?.content || '';
+
+
+
+  const cards = getCards();
+
+  const linkedCards = (meta.kanbanCards || []).map(id => cards[id]).filter(Boolean);
+
+
+
+  const statusCls = { aktiv:'proj-status-aktiv', pausiert:'proj-status-pausiert', abgeschlossen:'proj-status-abgeschlossen' };
+
+  const statusLbl = { aktiv:'Aktiv', pausiert:'Pausiert', abgeschlossen:'Abgeschlossen' };
+
+  const colorBorder = meta.color ? ` style="border-top:4px solid ${esc(meta.color)}"` : '';
+
+
+
+  container.innerHTML = `
+
+    <div class="proj-detail-header">
+
+      <button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button>
+
+      <span class="proj-detail-name">${esc(meta.name||projectId)}</span>
+
+      <span class="proj-status-badge ${statusCls[meta.status]||'proj-status-aktiv'}">${statusLbl[meta.status]||esc(meta.status)}</span>
+
+    </div>
+
+    <div class="proj-section"${colorBorder}>
+
+      <h3>Info</h3>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+
+        <div>
+
+          <label class="form-label" style="margin-bottom:4px">Name</label>
+
+          <input type="text" class="form-input" id="pjd-name" value="${esc(meta.name||'')}" style="width:auto;min-width:200px">
+
+        </div>
+
+        <div>
+
+          <label class="form-label" style="margin-bottom:4px">Status</label>
+
+          <select class="form-select" id="pjd-status" style="width:auto">
+
+            <option value="aktiv" ${meta.status==='aktiv'?'selected':''}>Aktiv</option>
+
+            <option value="pausiert" ${meta.status==='pausiert'?'selected':''}>Pausiert</option>
+
+            <option value="abgeschlossen" ${meta.status==='abgeschlossen'?'selected':''}>Abgeschlossen</option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+      <button class="btn-primary" id="pjd-save-btn">Speichern</button>
+
+      <span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span>
+
+    </div>
+
+    <div class="proj-section">
+
+      <h3>Log</h3>
+
+      <pre class="proj-log-content" id="pjd-log-display">${logContent ? esc(logContent) : '<span style="color:var(--text-muted);font-style:italic">Noch keine Eintr\u00e4ge.</span>'}</pre>
+
+      <div class="proj-log-form">
+
+        <textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea>
+
+        <button class="btn-primary" id="pjd-log-btn" style="flex-shrink:0;white-space:nowrap">Eintrag hinzuf\u00fcgen</button>
+
+      </div>
+
+    </div>
+
+    <div class="proj-section">
+
+      <h3>Verkn\u00fcpfte Kanban-Karten</h3>
+
+      ${linkedCards.length === 0
+
+        ? '<div style="font-size:13px;color:var(--text-muted)">Keine verkn\u00fcpften Karten</div>'
+
+        : '<div class="proj-kanban-chips">' + linkedCards.map(c =>
+
+            `<span class="proj-kanban-chip"><strong>${esc(c.id)}</strong> ${esc(c.title||'')}</span>`
+
+          ).join('') + '</div>'
+
+      }
+
+    </div>`;
+
+
+
+  document.getElementById('pjd-save-btn').addEventListener('click', async () => {
+
+    const btn = document.getElementById('pjd-save-btn');
+
+    const statusEl = document.getElementById('pjd-save-status');
+
+    const newName   = document.getElementById('pjd-name').value.trim();
+
+    const newStatus = document.getElementById('pjd-status').value;
+
+    if (!newName) { showToast('Name darf nicht leer sein', true); return; }
+
+    btn.disabled = true; statusEl.textContent = 'Speichert\u2026';
+
+    try {
+
+      await saveProject({ ...meta, name: newName, status: newStatus, updatedAt: new Date().toISOString() });
+
+      statusEl.textContent = 'Gespeichert \u2713';
+
+      showToast('Projekt gespeichert');
+
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+
+    } catch(e) { showToast('Fehler beim Speichern', true); statusEl.textContent = ''; }
+
+    btn.disabled = false;
+
+  });
+
+
+
+  document.getElementById('pjd-log-btn').addEventListener('click', async () => {
+
+    const btn  = document.getElementById('pjd-log-btn');
+
+    const text = document.getElementById('pjd-log-entry').value.trim();
+
+    if (!text) { document.getElementById('pjd-log-entry').focus(); return; }
+
+    btn.disabled = true; btn.textContent = 'Speichert\u2026';
+
+    try {
+
+      await updateProjectLog(projectId, text);
+
+      document.getElementById('pjd-log-entry').value = '';
+
+      showToast('Eintrag hinzugef\u00fcgt');
+
+      const newLogData = await loadProjectLog(projectId);
+
+      const pre = document.getElementById('pjd-log-display');
+
+      if (pre) pre.textContent = newLogData?.content || '';
+
+    } catch(e) { showToast('Fehler beim Speichern', true); }
+
+    btn.disabled = false; btn.textContent = 'Eintrag hinzuf\u00fcgen';
+
+  });
+
+}
+
+
+
+function openCreateProjectModal() {
+
+  document.getElementById('pjm-name').value  = '';
+
+  document.getElementById('pjm-desc').value  = '';
+
+  document.getElementById('pjm-status').value = 'aktiv';
+
+  document.querySelectorAll('.proj-color-swatch').forEach((s, i) => s.classList.toggle('selected', i === 0));
+
+  const errEl = document.getElementById('pjm-error');
+
+  if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+
+  document.getElementById('proj-modal-overlay').classList.add('open');
+
+  setTimeout(() => document.getElementById('pjm-name').focus(), 50);
+
+}
+
+
+
+function selectProjColor(el) {
+
+  document.querySelectorAll('.proj-color-swatch').forEach(s => s.classList.remove('selected'));
+
+  el.classList.add('selected');
+
+}
+
+
+
+document.getElementById('pjm-cancel').addEventListener('click', () => {
+
+  document.getElementById('proj-modal-overlay').classList.remove('open');
+
+});
+
+document.getElementById('proj-modal-overlay').addEventListener('click', (e) => {
+
+  if (e.target === e.currentTarget) document.getElementById('proj-modal-overlay').classList.remove('open');
+
+});
+
+
+
+document.getElementById('pjm-save').addEventListener('click', async () => {
+
+  const name = document.getElementById('pjm-name').value.trim();
+
+  if (!name) { document.getElementById('pjm-name').focus(); return; }
+
+  const token = getGHToken();
+
+  if (!token) { showToast('Bitte GitHub Token in Einstellungen eintragen', true); return; }
+
+
+
+  const desc   = document.getElementById('pjm-desc').value.trim();
+
+  const status = document.getElementById('pjm-status').value;
+
+  const colorEl = document.querySelector('.proj-color-swatch.selected');
+
+  const color  = colorEl ? colorEl.dataset.color : '#cc785c';
+
+  const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+  const id   = slug + '-' + Date.now().toString(36);
+
+  const meta = { id, name, description: desc, status, color,
+
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), kanbanCards: [] };
+
+
+
+  const btn = document.getElementById('pjm-save');
+
+  btn.disabled = true; btn.textContent = 'Erstellt\u2026';
+
+  try {
+
+    await saveProject(meta);
+
+    document.getElementById('proj-modal-overlay').classList.remove('open');
+
+    showToast('Projekt erstellt');
+
+    showProjectsTab();
+
+  } catch(e) {
+
+    console.error('[saveProject]', e);
+
+    const errEl = document.getElementById('pjm-error');
+
+    if (errEl) { errEl.textContent = 'Fehler: ' + e.message; errEl.style.display = 'block'; }
+
+    showToast('Fehler: ' + e.message, true);
+
+  }
+
+  btn.disabled = false; btn.textContent = 'Erstellen';
+
+});
+
+
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ─── TAB BINDING ──────────────────────────────────────────────────────────────
-document.querySelectorAll('.tab-btn').forEach(function(btn){btn.addEventListener('click',function(){switchTab(btn.dataset.tab);});});
+function esc(s) {
 
-// ─── FIX 5: CLEAN INIT ──────────────────────────────────────────────────────
-async function initApp() {
-  renderHeutePlaceholder();
-  await loadFromGitHub();   // Step 1: Always fresh from GitHub
-  // Step 2: _dataLoaded now true
-  if (!_appState.collapsed || Object.keys(_appState.collapsed).length === 0) {
-    LANES.forEach(function(lane) { if (lane.id !== 'HE') _appState.collapsed[lane.id] = true; });
-  }
-  initAL(); initBacklog(); updateALBadge();
-  loadCalendarEvents().catch(function(e) { console.warn('cal fail', e); });
-  renderHeute();
-  var syncBtn = document.getElementById('sync-patients-btn');
-  if (syncBtn) {
-    syncBtn.addEventListener('click', async function() {
-      syncBtn.textContent = '\u23f3 Sync\u2026'; syncBtn.disabled = true;
-      try { await savePatientsToGitHub(); syncBtn.textContent = '\u2713 OK'; setTimeout(function() { syncBtn.textContent = '\u2191 Sync'; syncBtn.disabled = false; }, 2000); }
-      catch(e) { syncBtn.textContent = '\u2717 Fehler'; setTimeout(function() { syncBtn.textContent = '\u2191 Sync'; syncBtn.disabled = false; }, 2000); }
-    });
-  }
+  return String(s||'')
+
+    .replace(/&/g,'&amp;')
+
+    .replace(/</g,'&lt;')
+
+    .replace(/>/g,'&gt;')
+
+    .replace(/"/g,'&quot;');
+
 }
-function renderHeutePlaceholder(){['heute-list','woche-list','weitere-list'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<div class="empty-state">Daten werden geladen\u2026</div>';});}
 
-// ─── THEME ────────────────────────────────────────────────────────────────────
-function applyTheme(theme){if(theme==="dark"){document.documentElement.classList.add("dark-theme");document.documentElement.classList.remove("light-theme");}else{document.documentElement.classList.remove("dark-theme");document.documentElement.classList.add("light-theme");}localStorage.setItem("cowork_theme",theme);var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");if(bd)bd.classList.toggle("active",theme==="dark");if(bl)bl.classList.toggle("active",theme!=="dark");}
-(function(){var t=localStorage.getItem("cowork_theme")||"light";if(t==="dark")document.documentElement.classList.add("dark-theme");else document.documentElement.classList.add("light-theme");})();
-document.getElementById("btn-theme-dark").addEventListener("click",function(){applyTheme("dark");});
-document.getElementById("btn-theme-light").addEventListener("click",function(){applyTheme("light");});
-(function(){var t=localStorage.getItem("cowork_theme")||"light";var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");if(bd)bd.classList.toggle("active",t==="dark");if(bl)bl.classList.toggle("active",t!=="dark");})();
+
+
+// ─── TAB BINDING ─────────────────────────────────────────────────────────────
+
+// -- RECOVERY UI
+
+function showRecoveryOptions() {
+
+  var backups = Object.keys(localStorage)
+
+    .filter(function(k) { return k.startsWith('cowork_backup_'); })
+
+    .sort().reverse()
+
+    .map(function(k) {
+
+      var d; try { d = JSON.parse(localStorage.getItem(k)); } catch(e) { d = null; }
+
+      var ts = new Date(parseInt(k.split('_')[2]));
+
+      var src = (d && d.data) ? d.data : d;
+
+      var count = src && src.cards ? Object.values(src.cards).reduce(function(s, lane) {
+
+        if (Array.isArray(lane)) return s + lane.length;
+
+        if (lane && typeof lane === 'object') return s + Object.keys(lane).length;
+
+        return s;
+
+      }, 0) : '?';
+
+      return { key: k, data: d, time: ts.toLocaleString('de-CH'), count: count };
+
+    });
+
+  if (!backups.length) { alert('Keine Backups vorhanden.'); return; }
+
+  var msg = backups.map(function(b, i) { return (i+1) + '. ' + b.time + ' -- ' + b.count + ' Tasks'; }).join('\n');
+
+  var choice = prompt('Backup auswaehlen (1-' + backups.length + '):\n' + msg);
+
+  var idx = parseInt(choice) - 1;
+
+  if (isNaN(idx) || idx < 0 || idx >= backups.length) return;
+
+  var bk = backups[idx];
+
+  if (!bk.data) { alert('Backup beschaedigt.'); return; }
+
+  if (confirm(bk.count + ' Tasks aus ' + bk.time + ' wiederherstellen?')) {
+
+    var restoreData = (bk.data && bk.data.data) ? bk.data.data : bk.data;
+
+    if (restoreData && restoreData.cards) { _appState.cards = restoreData.cards; }
+
+    renderHeute();
+
+    scheduleSyncToGitHub();
+
+    showToast('Backup wiederhergestellt: ' + bk.count + ' Tasks');
+
+  }
+
+}
+
+
+
+document.getElementById('btn-recovery').addEventListener('click', showRecoveryOptions);
+
+
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+
+});
+
+
+
+// ─── INIT APP ──────────────────────────────────────────────────────────────
+
+async function initApp() {
+
+  renderHeutePlaceholder();
+
+  await loadFromGitHub();
+
+  _dataLoaded = true; // enable sync: data is now loaded
+
+  // Set DataGuard floor from loaded cards (flat cards object: count keys, not properties)
+
+  const _initCardCount = Object.keys(_appState.cards || {}).length;
+
+  DataGuard.forceSetFloor(_initCardCount);
+
+  // Set all lanes collapsed by default except HE (if no saved state exists)
+
+  if (!_appState.collapsed || Object.keys(_appState.collapsed).length === 0) {
+
+    LANES.forEach(function(lane) {
+
+      if (lane.id !== 'HE') {
+
+        _appState.collapsed[lane.id] = true;
+
+      }
+
+    });
+
+  }
+
+  initAL();
+
+  initBacklog();
+
+  updateALBadge();
+
+  loadCalendarEvents().catch(function(e) { console.warn('calendar load failed', e); });
+
+  renderHeute();
+
+  // Wire up Sync Patients button
+
+  var syncBtn = document.getElementById('sync-patients-btn');
+
+  if (syncBtn) {
+
+    syncBtn.addEventListener('click', async function() {
+
+      syncBtn.textContent = '⏳ Sync…';
+
+      syncBtn.disabled = true;
+
+      try {
+
+        await savePatientsToGitHub();
+
+        syncBtn.textContent = '✓ Gespeichert';
+
+        setTimeout(function() { syncBtn.textContent = '↑ Sync'; syncBtn.disabled = false; }, 2000);
+
+      } catch(e) {
+
+        syncBtn.textContent = '✗ Fehler';
+
+        setTimeout(function() { syncBtn.textContent = '↑ Sync'; syncBtn.disabled = false; }, 2000);
+
+      }
+
+    });
+
+  }
+
+}
+
+
+
+function renderHeutePlaceholder() {
+
+  const lists = ['heute-list','woche-list','weitere-list'];
+
+  lists.forEach(function(id) {
+
+    const el = document.getElementById(id);
+
+    if (el) el.innerHTML = '<div class="empty-state">Daten werden geladen\u2026</div>';
+
+  });
+
+}
+
+
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
+
+
+
+// ─── THEME ───────────────────────────────────────────────────────────────────
+
+function applyTheme(theme) {
+
+  if (theme === "dark") {
+
+    document.documentElement.classList.add("dark-theme");
+
+    document.documentElement.classList.remove("light-theme");
+
+  } else {
+
+    document.documentElement.classList.remove("dark-theme");
+
+    document.documentElement.classList.add("light-theme");
+
+  }
+
+  localStorage.setItem("cowork_theme", theme);
+
+  const btnDark = document.getElementById("btn-theme-dark");
+
+  const btnLight = document.getElementById("btn-theme-light");
+
+  if (btnDark) btnDark.classList.toggle("active", theme === "dark");
+
+  if (btnLight) btnLight.classList.toggle("active", theme !== "dark");
+
+}
+
+// Apply saved theme immediately (before DOM ready) — default light
+
+(function() {
+
+  var t = localStorage.getItem("cowork_theme") || "light";
+
+  if (t === "dark") {
+
+    document.documentElement.classList.add("dark-theme");
+
+  } else {
+
+    document.documentElement.classList.add("light-theme");
+
+  }
+
+})();
+
+
+
+document.getElementById("btn-theme-dark").addEventListener("click", function() { applyTheme("dark"); });
+
+document.getElementById("btn-theme-light").addEventListener("click", function() { applyTheme("light"); });
+
+// Sync button active state
+
+(function() {
+
+  var t = localStorage.getItem("cowork_theme") || "light";
+
+  var btnDark = document.getElementById("btn-theme-dark");
+
+  var btnLight = document.getElementById("btn-theme-light");
+
+  if (btnDark) btnDark.classList.toggle("active", t === "dark");
+
+  if (btnLight) btnLight.classList.toggle("active", t !== "dark");
+
+})();
+
+
+
 initPinScreen();
+
 </script>
+
 </body>
+
 </html>
+
+
+
+
+
