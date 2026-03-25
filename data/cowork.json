@@ -1,23 +1,364 @@
 {
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "ba_1774434972400_0",
+      "title": "Lokaler Patientendaten-Anonymisierungsdienst",
+      "description": "Lokaler Dienst, der Patientendaten vor Weitergabe an KI automatisch anonymisiert.",
+      "lane": "BA",
+      "priority": "hoch",
+      "tag": "Barmelweid",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_1",
+      "title": "Data Layer Protection (localStorage + Auto-Backup)",
+      "description": "Robuste Datenpersistenz mit automatischer GitHub-Synchronisation. Verhindert Datenverlust.",
+      "lane": "BA",
+      "priority": "hoch",
+      "tag": "Dashboard",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_2",
+      "title": "Vollständige Kanban-Kategorien + BA-Templates",
+      "description": "Alle Kanban-Lanes ausbauen mit Barmelweid-Vorlagen (Verlaufsbericht, Austrittsbericht etc.).",
+      "lane": "BA",
+      "priority": "hoch",
+      "tag": "Dashboard",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_3",
+      "title": "Persönlicher KI-Coach (Barmelweid Focus)",
+      "description": "Coaching-Modul mit Christians Profil (IQ, ADHS, Stärken/Schwächen, berufliche Ziele).",
+      "lane": "BA",
+      "priority": "hoch",
+      "tag": "Coaching",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_4",
+      "title": "Barmelweid Automation Phase 1",
+      "description": "Berichte-Templates, Kalender-Integration, Erinnerungen für Verlaufsberichte.",
+      "lane": "BA",
+      "priority": "hoch",
+      "tag": "Barmelweid",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_5",
+      "title": "LightSailSon Setup (AWS + Gemini API)",
+      "description": "AWS Lightsail als autonome Agenteninfrastruktur mit OpenClaw.",
+      "lane": "BA",
+      "priority": "hoch",
+      "tag": "Infra",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_6",
+      "title": "Claude Lernfähigkeit: Wiederholte Fehler vermeiden (LSS-L-01)",
+      "description": "System das wiederholte Fehler in FEHLERLOG.md persistiert. Automatischer Check zu Sessionbeginn.",
+      "lane": "BA",
+      "priority": "hoch",
+      "tag": "Infra",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_7",
+      "title": "OpenClaw / Telegram-Bot vollständig konfigurieren",
+      "description": "OpenClaw auf CoworkClaw01 mit Gemini Flash Lite, Telegram-Bot verbunden.",
+      "lane": "BA",
+      "priority": "hoch",
+      "tag": "Infra",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_8",
+      "title": "Dashboard PIN + Encoding stabilisieren",
+      "description": "Stabiles PIN-System mit GitHub-Sync und korrekter UTF-8-Enkodierung.",
+      "lane": "BA",
+      "priority": "hoch",
+      "tag": "Dashboard",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_9",
+      "title": "Google Calendar Integration",
+      "description": "Kalender-Events im Dashboard anzeigen, Erinnerungen für fällige Tasks.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Integration",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_10",
+      "title": "Gmail-Automatisierung",
+      "description": "E-Mails via Cowork senden/empfangen, tägliche Zusammenfassungen.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Integration",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_11",
+      "title": "Google Drive Integration",
+      "description": "Berichte direkt in Drive-Ordner speichern. Dokumente aus Drive öffnen.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Integration",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_12",
+      "title": "Wochenrückblick-Report (PDF/Email)",
+      "description": "Automatischer wöchentlicher Report aller erledigten Aufgaben.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Reporting",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_13",
+      "title": "Offline-Modus + PWA-Installation",
+      "description": "Service Worker für Offline-Nutzung und Homescreen-Installation.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Dashboard",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_14",
+      "title": "X.com / Twitter Intelligence Agent",
+      "description": "Agent filtert Psychiatrie/KI/ADHS-Inhalte, verhindert Doomscrolling.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Agenten",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_15",
+      "title": "Podcast & Medien-Wissensintegration (OpenClaw Subagent)",
+      "description": "OpenClaw-Subagent zerlegt Podcasts in Wissens-Nuggets.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Agenten",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_16",
+      "title": "Tagebuch via Chat (Diktat → Journal)",
+      "description": "Sprachbasiertes Journal mit KI-Auswertung und Stimmungsanalyse.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Self",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_17",
+      "title": "Social Media Wissensbibliothek (TikTok/Instagram)",
+      "description": "Gespeicherte Inhalte strukturiert archivieren, kategorisieren, durchsuchen.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Wissen",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_18",
+      "title": "Tages-Briefing (automatische Morgen-Zusammenfassung)",
+      "description": "Automatisches Briefing mit Kalender, offenen Tasks, wichtigen E-Mails.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Agenten",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_19",
+      "title": "Interkantonale Koordination (Kanton-Modul)",
+      "description": "Modul für interkantonale Patientenwechsel: Formulare, Fristen, Ansprechpartner.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Barmelweid",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_20",
+      "title": "Multi-Agenten-Architektur (Stage 1)",
+      "description": "Orchestrator + Subagenten-Framework mit Haiku als Coordinator.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Infra",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_21",
+      "title": "Nacht-Autopilot (22 Uhr – 6 Uhr)",
+      "description": "Autonome Tasks nach 22 Uhr: GitHub-Syncs, Backlog-Updates, E-Mail-Drafts.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Infra",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_22",
+      "title": "Token-Tracking + Usage-Dashboard",
+      "description": "API-Kosten und Token-Verbrauch überwachen. Warnung bei hohem Verbrauch.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Infra",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_23",
+      "title": "Nano-Instanz als Steuerungsagent",
+      "description": "Haiku als kosteneffiziente 24/7-Koordinationsinstanz im Hintergrund.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Infra",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_24",
+      "title": "Persönliche Akte / Profil für Christian",
+      "description": "Strukturierte digitale Akte: IQ, ADHS-Profil, Ziele, Medikation.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Self",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_25",
+      "title": "Push-Benachrichtigungen für Dashboard",
+      "description": "Web Notifications API für fällige Tasks und Deadline-Erinnerungen.",
+      "lane": "BA",
+      "priority": "mittel",
+      "tag": "Dashboard",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_26",
+      "title": "Patienten-Timeline Variante C",
+      "description": "Chronologische Verlaufsansicht pro Patient mit Meilensteinen.",
+      "lane": "BA",
+      "priority": "niedrig",
+      "tag": "Dashboard",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_27",
+      "title": "Anonymisierungsdienst Phase 2 (PDF-Parser)",
+      "description": "Erweiterung um PDF-Parsing: direkt aus gescannten Briefen anonymisieren.",
+      "lane": "BA",
+      "priority": "niedrig",
+      "tag": "Barmelweid",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_28",
+      "title": "Coach-Profil Fragebogen-Template",
+      "description": "Standardisierter Fragebogen für neue Coaching-Patienten.",
+      "lane": "BA",
+      "priority": "niedrig",
+      "tag": "Coaching",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_29",
+      "title": "Imperial Projekt (Langzeitprojekt)",
+      "description": "Persönliches Langzeitprojekt. Konzept und Ziele noch zu definieren.",
+      "lane": "BA",
+      "priority": "niedrig",
+      "tag": "Self",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_30",
+      "title": "Dreiervergleich LLM-Modelle für Agenten",
+      "description": "Benchmark: OpenClaw vs. direkter API-Zugriff vs. Hermes.",
+      "lane": "BA",
+      "priority": "niedrig",
+      "tag": "Infra",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_31",
+      "title": "Brainstorming-Modul im Dashboard",
+      "description": "Strukturiertes Brainstorming: Ideen sammeln, clustern, in Backlog überführen.",
+      "lane": "BA",
+      "priority": "niedrig",
+      "tag": "Dashboard",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_32",
+      "title": "Google Drive Scan-Ordner Archiv",
+      "description": "Gescannte Dokumente automatisch archivieren, OCR, durchsuchbar machen.",
+      "lane": "BA",
+      "priority": "niedrig",
+      "tag": "Integration",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    },
+    {
+      "id": "ba_1774434972400_33",
+      "title": "Physik-Lernsystem (Get-Physics-Done)",
+      "description": "Gamifiziertes Lernsystem für Physik-Grundlagen. Get-X-Done Framework.",
+      "lane": "BA",
+      "priority": "niedrig",
+      "tag": "Wissen",
+      "status": "offen",
+      "created": "2026-03-25T10:36:12.399Z"
+    }
+  ],
   "diary": [],
   "patients": [],
   "categories": [
     {
-      "id": "mn22zpnlek8g2",
+      "id": "cat_klinik",
       "name": "Klinik",
       "color": "#22c55e"
     },
     {
-      "id": "mn22zpnlis8tw",
+      "id": "cat_allgemein",
       "name": "Allgemein",
       "color": "#3b82f6"
     },
     {
-      "id": "mn22zpnlkw0vt",
+      "id": "cat_privat",
       "name": "Privat",
       "color": "#f59e0b"
     }
   ],
-  "updatedAt": 1774206238508
+  "updatedAt": 1774434972400
 }
