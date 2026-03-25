@@ -1,5 +1,7 @@
 ﻿<!-- CoworkKanban v1.8 | 2026-03-25 | data-loss prevention: pre-push safety, backup system, read-before-write, status bar -->
 <!-- CHANGELOG
+  fix | 2026-03-25 | UTF-8 encoding fix — consistent TextDecoder chain for all GitHub API reads
+  fix: UTF-8 encoding — consistent TextDecoder chain for all GitHub API reads
   v1.8 | 2026-03-25 | data-loss prevention: pre-push safety check, localStorage backup, read-before-write, sync status bar
   v1.7 | 2026-03-25 | light theme default, Claude-Blue accent, GitHub-sync constants, calendar columns, brand rename
   v1.6 | 2026-03-24 | add light/dark theme toggle in settings
@@ -1374,7 +1376,7 @@ async function pushToGitHub(token, path, content, message) {
       if (r.ok) { const d = await r.json(); sha = d.sha; if (ghSHA.hasOwnProperty(path)) ghSHA[path] = sha; }
     } catch(e) {}
   }
-  const body = { message, content: btoa(unescape(encodeURIComponent(content))) };
+  const body = { message, content: btoa(Array.from(new TextEncoder().encode(content),b=>String.fromCharCode(b)).join('')) };
   if (sha) body.sha = sha;
   const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/${path}`, {
     method: 'PUT',
@@ -1938,7 +1940,7 @@ async function loadCalendarEvents() {
       { headers: { Authorization: 'token ' + token } });
     if (!r.ok) return;
     const d = await r.json();
-    window._calEvents = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+    window._calEvents = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(d.content.replace(/\n/g,'')), c => c.charCodeAt(0))));
   } catch(e) { console.warn('calendar load failed', e); }
 }
 
@@ -2879,7 +2881,7 @@ async function updateProjectLog(projectId, text) {
   } catch(e) {}
   const newContent = entry + currentContent;
   const body = { message: 'project: log entry for ' + projectId,
-    content: btoa(unescape(encodeURIComponent(newContent))) };
+    content: btoa(Array.from(new TextEncoder().encode(newContent),b=>String.fromCharCode(b)).join('')) };
   if (sha) body.sha = sha;
   const r = await fetch(`${GH_API_BASE}/repos/${GH_DATA_REPO}/contents/projects/${projectId}/log.md`, {
     method: 'PUT',
