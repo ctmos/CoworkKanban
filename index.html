@@ -226,11 +226,10 @@ nav::-webkit-scrollbar { display: none; }
     margin: auto;
   }
 }
-@media (min-width: 1100px) {
-  .status-grid {
-    grid-template-columns: repeat(5, 1fr);
-    max-width: 1300px;
-  }
+.status-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 .status-col {
   background: var(--surface);
@@ -917,36 +916,40 @@ nav::-webkit-scrollbar { display: none; }
   <!-- HEUTE TAB -->
   <div id="tab-heute" class="tab-content active">
     <div class="status-grid">
-      <!-- Column 1: Heute -->
-      <div class="status-col" id="status-heute">
-        <div class="status-col-header">Heute</div>
-        <div id="heute-list" class="status-list">
-          <div class="empty-state">Keine heutigen Items — ziehe Karten hierher</div>
+      <!-- Group 1: Heute + Kalender heute -->
+      <div class="status-group">
+        <div class="status-col" id="status-heute">
+          <div class="status-col-header">Heute</div>
+          <div id="heute-list" class="status-list">
+            <div class="empty-state">Keine heutigen Items — ziehe Karten hierher</div>
+          </div>
+        </div>
+        <div class="status-col" id="status-cal-heute">
+          <div class="status-col-header">Kalender heute</div>
+          <div class="status-list">
+            <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+          </div>
         </div>
       </div>
-      <!-- Column 1b: Kalender heute -->
-      <div class="status-col" id="status-cal-heute">
-        <div class="status-col-header">Kalender heute</div>
-        <div class="status-list">
-          <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+      <!-- Group 2: Wochenplan + Kalender Woche -->
+      <div class="status-group">
+        <div class="status-col" id="status-woche">
+          <div class="status-col-header">Wochenplan</div>
+          <div id="woche-list" class="status-list"></div>
+        </div>
+        <div class="status-col" id="status-cal-woche">
+          <div class="status-col-header">Kalender Woche</div>
+          <div class="status-list">
+            <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+          </div>
         </div>
       </div>
-      <!-- Column 2: Wochenplan -->
-      <div class="status-col" id="status-woche">
-        <div class="status-col-header">Wochenplan</div>
-        <div id="woche-list" class="status-list"></div>
-      </div>
-      <!-- Column 2b: Kalender Woche -->
-      <div class="status-col" id="status-cal-woche">
-        <div class="status-col-header">Kalender Woche</div>
-        <div class="status-list">
-          <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+      <!-- Group 3: Weitere Plaene -->
+      <div class="status-group">
+        <div class="status-col" id="status-weitere">
+          <div class="status-col-header">Weitere Pläne</div>
+          <div id="weitere-list" class="status-list"></div>
         </div>
-      </div>
-      <!-- Column 3: Weitere Plaene -->
-      <div class="status-col" id="status-weitere">
-        <div class="status-col-header">Weitere Pläne</div>
-        <div id="weitere-list" class="status-list"></div>
       </div>
     </div>
   </div>
@@ -2454,19 +2457,35 @@ document.getElementById('blm-delete').addEventListener('click', () => {
 
 // ─── EINSTELLUNGEN ────────────────────────────────────────────────────────────
 function initSettings() {
+  // Load token: prefer in-memory _appState, fall back to real localStorage
   const settings = ls('cowork_settings', {});
-  const token = settings.gh_token || ls('cowork_gh_token', '');
+  const token = settings.gh_token || ls('cowork_gh_token', '') || localStorage.getItem('cowork_gh_token') || '';
   document.getElementById('gh-token-input').value = token;
+  // If we found a token in real localStorage but not in _appState, load it
+  if (!_appState.gh_token && token) {
+    _appState.gh_token = token;
+  }
   const budget = settings.budget || ls('cowork_budget', 100);
   document.getElementById('budget-input').value = budget;
 }
 
+// Auto-load GitHub token from localStorage on page load into _appState
+(function loadGhTokenFromLocalStorage() {
+  const saved = localStorage.getItem('cowork_gh_token');
+  if (saved && !_appState.gh_token) {
+    _appState.gh_token = saved;
+  }
+})();
+
 document.getElementById('btn-gh-save').addEventListener('click', async () => {
   const v = document.getElementById('gh-token-input').value.trim();
+  // Save to in-memory state
   lsSet('cowork_gh_token', v);
   const settings = ls('cowork_settings', {});
   settings.gh_token = v;
   lsSet('cowork_settings', settings);
+  // Also persist to real localStorage for auto-load on next visit
+  localStorage.setItem('cowork_gh_token', v);
   if (v) {
     try {
       await pushToGitHub(v, 'settings/config.json', JSON.stringify({ updated: new Date().toISOString() }, null, 2), 'sync: update config');
