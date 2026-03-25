@@ -1069,6 +1069,14 @@ body { padding-top: 28px; }
     </div>
 
     <div class="settings-section">
+      <h3>Notfall-Wiederherstellung</h3>
+      <div class="settings-row">
+        <label class="settings-label">Backup wiederherstellen</label>
+        <button id="btn-recovery" style="background:#ef4444;color:white;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px">&#x1F198; Daten wiederherstellen</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <h3>Wochenbudget</h3>
       <div class="settings-row">
         <label class="settings-label">Max. Aufgaben/Woche</label>
@@ -1266,6 +1274,55 @@ body { padding-top: 28px; }
 <script>
 
 // ─── GITHUB HELPERS ──────────────────────────────────────────────────────────
+// ============================================================
+// FROZEN SECTION -- NIEMALS AENDERN OHNE CHRISTIAN'S FREIGABE
+// PIN Hash: MjYxMWNvd29yaw==
+// Salt: cowork
+// Encoded: btoa(pin + salt)  [ASCII-only PINs]
+// ============================================================
+const PIN_HASH = 'MjYxMWNvd29yaw==';
+const PIN_SALT = 'cowork';
+function verifyPin(input) {
+  return btoa(input + PIN_SALT) === PIN_HASH;
+}
+// ============================================================
+// END FROZEN SECTION
+// ============================================================
+
+// DataGuard -- prevents data loss on GitHub pushes
+const DataGuard = {
+  get floor() { return parseInt(localStorage.getItem('cowork_tasks_floor') || '0'); },
+  setFloor(count) {
+    const newFloor = Math.max(this.floor, count);
+    localStorage.setItem('cowork_tasks_floor', newFloor);
+  },
+  canPush(newCount) {
+    const floor = this.floor;
+    if (newCount < floor) {
+      console.error('[DataGuard] BLOCKED: ' + newCount + ' cards < floor ' + floor);
+      return false;
+    }
+    return true;
+  },
+  backup(data) {
+    try {
+      const key = 'cowork_backup_' + Date.now();
+      localStorage.setItem(key, JSON.stringify(data));
+      const keys = Object.keys(localStorage)
+        .filter(k => k.startsWith('cowork_backup_'))
+        .sort();
+      while (keys.length > 10) localStorage.removeItem(keys.shift());
+    } catch(e) { /* storage full */ }
+  },
+  getLatestBackup() {
+    const keys = Object.keys(localStorage)
+      .filter(k => k.startsWith('cowork_backup_'))
+      .sort();
+    if (!keys.length) return null;
+    try { return JSON.parse(localStorage.getItem(keys[keys.length - 1])); } catch(e) { return null; }
+  }
+};
+
 const GH_TOKEN = ['ghp_IphgmZsko0VXxf3U', '12JKQE8aOQKfwQ3gN35d'].join('');
 const GH_DATA_BASE = 'https://api.github.com/repos/ctmos/cowork-data/contents/data';
 const GH_DATA_REPO = 'ctmos/cowork-data';
@@ -1347,8 +1404,10 @@ function setSyncStatus(status) {
 
 // ─── AUTO SYNC — CARDS ───────────────────────────────────────────────────────
 let syncDebounceTimer = null;
+let _dataLoaded = false; // race condition guard
 
 function scheduleSyncToGitHub() {
+  if (!_dataLoaded) { return; } // never sync before data is loaded
   clearTimeout(syncDebounceTimer);
   setSyncStatus('syncing');
   syncDebounceTimer = setTimeout(syncToGitHub, 2000);
@@ -1380,7 +1439,7 @@ function saveBackupToLocalStorage(data) {
     const keys = Object.keys(localStorage)
       .filter(k => k.startsWith('cowork_backup_'))
       .sort();
-    while (keys.length > 5) {
+    while (keys.length > 10) {
       localStorage.removeItem(keys.shift());
     }
   } catch(e) { /* storage full — ignore */ }
@@ -1431,6 +1490,18 @@ async function syncToGitHub() {
       console.error('[syncToGitHub] ' + errMsg);
       throw new Error(errMsg);
     }
+    // DataGuard: count individual cards across all lanes
+    const totalMergedCards = Object.values(mergedCards).reduce(function(s, lane) {
+      if (Array.isArray(lane)) return s + lane.length;
+      if (lane && typeof lane === 'object') return s + Object.keys(lane).length;
+      return s;
+    }, 0);
+    if (!DataGuard.canPush(totalMergedCards)) {
+      const dgMsg = 'DataGuard BLOCKED: ' + totalMergedCards + ' < floor ' + DataGuard.floor;
+      setSyncStatus('error');
+      updateSyncStatusBar(null, null, dgMsg);
+      throw new Error(dgMsg);
+    }
 
     const savedAt = new Date().toISOString();
     _appState.cards_savedAt = savedAt;
@@ -1453,6 +1524,7 @@ async function syncToGitHub() {
     });
     if (!putRes.ok) throw new Error('Push failed: ' + putRes.status);
     setSyncStatus('synced');
+    DataGuard.setFloor(totalMergedCards);
 
     // ── STEP D: Update status bar ─────────────────────────────────────────────
     updateSyncStatusBar(mergedCardCount, savedAt, null);
@@ -1699,7 +1771,7 @@ let pinFailures = 0;
 let pinLocked = false;
 let pinLockTimer = null;
 
-function hashPin(pin) { return btoa(pin + 'cowork'); }
+function hashPin(pin) { return btoa(pin + PIN_SALT); }
 
 function showPinError(msg) {
   document.getElementById('pin-error').textContent = msg;
@@ -1713,7 +1785,7 @@ function showPinUnlockUI(stored) {
   document.getElementById('pin-btn').addEventListener('click', function() {
     const p = document.getElementById('pin-input').value.trim();
     const hash = _appState.pin_hash || stored;
-    if (btoa(p + 'cowork') === hash) {
+    if (verifyPin(p)) {
       sessionStorage.setItem('cowork_pin_set', 'true');
       unlockApp();
     } else { showPinError('Falscher PIN'); }
@@ -3042,6 +3114,40 @@ function esc(s) {
 }
 
 // ─── TAB BINDING ─────────────────────────────────────────────────────────────
+// -- RECOVERY UI
+function showRecoveryOptions() {
+  var backups = Object.keys(localStorage)
+    .filter(function(k) { return k.startsWith('cowork_backup_'); })
+    .sort().reverse()
+    .map(function(k) {
+      var d; try { d = JSON.parse(localStorage.getItem(k)); } catch(e) { d = null; }
+      var ts = new Date(parseInt(k.split('_')[2]));
+      var src = (d && d.data) ? d.data : d;
+      var count = src && src.cards ? Object.values(src.cards).reduce(function(s, lane) {
+        if (Array.isArray(lane)) return s + lane.length;
+        if (lane && typeof lane === 'object') return s + Object.keys(lane).length;
+        return s;
+      }, 0) : '?';
+      return { key: k, data: d, time: ts.toLocaleString('de-CH'), count: count };
+    });
+  if (!backups.length) { alert('Keine Backups vorhanden.'); return; }
+  var msg = backups.map(function(b, i) { return (i+1) + '. ' + b.time + ' -- ' + b.count + ' Tasks'; }).join('\n');
+  var choice = prompt('Backup auswaehlen (1-' + backups.length + '):\n' + msg);
+  var idx = parseInt(choice) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= backups.length) return;
+  var bk = backups[idx];
+  if (!bk.data) { alert('Backup beschaedigt.'); return; }
+  if (confirm(bk.count + ' Tasks aus ' + bk.time + ' wiederherstellen?')) {
+    var restoreData = (bk.data && bk.data.data) ? bk.data.data : bk.data;
+    if (restoreData && restoreData.cards) { _appState.cards = restoreData.cards; }
+    renderHeute();
+    scheduleSyncToGitHub();
+    showToast('Backup wiederhergestellt: ' + bk.count + ' Tasks');
+  }
+}
+
+document.getElementById('btn-recovery').addEventListener('click', showRecoveryOptions);
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
@@ -3050,6 +3156,14 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 async function initApp() {
   renderHeutePlaceholder();
   await loadFromGitHub();
+  _dataLoaded = true; // enable sync: data is now loaded
+  // Set DataGuard floor from loaded cards
+  const _initCardCount = Object.values(_appState.cards || {}).reduce(function(s, lane) {
+    if (Array.isArray(lane)) return s + lane.length;
+    if (lane && typeof lane === 'object') return s + Object.keys(lane).length;
+    return s;
+  }, 0);
+  DataGuard.setFloor(_initCardCount);
   // Set all lanes collapsed by default except HE (if no saved state exists)
   if (!_appState.collapsed || Object.keys(_appState.collapsed).length === 0) {
     LANES.forEach(function(lane) {
