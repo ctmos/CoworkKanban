@@ -1,6 +1,7 @@
-<!-- CoworkKanban v2.1 | 2026-03-25 | Stabilization: AUTHORIZED_DATA_REPO lock, DataGuard forceSetFloor, HIGH_RISK detection, pre-write backup, repo lock in safeWriteToGitHub -->
+<!-- CoworkKanban v2.2 | 2026-03-26 | fix: wire up recovery + cache-reset buttons -->
 
 <!-- CHANGELOG
+    v2.2 | 2026-03-26 | fix: wire up recovery + cache-reset buttons
     v2.1 | 2026-03-26 | FIX: _pushInProgress 30s timeout, better blocked badge text, timeout badge status
   v2.0 | 2026-03-25 | STABILIZATION: Layer 1 pre-write backup to data/backups/, Layer 2 HIGH_RISK write detection (>20%/5+ lanes), Layer 3 DataGuard forceSetFloor after loads, Layer 4 AUTHORIZED_DATA_REPO lock, WriteGuard v2.0
 
@@ -3296,6 +3297,44 @@ function applyTheme(theme){if(theme==="dark"){document.documentElement.classList
 document.getElementById("btn-theme-dark").addEventListener("click",function(){applyTheme("dark");});
 document.getElementById("btn-theme-light").addEventListener("click",function(){applyTheme("light");});
 (function(){var t=localStorage.getItem("cowork_theme")||"light";var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");if(bd)bd.classList.toggle("active",t==="dark");if(bl)bl.classList.toggle("active",t!=="dark");})();
+
+// ─── RECOVERY & CACHE-RESET ───────────────────────────────────────────────────
+document.getElementById('btn-recovery')?.addEventListener('click', async () => {
+  if (!confirm('Möchten Sie die Tasks aus dem letzten Backup wiederherstellen?')) return;
+  try {
+    showToast('Lade Backups...', 'info');
+    const token = getGHToken();
+    const resp = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/backups', {
+      headers: { 'Authorization': 'token ' + token }
+    });
+    if (!resp.ok) throw new Error('Keine Backups gefunden');
+    const files = await resp.json();
+    const backups = files.filter(f => f.name.startsWith('tasks_')).sort((a,b) => b.name.localeCompare(a.name));
+    if (backups.length === 0) throw new Error('Keine Backups vorhanden');
+    const latest = backups[0];
+    const backupResp = await fetch(latest.download_url, { headers: { 'Authorization': 'token ' + token }});
+    const backupData = await backupResp.json();
+    const cardCount = Object.keys(backupData.cards || {}).length;
+    if (!confirm(`Backup "${latest.name}" mit ${cardCount} Karten wiederherstellen?`)) return;
+    _appState.cards = backupData.cards;
+    _appState._meta = backupData._meta;
+    renderBoard();
+    showToast(`✅ ${cardCount} Karten aus Backup wiederhergestellt. Speichere...`, 'success');
+    await saveAllCards('recovery: restore from ' + latest.name);
+  } catch (err) {
+    showToast('❌ Recovery fehlgeschlagen: ' + err.message, 'error');
+    console.error('Recovery error:', err);
+  }
+});
+
+document.getElementById('btn-cache-reset')?.addEventListener('click', () => {
+  if (!confirm('Cache leeren und Daten neu von GitHub laden? Nicht gespeicherte Änderungen gehen verloren.')) return;
+  localStorage.removeItem('cowork_tasks_cache');
+  localStorage.removeItem('cowork_tasks_sha');
+  localStorage.removeItem('cowork_dataguard_floor');
+  showToast('Cache gelöscht — lade neu...', 'info');
+  setTimeout(() => location.reload(), 500);
+});
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 initPinScreen();
