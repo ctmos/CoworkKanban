@@ -3100,7 +3100,7 @@ async function loadFromGitHub() {
       try {
         var s = JSON.parse(settingsRemote.content);
         if (s.budget !== undefined) _appState.budget = s.budget;
-        if (s.gh_token) _appState.gh_token = String(s.gh_token).replace(/^"|"$/g,"");
+        if (s.gh_token && typeof s.gh_token === 'string') _appState.gh_token = s.gh_token.replace(/^"|"$/g,"");
         if (s.collapsed) _appState.collapsed = s.collapsed;
         if (s.seqs) {
           Object.keys(s.seqs).forEach(function(k) { _appState.seqs[k] = s.seqs[k]; });
