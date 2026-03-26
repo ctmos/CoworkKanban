@@ -1,4 +1,4 @@
-﻿<!-- CoworkKanban v2.0 | 2026-03-25 | Stabilization: AUTHORIZED_DATA_REPO lock, DataGuard forceSetFloor, HIGH_RISK detection, pre-write backup, repo lock in safeWriteToGitHub -->
+<!-- CoworkKanban v2.0 | 2026-03-25 | Stabilization: AUTHORIZED_DATA_REPO lock, DataGuard forceSetFloor, HIGH_RISK detection, pre-write backup, repo lock in safeWriteToGitHub -->
 
 <!-- CHANGELOG
   v2.0 | 2026-03-25 | STABILIZATION: Layer 1 pre-write backup to data/backups/, Layer 2 HIGH_RISK write detection (>20%/5+ lanes), Layer 3 DataGuard forceSetFloor after loads, Layer 4 AUTHORIZED_DATA_REPO lock, WriteGuard v2.0
@@ -2035,6 +2035,7 @@ const DataGuard = {
 // ─── WRITE GUARD (v1.9: Maximaler Schreibschutz) ─────────────────────────────
 const WriteGuard = {
   _pushInProgress: false,
+  _pushTimeout: null,
   writeLog: [],
 
   log(entry) {
@@ -2402,6 +2403,16 @@ async function syncToGitHub() {
   WriteGuard.ensureBadge();
   WriteGuard.log({ status: 'pending', reason: 'auto-sync' });
   WriteGuard._pushInProgress = true;
+  clearTimeout(WriteGuard._pushTimeout);
+  WriteGuard._pushTimeout = setTimeout(function() {
+    if (WriteGuard._pushInProgress) {
+      console.warn('[WriteGuard] Push timeout after 30s — resetting _pushInProgress');
+      WriteGuard._pushInProgress = false;
+      WriteGuard.log({ status: 'timeout', reason: 'Push timeout 30s' });
+      WriteGuard._updateBadge();
+      setSyncStatus('error');
+    }
+  }, 30000);
   setSyncStatus('syncing');
 
   // Atomic backup for rollback (in-memory)
@@ -2459,6 +2470,7 @@ async function syncToGitHub() {
     setSyncStatus('error');
     showToast('Sync fehlgeschlagen, Rollback: ' + e.message, true);
   } finally {
+    clearTimeout(WriteGuard._pushTimeout);
     WriteGuard._pushInProgress = false;
   }
 }
