@@ -1,6 +1,7 @@
-<!-- CoworkKanban v2.0 | 2026-03-25 | Stabilization: AUTHORIZED_DATA_REPO lock, DataGuard forceSetFloor, HIGH_RISK detection, pre-write backup, repo lock in safeWriteToGitHub -->
+<!-- CoworkKanban v2.1 | 2026-03-25 | Stabilization: AUTHORIZED_DATA_REPO lock, DataGuard forceSetFloor, HIGH_RISK detection, pre-write backup, repo lock in safeWriteToGitHub -->
 
 <!-- CHANGELOG
+    v2.1 | 2026-03-26 | FIX: _pushInProgress 30s timeout, better blocked badge text, timeout badge status
   v2.0 | 2026-03-25 | STABILIZATION: Layer 1 pre-write backup to data/backups/, Layer 2 HIGH_RISK write detection (>20%/5+ lanes), Layer 3 DataGuard forceSetFloor after loads, Layer 4 AUTHORIZED_DATA_REPO lock, WriteGuard v2.0
 
   v1.9 | 2026-03-25 | WriteGuard (6 Pre-Push-Checks), DataGuard Floor, Startup Integrity Check, _pushInProgress Lock, 10s Debounce, Atomic Rollback
@@ -2068,7 +2069,9 @@ const WriteGuard = {
     } else if (last.status === 'pending') {
       badge.className = 'wg-badge wg-yellow'; badge.textContent = '\u2191 Push';
     } else if (last.status === 'blocked') {
-      badge.className = 'wg-badge wg-red'; badge.textContent = '\u26D4 Blocked';
+      badge.className = 'wg-badge wg-red'; badge.textContent = '\u26A0 Push blockiert';
+        } else if (last.status === 'timeout') {
+      badge.className = 'wg-badge wg-yellow'; badge.textContent = '\u23F3 Timeout \u2014 retry';
     } else if (last.status === 'high_risk') {
       badge.className = 'wg-badge wg-orange'; badge.textContent = '\u26A0\uFE0F HIGH_RISK';
     } else {
@@ -2643,6 +2646,8 @@ async function loadFromGitHub() {
     // FIX 5: Mark data as loaded -- writes now allowed
     _dataLoaded = true;
     setSyncStatus('synced');
+// v2.1: Reset badge to OK after successful load
+WriteGuard.log({ status: 'ok', reason: 'Data loaded successfully' });
   } catch(e) {
     console.error('[loadFromGitHub] fatal:', e);
     setSyncStatus('error');
