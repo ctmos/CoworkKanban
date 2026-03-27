@@ -4672,6 +4672,76 @@ function addBlogEntry(){var t=document.getElementById('pat-blog-text').value.tri
 function deleteBlogEntry(blogId){var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat||!pat.blog)return;pat.blog=pat.blog.filter(function(e){return e.id!==blogId;});savePatients(patients);renderPatBlog(pat);}
 function toggleBlogExpand(blogId){_blogExpanded[blogId]=!_blogExpanded[blogId];var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(pat)renderPatBlog(pat);}
 
+
+
+// BB-112: MULTI-DEVICE SYNC (Smart Polling)
+var _lastKnownSHA = null;
+var _syncInterval = null;
+
+async function checkForRemoteChanges() {
+  var token = getGHToken();
+  if (!token) return;
+  try {
+    var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/tasks.json', {
+      headers: { Authorization: 'token ' + token },
+      cache: 'no-store'
+    });
+    if (!r.ok) return;
+    var d = await r.json();
+    var remoteSHA = d.sha;
+
+    if (_lastKnownSHA && remoteSHA !== _lastKnownSHA) {
+      console.log('[sync] Remote change detected:', _lastKnownSHA, '->', remoteSHA);
+      showToast('Neue Daten erkannt \u2014 lade...', false);
+      _dataLoaded = false;
+      await loadFromGitHub();
+
+      // Also force-reload patients (workaround for proxy issue)
+      try {
+        var pr = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/patients.json', {
+          headers: { Authorization: 'token ' + token }, cache: 'no-store'
+        });
+        if (pr.ok) {
+          var pd = await pr.json();
+          var raw = JSON.parse(atob(pd.content.replace(/\n/g, '')));
+          _appState.patients = Array.isArray(raw) ? raw : (raw.patients || []);
+        }
+      } catch(e) {}
+
+      // Re-render current tab
+      if (currentTab === 'heute') renderHeute();
+      if (currentTab === 'kanban') renderKanban();
+      if (currentTab === 'patienten') renderPatients();
+      if (currentTab === 'backlog') renderBacklog();
+      if (currentTab === 'autonomy') renderAL();
+
+      showToast('\u2705 Daten synchronisiert', false);
+    }
+    _lastKnownSHA = remoteSHA;
+  } catch(e) {
+    console.warn('[sync] check failed:', e);
+  }
+}
+
+function startSyncPolling() {
+  if (_syncInterval) clearInterval(_syncInterval);
+  // Initial SHA capture
+  checkForRemoteChanges();
+  // Poll every 60 seconds
+  _syncInterval = setInterval(checkForRemoteChanges, 60000);
+  console.log('[sync] Polling started (60s interval)');
+}
+
+// Also sync on tab focus (user switches back to this tab)
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    checkForRemoteChanges();
+  }
+});
+
+// Start polling after boot
+setTimeout(startSyncPolling, 5000);
+
 </script>
 
 </body>
