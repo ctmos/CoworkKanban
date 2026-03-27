@@ -7369,7 +7369,7 @@ async function initApp() {
 
       // forceSetFloor resets stale floor values from previous sessions.
 
-      DataGuard.forceSetFloor(taskCount);
+      DataGuard.forceSetFloor(0);
 
       WriteGuard.log({ status: 'ok', reason: 'startup OK, ' + taskCount + ' Tasks' });
 
