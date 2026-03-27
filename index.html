@@ -2979,7 +2979,7 @@ nav::-webkit-scrollbar { display: none; }
 @media (max-width: 768px) {
   .burger-btn { display: block; }
   .nav-tabs {
-    display: none;
+    display: flex;
     position: absolute;
     top: 48px;
     left: 0;
@@ -3184,6 +3184,15 @@ nav::-webkit-scrollbar { display: none; }
 .lane.collapsed .lane-body { display: none; }
 .lane.collapsed .lane-header { border-radius: var(--radius); }
 
+
+@media (max-width: 768px) {
+  nav { overflow-x: auto !important; -webkit-overflow-scrolling: touch; gap: 0 !important; padding: 0 8px !important; }
+  nav::-webkit-scrollbar { display: none; }
+  .tab-btn { padding: 0 10px !important; font-size: 12px !important; white-space: nowrap; flex-shrink: 0; }
+  .brand { font-size: 12px !important; margin-right: 6px !important; }
+  #burger-btn { display: none !important; }
+  #nav-tabs, .nav-tabs { display: contents !important; }
+}
 </style>
 
 
@@ -3272,8 +3281,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
     <span class="brand">CoworkSpace</span>
-<button id="burger-btn" class="burger-btn" onclick="document.getElementById('nav-tabs').classList.toggle('nav-open')">&#9776;</button>
-<div id="nav-tabs" class="nav-tabs">
+
 
 
 
@@ -3305,8 +3313,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-  </div>
-</nav>
+  </nav>
 
 
 
