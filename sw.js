@@ -1,5 +1,5 @@
 // CoworkKanban Service Worker v3.3
-const CACHE_NAME = 'cowork-v3.3';
+const CACHE_NAME = 'cowork-v3.5';
 const APP_SHELL = [
   '/CoworkKanban/',
   '/CoworkKanban/index.html',
