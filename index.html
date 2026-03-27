@@ -1,4 +1,4 @@
-<!-- CoworkKanban v3.3 | 2026-03-27 | fix: calendar columns, HE001, patient encoding -->
+<!-- CoworkKanban v3.4 | 2026-03-27 | fix: token onboarding, cal auto-refresh, version tag, touch D&D, mobile polish -->
 
 
 
@@ -3038,6 +3038,17 @@ nav::-webkit-scrollbar { display: none; }
     max-width: 95vw !important;
     margin: 10px auto !important;
   }
+  /* Brand smaller on mobile */
+  .brand { font-size: 13px; margin-right: 8px; }
+  /* Status grid stacks vertically */
+  .status-grid { display: flex; flex-direction: column; gap: 12px; }
+  .status-group { display: flex; flex-direction: column; gap: 12px; }
+  /* Settings cards full width */
+  .settings-section { margin: 8px; padding: 12px; }
+  /* Kanban scroll horizontal hint */
+  #tab-kanban { padding: 8px; }
+  /* AL cards less padding */
+  .al-card { padding: 12px; }
 }
 
 /* ─── TABLET (768-1024px) ──────────────────────────────── */
@@ -3046,6 +3057,17 @@ nav::-webkit-scrollbar { display: none; }
   .status-col { min-width: 200px; }
 }
 
+
+/* Touch drag visual */
+.card-item.dragging-touch {
+  opacity: 0.6;
+  transform: scale(0.95);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.lane.drag-over-touch {
+  background: rgba(196,122,42,0.1);
+  border: 2px dashed var(--accent);
+}
 </style>
 
 
@@ -4440,6 +4462,8 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
+<div id="version-tag" style="position:fixed;bottom:4px;right:80px;font-size:10px;color:var(--text-muted);opacity:0.5;z-index:50;">v3.3 PWA</div>
+
 <div id="sync-status-bar">
 
 
@@ -5693,11 +5717,11 @@ async function loadFromGitHub() {
   var token = getGHToken();
 
   if (!token) {
-
-    showToast('Kein GitHub-Token. Daten k\u00f6nnen nicht geladen werden.', true);
-
+    showToast('Bitte GitHub Token in Einstellungen eingeben', true);
+    switchTab('settings');
+    var tokenInput = document.getElementById('gh-token-input');
+    if (tokenInput) tokenInput.focus();
     return;
-
   }
 
   setSyncStatus('syncing');
@@ -7336,6 +7360,74 @@ async function flushOfflineQueue() {
 // Flush queue when coming back online
 window.addEventListener('online', function() { setTimeout(flushOfflineQueue, 2000); });
 
+
+// Auto-refresh calendar every 30 min
+setInterval(function() {
+  if (navigator.onLine && typeof loadCalendarEvents === 'function') {
+    loadCalendarEvents().then(function() {
+      if (currentTab === 'heute') renderHeute();
+      console.log('[CAL] Auto-refreshed');
+    }).catch(function() {});
+  }
+}, 30 * 60 * 1000);
+
+// ─── TOUCH DRAG & DROP ───────────────────────────────────────────────────────────────────
+(function() {
+  var dragCard = null;
+  var dragCardId = null;
+  var touchStartY = 0;
+  var isDragging = false;
+
+  document.addEventListener('touchstart', function(e) {
+    var card = e.target.closest('.card-item');
+    if (!card || !card.dataset.id) return;
+    dragCard = card;
+    dragCardId = card.dataset.id;
+    touchStartY = e.touches[0].clientY;
+    isDragging = false;
+  }, {passive: true});
+
+  document.addEventListener('touchmove', function(e) {
+    if (!dragCard) return;
+    var dy = Math.abs(e.touches[0].clientY - touchStartY);
+    if (dy > 20 && !isDragging) {
+      isDragging = true;
+      dragCard.classList.add('dragging-touch');
+    }
+    if (isDragging) {
+      // Highlight lane under finger
+      var el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+      document.querySelectorAll('.lane.drag-over-touch').forEach(function(l) { l.classList.remove('drag-over-touch'); });
+      var lane = el ? el.closest('.lane') : null;
+      if (lane) lane.classList.add('drag-over-touch');
+    }
+  }, {passive: true});
+
+  document.addEventListener('touchend', function(e) {
+    if (!dragCard || !isDragging || !dragCardId) { dragCard = null; return; }
+    dragCard.classList.remove('dragging-touch');
+    document.querySelectorAll('.lane.drag-over-touch').forEach(function(l) { l.classList.remove('drag-over-touch'); });
+
+    // Find which lane the finger ended on
+    var touch = e.changedTouches[0];
+    var el = document.elementFromPoint(touch.clientX, touch.clientY);
+    var lane = el ? el.closest('.lane') : null;
+    if (lane && lane.dataset.lane) {
+      var targetLane = lane.dataset.lane;
+      var cards = getCards();
+      if (cards[dragCardId] && cards[dragCardId].lane !== targetLane) {
+        var oldLane = cards[dragCardId].lane;
+        cards[dragCardId].lane = targetLane;
+        saveCards(cards);
+        showToast(dragCardId + ' → ' + targetLane);
+        renderKanban();
+      }
+    }
+    dragCard = null;
+    dragCardId = null;
+    isDragging = false;
+  });
+})();
 </script>
 
 </body>
