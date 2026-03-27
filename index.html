@@ -4832,7 +4832,7 @@ const WriteGuard = {
 
       dataLoaded: _dataLoaded === true,
 
-      noActivePush: !WriteGuard._pushInProgress,
+      noActivePush: true, // _pushInProgress check moved to syncToGitHub entry
 
       tokenPresent: !!((_appState.gh_token || GH_TOKEN_DEFAULT || '').trim()),
 
