@@ -3170,13 +3170,13 @@ nav::-webkit-scrollbar { display: none; }
   border-radius: var(--radius) var(--radius) 0 0;
 }
 /* Two-column layout for lanes */
-#tab-kanban .lane-list {
+#tab-kanban .kanban-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 @media (max-width: 768px) {
-  #tab-kanban .lane-list {
+  #tab-kanban .kanban-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -6887,7 +6887,7 @@ function renderKanban() {
 
     var done=all.filter(function(c){return c.status==='erledigt';}).sort(function(a,b){return(a.order-b.order)||a.id.localeCompare(b.id);});
 
-    var isCol=collapsed[lane.id]; var doneExp=doneExpandState[lane.id]||false;
+    var isCol=(collapsed[lane.id]===undefined)?true:collapsed[lane.id]; var doneExp=doneExpandState[lane.id]||false;
 
     var ch=active.map(function(c){return renderCardItem(c,lane.color);}).join('')||'<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
 
