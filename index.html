@@ -1,8 +1,10 @@
-<!-- CoworkKanban v3.4 | 2026-03-27 | fix: token onboarding, cal auto-refresh, version tag, touch D&D, mobile polish -->
+<!-- CoworkKanban v3.5 | 2026-03-27 | fix: token onboarding, cal auto-refresh, version tag, touch D&D, mobile polish -->
 
 
 
 <!-- CHANGELOG
+
+    v3.5 | 2026-03-27 | GUARD: Empty content protection for tasks.json in safeWriteToGitHub
 
     v3.0 | 2026-03-27 | redesign: all subpage CSS, settings/backlog/patients/projects/AL styling, recovery fix, token reload, notebook layout
 
@@ -5386,6 +5388,54 @@ async function safeWriteToGitHub(path, content, message, maxRetries) {
   }
 
 
+
+// LAYER 5: EMPTY CONTENT GUARD — prevent writing empty/tiny files to tasks.json
+
+  if (path === 'data/tasks.json' || path === AUTHORIZED_DATA_FILE) {
+
+    if (!content || content.trim().length < 50) {
+
+      var emptyMsg = '[EMPTY GUARD] BLOCKED: Attempted to write empty/tiny content to ' + path + ' (length: ' + (content ? content.trim().length : 0) + '). This would destroy all task data!';
+
+      console.error(emptyMsg);
+
+      showToast('\u26D4 LEER-SCHUTZ: tasks.json Write blockiert!', true);
+
+      throw new Error(emptyMsg);
+
+    }
+
+    // Verify JSON is valid and contains cards
+
+    try {
+
+      var parsed = JSON.parse(content);
+
+      var cardKeys = parsed.cards ? Object.keys(parsed.cards) : [];
+
+      if (cardKeys.length === 0) {
+
+        var noCardsMsg = '[EMPTY GUARD] BLOCKED: JSON has 0 cards in tasks.json. Write aborted.';
+
+        console.error(noCardsMsg);
+
+        throw new Error(noCardsMsg);
+
+      }
+
+    } catch(parseErr) {
+
+      if (parseErr.message.includes('EMPTY GUARD')) throw parseErr;
+
+      var parseMsg = '[EMPTY GUARD] BLOCKED: Invalid JSON for tasks.json: ' + parseErr.message;
+
+      console.error(parseMsg);
+
+      throw new Error(parseMsg);
+
+    }
+
+  }
 
   // LAYER 4: Repo lock — verify write target matches authorized constants
 
