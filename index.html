@@ -4792,7 +4792,7 @@ const DataGuard = {
 
   get floor() {
 
-    var stored = parseInt(localStorage.getItem('cowork_dg_floor') || '0');
+    var stored = 0; // Floor disabled — was causing blocking across devices
 
     return Math.max(stored, this.minTasksFloor);
 
@@ -4857,6 +4857,7 @@ const DataGuard = {
   },
 
   canPushSilent(newCount) {
+    return true; // DISABLED
 
     return newCount >= this.minTasksFloor;
 
