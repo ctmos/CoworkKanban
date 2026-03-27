@@ -5675,7 +5675,7 @@ async function loadFromGitHub() {
 
     if (patientsRemote) {
 
-      try { _appState.patients = JSON.parse(patientsRemote.content) || []; }
+      try { var _patData = JSON.parse(patientsRemote.content) || []; _appState.patients = Array.isArray(_patData) ? _patData : (_patData.patients || []); }
 
       catch(e) { console.error('[loadFromGitHub] patients parse:', e); }
 
@@ -6203,7 +6203,7 @@ function saveCards(c) {
 
 }
 
-function getPatients() { return ls('cowork_patients', []); }
+function getPatients() { var p = ls('cowork_patients', []); return Array.isArray(p) ? p : (p.patients || []); }
 
 function savePatients(p) { lsSet('cowork_patients', p); }
 
@@ -6755,7 +6755,7 @@ document.getElementById('btn-pat-add').addEventListener('click',function(){openP
 
 var pmPatId=null;
 
-function openPatModal(patId){pmPatId=patId;var patients=getPatients();var pat=patId?patients.find(function(p){return p.id===patId;}):null;var isNew=!pat;document.getElementById('pat-modal-title').textContent=isNew?'Neuer Patient':pat.code;document.getElementById('pm-code').value=(pat&&pat.code)||'';document.getElementById('pm-aufnahme').value=(pat&&pat.aufnahme)||'';document.getElementById('pm-status').value=(pat&&pat.status)||'aktiv';document.getElementById('pm-notizen').value=(pat&&pat.notizen)||'';document.getElementById('pm-delete').style.display=isNew?'none':'';document.getElementById('pat-modal-overlay').classList.add('open');}
+function openPatModal(patId){pmPatId=patId;var patients=getPatients();var pat=patId?patients.find(function(p){return p.id===patId;}):null;var isNew=!pat;document.getElementById('pat-modal-title').textContent=isNew?'Neuer Patient':pat.code;document.getElementById('pm-code').value=(pat&&pat.code)||'';document.getElementById('pm-aufnahme').value=(pat&&(pat.aufnahme||pat.date))||'';document.getElementById('pm-status').value=(pat&&pat.status)||(pat&&pat.active?'aktiv':'inaktiv')||'aktiv';document.getElementById('pm-notizen').value=(pat&&(pat.notizen||pat.notes))||'';document.getElementById('pm-delete').style.display=isNew?'none':'';document.getElementById('pat-modal-overlay').classList.add('open');}
 
 function closePatModal(){document.getElementById('pat-modal-overlay').classList.remove('open');pmPatId=null;}
 
