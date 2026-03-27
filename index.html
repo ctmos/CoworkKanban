@@ -6603,7 +6603,7 @@ function nextCardId(laneId) {
 
   lsSet(key, n);
 
-  return laneId + String(n).padStart(3, '0');
+  var _id = laneId + String(n).padStart(3, '0'); var _cards = getCards(); while(_cards[_id]){n++;_id=laneId+String(n).padStart(3,'0');} lsSet(key,n); return _id;
 
 }
 
