@@ -3068,6 +3068,98 @@ nav::-webkit-scrollbar { display: none; }
   background: rgba(196,122,42,0.1);
   border: 2px dashed var(--accent);
 }
+
+/* Card date display */
+.card-dates {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.3;
+}
+.card-deadline {
+  color: #dc2626;
+  font-weight: 600;
+}
+.card-deadline.overdue {
+  color: #dc2626;
+  background: rgba(220,38,38,0.1);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.card-created {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+
+/* Patient Ampel Status */
+.pat-ampel-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.pat-ampel-item {
+  flex: 1;
+  min-width: 140px;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  border-left: 4px solid var(--border);
+}
+.pat-ampel-item.ampel-gruen { border-left-color: #22c55e; }
+.pat-ampel-item.ampel-gelb { border-left-color: #f59e0b; }
+.pat-ampel-item.ampel-rot { border-left-color: #ef4444; }
+.pat-ampel-item.ampel-offen { border-left-color: var(--border); }
+.pat-ampel-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.pat-ampel-select {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+}
+.pat-ampel-text {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 11px;
+  font-family: inherit;
+  margin-top: 4px;
+  resize: none;
+  height: 32px;
+}
+/* Ampel badges on patient list */
+.pat-ampel-badges {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+}
+.pat-ampel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.pat-ampel-dot.gruen { background: #22c55e; }
+.pat-ampel-dot.gelb { background: #f59e0b; }
+.pat-ampel-dot.rot { background: #ef4444; }
+.pat-ampel-dot.offen { background: var(--border); }
+
 </style>
 
 
@@ -6540,7 +6632,7 @@ function renderStatusTab() {
 
 
 
-  var heuteCards = Object.values(cards).filter(function(c) { return !c.archived && (c.todayFlag || c.lane === 'HE' || c.deadline === todayISO); });
+  var heuteCards = Object.values(cards).filter(function(c) { return !c.archived && c.status !== 'erledigt' && (c.todayFlag || c.lane === 'HE' || c.deadline === todayISO || (c.deadline && c.deadline < todayISO)); });
 
   var heuteList = document.getElementById('heute-list');
 
@@ -6877,7 +6969,17 @@ document.getElementById('btn-pat-add').addEventListener('click',function(){openP
 
 var pmPatId=null;
 
-function openPatModal(patId){pmPatId=patId;var patients=getPatients();var pat=patId?patients.find(function(p){return p.id===patId;}):null;var isNew=!pat;document.getElementById('pat-modal-title').textContent=isNew?'Neuer Patient':pat.code;document.getElementById('pm-code').value=(pat&&pat.code)||'';document.getElementById('pm-aufnahme').value=(pat&&(pat.aufnahme||pat.date))||'';document.getElementById('pm-status').value=(pat&&pat.status)||(pat&&pat.active?'aktiv':'inaktiv')||'aktiv';document.getElementById('pm-notizen').value=(pat&&(pat.notizen||pat.notes))||'';document.getElementById('pm-delete').style.display=isNew?'none':'';document.getElementById('pat-modal-overlay').classList.add('open');}
+function openPatModal(patId){pmPatId=patId;var patients=getPatients();var pat=patId?patients.find(function(p){return p.id===patId;}):null;var isNew=!pat;document.getElementById('pat-modal-title').textContent=isNew?'Neuer Patient':pat.code;document.getElementById('pm-code').value=(pat&&pat.code)||'';document.getElementById('pm-aufnahme').value=(pat&&(pat.aufnahme||pat.date))||'';document.getElementById('pm-status').value=(pat&&pat.status)||(pat&&pat.active?'aktiv':'inaktiv')||'aktiv';document.getElementById('pm-notizen').value=(pat&&(pat.notizen||pat.notes))||'';
+  var _ampelFields=['austritt','ambulant','tagesstruktur','wiedereingliederung'];
+  _ampelFields.forEach(function(f){
+    var sel=document.getElementById('pm-ampel-'+f);
+    var txt=document.getElementById('pm-ampel-'+f+'-text');
+    var box=document.getElementById('ampel-'+f+'-box');
+    if(sel)sel.value=(pat&&pat.ampel&&pat.ampel[f]&&pat.ampel[f].status)||'offen';
+    if(txt)txt.value=(pat&&pat.ampel&&pat.ampel[f]&&pat.ampel[f].text)||'';
+    if(box){box.className='pat-ampel-item ampel-'+((pat&&pat.ampel&&pat.ampel[f]&&pat.ampel[f].status)||'offen');}
+    if(sel)sel.addEventListener('change',function(){box.className='pat-ampel-item ampel-'+sel.value;});
+  });document.getElementById('pm-delete').style.display=isNew?'none':'';document.getElementById('pat-modal-overlay').classList.add('open');}
 
 function closePatModal(){document.getElementById('pat-modal-overlay').classList.remove('open');pmPatId=null;}
 
