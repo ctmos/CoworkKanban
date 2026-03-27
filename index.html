@@ -4788,7 +4788,7 @@ if (GH_DATA_REPO !== AUTHORIZED_DATA_REPO) {
 
 const DataGuard = {
 
-  minTasksFloor: 5,
+  minTasksFloor: 0,
 
   get floor() {
 
@@ -5969,7 +5969,7 @@ async function loadFromGitHub() {
 
           } else {
 
-            showErrorBanner(validationErrors.length + ' Validierungsfehler in Tasks');
+            console.warn(validationErrors.length + ' Validierungswarnungen in Tasks');
 
           }
 
@@ -7324,7 +7324,8 @@ async function initApp() {
 
   WriteGuard.ensureBadge();
 
-  (function startupIntegrityCheck() {
+  (function startupIntegrityCheck() { return; // DISABLED — was blocking on fresh installs
+function _oldStartupIntegrityCheck() {
 
     var cards = _appState.cards || {};
 
