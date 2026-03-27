@@ -6744,7 +6744,7 @@ function renderStatusTab() {
 
             var isHE=c.todayFlag||c.lane==='HE'; var cId=esc(c.id||'');
 
-            html += '<div class="status-card"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div></div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+            html += '<div class="status-card" onclick="openCardModal(''+cId+'')" style="cursor:pointer"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div></div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
 
           }
 
@@ -6782,7 +6782,7 @@ function renderStatusTab() {
 
         var dl=c.deadline?'<div class="card-meta">'+esc(c.deadline)+'</div>':'';
 
-        return '<div class="status-card"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div>'+dl+'</div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+        return '<div class="status-card" onclick="openCardModal(''+cId+'')" style="cursor:pointer"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div>'+dl+'</div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
 
       }).join('');
 
