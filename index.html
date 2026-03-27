@@ -7514,6 +7514,15 @@ document.getElementById('btn-cache-reset')?.addEventListener('click', () => {
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 
+// Clear stale localStorage keys that cause blocking on version change
+(function() {
+  var lastVer = localStorage.getItem('cowork_app_version');
+  if (lastVer !== 'v3.6') {
+    localStorage.removeItem('cowork_dg_floor');
+    localStorage.setItem('cowork_app_version', 'v3.6');
+    console.log('[BOOT] Cleared stale floor value for v3.6');
+  }
+})();
 initPinScreen();
 
 
