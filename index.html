@@ -4346,7 +4346,15 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-      <textarea class="form-textarea" id="pm-notizen" placeholder="Klinische Notizen…"></textarea>
+      <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:600;margin-bottom:6px;display:block">Übersicht Status</label>
+          <div class="pat-ampel-row">
+            <div class="pat-ampel-item" id="ampel-austritt-box"><div class="pat-ampel-label">Austrittsplanung</div><select class="pat-ampel-select" id="pm-ampel-austritt"><option value="offen">Offen</option><option value="gruen">Grün</option><option value="gelb">Gelb</option><option value="rot">Rot</option></select><textarea class="pat-ampel-text" id="pm-ampel-austritt-text" placeholder="Notiz..."></textarea></div>
+            <div class="pat-ampel-item" id="ampel-ambulant-box"><div class="pat-ampel-label">Ambulant</div><select class="pat-ampel-select" id="pm-ampel-ambulant"><option value="offen">Offen</option><option value="gruen">Grün</option><option value="gelb">Gelb</option><option value="rot">Rot</option></select><textarea class="pat-ampel-text" id="pm-ampel-ambulant-text" placeholder="Notiz..."></textarea></div>
+            <div class="pat-ampel-item" id="ampel-tagesstruktur-box"><div class="pat-ampel-label">Tagesstruktur</div><select class="pat-ampel-select" id="pm-ampel-tagesstruktur"><option value="offen">Offen</option><option value="gruen">Grün</option><option value="gelb">Gelb</option><option value="rot">Rot</option></select><textarea class="pat-ampel-text" id="pm-ampel-tagesstruktur-text" placeholder="Notiz..."></textarea></div>
+            <div class="pat-ampel-item" id="ampel-wiedereingliederung-box"><div class="pat-ampel-label">Wiedereingliederung</div><select class="pat-ampel-select" id="pm-ampel-wiedereingliederung"><option value="offen">Offen</option><option value="gruen">Grün</option><option value="gelb">Gelb</option><option value="rot">Rot</option></select><textarea class="pat-ampel-text" id="pm-ampel-wiedereingliederung-text" placeholder="Notiz..."></textarea></div>
+          </div></div>
+          <textarea class="form-textarea" id="pm-notizen" placeholder="Klinische Notizen…"></textarea>
 
 
 
@@ -6987,7 +6995,7 @@ document.getElementById('pm-cancel').addEventListener('click',closePatModal);
 
 document.getElementById('pat-modal-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closePatModal();});
 
-document.getElementById('pm-save').addEventListener('click',function(){var code=document.getElementById('pm-code').value.trim();var aufnahme=document.getElementById('pm-aufnahme').value;var status=document.getElementById('pm-status').value;var notizen=document.getElementById('pm-notizen').value.trim();if(!code){document.getElementById('pm-code').focus();return;}var patients=getPatients();if(pmPatId){var idx=patients.findIndex(function(p){return p.id===pmPatId;});if(idx!==-1)patients[idx]=Object.assign({},patients[idx],{code:code,aufnahme:aufnahme,status:status,notizen:notizen});}else{patients.push({id:'PAT'+Date.now(),code:code,aufnahme:aufnahme,status:status,notizen:notizen});}savePatients(patients);closePatModal();renderPatients();});
+document.getElementById('pm-save').addEventListener('click',function(){var code=document.getElementById('pm-code').value.trim();var aufnahme=document.getElementById('pm-aufnahme').value;var status=document.getElementById('pm-status').value;var notizen=document.getElementById('pm-notizen').value.trim();var ampel={};['austritt','ambulant','tagesstruktur','wiedereingliederung'].forEach(function(f){ampel[f]={status:document.getElementById('pm-ampel-'+f).value,text:document.getElementById('pm-ampel-'+f+'-text').value.trim()};});if(!code){document.getElementById('pm-code').focus();return;}var patients=getPatients();if(pmPatId){var idx=patients.findIndex(function(p){return p.id===pmPatId;});if(idx!==-1)patients[idx]=Object.assign({},patients[idx],{code:code,aufnahme:aufnahme,status:status,notizen:notizen,ampel:ampel});}else{patients.push({id:'PAT'+Date.now(),code:code,aufnahme:aufnahme,status:status,notizen:notizen});}savePatients(patients);closePatModal();renderPatients();});
 
 document.getElementById('pm-delete').addEventListener('click',function(){confirmAction('Patient l\u00f6schen?','Dieser Patient wird unwiderruflich gel\u00f6scht.',function(){var patients=getPatients();patients=patients.filter(function(p){return p.id!==pmPatId;});savePatients(patients);closePatModal();renderPatients();});});
 
