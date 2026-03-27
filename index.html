@@ -1,4 +1,4 @@
-<!-- CoworkKanban v3.2 | 2026-03-27 | design: Claude Code warm palette applied -->
+<!-- CoworkKanban v3.3 | 2026-03-27 | fix: calendar columns, HE001, patient encoding -->
 
 
 
@@ -6541,6 +6541,40 @@ function renderStatusTab() {
 
 
 
+
+  // Render dedicated calendar columns
+  var calHeuteEl = document.getElementById('cal-heute-list');
+  if (calHeuteEl) {
+    var todayEvs = getEventsForDay(todayISO);
+    if (todayEvs.length > 0) {
+      calHeuteEl.innerHTML = todayEvs.map(renderCalEventChip).join('');
+      if (window._calEvents && window._calEvents.syncedAt) {
+        calHeuteEl.innerHTML += '<div style="font-size:10px;color:var(--text-muted);margin-top:8px;opacity:0.6">Sync: vor '+Math.round((Date.now()-new Date(window._calEvents.syncedAt))/60000)+' Min.</div>';
+      }
+    } else {
+      calHeuteEl.innerHTML = '<div class="empty-state">Keine Termine heute</div>';
+    }
+  }
+  var calWocheEl = document.getElementById('cal-woche-list');
+  if (calWocheEl) {
+    var weekEvs = (window._calEvents && window._calEvents.events || []).filter(function(e) { if(!e.start) return false; var d=new Date(e.start); return d>=todayStart && d<in7; });
+    if (weekEvs.length > 0) {
+      var byDay = {};
+      weekEvs.forEach(function(e) { var lbl=dayLabel(e.allDay?e.start:e.start.substring(0,10)); if(!byDay[lbl]) byDay[lbl]=[]; byDay[lbl].push(e); });
+      var html2 = '';
+      ['Heute','Morgen','\u00dcbermorgen','Diese Woche'].forEach(function(lbl) {
+        if (byDay[lbl]) {
+          html2 += '<div style="font-size:11px;color:var(--text-muted);margin:6px 0 4px;text-transform:uppercase;letter-spacing:0.5px">'+lbl+'</div>';
+          html2 += byDay[lbl].map(renderCalEventChip).join('');
+        }
+      });
+      calWocheEl.innerHTML = html2;
+    } else {
+      calWocheEl.innerHTML = '<div class="empty-state">Keine Termine diese Woche</div>';
+    }
+  }
+
+}
 function renderHeute() { renderStatusTab(); }
 
 function getWeekStart() { var d=new Date(); var day=d.getDay(); d.setDate(d.getDate()-(day===0?6:day-1)); d.setHours(0,0,0,0); return d; }
