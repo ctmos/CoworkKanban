@@ -7325,61 +7325,8 @@ async function initApp() {
   WriteGuard.ensureBadge();
 
   (function startupIntegrityCheck() { return; })(); // DISABLED
-(function _oldStartupIntegrityCheck() {
+// startupIntegrityCheck REMOVED — was causing SyntaxError and blocking fresh installs
 
-    var cards = _appState.cards || {};
-
-    var tasks = Object.values(cards);
-
-    var issues = [];
-
-    if (!cards || typeof cards !== 'object') {
-
-      issues.push('cards fehlt oder ung\u00fcltig');
-
-    } else {
-
-      var count = tasks.length;
-
-      var floor = DataGuard.floor;
-
-      if (count < floor) issues.push('Zu wenig Tasks: ' + count + ' < ' + floor);
-
-      var schemaErrors = validateAllTasks(cards);
-
-      if (schemaErrors.length > 0) issues.push(schemaErrors.length + ' Schema-Fehler in Tasks');
-
-      var emptyCards = tasks.filter(function(t) { return !t.id || !t.lane || !t.title; });
-
-      if (emptyCards.length > 0) issues.push(emptyCards.length + ' Tasks ohne Pflichtfelder');
-
-    }
-
-    if (issues.length > 0) {
-
-      showErrorBanner('\u26A0\uFE0F Integrity-Check: ' + issues.join('; '));
-
-      console.warn('[startupIntegrity] Issues:', issues);
-
-      WriteGuard.log({ status: 'error', reason: 'startup: ' + issues[0] });
-
-    } else {
-
-      var taskCount = tasks.length;
-
-      // LAYER 3: forceSetFloor (not setFloor) — GitHub load is authoritative.
-
-      // forceSetFloor resets stale floor values from previous sessions.
-
-      DataGuard.forceSetFloor(0);
-
-      WriteGuard.log({ status: 'ok', reason: 'startup OK, ' + taskCount + ' Tasks' });
-
-      console.log('[startupIntegrity] OK:', taskCount, 'Tasks, floor:', DataGuard.floor);
-
-    }
-
-  })();
 
 
 
