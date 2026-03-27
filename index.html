@@ -6963,7 +6963,7 @@ function renderKanban() {
 
     if(lane.isBA){vh='<div class="vorlagen-wrap" onclick="event.stopPropagation()"><button class="btn-vorlagen" onclick="toggleVorlagen(\''+lane.id+'\')">Vorlagen \u25be</button><div class="vorlagen-dropdown" id="vd-'+lane.id+'">'+BA_TPLS.map(function(t){return '<button class="vorlagen-item" onclick="addVorlage(\''+lane.id+'\',\''+t.replace(/'/g,"\\'")+'\');closeVorlagen(\''+lane.id+'\')">'+t+'</button>';}).join('')+'</div></div>';}
 
-    return '<div class="lane" id="lane-'+lane.id+'"><div class="lane-header" onclick="toggleCollapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,\''+lane.id+'\')">+ Karte</button>'+vh+'<button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'" id="lb-'+lane.id+'">'+ch+dh+'</div></div>';
+    return '<div class="lane" id="lane-'+lane.id+'" data-lane="'+lane.id+'"><div class="lane-header" onclick="toggleCollapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,\''+lane.id+'\')">+ Karte</button>'+vh+'<button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'" id="lb-'+lane.id+'">'+ch+dh+'</div></div>';
 
   }).join('');
 
@@ -7620,7 +7620,7 @@ setInterval(function() {
     var el = document.elementFromPoint(touch.clientX, touch.clientY);
     var lane = el ? el.closest('.lane') : null;
     if (lane && lane.dataset.lane) {
-      var targetLane = lane.dataset.lane;
+      var targetLane = lane.dataset.lane || (lane.id ? lane.id.replace('lane-','') : null);
       var cards = getCards();
       if (cards[dragCardId] && cards[dragCardId].lane !== targetLane) {
         var oldLane = cards[dragCardId].lane;
@@ -7684,7 +7684,7 @@ setInterval(function() {
     document.querySelectorAll('.drop-target-hint').forEach(function(l) { l.classList.remove('drop-target-hint'); });
 
     var cardId = e.dataTransfer.getData('text/plain');
-    var targetLane = lane.dataset.lane;
+    var targetLane = lane.dataset.lane || (lane.id ? lane.id.replace('lane-','') : null);
     if (!cardId || !targetLane) return;
 
     var cards = getCards();
