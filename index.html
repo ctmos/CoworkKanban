@@ -3276,7 +3276,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-          <div class="status-col-header">Kalender Woche</div>
+          <div class="status-col-header">Kalender ab morgen</div>
 
 
 
@@ -6651,7 +6651,7 @@ function renderStatusTab() {
   }
   var calWocheEl = document.getElementById('cal-woche-list');
   if (calWocheEl) {
-    var weekEvs2 = (window._calEvents && window._calEvents.events || []).filter(function(e) { if(!e.start) return false; var d=new Date(e.start); return d>=todayStart && d<in7; });
+    var tomorrowStart = new Date(todayStart.getTime() + 86400000); var weekEvs2 = (window._calEvents && window._calEvents.events || []).filter(function(e) { if(!e.start) return false; var d=new Date(e.start); return d>=tomorrowStart && d<in7; });
     if (weekEvs2.length > 0) {
       var byDay2 = {};
       weekEvs2.forEach(function(e) { var lbl=dayLabel(e.allDay?e.start:e.start.substring(0,10)); if(!byDay2[lbl]) byDay2[lbl]=[]; byDay2[lbl].push(e); });
