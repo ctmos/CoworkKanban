@@ -6452,25 +6452,8 @@ function renderStatusTab() {
 
     }
 
-    var todayCalEvs = getEventsForDay(todayISO);
+    // Calendar events now in dedicated columns
 
-    if (todayCalEvs.length > 0) {
-
-      var calHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\uD83D\uDCC5 Kalender heute</div>';
-
-      calHtml += todayCalEvs.map(renderCalEventChip).join('');
-
-      if (window._calEvents && window._calEvents.syncedAt) {
-
-        calHtml += '<div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:0.6">Sync: vor '+Math.round((Date.now()-new Date(window._calEvents.syncedAt))/60000)+' Min.</div>';
-
-      }
-
-      calHtml += '</div>';
-
-      heuteList.innerHTML += calHtml;
-
-    }
 
   }
 
@@ -6486,7 +6469,7 @@ function renderStatusTab() {
 
   weekCards.forEach(function(c) { var lbl=dayLabel(c.deadline); if(!grouped[lbl]) grouped[lbl]=[]; grouped[lbl].push(c); });
 
-  events.filter(function(e) { if(!e.start) return false; var d=new Date(e.start); return d>=todayStart && d<in7; }).forEach(function(e) { var lbl=dayLabel(e.start); if(!grouped[lbl]) grouped[lbl]=[]; grouped[lbl].push(Object.assign({},e,{_isEvent:true})); });
+  // Calendar events now in dedicated cal-woche-list column (not mixed into tasks)
 
 
 
@@ -6510,7 +6493,7 @@ function renderStatusTab() {
 
         html += '<div class="day-group-header">'+lbl+'</div>';
 
-        grouped[lbl].forEach(function(c) {
+        grouped[lbl].filter(function(c){return !c._isEvent;}).forEach(function(c) {
 
           if (c._isEvent) {
 
@@ -6528,7 +6511,7 @@ function renderStatusTab() {
 
         var _isoMap={'Heute':todayISO,'Morgen':new Date(todayStart.getTime()+86400000).toISOString().split('T')[0],'\u00dcbermorgen':new Date(todayStart.getTime()+2*86400000).toISOString().split('T')[0]};
 
-        if(_isoMap[lbl]) getEventsForDay(_isoMap[lbl]).forEach(function(e){html+=renderCalEventChip(e);});
+        // Calendar chips now in dedicated column
 
       });
 
