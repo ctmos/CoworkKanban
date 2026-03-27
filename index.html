@@ -6962,6 +6962,13 @@ document.getElementById('cm-cancel').addEventListener('click',closeCardModal);
 
 document.getElementById('card-modal-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeCardModal();});
 
+// Ctrl+Enter to save card
+document.getElementById('card-modal-overlay').addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('cm-save').click();
+  }
+});
 document.getElementById('cm-save').addEventListener('click',function() {
 
   var title=document.getElementById('cm-title').value.trim(); var deadline=document.getElementById('cm-deadline').value;
