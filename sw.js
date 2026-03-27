@@ -1,5 +1,5 @@
 // CoworkKanban Service Worker v3.3
-const CACHE_NAME = 'cowork-v3.5';
+const CACHE_NAME = 'cowork-v3.6';
 const APP_SHELL = [
   '/CoworkKanban/',
   '/CoworkKanban/index.html',
@@ -48,20 +48,16 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // App shell: Stale-while-revalidate
+  // App shell: Network-first (always get latest, fallback to cache if offline)
   if (url.pathname.startsWith('/CoworkKanban/')) {
     event.respondWith(
-      caches.match(event.request).then(cached => {
-        const fetchPromise = fetch(event.request).then(response => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        }).catch(() => cached);
-
-        return cached || fetchPromise;
-      })
+      fetch(event.request).then(response => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
     );
     return;
   }
