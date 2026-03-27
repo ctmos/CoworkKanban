@@ -3113,11 +3113,11 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-          <div class="status-list">
+          <div class="status-list" id="cal-heute-list">
 
 
 
-            <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+            <div class="empty-state">📅 Kalender wird geladen…</div>
 
 
 
@@ -3165,11 +3165,11 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-          <div class="status-list">
+          <div class="status-list" id="cal-woche-list">
 
 
 
-            <div class="empty-state">📅 Kalender noch nicht verbunden</div>
+            <div class="empty-state">📅 Kalender wird geladen…</div>
 
 
 
@@ -7058,9 +7058,7 @@ async function initApp() {
 
   initAL(); initBacklog(); updateALBadge();
 
-  loadCalendarEvents().catch(function(e) { console.warn('cal fail', e); });
-
-  renderHeute();
+  loadCalendarEvents().then(function() { renderHeute(); }).catch(function(e) { console.warn('cal fail', e); renderHeute(); });
 
   var syncBtn = document.getElementById('sync-patients-btn');
 
