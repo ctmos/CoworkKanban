@@ -7735,6 +7735,21 @@ setInterval(function() {
   }
 })();
 
+
+// ─── DELEGATED CLICK: Status cards open card modal ──────────────────────────
+document.addEventListener('click', function(e) {
+  var card = e.target.closest('.status-card');
+  if (!card) return;
+  if (e.target.closest('.today-btn')) return;
+  var prefix = card.querySelector('.card-prefix');
+  if (prefix) {
+    var cardId = prefix.textContent.trim();
+    if (cardId && typeof openCardModal === 'function') {
+      openCardModal(cardId);
+    }
+  }
+});
+
 </script>
 
 </body>
