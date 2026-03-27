@@ -6574,7 +6574,6 @@ function renderStatusTab() {
     }
   }
 
-}
 function renderHeute() { renderStatusTab(); }
 
 function getWeekStart() { var d=new Date(); var day=d.getDay(); d.setDate(d.getDate()-(day===0?6:day-1)); d.setHours(0,0,0,0); return d; }
