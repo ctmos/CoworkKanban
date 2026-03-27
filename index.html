@@ -6523,7 +6523,9 @@ async function initPinScreen() {
 
   } catch(e) {
 
-    document.getElementById('pin-subtitle').textContent = 'Fehler: GitHub nicht erreichbar.';
+    document.getElementById('pin-subtitle').textContent = 'Offline — Standard-PIN aktiv';
+    _appState.pin_hash = DEFAULT_PIN_HASH;
+    showPinUnlockUI(DEFAULT_PIN_HASH);
 
     document.getElementById('pin-btn').disabled = false;
 
