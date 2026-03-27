@@ -3186,17 +3186,70 @@ nav::-webkit-scrollbar { display: none; }
 
 
 @media (max-width: 768px) {
-  nav { overflow-x: auto !important; -webkit-overflow-scrolling: touch; gap: 0 !important; padding: 0 8px !important; }
+  
   nav::-webkit-scrollbar { display: none; }
-  .tab-btn { padding: 0 10px !important; font-size: 12px !important; white-space: nowrap; flex-shrink: 0; }
-  .brand { font-size: 12px !important; margin-right: 6px !important; }
-  #burger-btn { display: none !important; }
-  #nav-tabs, .nav-tabs { display: contents !important; }
+  
+  
+  
+  
 }
 
 /* Drag & Drop visual */
 .lane.drop-target-hint { border: 2px dashed var(--border); }
 .lane.drag-over { border: 2px dashed var(--accent); background: rgba(196,122,42,0.05); }
+
+
+/* ─── BURGER MENU (Mobile) ─────────────────────────────── */
+.burger-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 10px;
+  line-height: 1;
+  margin-left: auto;
+}
+@media (max-width: 768px) {
+  .burger-btn { display: block; }
+  .nav-tabs {
+    display: none;
+    position: absolute;
+    top: 48px;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    flex-direction: column;
+    padding: 8px 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border-bottom: 1px solid var(--border);
+    z-index: 200;
+  }
+  .nav-tabs.open {
+    display: flex !important;
+  }
+  .nav-tabs .tab-btn {
+    height: 44px;
+    padding: 0 20px;
+    text-align: left;
+    border-bottom: none;
+    opacity: 1;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .nav-tabs .tab-btn:hover {
+    background: var(--surface2);
+  }
+  .nav-tabs .tab-btn.active {
+    color: var(--accent);
+    font-weight: 600;
+    border-left: 3px solid var(--accent);
+    border-bottom: none;
+  }
+  nav { position: relative; overflow: visible; }
+  .brand { font-size: 13px; }
+}
 
 </style>
 
@@ -3286,6 +3339,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
     <span class="brand">CoworkSpace</span>
+<button id="burger-btn" class="burger-btn">&#9776;</button>
 
 
 
@@ -3294,7 +3348,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-    <button class="tab-btn" data-tab="kanban">Kanban</button>
+    <div id="nav-tabs" class="nav-tabs"><button class="tab-btn" data-tab="kanban">Kanban</button>
 
 
 
@@ -3318,7 +3372,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-  </nav>
+  </div></nav>
 
 
 
@@ -7654,6 +7708,31 @@ setInterval(function() {
     showToast(oldId + ' → ' + newId + ' (' + targetLane + ')');
     renderKanban();
   });
+})();
+
+
+// ─── BURGER MENU TOGGLE ─────────────────────────────────────────────────────
+(function() {
+  var burger = document.getElementById('burger-btn');
+  var navTabs = document.getElementById('nav-tabs');
+  if (burger && navTabs) {
+    burger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      navTabs.classList.toggle('open');
+    });
+    // Close when clicking a tab
+    navTabs.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        navTabs.classList.remove('open');
+      });
+    });
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!burger.contains(e.target) && !navTabs.contains(e.target)) {
+        navTabs.classList.remove('open');
+      }
+    });
+  }
 })();
 
 </script>
