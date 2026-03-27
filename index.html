@@ -2963,6 +2963,89 @@ nav::-webkit-scrollbar { display: none; }
   .tab-btn { padding: 0 10px; height: 36px; font-size: 12px; }
   .modal { padding: 16px; }
 }
+
+/* ─── BURGER MENU (Mobile) ─────────────────────────────── */
+.burger-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--nav-text, #fff);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .burger-btn { display: block; }
+  .nav-tabs {
+    display: none;
+    position: absolute;
+    top: 48px;
+    left: 0;
+    right: 0;
+    background: var(--nav-bg);
+    flex-direction: column;
+    padding: 8px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 200;
+  }
+  .nav-tabs.nav-open {
+    display: flex;
+  }
+  .nav-tabs .tab-btn {
+    height: 44px;
+    padding: 0 20px;
+    text-align: left;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
+  .nav-tabs .tab-btn.active {
+    border-left-color: var(--accent);
+    border-bottom: none;
+  }
+  /* Close menu when tab clicked */
+  nav { position: relative; flex-wrap: nowrap; }
+
+  /* Fix page overflow on mobile */
+  .tab-content { overflow-x: hidden; }
+  .status-grid { flex-direction: column; }
+  .status-group { flex-direction: column; }
+  .status-col { min-width: 0; }
+
+  /* Patienten: scrollable list instead of full-height */
+  #pat-list {
+    max-height: 70vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Backlog: same */
+  .bl-list {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  /* Kanban lanes: full width on mobile */
+  .lane { margin: 8px 0; }
+
+  /* Cards: less padding on mobile */
+  .card-item { padding: 6px 10px; }
+
+  /* Modals: full width on mobile */
+  .modal-content, .cm-content, .pat-modal-content, .bl-modal-content {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 10px auto !important;
+  }
+}
+
+/* ─── TABLET (768-1024px) ──────────────────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .status-grid { gap: 12px; }
+  .status-col { min-width: 200px; }
+}
+
 </style>
 
 
@@ -3051,6 +3134,8 @@ nav::-webkit-scrollbar { display: none; }
 
 
     <span class="brand">CoworkKanban</span>
+<button id="burger-btn" class="burger-btn" onclick="document.getElementById('nav-tabs').classList.toggle('nav-open')">&#9776;</button>
+<div id="nav-tabs" class="nav-tabs">
 
 
 
@@ -3082,7 +3167,8 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-  </nav>
+  </div>
+</nav>
 
 
 
@@ -6985,7 +7071,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 // ─── TAB BINDING ──────────────────────────────────────────────────────────────
 
-document.querySelectorAll('.tab-btn').forEach(function(btn){btn.addEventListener('click',function(){switchTab(btn.dataset.tab);});});
+document.querySelectorAll('.tab-btn').forEach(function(btn){btn.addEventListener('click',function(){switchTab(btn.dataset.tab);var navTabs=document.getElementById('nav-tabs');if(navTabs)navTabs.classList.remove('nav-open');});});
 
 
 
