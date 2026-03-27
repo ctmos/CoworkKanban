@@ -188,8 +188,8 @@ window.addEventListener('offline', function() {
 
 
 
-  --nav-bg: #2c2417;
-  --nav-text: #e8e0d4;
+  --nav-bg: #ede8e0;
+  --nav-text: #5c5040;
 
 
 
@@ -241,8 +241,8 @@ window.addEventListener('offline', function() {
 
 
 
-  --nav-bg: #141210;
-  --nav-text: #e8e0d4;
+  --nav-bg: #211e1a;
+  --nav-text: #5c5040;
 
 
 
@@ -290,8 +290,8 @@ window.addEventListener('offline', function() {
 
 
 
-  --nav-bg: #2c2417;
-  --nav-text: #e8e0d4;
+  --nav-bg: #ede8e0;
+  --nav-text: #5c5040;
 
 
 
@@ -799,7 +799,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-.tab-btn.active { opacity: 1; color: #fff; border-bottom-color: var(--accent); }
+.tab-btn.active { opacity: 1; color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
 
 
 
@@ -3159,6 +3159,30 @@ nav::-webkit-scrollbar { display: none; }
 .pat-ampel-dot.gelb { background: #f59e0b; }
 .pat-ampel-dot.rot { background: #ef4444; }
 .pat-ampel-dot.offen { background: var(--border); }
+
+
+/* Kanban lanes — warm design */
+.lane-header {
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+/* Two-column layout for lanes */
+#tab-kanban .lane-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 768px) {
+  #tab-kanban .lane-list {
+    grid-template-columns: 1fr;
+  }
+}
+/* Lane collapsed state */
+.lane.collapsed .lane-body { display: none; }
+.lane.collapsed .lane-header { border-radius: var(--radius); }
 
 </style>
 
@@ -7286,7 +7310,7 @@ async function initApp() {
 
   if (!_appState.collapsed || Object.keys(_appState.collapsed).length === 0) {
 
-    LANES.forEach(function(lane) { if (lane.id !== 'HE') _appState.collapsed[lane.id] = true; });
+    LANES.forEach(function(lane) { _appState.collapsed[lane.id] = true; });
 
   }
 
