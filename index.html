@@ -6791,7 +6791,7 @@ document.getElementById('blm-delete').addEventListener('click',function(){confir
 
 function initSettings(){var settings=ls('cowork_settings',{});var token=settings.gh_token||ls('cowork_gh_token','')||localStorage.getItem('cowork_gh_token')||'';document.getElementById('gh-token-input').value=token;if(!_appState.gh_token&&token){_appState.gh_token=token;}document.getElementById('budget-input').value=settings.budget||ls('cowork_budget',100);}
 
-(function(){var saved=localStorage.getItem('cowork_gh_token');{saved=saved.replace(/^"|"$/g,"");if(saved&&!_appState.gh_token){_appState.gh_token=saved;}}})();
+(function(){var saved=localStorage.getItem('cowork_gh_token');if(saved){saved=saved.replace(/^"|"$/g,"");if(saved&&!_appState.gh_token){_appState.gh_token=saved;}}})();
 
 document.getElementById('btn-gh-save').addEventListener('click',async function(){var v=document.getElementById('gh-token-input').value.trim();v=v.replace(/^"|"$/g,"");lsSet('cowork_gh_token',v);localStorage.setItem('cowork_gh_token',v);if(v){showToast('Token gespeichert — lade Daten…');_dataLoaded=false;await loadFromGitHub();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();if(currentTab==='backlog')renderBacklog();if(currentTab==='patienten')renderPatients();showToast('✅ Token gespeichert & Daten geladen');}else{showToast('Token entfernt');}});
 
