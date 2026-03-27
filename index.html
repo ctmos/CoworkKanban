@@ -91,6 +91,10 @@
 
 
 <meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2c2417">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com;">
 
 
 
@@ -99,6 +103,28 @@
 
 
 <script>
+// ─── SERVICE WORKER ──────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(function(reg) { console.log('[SW] registered, scope:', reg.scope); })
+    .catch(function(err) { console.warn('[SW] registration failed:', err); });
+}
+// ─── OFFLINE DETECTION ──────────────────────────────────────────────────────
+window.addEventListener('online', function() {
+  var banner = document.getElementById('offline-banner');
+  if (banner) banner.style.display = 'none';
+  if (typeof loadFromGitHub === 'function') {
+    showToast('Online \u2014 synchronisiere...', 'info');
+    loadFromGitHub().then(function() {
+      if (typeof renderHeute === 'function') renderHeute();
+      showToast('\u2705 Daten synchronisiert');
+    });
+  }
+});
+window.addEventListener('offline', function() {
+  var banner = document.getElementById('offline-banner');
+  if (banner) banner.style.display = 'flex';
+});
 
 
 
@@ -2946,6 +2972,9 @@ nav::-webkit-scrollbar { display: none; }
 
 
 <body>
+<div id="offline-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#f59e0b;color:#1a1714;padding:8px 16px;font-size:13px;font-weight:600;text-align:center;align-items:center;justify-content:center;gap:8px;">
+  \u26a0\ufe0f Offline \u2014 Daten aus Cache. \u00c4nderungen werden beim Reconnect synchronisiert.
+</div>
 
 
 
@@ -4419,7 +4448,7 @@ function verifyPin(input) {
 
 // ─── GITHUB HELPERS ──────────────────────────────────────────────────────────
 
-const GH_TOKEN = ['ghp_IphgmZsko0VXxf3U', '12JKQE8aOQKfwQ3gN35d'].join('');
+const GH_TOKEN = ''; // Token nur via Einstellungen eingeben
 
 const GH_DATA_BASE = 'https://api.github.com/repos/ctmos/cowork-data/contents/data';
 
@@ -6980,6 +7009,7 @@ document.querySelectorAll('.tab-btn').forEach(function(btn){btn.addEventListener
 // ─── FIX 5: CLEAN INIT ──────────────────────────────────────────────────────
 
 async function initApp() {
+  try {
 
   renderHeutePlaceholder();
 
@@ -7077,6 +7107,15 @@ async function initApp() {
 
   }
 
+
+  } catch (bootError) {
+    console.error('[BOOT] Fatal error:', bootError);
+    var appEl = document.getElementById('app');
+    if (appEl) {
+      appEl.style.display = 'block';
+      appEl.innerHTML = '<div style="max-width:500px;margin:60px auto;padding:24px;background:var(--surface);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.1);text-align:center;font-family:system-ui;"><h2 style="color:#c47a2a;margin-bottom:12px;">\u26a0\ufe0f Fehler beim Laden</h2><p style="color:var(--text-muted);margin-bottom:8px;">' + bootError.message + '</p><button onclick="localStorage.clear();location.reload()" style="background:#c47a2a;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;margin:6px;">Cache leeren & neu laden</button><button onclick="location.reload()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;margin:6px;">Neu laden</button></div>';
+    }
+  }
 }
 
 function renderHeutePlaceholder(){['heute-list','woche-list','weitere-list'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<div class="empty-state">Daten werden geladen\u2026</div>';});}
@@ -7176,6 +7215,57 @@ document.getElementById('btn-cache-reset')?.addEventListener('click', () => {
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 
 initPinScreen();
+
+
+// ─── KEYBOARD SHORTCUTS ──────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  // Ctrl+S or Cmd+S: Force sync
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (getGHToken()) {
+      showToast('Synchronisiere...', 'info');
+      scheduleSyncToGitHub();
+    }
+  }
+  // Escape: Close any open modal
+  if (e.key === 'Escape') {
+    closeCardModal();
+    closePatModal();
+    closeBLModal();
+    var vorlagen = document.getElementById('vorlagen-overlay');
+    if (vorlagen && vorlagen.classList.contains('open')) closeVorlagen();
+  }
+});
+
+// ─── OFFLINE WRITE QUEUE ─────────────────────────────────────────────────────
+window._pendingWrites = JSON.parse(localStorage.getItem('cowork_pending_writes') || '[]');
+
+function queueOfflineWrite(key, data, msg) {
+  window._pendingWrites.push({key: key, data: data, msg: msg, ts: Date.now()});
+  localStorage.setItem('cowork_pending_writes', JSON.stringify(window._pendingWrites));
+  showToast('Offline gespeichert \u2014 wird synchronisiert wenn online', 'info');
+}
+
+async function flushOfflineQueue() {
+  if (window._pendingWrites.length === 0) return;
+  var queue = window._pendingWrites.slice();
+  window._pendingWrites = [];
+  localStorage.removeItem('cowork_pending_writes');
+  for (var i = 0; i < queue.length; i++) {
+    try {
+      await safeWriteToGitHub(queue[i].key, JSON.stringify(queue[i].data, null, 2), queue[i].msg);
+    } catch (err) {
+      console.error('[OFFLINE-QUEUE] Write failed:', err);
+      window._pendingWrites.push(queue[i]);
+    }
+  }
+  if (window._pendingWrites.length > 0) {
+    localStorage.setItem('cowork_pending_writes', JSON.stringify(window._pendingWrites));
+  }
+}
+
+// Flush queue when coming back online
+window.addEventListener('online', function() { setTimeout(flushOfflineQueue, 2000); });
 
 </script>
 
