@@ -1,6 +1,6 @@
 {
-  "name": "CoworkKanban — Persönliches Produktivitätssystem",
-  "short_name": "CoworkKanban",
+  "name": "CoworkSpace — Persönliches Produktivitätssystem",
+  "short_name": "CoworkSpace",
   "description": "Kanban-Board, Kalender, Patienten und mehr — dein digitales Betriebssystem",
   "start_url": "/CoworkKanban/",
   "scope": "/CoworkKanban/",
@@ -9,7 +9,10 @@
   "background_color": "#f5f0ea",
   "theme_color": "#2c2417",
   "lang": "de-CH",
-  "categories": ["productivity", "business"],
+  "categories": [
+    "productivity",
+    "business"
+  ],
   "icons": [
     {
       "src": "icon-192.png",
@@ -29,7 +32,12 @@
       "name": "Kanban Board",
       "short_name": "Kanban",
       "url": "/CoworkKanban/?tab=kanban",
-      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Backlog",
