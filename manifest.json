@@ -1,6 +1,6 @@
 {
-  "name": "CoworkSpace — Persönliches Produktivitätssystem",
-  "short_name": "CoworkSpace",
+  "name": "CoworkOS",
+  "short_name": "CoworkOS",
   "description": "Kanban-Board, Kalender, Patienten und mehr — dein digitales Betriebssystem",
   "start_url": "/CoworkKanban/",
   "scope": "/CoworkKanban/",
