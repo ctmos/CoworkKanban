@@ -7324,8 +7324,8 @@ async function initApp() {
 
   WriteGuard.ensureBadge();
 
-  (function startupIntegrityCheck() { return; // DISABLED — was blocking on fresh installs
-function _oldStartupIntegrityCheck() {
+  (function startupIntegrityCheck() { return; })(); // DISABLED
+(function _oldStartupIntegrityCheck() {
 
     var cards = _appState.cards || {};
 
