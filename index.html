@@ -3193,6 +3193,11 @@ nav::-webkit-scrollbar { display: none; }
   #burger-btn { display: none !important; }
   #nav-tabs, .nav-tabs { display: contents !important; }
 }
+
+/* Drag & Drop visual */
+.lane.drop-target-hint { border: 2px dashed var(--border); }
+.lane.drag-over { border: 2px dashed var(--accent); background: rgba(196,122,42,0.05); }
+
 </style>
 
 
@@ -6862,7 +6867,7 @@ function renderCardItem(card, laneColor) {
 
   var bgStyle=laneColor?'background:rgba('+hexToRgb(laneColor)+',0.08);':'';
 
-  return '<div class="card-item" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+  return '<div class="card-item" draggable="true" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
 
 }
 
@@ -7576,6 +7581,81 @@ setInterval(function() {
     isDragging = false;
   });
 })();
+
+// ─── DESKTOP DRAG & DROP between lanes ──────────────────────────────────────
+(function() {
+  // Make cards draggable
+  document.addEventListener('dragstart', function(e) {
+    var card = e.target.closest('.card-item');
+    if (!card) return;
+    var cardId = card.dataset.id;
+    if (!cardId) return;
+    e.dataTransfer.setData('text/plain', cardId);
+    e.dataTransfer.effectAllowed = 'move';
+    card.style.opacity = '0.5';
+    setTimeout(function() {
+      document.querySelectorAll('.lane').forEach(function(l) {
+        l.classList.add('drop-target-hint');
+      });
+    }, 0);
+  });
+
+  document.addEventListener('dragend', function(e) {
+    var card = e.target.closest('.card-item');
+    if (card) card.style.opacity = '1';
+    document.querySelectorAll('.lane').forEach(function(l) {
+      l.classList.remove('drop-target-hint', 'drag-over');
+    });
+  });
+
+  document.addEventListener('dragover', function(e) {
+    var lane = e.target.closest('.lane');
+    if (!lane) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.lane.drag-over').forEach(function(l) { l.classList.remove('drag-over'); });
+    lane.classList.add('drag-over');
+  });
+
+  document.addEventListener('dragleave', function(e) {
+    var lane = e.target.closest('.lane');
+    if (lane) lane.classList.remove('drag-over');
+  });
+
+  document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    var lane = e.target.closest('.lane');
+    if (!lane) return;
+    lane.classList.remove('drag-over');
+    document.querySelectorAll('.drop-target-hint').forEach(function(l) { l.classList.remove('drop-target-hint'); });
+
+    var cardId = e.dataTransfer.getData('text/plain');
+    var targetLane = lane.dataset.lane;
+    if (!cardId || !targetLane) return;
+
+    var cards = getCards();
+    var card = cards[cardId];
+    if (!card || card.lane === targetLane) return;
+
+    var oldLane = card.lane;
+    var oldId = card.id;
+
+    // Generate new ID for target lane
+    var newId = nextCardId(targetLane);
+
+    // Move card: delete old, create new with new ID
+    delete cards[oldId];
+    card.id = newId;
+    card.lane = targetLane;
+    card.order = Date.now();
+    cards[newId] = card;
+
+    saveCards(cards);
+    showToast(oldId + ' → ' + newId + ' (' + targetLane + ')');
+    renderKanban();
+  });
+})();
+
 </script>
 
 </body>
