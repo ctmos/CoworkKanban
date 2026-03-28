@@ -3716,7 +3716,7 @@ function renderStatusTab() {
 
   var in7 = new Date(todayStart.getTime() + 7*86400000);
 
-  var weekCards = Object.values(cards).filter(function(c) { if (c.archived || !c.deadline) return false; var d=new Date(c.deadline); return d>=todayStart && d<in7; });
+  var weekCards = Object.values(cards).filter(function(c) { if (c.archived || !c.deadline) return false; if (c.lane==='HB'||c.lane==='HD'||c.todayFlag) return false; var d=new Date(c.deadline); return d>=todayStart && d<in7; });
 
   function dayLabel(dateStr) { var d=new Date(dateStr); var diff=Math.floor((d-todayStart)/86400000); if(diff===0) return 'Heute'; if(diff===1) return 'Morgen'; if(diff===2) return '\u00dcbermorgen'; return 'Diese Woche'; }
 
@@ -3904,7 +3904,7 @@ function renderKanban() {
 
   grid.innerHTML = LANES.map(function(lane) {
 
-    var all=Object.values(cards).filter(function(c){if(c.archived)return false;if(lane.isHeuteBacklog)return c.todayFlag||c.lane==='HB';if(lane.isHeuteDeadline)return c.lane==='HD'||(!c.todayFlag&&c.lane!=='HB'&&(c.deadline===todayISO||(c.deadline&&c.deadline<todayISO)));return c.lane===lane.id;});
+    var all=Object.values(cards).filter(function(c){if(c.archived)return false;if(lane.isHeuteBacklog)return c.lane==='HB';if(lane.isHeuteDeadline)return c.lane==='HD';return c.lane===lane.id;});
 
     var active=all.filter(function(c){return c.status!=='erledigt';}).sort(function(a,b){return(a.order-b.order)||a.id.localeCompare(b.id);});
 
@@ -4277,6 +4277,7 @@ async function initApp() {
     var cards = getCards(); var todayISO = new Date().toISOString().split('T')[0]; var changed = false;
     Object.values(cards).forEach(function(c) {
       if (c.lane === 'HE') {
+        if (!c.originalLane) c.originalLane = 'BA';
         if (c.todayFlag) { c.lane = 'HB'; } else if (c.deadline && c.deadline <= todayISO) { c.lane = 'HD'; } else { c.lane = 'HB'; }
         changed = true;
       }
@@ -4662,10 +4663,11 @@ setInterval(function() {
     }
     if (targetLane === 'HB' && oldLane !== 'HB') {
       card.todayFlag = true;
-      card.originalLane = oldLane;
+      if (!card.originalLane || card.originalLane === 'HB' || card.originalLane === 'HD') card.originalLane = oldLane;
     }
     if (targetLane === 'HD' && oldLane !== 'HD') {
       card.todayFlag = false;
+      if (!card.originalLane || card.originalLane === 'HB' || card.originalLane === 'HD') card.originalLane = oldLane;
     }
     cards[newId] = card;
 
