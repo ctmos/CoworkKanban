@@ -3393,6 +3393,11 @@ var DEFAULT_PIN_HASH = btoa('2611' + 'cowork');
 
 
 async function initPinScreen() {
+  // Persistent login: skip PIN if already authenticated (survives reload/pull-to-refresh)
+  if (localStorage.getItem('cowork_pin_set') === 'true' && !location.search.includes('resetpin=1')) {
+    unlockApp();
+    return;
+  }
 
   document.getElementById('pin-subtitle').textContent = 'Daten werden geladen...';
 
@@ -3459,13 +3464,10 @@ async function initPinScreen() {
 
 
 function unlockApp() {
-
+  localStorage.setItem('cowork_pin_set', 'true');
   document.getElementById('pin-screen').style.display = 'none';
-
   document.getElementById('app').style.display = 'block';
-
   initApp();
-
 }
 
 
