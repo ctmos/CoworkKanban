@@ -4322,7 +4322,34 @@ async function initApp() {
 
 function renderHeutePlaceholder(){['heute-list','woche-list','weitere-list'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<div class="empty-state">Daten werden geladen\u2026</div>';});}
 
-
+// ─── MULTI-DEVICE SYNC POLLING (60s) ────────────────────────────────────────
+var _syncPollInterval = null;
+async function pollSync() {
+  if (document.visibilityState !== 'visible') return;
+  if (window._pushInProgress) return;
+  if (!_dataLoaded) return;
+  try {
+    await loadFromGitHub();
+    renderHeute();
+    if (typeof renderKanban === 'function') renderKanban();
+    console.log('[SYNC] Poll complete', new Date().toLocaleTimeString());
+  } catch(e) { console.warn('[SYNC] Poll failed:', e.message); }
+}
+// Start polling after first initApp completes
+var _origInitApp = initApp;
+initApp = async function() {
+  await _origInitApp();
+  if (!_syncPollInterval) {
+    _syncPollInterval = setInterval(pollSync, 60000);
+    console.log('[SYNC] Polling started (60s interval)');
+  }
+};
+// Immediate sync when tab becomes visible (e.g. phone unlock, tab switch back)
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible' && _dataLoaded) {
+    setTimeout(pollSync, 500); // small delay to avoid race with other handlers
+  }
+});
 
 // ─── THEME ────────────────────────────────────────────────────────────────────
 
