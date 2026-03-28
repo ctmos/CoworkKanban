@@ -1960,7 +1960,7 @@ const WriteGuard = {
 
 // ─── SCHEMA VALIDATION (Fix 3) ─────────────────────────────────────────────
 
-const VALID_LANES = ['HE','BA','WB','IK','PA','FI','FA','FR','PR','EV','EM','EX','MA','TB','EK'];
+const VALID_LANES = ['HB','HD','BA','WB','IK','PA','FI','FA','FR','PR','EV','EM','EX','MA','TB','EK'];
 
 const ID_PATTERN = /^[A-Z]{2}\d{3}$/;
 
@@ -3064,7 +3064,8 @@ WriteGuard.log({ status: 'ok', reason: 'Data loaded successfully' });
 
 const LANES = [
 
-  {id:'HE', name:'Heute',       isHeute:true, color:'#ff6b6b'},
+  {id:'HB', name:'Heute Backlog',   isHeuteBacklog:true,   color:'#ff6b6b'},
+  {id:'HD', name:'Heute Deadline', isHeuteDeadline:true, color:'#fa5252'},
 
   {id:'BA', name:'Barmelweid',  isBA:true,    color:'#ffa94d'},
 
@@ -3554,7 +3555,7 @@ function moveToToday(cardId) {
 
   if (!card.originalLane) card.originalLane = card.lane || 'BA';
 
-  card.lane = 'HE';
+  card.lane = 'HB';
 
   card.todayFlag = true;
 
@@ -3684,7 +3685,7 @@ function renderStatusTab() {
 
 
 
-  var heuteCards = Object.values(cards).filter(function(c) { return !c.archived && c.status !== 'erledigt' && (c.todayFlag || c.lane === 'HE' || c.deadline === todayISO || (c.deadline && c.deadline < todayISO)); });
+  var heuteCards = Object.values(cards).filter(function(c) { return !c.archived && c.status !== 'erledigt' && (c.todayFlag || c.lane === 'HB' || c.lane === 'HD' || c.deadline === todayISO || (c.deadline && c.deadline < todayISO)); });
 
   var heuteList = document.getElementById('heute-list');
 
@@ -3755,7 +3756,7 @@ function renderStatusTab() {
 
           } else {
 
-            var isHE=c.todayFlag||c.lane==='HE'; var cId=esc(c.id||'');
+            var isHE=c.todayFlag||c.lane==='HB'||c.lane==='HD'; var cId=esc(c.id||'');
             var wDl = c.deadline ? '<span style="font-size:10px;color:#e03131;">D: '+fmtDateShort(c.deadline)+'</span>' : '';
             var wCr = c.createdAt ? '<span style="font-size:10px;color:#999;">* '+fmtDateShort(c.createdAt)+'</span>' : '';
             var wDates = (wDl||wCr) ? '<div style="display:flex;justify-content:space-between;margin-top:2px;">'+wDl+wCr+'</div>' : '';
@@ -3779,7 +3780,7 @@ function renderStatusTab() {
 
 
 
-  var weitereCards = Object.values(cards).filter(function(c) { if(c.archived) return false; if(c.todayFlag||c.lane==='HE') return false; if(c.deadline){return new Date(c.deadline)>=in7;} return c.priority==='hoch'||c.priority==='high'; });
+  var weitereCards = Object.values(cards).filter(function(c) { if(c.archived) return false; if(c.todayFlag||c.lane==='HB'||c.lane==='HD') return false; if(c.deadline){return new Date(c.deadline)>=in7;} return c.priority==='hoch'||c.priority==='high'; });
 
   var weitereList = document.getElementById('weitere-list');
 
@@ -3793,7 +3794,7 @@ function renderStatusTab() {
 
       weitereList.innerHTML = weitereCards.map(function(c) {
 
-        var isHE=c.todayFlag||c.lane==='HE'; var cId=esc(c.id||'');
+        var isHE=c.todayFlag||c.lane==='HB'||c.lane==='HD'; var cId=esc(c.id||'');
         var fDl = c.deadline ? '<span style="font-size:10px;color:#e03131;">D: '+fmtDateShort(c.deadline)+'</span>' : '';
         var fCr = c.createdAt ? '<span style="font-size:10px;color:#999;">* '+fmtDateShort(c.createdAt)+'</span>' : '';
         var fDates = (fDl||fCr) ? '<div style="display:flex;justify-content:space-between;margin-top:2px;">'+fDl+fCr+'</div>' : '';
@@ -3873,7 +3874,7 @@ function renderCardItem(card, laneColor) {
 
   var descBox=descExpanded?'<div class="card-desc-box">'+esc(card.desc)+'</div>':'';
 
-  var isHE=card.todayFlag||card.lane==='HE';
+  var isHE=card.todayFlag||card.lane==='HB'||card.lane==='HD';
 
   var bgStyle=laneColor?'background:rgba('+hexToRgb(laneColor)+',0.08);':'';
 
@@ -3903,7 +3904,7 @@ function renderKanban() {
 
   grid.innerHTML = LANES.map(function(lane) {
 
-    var all=Object.values(cards).filter(function(c){return !c.archived&&(lane.isHeute?(c.todayFlag||c.deadline===todayISO||c.lane==='HE'):c.lane===lane.id);});
+    var all=Object.values(cards).filter(function(c){if(c.archived)return false;if(lane.isHeuteBacklog)return c.todayFlag||c.lane==='HB';if(lane.isHeuteDeadline)return !c.todayFlag&&c.lane!=='HB'&&(c.deadline===todayISO||(c.deadline&&c.deadline<todayISO));return c.lane===lane.id;});
 
     var active=all.filter(function(c){return c.status!=='erledigt';}).sort(function(a,b){return(a.order-b.order)||a.id.localeCompare(b.id);});
 
@@ -3965,7 +3966,7 @@ function openCardModal(cardId,laneId) {
 
   document.getElementById('cm-delete').style.display=isNew?'none':'';
 
-  document.getElementById('cm-heute').style.display=(card&&card.lane!=='HE')?'':'none';
+  document.getElementById('cm-heute').style.display=(card&&card.lane!=='HB'&&card.lane!=='HD')?'':'none';
 
   document.getElementById('card-modal-overlay').classList.add('open');
 
@@ -4004,7 +4005,7 @@ document.getElementById('cm-save').addEventListener('click',function() {
 
 document.getElementById('cm-delete').addEventListener('click',function(){confirmAction('Karte l\u00f6schen?','Diese Karte wird unwiderruflich gel\u00f6scht.',function(){var cards=getCards();if(cmCardId){cards[cmCardId].archived=true;saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});});
 
-document.getElementById('cm-heute').addEventListener('click',function(){var cards=getCards();if(cmCardId&&cards[cmCardId]){cards[cmCardId].lane='HE';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});
+document.getElementById('cm-heute').addEventListener('click',function(){var cards=getCards();if(cmCardId&&cards[cmCardId]){cards[cmCardId].todayFlag=true;cards[cmCardId].originalLane=cards[cmCardId].lane;cards[cmCardId].lane='HB';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});
 
 
 
@@ -4270,6 +4271,18 @@ async function initApp() {
   renderHeutePlaceholder();
 
   await loadFromGitHub();   // Step 1: Always fresh from GitHub
+
+  // Migrate legacy HE lane cards to HB/HD
+  (function() {
+    var cards = getCards(); var todayISO = new Date().toISOString().split('T')[0]; var changed = false;
+    Object.values(cards).forEach(function(c) {
+      if (c.lane === 'HE') {
+        if (c.todayFlag) { c.lane = 'HB'; } else if (c.deadline && c.deadline <= todayISO) { c.lane = 'HD'; } else { c.lane = 'HB'; }
+        changed = true;
+      }
+    });
+    if (changed) { saveCards(cards); console.log('[MIGRATE] HE cards moved to HB/HD'); }
+  })();
 
   // Step 2: _dataLoaded now true
 
@@ -4643,13 +4656,16 @@ setInterval(function() {
     card.lane = targetLane;
     card.order = Date.now();
     // Sync todayFlag with HE lane moves (mirror moveFromToday/moveToToday logic)
-    if (oldLane === 'HE' && targetLane !== 'HE') {
+    if ((oldLane === 'HB' || oldLane === 'HD') && targetLane !== 'HB' && targetLane !== 'HD') {
       card.todayFlag = false;
       delete card.originalLane;
     }
-    if (targetLane === 'HE' && oldLane !== 'HE') {
+    if (targetLane === 'HB' && oldLane !== 'HB') {
       card.todayFlag = true;
       card.originalLane = oldLane;
+    }
+    if (targetLane === 'HD' && oldLane !== 'HD') {
+      card.todayFlag = false;
     }
     cards[newId] = card;
 
