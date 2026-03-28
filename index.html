@@ -3904,7 +3904,7 @@ function renderKanban() {
 
   grid.innerHTML = LANES.map(function(lane) {
 
-    var all=Object.values(cards).filter(function(c){if(c.archived)return false;if(lane.isHeuteBacklog)return c.todayFlag||c.lane==='HB';if(lane.isHeuteDeadline)return !c.todayFlag&&c.lane!=='HB'&&(c.deadline===todayISO||(c.deadline&&c.deadline<todayISO));return c.lane===lane.id;});
+    var all=Object.values(cards).filter(function(c){if(c.archived)return false;if(lane.isHeuteBacklog)return c.todayFlag||c.lane==='HB';if(lane.isHeuteDeadline)return c.lane==='HD'||(!c.todayFlag&&c.lane!=='HB'&&(c.deadline===todayISO||(c.deadline&&c.deadline<todayISO)));return c.lane===lane.id;});
 
     var active=all.filter(function(c){return c.status!=='erledigt';}).sort(function(a,b){return(a.order-b.order)||a.id.localeCompare(b.id);});
 
