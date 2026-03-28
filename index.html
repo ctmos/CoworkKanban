@@ -4640,11 +4640,21 @@ setInterval(function() {
     card.id = newId;
     card.lane = targetLane;
     card.order = Date.now();
+    // Sync todayFlag with HE lane moves (mirror moveFromToday/moveToToday logic)
+    if (oldLane === 'HE' && targetLane !== 'HE') {
+      card.todayFlag = false;
+      delete card.originalLane;
+    }
+    if (targetLane === 'HE' && oldLane !== 'HE') {
+      card.todayFlag = true;
+      card.originalLane = oldLane;
+    }
     cards[newId] = card;
 
     saveCards(cards);
     showToast(oldId + ' → ' + newId + ' (' + targetLane + ')');
     renderKanban();
+    if (currentTab === 'heute') renderHeute();
   });
 })();
 
