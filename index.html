@@ -3697,7 +3697,7 @@ function renderStatusTab() {
     } else {
 
       heuteList.innerHTML = heuteCards.map(function(c) {
-        var dlStr = c.deadline ? '<span style="font-size:10px;color:#e03131;">'+fmtDateShort(c.deadline)+'</span>' : '';
+        var dlStr = c.deadline ? '<span style="font-size:10px;color:#e03131;">D: '+fmtDateShort(c.deadline)+'</span>' : '';
         var crStr = c.createdAt ? '<span style="font-size:10px;color:#999;">* '+fmtDateShort(c.createdAt)+'</span>' : '';
         var dates = (dlStr||crStr) ? '<div style="display:flex;justify-content:space-between;margin-top:2px;">'+dlStr+crStr+'</div>' : '';
         return '<div class="status-card"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+esc(c.id||'')+'</span><span class="card-title">'+esc(c.title||'')+'</span></div>'+dates+'</div><button class="today-btn is-today" onclick="moveFromToday(\''+esc(c.id)+'\')" title="Zur\u00fcck">\u21a9</button></div>';
@@ -3756,7 +3756,7 @@ function renderStatusTab() {
           } else {
 
             var isHE=c.todayFlag||c.lane==='HE'; var cId=esc(c.id||'');
-            var wDl = c.deadline ? '<span style="font-size:10px;color:#e03131;">'+fmtDateShort(c.deadline)+'</span>' : '';
+            var wDl = c.deadline ? '<span style="font-size:10px;color:#e03131;">D: '+fmtDateShort(c.deadline)+'</span>' : '';
             var wCr = c.createdAt ? '<span style="font-size:10px;color:#999;">* '+fmtDateShort(c.createdAt)+'</span>' : '';
             var wDates = (wDl||wCr) ? '<div style="display:flex;justify-content:space-between;margin-top:2px;">'+wDl+wCr+'</div>' : '';
             html += '<div class="status-card" style="cursor:pointer"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div>'+wDates+'</div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
@@ -3794,7 +3794,7 @@ function renderStatusTab() {
       weitereList.innerHTML = weitereCards.map(function(c) {
 
         var isHE=c.todayFlag||c.lane==='HE'; var cId=esc(c.id||'');
-        var fDl = c.deadline ? '<span style="font-size:10px;color:#e03131;">'+fmtDateShort(c.deadline)+'</span>' : '';
+        var fDl = c.deadline ? '<span style="font-size:10px;color:#e03131;">D: '+fmtDateShort(c.deadline)+'</span>' : '';
         var fCr = c.createdAt ? '<span style="font-size:10px;color:#999;">* '+fmtDateShort(c.createdAt)+'</span>' : '';
         var fDates = (fDl||fCr) ? '<div style="display:flex;justify-content:space-between;margin-top:2px;">'+fDl+fCr+'</div>' : '';
         return '<div class="status-card" style="cursor:pointer"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div>'+fDates+'</div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
