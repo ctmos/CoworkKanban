@@ -154,7 +154,12 @@ window.addEventListener('offline', function() {
 .pat-entry-type-badge.type-notiz { background:#e5e7eb; color:#374151; }
 .pat-entry-type-badge.type-vorbereitung { background:#bfdbfe; color:#1e40af; }
 @media(prefers-color-scheme:dark){ .pat-entry-type-badge.type-notiz { background:#374151; color:#9ca3af; } .pat-entry-type-badge.type-vorbereitung { background:#1e3a5f; color:#93c5fd; } }
-.pat-title-input { width:100%; padding:8px 12px; border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); background:var(--surface,#fff); color:var(--text,#1a1a1a); font-size:13px; margin-bottom:6px; box-sizing:border-box; }
+.pat-blog-input { background:var(--surface,#fff); border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); padding:12px; margin:16px 0; }
+.pat-blog-input textarea { width:100%; min-height:60px; padding:8px 12px; border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); background:var(--bg,#f9fafb); color:var(--text,#1a1a1a); font-size:13px; font-family:inherit; box-sizing:border-box; resize:vertical; }
+.pat-blog-input textarea:focus { border-color:var(--accent,#2563eb); outline:none; }
+.pat-blog-input-footer { display:flex; gap:8px; align-items:center; justify-content:space-between; margin-top:8px; }
+.pat-title-input { width:100%; padding:8px 12px; border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); background:var(--bg,#f9fafb); color:var(--text,#1a1a1a); font-size:13px; font-family:inherit; margin-bottom:8px; box-sizing:border-box; }
+.pat-title-input:focus { border-color:var(--accent,#2563eb); outline:none; }
 .pat-blog-entry-title { font-weight:600; font-size:14px; margin-bottom:4px; color:var(--text,#1a1a1a); }
 .pat-ampel-popup { position:absolute; top:100%; left:0; z-index:100; background:var(--surface,#fff); border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); box-shadow:var(--shadow,0 4px 12px rgba(0,0,0,0.15)); padding:10px; min-width:240px; }
 .pat-ampel-chip { position:relative; }
@@ -179,9 +184,24 @@ window.addEventListener('offline', function() {
 .pat-archive-toggle:hover { background:var(--bg,#f3f4f6); }
 .pat-archive-list { margin-top:4px; }
 .patient-row.archived { opacity:0.55; }
-.pat-detail-actions { display:flex; gap:8px; margin:12px 0; }
-.pat-archive-btn { padding:6px 14px; border-radius:var(--radius,6px); border:1px solid var(--border,#d1d5db); background:var(--surface,#fff); color:var(--text,#1a1a1a); font-size:12px; cursor:pointer; }
-.pat-archive-btn:hover { background:var(--bg,#f3f4f6); }
+.pat-detail-header { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:4px; }
+.pat-detail-header h2 { font-size:20px; font-weight:700; margin:0; }
+.pat-back-btn { padding:6px 12px; border-radius:var(--radius,6px); border:1px solid var(--border,#d1d5db); background:var(--surface,#fff); color:var(--text,#1a1a1a); font-size:13px; cursor:pointer; }
+.pat-back-btn:hover { background:var(--bg,#f3f4f6); border-color:var(--accent,#2563eb); color:var(--accent,#2563eb); }
+.pat-detail-actions { display:flex; gap:8px; margin:8px 0 16px; }
+.pat-archive-btn { padding:6px 14px; border-radius:var(--radius,6px); border:1px solid var(--border,#d1d5db); background:var(--surface,#fff); color:var(--text-muted,#6b7280); font-size:12px; cursor:pointer; transition:all 0.15s; }
+.pat-archive-btn:hover { background:var(--bg,#f3f4f6); border-color:var(--accent,#2563eb); }
+.pat-blog-entry { background:var(--surface,#fff); border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); padding:12px 16px; margin-bottom:8px; }
+.pat-blog-entry-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.pat-blog-entry-date { font-size:12px; color:var(--text-muted,#6b7280); }
+.pat-blog-entry-text { font-size:13px; color:var(--text,#1a1a1a); line-height:1.5; white-space:pre-wrap; }
+.pat-blog-entry-text.collapsed { max-height:80px; overflow:hidden; }
+.pat-blog-expand { background:none; border:none; color:var(--accent,#2563eb); cursor:pointer; font-size:12px; padding:4px 0; }
+.pat-blog-entry-delete, .pat-blog-entry-edit { background:none; border:none; cursor:pointer; font-size:12px; }
+.pat-blog-entry-delete { color:var(--text-muted,#6b7280); }
+.pat-blog-entry-delete:hover { color:#ef4444; }
+.pat-blog-entry-edit { color:var(--accent,#2563eb); margin-right:8px; }
+.pat-blog-entry-edit:hover { text-decoration:underline; }
 .pat-edit-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
 .pat-edit-overlay.open { display:flex; }
 .pat-edit-modal { background:var(--surface,#fff); border-radius:var(--radius,6px); padding:20px; width:90%; max-width:500px; box-shadow:var(--shadow,0 8px 24px rgba(0,0,0,0.2)); }
@@ -554,8 +574,8 @@ window.addEventListener('offline', function() {
       <div class="pat-ampel-row" id="pat-detail-ampel"></div>
       <div class="pat-blog-input">
         <input type="text" class="pat-title-input" id="pat-blog-title" placeholder="Titel (optional)…">
-        <textarea id="pat-blog-text" placeholder="Neuer Verlaufseintrag…"></textarea>
-        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+        <textarea id="pat-blog-text" placeholder="Neuer Verlaufseintrag…" rows="3"></textarea>
+        <div class="pat-blog-input-footer">
           <div class="pat-type-selector">
             <button class="pat-type-btn active" data-type="notiz" onclick="selectBlogType('notiz')">Notiz</button>
             <button class="pat-type-btn" data-type="vorbereitung" onclick="selectBlogType('vorbereitung')">Vorbereitung</button>
