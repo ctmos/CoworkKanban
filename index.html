@@ -4985,6 +4985,40 @@ function addBlogEntry(){
 }
 
 function deleteBlogEntry(blogId){var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat||!pat.blog)return;pat.blog=pat.blog.filter(function(e){return e.id!==blogId;});savePatients(patients);renderPatBlog(pat);}
+
+// === ANON PIPELINE IMPORT API ===
+// Wird von KITT via Chrome MCP aufgerufen
+function importAnonEntry(patCode, entry) {
+  var patients = getPatients();
+  var pat = patients.find(function(p) { return p.code === patCode; });
+  if (!pat) {
+    // Auto-Create Patient
+    pat = {
+      id: 'PAT' + Date.now(),
+      code: patCode,
+      aufnahme: new Date().toISOString().slice(0, 10),
+      status: 'aktiv',
+      notizen: '',
+      ampel: {
+        austritt: {status:'offen',text:'',date:'',log:[]},
+        ambulant: {status:'offen',text:'',date:'',log:[]},
+        tagesstruktur: {status:'offen',text:'',date:'',log:[]},
+        wiedereingliederung: {status:'offen',text:'',date:'',log:[]}
+      },
+      blog: []
+    };
+    patients.push(pat);
+    console.log('[anon] Neuer Patient angelegt: ' + patCode);
+  }
+  if (!pat.blog) pat.blog = [];
+  // Duplikat-Check
+  var exists = pat.blog.some(function(e) { return e.id === entry.id; });
+  if (exists) { console.log('[anon] Entry existiert bereits'); return 'duplicate'; }
+  pat.blog.unshift(entry);
+  savePatients(patients);
+  console.log('[anon] Blog-Eintrag hinzugefuegt fuer ' + patCode);
+  return pat.id.startsWith('PAT') && patients.indexOf(pat) === patients.length - 1 ? 'created+imported' : 'imported';
+}
 function toggleBlogExpand(blogId){_blogExpanded[blogId]=!_blogExpanded[blogId];var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(pat)renderPatBlog(pat);}
 
 function openBlogEditModal(blogId){
