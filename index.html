@@ -217,6 +217,12 @@ window.addEventListener('offline', function() {
 .pat-ampel-mini-dot[data-status="rot"] { background:#ef4444; }
 .pat-blog-entry-edit { background:none; border:none; color:var(--accent,#2563eb); cursor:pointer; font-size:12px; margin-right:8px; }
 .pat-blog-entry-edit:hover { text-decoration:underline; }
+.pat-row-actions { display:flex; gap:4px; align-items:center; margin-left:auto; flex-shrink:0; }
+.pat-row-btn { background:none; border:1px solid transparent; border-radius:var(--radius,6px); padding:4px 8px; cursor:pointer; font-size:13px; color:var(--text-muted,#6b7280); transition:all 0.15s; line-height:1; }
+.pat-row-btn:hover { background:var(--bg,#f3f4f6); border-color:var(--border,#d1d5db); }
+.pat-row-btn.edit:hover { color:var(--accent,#2563eb); }
+.pat-row-btn.archive:hover { color:#f59e0b; }
+.pat-row-btn.reactivate:hover { color:#22c55e; }
 </style>
 </head>
 
@@ -4116,7 +4122,12 @@ function renderPatients(filter) {
   var active=patients.filter(function(p){return p.status!=='archiviert';});
   var archived=patients.filter(function(p){return p.status==='archiviert';});
   function ampelDotsHtml(p){var a=p.ampel||{};var fields=['austritt','ambulant','tagesstruktur','wiedereingliederung'];return '<span class="pat-ampel-dots">'+fields.map(function(f){var st=(a[f]&&a[f].status)||'offen';return '<span class="pat-ampel-mini-dot" data-status="'+st+'"></span>';}).join('')+'</span>';}
-  function rowHtml(p,extra){return '<div class="patient-row'+(extra||'')+'" onclick="openPatDetail(\''+esc(p.id)+'\')"><span class="pat-code">'+esc(p.code)+ampelDotsHtml(p)+'</span><span class="pat-info">'+esc(p.aufnahme||'')+(p.notizen?' \u00b7 '+esc(p.notizen.substring(0,40)):'')+'</span><span class="pat-status-badge pat-status-'+(p.status||'aktiv')+'">'+(p.status||'aktiv')+'</span></div>';}
+  function rowHtml(p,extra){
+    var archBtn=p.status==='archiviert'
+      ?'<button class="pat-row-btn reactivate" onclick="event.stopPropagation();reactivatePatientById(\''+esc(p.id)+'\')" title="Reaktivieren">&#x21A9;</button>'
+      :'<button class="pat-row-btn archive" onclick="event.stopPropagation();archivePatientById(\''+esc(p.id)+'\')" title="Archivieren">&#x1F4E6;</button>';
+    return '<div class="patient-row'+(extra||'')+'" onclick="openPatDetail(\''+esc(p.id)+'\')"><span class="pat-code">'+esc(p.code)+ampelDotsHtml(p)+'</span><span class="pat-info">'+esc(p.aufnahme||'')+(p.notizen?' \u00b7 '+esc(p.notizen.substring(0,40)):'')+'</span><span class="pat-status-badge pat-status-'+(p.status||'aktiv')+'">'+(p.status||'aktiv')+'</span><span class="pat-row-actions"><button class="pat-row-btn edit" onclick="event.stopPropagation();openPatModal(\''+esc(p.id)+'\')" title="Bearbeiten">&#x270F;</button>'+archBtn+'</span></div>';
+  }
   var html=active.map(function(p){return rowHtml(p,'');}).join('');
   if(archived.length>0 && !q){html+='<div class="pat-archive-section"><button class="pat-archive-toggle" onclick="toggleArchiveSection()"><span id="archive-arrow">\u25b6</span> Archiv ('+archived.length+')</button><div class="pat-archive-list" id="pat-archive-list" style="display:none">'+archived.map(function(p){return rowHtml(p,' archived');}).join('')+'</div></div>';}
   list.innerHTML=html;
@@ -4859,6 +4870,16 @@ function reactivatePatient(){
   var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat)return;
   pat.status='aktiv';savePatients(patients);
   showToast('Patient reaktiviert');closePatDetail();renderPatients();
+}
+function archivePatientById(id){
+  var patients=getPatients();var pat=patients.find(function(p){return p.id===id;});if(!pat)return;
+  pat.status='archiviert';savePatients(patients);
+  showToast(pat.code+' archiviert');renderPatients();
+}
+function reactivatePatientById(id){
+  var patients=getPatients();var pat=patients.find(function(p){return p.id===id;});if(!pat)return;
+  pat.status='aktiv';savePatients(patients);
+  showToast(pat.code+' reaktiviert');renderPatients();
 }
 
 function renderPatAmpel(pat){
