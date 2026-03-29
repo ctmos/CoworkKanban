@@ -4740,6 +4740,13 @@ var _syncInterval = null;
 async function checkForRemoteChanges() {
   var token = getGHToken();
   if (!token) return;
+
+  // NEVER pull while local changes are pending
+  if (syncDebounceTimer) {
+    console.log('[sync] Poll skipped \u2014 local changes pending');
+    return;
+  }
+
   try {
     var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/tasks.json', {
       headers: { Authorization: 'token ' + token },
@@ -4749,34 +4756,32 @@ async function checkForRemoteChanges() {
     var d = await r.json();
     var remoteSHA = d.sha;
 
-    if (_lastKnownSHA && remoteSHA !== _lastKnownSHA) {
-      console.log('[sync] Remote change detected:', _lastKnownSHA, '->', remoteSHA);
-      showToast('Neue Daten erkannt \u2014 lade...', false);
-      _dataLoaded = false;
-      await loadFromGitHub();
-
-      // Also force-reload patients (workaround for proxy issue)
-      try {
-        var pr = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/patients.json', {
-          headers: { Authorization: 'token ' + token }, cache: 'no-store'
-        });
-        if (pr.ok) {
-          var pd = await pr.json();
-          var raw = JSON.parse(atob(pd.content.replace(/\n/g, '')));
-          _appState.patients = Array.isArray(raw) ? raw : (raw.patients || []);
-        }
-      } catch(e) {}
-
-      // Re-render current tab
-      if (currentTab === 'heute') renderHeute();
-      if (currentTab === 'kanban') renderKanban();
-      if (currentTab === 'patienten') renderPatients();
-      if (currentTab === 'backlog') renderBacklog();
-      if (currentTab === 'autonomy') renderAL();
-
-      showToast('\u2705 Daten synchronisiert', false);
+    // Skip if no change
+    if (!_lastKnownSHA || remoteSHA === _lastKnownSHA) {
+      _lastKnownSHA = remoteSHA;
+      console.log('[SYNC] Poll complete', new Date().toLocaleTimeString());
+      return;
     }
+
+    // Double-check: still no pending changes?
+    if (syncDebounceTimer) {
+      console.log('[sync] Poll aborted \u2014 local changes appeared during fetch');
+      return;
+    }
+
+    console.log('[sync] Remote change detected:', _lastKnownSHA, '->', remoteSHA);
+    showToast('Neue Daten erkannt \u2014 lade...', false);
+    _dataLoaded = false;
+    await loadFromGitHub();
     _lastKnownSHA = remoteSHA;
+
+    if (currentTab === 'heute') renderHeute();
+    if (currentTab === 'kanban') renderKanban();
+    if (currentTab === 'patienten') renderPatients();
+    if (currentTab === 'backlog') renderBacklog();
+    if (currentTab === 'autonomy') renderAL();
+
+    showToast('\u2705 Daten synchronisiert', false);
   } catch(e) {
     console.warn('[sync] check failed:', e);
   }
