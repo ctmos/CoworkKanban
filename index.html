@@ -154,11 +154,11 @@ window.addEventListener('offline', function() {
 .pat-entry-type-badge.type-notiz { background:#e5e7eb; color:#374151; }
 .pat-entry-type-badge.type-vorbereitung { background:#bfdbfe; color:#1e40af; }
 @media(prefers-color-scheme:dark){ .pat-entry-type-badge.type-notiz { background:#374151; color:#9ca3af; } .pat-entry-type-badge.type-vorbereitung { background:#1e3a5f; color:#93c5fd; } }
-.pat-blog-input { background:var(--surface,#fff); border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); padding:12px; margin:16px 0; }
-.pat-blog-input textarea { width:100%; min-height:60px; padding:8px 12px; border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); background:var(--bg,#f9fafb); color:var(--text,#1a1a1a); font-size:13px; font-family:inherit; box-sizing:border-box; resize:vertical; }
+.pat-blog-input { background:var(--surface,#fff); border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); padding:16px; margin:16px 0; display:flex; flex-direction:column; gap:8px; }
+.pat-blog-input textarea { width:100%; min-height:80px; padding:10px 12px; border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); background:var(--bg,#f9fafb); color:var(--text,#1a1a1a); font-size:13px; font-family:inherit; box-sizing:border-box; resize:none; line-height:1.5; }
 .pat-blog-input textarea:focus { border-color:var(--accent,#2563eb); outline:none; }
 .pat-blog-input-footer { display:flex; gap:8px; align-items:center; justify-content:space-between; margin-top:8px; }
-.pat-title-input { width:100%; padding:8px 12px; border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); background:var(--bg,#f9fafb); color:var(--text,#1a1a1a); font-size:13px; font-family:inherit; margin-bottom:8px; box-sizing:border-box; }
+.pat-title-input { width:100%; padding:8px 12px; border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); background:var(--bg,#f9fafb); color:var(--text,#1a1a1a); font-size:13px; font-family:inherit; box-sizing:border-box; }
 .pat-title-input:focus { border-color:var(--accent,#2563eb); outline:none; }
 .pat-blog-entry-title { font-weight:600; font-size:14px; margin-bottom:4px; color:var(--text,#1a1a1a); }
 .pat-ampel-popup { position:absolute; top:100%; left:0; z-index:100; background:var(--surface,#fff); border:1px solid var(--border,#d1d5db); border-radius:var(--radius,6px); box-shadow:var(--shadow,0 4px 12px rgba(0,0,0,0.15)); padding:10px; min-width:240px; }
