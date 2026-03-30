@@ -1,6 +1,6 @@
 {
-  "name": "CoworkOS",
-  "short_name": "CoworkOS",
+  "name": "LifeOS",
+  "short_name": "LifeOS",
   "description": "Kanban-Board, Kalender, Patienten und mehr — dein digitales Betriebssystem",
   "start_url": "/CoworkKanban/",
   "scope": "/CoworkKanban/",

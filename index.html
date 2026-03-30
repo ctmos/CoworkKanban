@@ -45,7 +45,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 
-<title>CoworkKanban</title>
+<title>LifeOS</title>
 <link rel="stylesheet" href="style.css">
 
 <script>
@@ -66,7 +66,7 @@
 
   <div class="pin-card">
 
-    <h1 id="pin-title">CoworkKanban</h1>
+    <h1 id="pin-title">LifeOS</h1>
 
     <p id="pin-subtitle">PIN eingeben zum Entsperren</p>
 
@@ -94,7 +94,7 @@
 
   <nav>
 
-    <span class="brand">CoworkKanban</span>
+    <span class="brand">LifeOS</span>
 
     <button class="tab-btn active" data-tab="heute">Start</button>
 
@@ -1614,7 +1614,7 @@ function showPinError(msg) {
 }
 
 function showPinUnlockUI(stored) {
-  document.getElementById('pin-title').textContent = 'CoworkKanban';
+  document.getElementById('pin-title').textContent = 'LifeOS';
   document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
   document.getElementById('pin-confirm-group').style.display = 'none';
   document.getElementById('pin-btn').textContent = 'Entsperren';
@@ -2279,7 +2279,7 @@ document.getElementById('pm-delete').addEventListener('click', function(){
   });
 });
 // ─── AUTONOMIE-LOG ────────────────────────────────────────────────────────────
-function initAL(){var log=getALLog();if(!log){log=[{id:'al001',ts:new Date().toISOString(),title:'System gestartet',desc:'CoworkKanban v2.0 mit strukturellen Fixes initialisiert.',badge:'\u2705',read:false}];saveALLog(log);}}
+function initAL(){var log=getALLog();if(!log){log=[{id:'al001',ts:new Date().toISOString(),title:'System gestartet',desc:'LifeOS mit strukturellen Fixes initialisiert.',badge:'\u2705',read:false}];saveALLog(log);}}
 function renderAL(){var log=getALLog()||[];var list=document.getElementById('al-list');var unread=log.filter(function(e){return !e.read;}).length;var badge=document.getElementById('al-badge');if(unread>0){badge.style.display='';badge.textContent=unread;}else{badge.style.display='none';}if(log.length===0){list.innerHTML='<div class="empty-state">Keine Eintr\u00e4ge.</div>';return;}list.innerHTML=log.map(function(e){return '<div class="al-card'+(e.read?' read':'')+'" id="alc-'+e.id+'"><div class="al-card-header"><span class="al-badge">'+(e.badge||'\uD83D\uDCCB')+'</span><div class="al-meta"><div class="al-title">'+esc(e.title)+'</div><div class="al-ts">'+new Date(e.ts).toLocaleString('de-CH')+'</div></div></div><div class="al-desc">'+esc(e.desc||'')+'</div>'+(!e.read?'<button class="al-read-btn" onclick="markALRead(\''+e.id+'\')">Okay, gelesen \u2713</button>':'<button class="al-read-btn">Gelesen \u2713</button>')+'</div>';}).join('');}
 function markALRead(id){var log=getALLog()||[];var entry=log.find(function(e){return e.id===id;});if(entry)entry.read=true;saveALLog(log);renderAL();updateALBadge();}
 function updateALBadge(){var log=getALLog()||[];var unread=log.filter(function(e){return !e.read;}).length;var badge=document.getElementById('al-badge');if(unread>0){badge.style.display='';badge.textContent=unread;}else badge.style.display='none';}
