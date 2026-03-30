@@ -1,5 +1,9 @@
-/* CoworkSpace Styles — extracted from index.html */
-/* DO NOT edit index.html styles directly. Edit this file instead. */
+/* LifeOS Design System — SINGLE SOURCE OF TRUTH
+ * ================================================
+ * ALLE Styles gehoeren in DIESE Datei. KEINE <style> Bloecke in index.html.
+ * Warme Palette (#c47a2a accent, #f5f0ea bg) — Claude Desktop Design.
+ * Theme: :root (default), :root.light-theme, :root.dark-theme
+ */
 
 /* === Block 1 === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
