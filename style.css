@@ -2297,11 +2297,39 @@ nav::-webkit-scrollbar { display: none; }
 }
 
 /* ── GLOBAL LAYOUT ── */
-#tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings {
+#tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings, #tab-system {
   padding: 20px 16px;
   max-width: 900px;
   margin: 0 auto;
 }
+
+/* ── SYSTEM LOG ── */
+.sl-section { margin-bottom: 24px; }
+.sl-section-title {
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.sl-kw-header {
+  cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-muted); padding: 8px 0; list-style: none; display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border); margin-bottom: 4px;
+}
+.sl-kw-header::-webkit-details-marker { display: none; }
+.sl-kw-count { font-weight: 400; font-size: 11px; }
+.sl-entry {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 16px; margin-bottom: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.sl-entry:hover { box-shadow: var(--shadow); }
+.sl-time { font-size: 11px; color: var(--text-muted); min-width: 80px; padding-top: 2px; flex-shrink: 0; }
+.sl-badge {
+  color: #fff; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
+  min-width: 52px; text-align: center; flex-shrink: 0;
+}
+.sl-body { flex: 1; min-width: 0; }
+.sl-title { font-weight: 600; font-size: 13px; color: var(--text); }
+.sl-details { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
 
 /* ── EINSTELLUNGEN ── */
 .settings-section {

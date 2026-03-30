@@ -265,7 +265,6 @@
   <!-- SYSTEM TAB -->
 
   <div id="tab-system" class="tab-content">
-    <h2>&#x2699;&#xFE0F; System-Log</h2>
     <div id="system-log-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
   </div>
 
@@ -2596,23 +2595,22 @@ function renderSystemLog(container) {
     var d = new Date(e.ts);
     var timeStr = d.toLocaleDateString('de-CH', {day:'2-digit',month:'2-digit'}) + ' '
       + d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'});
-    var detailId = 'syslog-detail-' + Math.random().toString(36).slice(2);
-    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">'
-      + '<span style="font-size:11px;color:var(--text-muted);min-width:80px;padding-top:2px;">' + timeStr + '</span>'
-      + '<span style="background:' + tc.bg + ';color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;min-width:52px;text-align:center;flex-shrink:0;">' + tc.label + '</span>'
-      + '<div style="flex:1;min-width:0;">'
-      + '<div style="font-weight:600;font-size:13px;color:var(--text);">' + esc(e.title) + '</div>'
-      + (e.details ? '<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">' + esc(e.details) + '</div>' : '')
+    return '<div class="sl-entry">'
+      + '<span class="sl-time">' + timeStr + '</span>'
+      + '<span class="sl-badge" style="background:' + tc.bg + '">' + tc.label + '</span>'
+      + '<div class="sl-body">'
+      + '<div class="sl-title">' + esc(e.title) + '</div>'
+      + (e.details ? '<div class="sl-details">' + esc(e.details) + '</div>' : '')
       + '</div></div>';
   }
 
   var html = '';
 
   // Letzte 24h section
-  html += '<div style="margin-bottom:20px;">';
-  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:8px;">Letzte 24h</div>';
+  html += '<div class="sl-section">';
+  html += '<div class="sl-section-title">Letzte 24h</div>';
   if (recent.length === 0) {
-    html += '<div class="empty-state" style="padding:16px 0;">Keine Aktivit\u00e4t in den letzten 24 Stunden.</div>';
+    html += '<div class="empty-state">Keine Aktivit\u00e4t in den letzten 24 Stunden.</div>';
   } else {
     recent.forEach(function(e) { html += entryHtml(e); });
   }
@@ -2620,11 +2618,10 @@ function renderSystemLog(container) {
 
   // Older grouped by KW
   Object.keys(byKW).sort().reverse().forEach(function(kw) {
-    var kwId = 'kw-' + kw.replace(/\s/g, '');
-    html += '<details style="margin-bottom:12px;" open>'
-      + '<summary style="cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:6px 0;list-style:none;display:flex;align-items:center;gap:8px;">'
-      + '<span style="color:var(--accent);">&#9660;</span>' + esc(kw)
-      + '<span style="font-weight:400;color:var(--text-muted);">(' + byKW[kw].length + ' Eintr\u00e4ge)</span>'
+    html += '<details class="sl-section" open>'
+      + '<summary class="sl-kw-header">'
+      + esc(kw)
+      + '<span class="sl-kw-count">(' + byKW[kw].length + ')</span>'
       + '</summary>';
     byKW[kw].forEach(function(e) { html += entryHtml(e); });
     html += '</details>';
