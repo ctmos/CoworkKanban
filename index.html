@@ -1428,6 +1428,8 @@ nav::-webkit-scrollbar { display: none; }
 
     <button class="tab-btn" data-tab="settings">Einstellungen</button>
 
+    <button class="tab-btn" data-tab="system">&#x2699;&#xFE0F; System</button>
+
   </nav>
 
 
@@ -1587,6 +1589,15 @@ nav::-webkit-scrollbar { display: none; }
 
     <div id="projekte-view"></div>
 
+  </div>
+
+
+
+  <!-- SYSTEM TAB -->
+
+  <div id="tab-system" class="tab-content">
+    <h2>&#x2699;&#xFE0F; System-Log</h2>
+    <div id="system-log-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
   </div>
 
 
@@ -2242,7 +2253,7 @@ const WriteGuard = {
 };
 
 // ─── SCHEMA VALIDATION (Fix 3) ─────────────────────────────────────────────
-const VALID_LANES = ['HE','BA','WB','IK','PA','FI','FA','FR','PR','EV','EM','EX','MA','TB','EK','HB','HD'];
+const VALID_LANES = ['HE','BA','WB','IK','PA','FI','FA','FR','PR','EV','EM','EX','MA','TB','EK'];
 const ID_PATTERN = /^[A-Z]{2}\d{3}$/;
 const FORBIDDEN_ID_PATTERNS = [/^[Bb][Bb]\d+$/];
 
@@ -2596,86 +2607,49 @@ var patientsDebounceTimer = null;
 function scheduleSavePatientsToGitHub() {
   if (!_dataLoaded) return;
   clearTimeout(patientsDebounceTimer);
-  patientsDebounceTimer = setTimeout(pullMergePushPatients, 10000);
+  patientsDebounceTimer = setTimeout(savePatientsToGitHub, 10000);
 }
-
-// ─── TRUE BIDIRECTIONAL MERGE HELPER ─────────────────────────────────────────────────────
-// Merges two patient arrays. Never loses a patient from either side.
-// For patients in both: merges entries (union by id) and ampel logs.
-function mergePatientLists(localList, remoteList) {
-  var merged = {};
-  (localList || []).forEach(function(p) { if (p.id) merged[p.id] = JSON.parse(JSON.stringify(p)); });
-  (remoteList || []).forEach(function(rp) {
-    if (!rp.id) return;
-    if (!merged[rp.id]) {
-      // Patient only in remote - add to merged
-      merged[rp.id] = JSON.parse(JSON.stringify(rp));
-    } else {
-      // Patient in both - union entries by id
-      var lp = merged[rp.id];
-      var entryMap = {};
-      (lp.entries || []).forEach(function(e) { if (e.id) entryMap[e.id] = e; });
-      (rp.entries || []).forEach(function(e) {
-        if (e.id && !entryMap[e.id]) { entryMap[e.id] = e; }
-      });
-      lp.entries = Object.values(entryMap);
-      // Merge ampel logs: union by date+text key
-      if (rp.ampel) {
-        if (!lp.ampel) lp.ampel = {};
-        ['austritt','ambulant','tagesstruktur','wiedereingliederung'].forEach(function(k) {
-          if (!rp.ampel[k]) return;
-          if (!lp.ampel[k]) { lp.ampel[k] = rp.ampel[k]; return; }
-          var logMap = {};
-          (lp.ampel[k].log || []).forEach(function(l) { logMap[l.date + '|' + l.text] = l; });
-          (rp.ampel[k].log || []).forEach(function(l) {
-            var key = l.date + '|' + l.text;
-            if (!logMap[key]) logMap[key] = l;
-          });
-          lp.ampel[k].log = Object.values(logMap).sort(function(a,b) { return a.date < b.date ? -1 : 1; });
-        });
-      }
-    }
-  });
-  return Object.values(merged);
-}
-
-// ─── BIDIRECTIONAL PATIENT SYNC (GET → merge → PUT) ─────────────────────────────────
-// ALWAYS: GET remote -> merge with local -> PUT merged -> update local.
-// This is the ONLY write path for patients. Never a blind overwrite.
-async function pullMergePushPatients() {
+async function savePatientsToGitHub() {
   try {
-    // Step 1: GET remote patients
-    var remote = await fetchFromGitHub('data/patients.json');
-    var remotePatients = [];
-    if (remote) {
-      try { remotePatients = JSON.parse(remote.content) || []; }
-      catch(e) { console.error('[pullMergePushPatients] remote parse error:', e); }
-    }
-    // Step 2: TRUE bidirectional merge
-    var localPatients = _appState.patients || [];
-    var mergedPatients = mergePatientLists(localPatients, remotePatients);
-    var addedFromRemote = mergedPatients.length - localPatients.length;
-    // Step 3: Update local state with merged result
-    _appState.patients = mergedPatients;
-    localStorage.setItem('cowork_patients', JSON.stringify(mergedPatients));
-    if (addedFromRemote > 0) {
-      console.log('[pullMergePushPatients] Merged ' + addedFromRemote + ' new patients from GitHub');
-      renderPatients();
-    }
-    // Step 4: PUT merged result to GitHub (no data loss ever)
-    await safeWriteToGitHub('data/patients.json', JSON.stringify(mergedPatients, null, 2), 'sync: merge patients');
+    await safeWriteToGitHub('data/patients.json', JSON.stringify(_appState.patients, null, 2), 'sync: auto-save patients');
   } catch(e) {
-    console.error('[pullMergePushPatients]', e);
+    console.error('[savePatientsToGitHub]', e);
     setSyncStatus('error');
     showToast('Patienten-Sync fehlgeschlagen', true);
-    throw e;
   }
 }
+async function syncPatientsToGitHub() { return savePatientsToGitHub(); }
 
-// savePatientsToGitHub routes through pullMergePushPatients:
-// GET-merge-PUT always enforced, never blind overwrite.
-async function savePatientsToGitHub() { return pullMergePushPatients(); }
-async function syncPatientsToGitHub() { return pullMergePushPatients(); }
+// ─── BIDIRECTIONAL PATIENT SYNC (GET → merge → PUT) ──────────────────────────
+async function pullMergePushPatients() {
+  // Step 1: GET remote patients
+  var remote = await fetchFromGitHub('data/patients.json');
+  if (remote) {
+    try {
+      var remotePatients = JSON.parse(remote.content) || [];
+      var localPatients = _appState.patients || [];
+      var localIds = {};
+      localPatients.forEach(function(p) { if (p.id) localIds[p.id] = true; });
+      // Step 2: Merge — add remote patients not present locally
+      var added = 0;
+      remotePatients.forEach(function(rp) {
+        if (rp.id && !localIds[rp.id]) {
+          localPatients.push(rp);
+          added++;
+        }
+      });
+      _appState.patients = localPatients;
+      if (added > 0) {
+        console.log('[pullMergePushPatients] Added ' + added + ' new patients from GitHub');
+        renderPatients();
+      }
+    } catch(e) {
+      console.error('[pullMergePushPatients] parse error:', e);
+    }
+  }
+  // Step 3: PUT merged result
+  await savePatientsToGitHub();
+}
 
 // ─── AUTO SYNC — AUTONOMY LOG ─────────────────────────────────────────────────
 var autonomyDebounceTimer = null;
@@ -3073,6 +3047,7 @@ function switchTab(id) {
   if (id === 'backlog')   renderBacklog();
   if (id === 'projekte')  showProjectsTab();
   if (id === 'settings')  initSettings();
+  if (id === 'system')    showSystemTab();
 }
 
 // ─── HEUTE / STATUS ───────────────────────────────────────────────────────────
@@ -3392,7 +3367,6 @@ function showPatientDetail(patId) {
     + (pat.status !== 'archiviert'
       ? '<button class="btn-secondary" onclick="archivePatient(\''+esc(pat.id)+'\')" style="color:#f59e0b">Archivieren</button>'
       : '<button class="btn-secondary" onclick="reactivatePatient(\''+esc(pat.id)+'\')" style="color:#22c55e">Reaktivieren</button>')
-    + '<button class="btn-secondary" onclick="deletePatient(\''+esc(pat.id)+'\')" style="color:#ef4444;font-size:12px">Löschen</button>'
     + '<button class="btn-secondary" id="sync-patients-btn-detail">↑↓ Sync</button>'
     + '</div></div>';
 
@@ -3558,22 +3532,6 @@ function archivePatient(patId) {
     if (idx !== -1) { patients[idx].status = 'archiviert'; savePatients(patients); }
     showPatientList();
   });
-}
-function deletePatient(patId) {
-  var patients = getPatients().map(migratePatientEntries);
-  var pat = patients.find(function(p){ return p.id === patId; });
-  if (!pat) return;
-  confirmAction('Patient ' + pat.code + ' wirklich löschen?',
-    'Diese Aktion kann nicht rückgängig gemacht werden. Alle Einträge dieses Patienten werden permanent gelöscht.',
-    async function() {
-      var updated = patients.filter(function(p){ return p.id !== patId; });
-      _appState.patients = updated;
-      localStorage.setItem('cowork_patients', JSON.stringify(updated));
-      showPatientList();
-      try { await pullMergePushPatients(); }
-      catch(e) { showToast('Löschen lokal gespeichert, Sync fehlgeschlagen', true); }
-    }
-  );
 }
 function reactivatePatient(patId) {
   var patients = getPatients().map(migratePatientEntries);
@@ -3899,6 +3857,110 @@ function startProcessStatusPolling() {
   fetchProcessStatus();
   if (_procStatusInterval) clearInterval(_procStatusInterval);
   _procStatusInterval = setInterval(fetchProcessStatus, 30000);
+}
+
+// ─── SYSTEM TAB ───────────────────────────────────────────────────────────────
+var _systemLogCache = null;
+
+async function showSystemTab() {
+  var container = document.getElementById('system-log-container');
+  if (!container) return;
+  container.innerHTML = '<div class="empty-state">Wird geladen\u2026</div>';
+  var token = getGHToken();
+  if (!token) {
+    container.innerHTML = '<div class="empty-state">Bitte Token in Einstellungen eintragen.</div>';
+    return;
+  }
+  try {
+    var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/system-log.json',
+      { headers: { Authorization: 'token ' + token } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    _systemLogCache = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+  } catch(e) {
+    container.innerHTML = '<div class="empty-state">Fehler beim Laden: ' + esc(e.message) + '</div>';
+    return;
+  }
+  renderSystemLog(container);
+}
+
+function renderSystemLog(container) {
+  var entries = (_systemLogCache && _systemLogCache.entries) || [];
+  if (entries.length === 0) {
+    container.innerHTML = '<div class="empty-state">Keine Eintr\u00e4ge.</div>';
+    return;
+  }
+
+  var TYPE_COLORS = {
+    deploy:  { bg: '#1d4ed8', label: 'Deploy' },
+    fix:     { bg: '#b45309', label: 'Fix' },
+    success: { bg: '#15803d', label: 'Erfolg' },
+    error:   { bg: '#b91c1c', label: 'Fehler' },
+    info:    { bg: '#6b7280', label: 'Info' }
+  };
+
+  var now = new Date();
+  var yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  // Sort newest first
+  var sorted = entries.slice().sort(function(a, b) { return b.ts.localeCompare(a.ts); });
+
+  // Split into last 24h vs older
+  var recent = sorted.filter(function(e) { return new Date(e.ts) >= yesterday; });
+  var older  = sorted.filter(function(e) { return new Date(e.ts) < yesterday; });
+
+  // Group older by KW
+  var byKW = {};
+  older.forEach(function(e) {
+    var d = new Date(e.ts);
+    var startOfYear = new Date(d.getFullYear(), 0, 1);
+    var dayOfYear = Math.ceil((d - startOfYear) / 86400000);
+    var kw = Math.ceil((dayOfYear + startOfYear.getDay()) / 7);
+    var kwKey = 'KW\u00a0' + String(kw).padStart(2, '0') + '\u00a0(' + d.getFullYear() + ')';
+    if (!byKW[kwKey]) byKW[kwKey] = [];
+    byKW[kwKey].push(e);
+  });
+
+  function entryHtml(e) {
+    var tc = TYPE_COLORS[e.type] || TYPE_COLORS.info;
+    var d = new Date(e.ts);
+    var timeStr = d.toLocaleDateString('de-CH', {day:'2-digit',month:'2-digit'}) + ' '
+      + d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'});
+    var detailId = 'syslog-detail-' + Math.random().toString(36).slice(2);
+    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">'
+      + '<span style="font-size:11px;color:var(--text-muted);min-width:80px;padding-top:2px;">' + timeStr + '</span>'
+      + '<span style="background:' + tc.bg + ';color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;min-width:52px;text-align:center;flex-shrink:0;">' + tc.label + '</span>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-weight:600;font-size:13px;color:var(--text);">' + esc(e.title) + '</div>'
+      + (e.details ? '<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">' + esc(e.details) + '</div>' : '')
+      + '</div></div>';
+  }
+
+  var html = '';
+
+  // Letzte 24h section
+  html += '<div style="margin-bottom:20px;">';
+  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:8px;">Letzte 24h</div>';
+  if (recent.length === 0) {
+    html += '<div class="empty-state" style="padding:16px 0;">Keine Aktivit\u00e4t in den letzten 24 Stunden.</div>';
+  } else {
+    recent.forEach(function(e) { html += entryHtml(e); });
+  }
+  html += '</div>';
+
+  // Older grouped by KW
+  Object.keys(byKW).sort().reverse().forEach(function(kw) {
+    var kwId = 'kw-' + kw.replace(/\s/g, '');
+    html += '<details style="margin-bottom:12px;" open>'
+      + '<summary style="cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:6px 0;list-style:none;display:flex;align-items:center;gap:8px;">'
+      + '<span style="color:var(--accent);">&#9660;</span>' + esc(kw)
+      + '<span style="font-weight:400;color:var(--text-muted);">(' + byKW[kw].length + ' Eintr\u00e4ge)</span>'
+      + '</summary>';
+    byKW[kw].forEach(function(e) { html += entryHtml(e); });
+    html += '</details>';
+  });
+
+  container.innerHTML = html;
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
