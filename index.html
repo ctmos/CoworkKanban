@@ -553,7 +553,7 @@ window.addEventListener('offline', function() {
 
 
 
-        <button class="btn-secondary" id="sync-patients-btn">↑ Sync</button>
+        <button class="btn-secondary" id="sync-patients-btn">↑↓ Sync</button>
 
 
 
@@ -2843,7 +2843,36 @@ async function savePatientsToGitHub() {
 
 async function syncPatientsToGitHub() { return savePatientsToGitHub(); }
 
-
+// ─── BIDIRECTIONAL PATIENT SYNC (GET → merge → PUT) ──────────────────────────
+async function pullMergePushPatients() {
+  // Step 1: GET remote patients
+  var remote = await fetchFromGitHub('data/patients.json');
+  if (remote) {
+    try {
+      var remotePatients = JSON.parse(remote.content) || [];
+      var localPatients = _appState.patients || [];
+      var localIds = {};
+      localPatients.forEach(function(p) { if (p.id) localIds[p.id] = true; });
+      // Step 2: Merge — add remote patients not present locally
+      var added = 0;
+      remotePatients.forEach(function(rp) {
+        if (rp.id && !localIds[rp.id]) {
+          localPatients.push(rp);
+          added++;
+        }
+      });
+      _appState.patients = localPatients;
+      if (added > 0) {
+        console.log('[pullMergePushPatients] Added ' + added + ' new patients from GitHub');
+        renderPatients();
+      }
+    } catch(e) {
+      console.error('[pullMergePushPatients] parse error:', e);
+    }
+  }
+  // Step 3: PUT merged result
+  await savePatientsToGitHub();
+}
 
 // ─── AUTO SYNC — AUTONOMY LOG ─────────────────────────────────────────────────
 
@@ -4426,9 +4455,9 @@ async function initApp() {
 
       syncBtn.textContent = '\u23f3 Sync\u2026'; syncBtn.disabled = true;
 
-      try { await savePatientsToGitHub(); syncBtn.textContent = '\u2713 OK'; setTimeout(function() { syncBtn.textContent = '\u2191 Sync'; syncBtn.disabled = false; }, 2000); }
+      try { await pullMergePushPatients(); syncBtn.textContent = '\u2713 OK'; setTimeout(function() { syncBtn.textContent = '\u2191\u2193 Sync'; syncBtn.disabled = false; }, 2000); }
 
-      catch(e) { syncBtn.textContent = '\u2717 Fehler'; setTimeout(function() { syncBtn.textContent = '\u2191 Sync'; syncBtn.disabled = false; }, 2000); }
+      catch(e) { syncBtn.textContent = '\u2717 Fehler'; setTimeout(function() { syncBtn.textContent = '\u2191\u2193 Sync'; syncBtn.disabled = false; }, 2000); }
 
     });
 
