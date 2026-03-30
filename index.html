@@ -2596,49 +2596,86 @@ var patientsDebounceTimer = null;
 function scheduleSavePatientsToGitHub() {
   if (!_dataLoaded) return;
   clearTimeout(patientsDebounceTimer);
-  patientsDebounceTimer = setTimeout(savePatientsToGitHub, 10000);
+  patientsDebounceTimer = setTimeout(pullMergePushPatients, 10000);
 }
-async function savePatientsToGitHub() {
+
+// ─── TRUE BIDIRECTIONAL MERGE HELPER ─────────────────────────────────────────────────────
+// Merges two patient arrays. Never loses a patient from either side.
+// For patients in both: merges entries (union by id) and ampel logs.
+function mergePatientLists(localList, remoteList) {
+  var merged = {};
+  (localList || []).forEach(function(p) { if (p.id) merged[p.id] = JSON.parse(JSON.stringify(p)); });
+  (remoteList || []).forEach(function(rp) {
+    if (!rp.id) return;
+    if (!merged[rp.id]) {
+      // Patient only in remote - add to merged
+      merged[rp.id] = JSON.parse(JSON.stringify(rp));
+    } else {
+      // Patient in both - union entries by id
+      var lp = merged[rp.id];
+      var entryMap = {};
+      (lp.entries || []).forEach(function(e) { if (e.id) entryMap[e.id] = e; });
+      (rp.entries || []).forEach(function(e) {
+        if (e.id && !entryMap[e.id]) { entryMap[e.id] = e; }
+      });
+      lp.entries = Object.values(entryMap);
+      // Merge ampel logs: union by date+text key
+      if (rp.ampel) {
+        if (!lp.ampel) lp.ampel = {};
+        ['austritt','ambulant','tagesstruktur','wiedereingliederung'].forEach(function(k) {
+          if (!rp.ampel[k]) return;
+          if (!lp.ampel[k]) { lp.ampel[k] = rp.ampel[k]; return; }
+          var logMap = {};
+          (lp.ampel[k].log || []).forEach(function(l) { logMap[l.date + '|' + l.text] = l; });
+          (rp.ampel[k].log || []).forEach(function(l) {
+            var key = l.date + '|' + l.text;
+            if (!logMap[key]) logMap[key] = l;
+          });
+          lp.ampel[k].log = Object.values(logMap).sort(function(a,b) { return a.date < b.date ? -1 : 1; });
+        });
+      }
+    }
+  });
+  return Object.values(merged);
+}
+
+// ─── BIDIRECTIONAL PATIENT SYNC (GET → merge → PUT) ─────────────────────────────────
+// ALWAYS: GET remote -> merge with local -> PUT merged -> update local.
+// This is the ONLY write path for patients. Never a blind overwrite.
+async function pullMergePushPatients() {
   try {
-    await safeWriteToGitHub('data/patients.json', JSON.stringify(_appState.patients, null, 2), 'sync: auto-save patients');
+    // Step 1: GET remote patients
+    var remote = await fetchFromGitHub('data/patients.json');
+    var remotePatients = [];
+    if (remote) {
+      try { remotePatients = JSON.parse(remote.content) || []; }
+      catch(e) { console.error('[pullMergePushPatients] remote parse error:', e); }
+    }
+    // Step 2: TRUE bidirectional merge
+    var localPatients = _appState.patients || [];
+    var mergedPatients = mergePatientLists(localPatients, remotePatients);
+    var addedFromRemote = mergedPatients.length - localPatients.length;
+    // Step 3: Update local state with merged result
+    _appState.patients = mergedPatients;
+    localStorage.setItem('cowork_patients', JSON.stringify(mergedPatients));
+    if (addedFromRemote > 0) {
+      console.log('[pullMergePushPatients] Merged ' + addedFromRemote + ' new patients from GitHub');
+      renderPatients();
+    }
+    // Step 4: PUT merged result to GitHub (no data loss ever)
+    await safeWriteToGitHub('data/patients.json', JSON.stringify(mergedPatients, null, 2), 'sync: merge patients');
   } catch(e) {
-    console.error('[savePatientsToGitHub]', e);
+    console.error('[pullMergePushPatients]', e);
     setSyncStatus('error');
     showToast('Patienten-Sync fehlgeschlagen', true);
+    throw e;
   }
 }
-async function syncPatientsToGitHub() { return savePatientsToGitHub(); }
 
-// ─── BIDIRECTIONAL PATIENT SYNC (GET → merge → PUT) ──────────────────────────
-async function pullMergePushPatients() {
-  // Step 1: GET remote patients
-  var remote = await fetchFromGitHub('data/patients.json');
-  if (remote) {
-    try {
-      var remotePatients = JSON.parse(remote.content) || [];
-      var localPatients = _appState.patients || [];
-      var localIds = {};
-      localPatients.forEach(function(p) { if (p.id) localIds[p.id] = true; });
-      // Step 2: Merge — add remote patients not present locally
-      var added = 0;
-      remotePatients.forEach(function(rp) {
-        if (rp.id && !localIds[rp.id]) {
-          localPatients.push(rp);
-          added++;
-        }
-      });
-      _appState.patients = localPatients;
-      if (added > 0) {
-        console.log('[pullMergePushPatients] Added ' + added + ' new patients from GitHub');
-        renderPatients();
-      }
-    } catch(e) {
-      console.error('[pullMergePushPatients] parse error:', e);
-    }
-  }
-  // Step 3: PUT merged result
-  await savePatientsToGitHub();
-}
+// savePatientsToGitHub routes through pullMergePushPatients:
+// GET-merge-PUT always enforced, never blind overwrite.
+async function savePatientsToGitHub() { return pullMergePushPatients(); }
+async function syncPatientsToGitHub() { return pullMergePushPatients(); }
 
 // ─── AUTO SYNC — AUTONOMY LOG ─────────────────────────────────────────────────
 var autonomyDebounceTimer = null;
@@ -3355,6 +3392,7 @@ function showPatientDetail(patId) {
     + (pat.status !== 'archiviert'
       ? '<button class="btn-secondary" onclick="archivePatient(\''+esc(pat.id)+'\')" style="color:#f59e0b">Archivieren</button>'
       : '<button class="btn-secondary" onclick="reactivatePatient(\''+esc(pat.id)+'\')" style="color:#22c55e">Reaktivieren</button>')
+    + '<button class="btn-secondary" onclick="deletePatient(\''+esc(pat.id)+'\')" style="color:#ef4444;font-size:12px">Löschen</button>'
     + '<button class="btn-secondary" id="sync-patients-btn-detail">↑↓ Sync</button>'
     + '</div></div>';
 
@@ -3520,6 +3558,22 @@ function archivePatient(patId) {
     if (idx !== -1) { patients[idx].status = 'archiviert'; savePatients(patients); }
     showPatientList();
   });
+}
+function deletePatient(patId) {
+  var patients = getPatients().map(migratePatientEntries);
+  var pat = patients.find(function(p){ return p.id === patId; });
+  if (!pat) return;
+  confirmAction('Patient ' + pat.code + ' wirklich löschen?',
+    'Diese Aktion kann nicht rückgängig gemacht werden. Alle Einträge dieses Patienten werden permanent gelöscht.',
+    async function() {
+      var updated = patients.filter(function(p){ return p.id !== patId; });
+      _appState.patients = updated;
+      localStorage.setItem('cowork_patients', JSON.stringify(updated));
+      showPatientList();
+      try { await pullMergePushPatients(); }
+      catch(e) { showToast('Löschen lokal gespeichert, Sync fehlgeschlagen', true); }
+    }
+  );
 }
 function reactivatePatient(patId) {
   var patients = getPatients().map(migratePatientEntries);
