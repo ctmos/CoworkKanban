@@ -1599,9 +1599,9 @@ function showPinError(msg) {
 
 function showPinUnlockUI(stored) {
   document.getElementById('pin-title').textContent = 'LifeOS';
-  document.getElementById('pin-subtitle').textContent = 'PIN eingeben zum Entsperren';
+  document.getElementById('pin-subtitle').textContent = '';
   document.getElementById('pin-confirm-group').style.display = 'none';
-  document.getElementById('pin-btn').textContent = 'Entsperren';
+  document.getElementById('pin-btn').innerHTML = '\u00a0';
   document.getElementById('pin-btn').addEventListener('click', function() {
     var p = document.getElementById('pin-input').value.trim();
     var hash = _appState.pin_hash || stored;
