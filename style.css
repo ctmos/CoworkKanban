@@ -460,7 +460,7 @@ nav {
 
 
 
-  padding: 0 max(16px, calc((100% - 900px) / 2));
+  padding: 0 max(16px, calc(50% - 434px));
 
 
 
