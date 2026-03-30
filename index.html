@@ -107,6 +107,8 @@
 
     <button class="tab-btn" data-tab="backlog">Backlog</button>
 
+    <button class="tab-btn" data-tab="imperialki">ImperialKI</button>
+
     <button class="tab-btn" data-tab="settings">Einstellungen</button>
 
     <button class="tab-btn" data-tab="system">&#x2699;&#xFE0F; System</button>
@@ -264,7 +266,14 @@
 
   <!-- SYSTEM TAB -->
 
+  <!-- IMPERIALKI TAB -->
+  <div id="tab-imperialki" class="tab-content">
+    <h2>ImperialKI</h2>
+    <div id="ik-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
+  </div>
+
   <div id="tab-system" class="tab-content">
+    <h2>&#x2699;&#xFE0F; System-Log</h2>
     <div id="system-log-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
   </div>
 
@@ -1716,6 +1725,7 @@ function switchTab(id) {
   if (id === 'projekte')  showProjectsTab();
   if (id === 'settings')  initSettings();
   if (id === 'system')    showSystemTab();
+  if (id === 'imperialki') showImperialKITab();
 }
 
 // ─── HEUTE / STATUS ───────────────────────────────────────────────────────────
@@ -2531,6 +2541,240 @@ function startProcessStatusPolling() {
 // ─── SYSTEM TAB ───────────────────────────────────────────────────────────────
 var _systemLogCache = null;
 
+// ─── IMPERIALKI ──────────────────────────────────────────────────────────────
+var _ikCache = null;
+
+async function showImperialKITab() {
+  var container = document.getElementById('ik-container');
+  if (!container) return;
+  container.innerHTML = '<div class="empty-state">Wird geladen\u2026</div>';
+  var token = getGHToken();
+  if (!token) { container.innerHTML = '<div class="empty-state">Bitte Token in Einstellungen eintragen.</div>'; return; }
+  try {
+    var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/imperialki.json',
+      { headers: { Authorization: 'token ' + token } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    _ikCache = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+  } catch(e) {
+    container.innerHTML = '<div class="empty-state">Fehler: ' + esc(e.message) + '</div>';
+    return;
+  }
+  renderImperialKI(container);
+}
+
+function renderImperialKI(container) {
+  var ik = _ikCache;
+  if (!ik) { container.innerHTML = '<div class="empty-state">Keine Daten.</div>'; return; }
+
+  var now = new Date();
+  var html = '';
+
+  // ── HEADER DASHBOARD ──
+  var nextDeadline = null, nextLive = null;
+  (ik.schedule || []).forEach(function(ev) {
+    var d = new Date(ev.date);
+    if (d <= now) return;
+    if (ev.type === 'deadline' && (!nextDeadline || d < new Date(nextDeadline.date))) nextDeadline = ev;
+    if (ev.type === 'live' && (!nextLive || d < new Date(nextLive.date))) nextLive = ev;
+  });
+
+  function countdown(dateStr) {
+    var d = new Date(dateStr);
+    var diff = d - now;
+    if (diff <= 0) return 'JETZT';
+    var days = Math.floor(diff / 86400000);
+    var hours = Math.floor((diff % 86400000) / 3600000);
+    if (days > 0) return days + 'd ' + hours + 'h';
+    var mins = Math.floor((diff % 3600000) / 60000);
+    return hours + 'h ' + mins + 'min';
+  }
+
+  function fmtDate(dateStr) {
+    var d = new Date(dateStr);
+    return d.toLocaleDateString('de-CH', {weekday:'short', day:'2-digit', month:'2-digit'}) + ' ' +
+           d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'});
+  }
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">';
+
+  // Next deadline card
+  html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;">';
+  html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#ef4444;margin-bottom:6px;">N\u00e4chste Deadline</div>';
+  if (nextDeadline) {
+    html += '<div style="font-weight:600;font-size:14px;color:var(--text);">' + esc(nextDeadline.title) + '</div>';
+    html += '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + fmtDate(nextDeadline.date) + '</div>';
+    html += '<div style="font-size:18px;font-weight:700;color:#ef4444;margin-top:4px;">' + countdown(nextDeadline.date) + '</div>';
+  } else {
+    html += '<div style="color:var(--text-muted);font-size:12px;">Keine offenen Deadlines</div>';
+  }
+  html += '</div>';
+
+  // Next live session card
+  html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;">';
+  html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#3b82f6;margin-bottom:6px;">N\u00e4chste Live-Session</div>';
+  if (nextLive) {
+    html += '<div style="font-weight:600;font-size:14px;color:var(--text);">' + esc(nextLive.title) + '</div>';
+    html += '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + fmtDate(nextLive.date) + '</div>';
+    html += '<div style="font-size:18px;font-weight:700;color:#3b82f6;margin-top:4px;">' + countdown(nextLive.date) + '</div>';
+  } else {
+    html += '<div style="color:var(--text-muted);font-size:12px;">Keine geplanten Sessions</div>';
+  }
+  html += '</div>';
+  html += '</div>';
+
+  // ── TERMINE ──
+  html += '<details open style="margin-bottom:16px;">';
+  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Termine</summary>';
+  var upcoming = (ik.schedule || []).filter(function(ev) { return new Date(ev.date) > now; }).sort(function(a,b) { return a.date.localeCompare(b.date); });
+  if (upcoming.length === 0) {
+    html += '<div style="color:var(--text-muted);font-size:12px;padding:8px 0;">Keine kommenden Termine.</div>';
+  } else {
+    upcoming.forEach(function(ev) {
+      var color = ev.type === 'live' ? '#3b82f6' : ev.type === 'deadline' ? '#ef4444' : '#f59e0b';
+      var label = ev.type === 'live' ? 'Live' : ev.type === 'deadline' ? 'Deadline' : 'Event';
+      var courseColor = ik.courses[ev.course] ? ik.courses[ev.course].color : '#6b7280';
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">';
+      html += '<span style="font-size:11px;color:var(--text-muted);min-width:110px;">' + fmtDate(ev.date) + '</span>';
+      html += '<span style="background:' + color + ';color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;min-width:52px;text-align:center;">' + label + '</span>';
+      html += '<span style="width:8px;height:8px;border-radius:50%;background:' + courseColor + ';flex-shrink:0;"></span>';
+      html += '<span style="font-size:13px;font-weight:500;color:var(--text);">' + esc(ev.title) + '</span>';
+      html += '<span style="font-size:11px;color:var(--text-muted);margin-left:auto;">' + countdown(ev.date) + '</span>';
+      html += '</div>';
+    });
+  }
+  html += '</details>';
+
+  // ── KURS AIH ──
+  var aih = ik.courses.AIH;
+  html += '<details open style="margin-bottom:16px;">';
+  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:' + aih.color + ';cursor:pointer;margin-bottom:8px;">' + esc(aih.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(aktiv seit ' + aih.started + ')</span></summary>';
+
+  // Pre-requisites
+  if (aih.preReqs && aih.preReqs.length > 0) {
+    html += '<div style="margin-bottom:12px;">';
+    html += '<div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">Offene Aufgaben</div>';
+    aih.preReqs.forEach(function(req) {
+      var statusIcon = req.status === 'done' ? '\u2705' : '\u23f3';
+      var deadlineColor = new Date(req.deadline) < new Date(now.getTime() + 3*86400000) ? '#ef4444' : 'var(--text-muted)';
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">';
+      html += '<span>' + statusIcon + '</span>';
+      html += '<span style="font-size:13px;color:var(--text);flex:1;">' + esc(req.title) + '</span>';
+      html += '<span style="font-size:11px;color:' + deadlineColor + ';">bis ' + req.deadline + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Modules
+  if (aih.modules && aih.modules.length > 0) {
+    html += '<div style="margin-bottom:12px;">';
+    html += '<div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">Module</div>';
+    aih.modules.forEach(function(mod) {
+      var statusBadge = mod.status === 'locked' ? '\uD83D\uDD12' : mod.status === 'open' ? '\uD83D\uDCD6' : '\u2705';
+      html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">';
+      html += '<div style="display:flex;align-items:center;gap:8px;">';
+      html += '<span style="font-size:16px;">' + statusBadge + '</span>';
+      html += '<div style="flex:1;">';
+      html += '<div style="font-weight:600;font-size:13px;color:var(--text);">' + esc(mod.id + ': ' + mod.title) + '</div>';
+      html += '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + esc(mod.description) + '</div>';
+      html += '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Geschaetzte Dauer: ~' + mod.hours + 'h</div>';
+      html += '</div></div></div>';
+    });
+    html += '</div>';
+  }
+
+  // Discussions
+  if (aih.discussions && aih.discussions.length > 0) {
+    html += '<div style="margin-bottom:8px;">';
+    html += '<div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">Diskussionen</div>';
+    aih.discussions.forEach(function(disc) {
+      var icon = disc.status === 'posted' ? '\u2705' : '\u270F\uFE0F';
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">';
+      html += '<span>' + icon + '</span>';
+      html += '<a href="' + esc(disc.url) + '" target="_blank" style="font-size:13px;color:' + aih.color + ';">' + esc(disc.title) + '</a>';
+      html += '<span style="font-size:11px;color:var(--text-muted);">' + (disc.status === 'posted' ? 'gepostet ' + disc.postedDate : 'offen') + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+  html += '</details>';
+
+  // ── KURS DTH ──
+  var dth = ik.courses.DTH;
+  html += '<details style="margin-bottom:16px;">';
+  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:' + dth.color + ';cursor:pointer;margin-bottom:8px;">' + esc(dth.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(Start: ' + dth.starts + ')</span></summary>';
+  html += '<div style="color:var(--text-muted);font-size:12px;padding:8px 0;">Kurs startet am ' + dth.starts + '. Orientation-Material wird noch erfasst.</div>';
+  html += '</details>';
+
+  // ── LOGBUCH ──
+  html += '<details style="margin-bottom:16px;">';
+  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Logbuch</summary>';
+  var LOG_COLORS = { deploy:'#c47a2a', fix:'#b45309', success:'#15803d', error:'#b91c1c', info:'#6b7280' };
+  var LOG_LABELS = { deploy:'Deploy', fix:'Fix', success:'Erfolg', error:'Fehler', info:'Info' };
+  var logs = (ik.log || []).sort(function(a,b) { return b.ts.localeCompare(a.ts); });
+  logs.forEach(function(entry) {
+    var bg = LOG_COLORS[entry.type] || LOG_COLORS.info;
+    var label = LOG_LABELS[entry.type] || 'Info';
+    var d = new Date(entry.ts);
+    var timeStr = d.toLocaleDateString('de-CH', {day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+    html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">';
+    html += '<span style="font-size:11px;color:var(--text-muted);min-width:80px;">' + timeStr + '</span>';
+    html += '<span style="background:' + bg + ';color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;min-width:48px;text-align:center;">' + label + '</span>';
+    html += '<div style="flex:1;min-width:0;">';
+    html += '<div style="font-weight:600;font-size:13px;color:var(--text);">' + esc(entry.title) + '</div>';
+    if (entry.details) html += '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + esc(entry.details) + '</div>';
+    html += '</div></div>';
+  });
+  html += '</details>';
+
+  // ── TRIP REPORT ──
+  html += '<details style="margin-bottom:16px;">';
+  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Trip Report / Blog</summary>';
+  var tr = ik.tripReport || {};
+  html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;">';
+  html += '<div style="font-weight:600;font-size:13px;color:var(--text);margin-bottom:6px;">Reflective Journal Anfrage</div>';
+  html += '<div style="font-size:12px;color:var(--text-muted);">';
+  html += 'Email gesendet: ' + (tr.emailSent || '?') + '<br>';
+  html += 'Status: <span style="color:#f59e0b;font-weight:600;">' + (tr.status === 'awaiting_response' ? 'Warte auf Antwort' : tr.status || '?') + '</span><br>';
+  html += 'Follow-up geplant: ' + (tr.followUpDate || '?');
+  html += '</div></div>';
+  html += '</details>';
+
+  // ── WISSENSDATENBANK ──
+  html += '<details style="margin-bottom:16px;">';
+  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Wissensdatenbank</summary>';
+  var kb = ik.knowledgeBase || {};
+  html += '<div style="font-size:12px;color:var(--text-muted);padding:4px 0;">';
+  html += '<strong>Klinik-Dokumente:</strong> ' + ((kb.clinicDocs || []).join(', ') || 'Keine') + '<br>';
+  html += '<strong>Transkripte:</strong> ' + ((kb.transcripts || []).length || 0) + ' Dateien<br>';
+  html += '<strong>NotebookLM:</strong> ' + (kb.notebookLM || 'nicht konfiguriert') + '<br>';
+  if (kb.grokResearch) {
+    html += '<div style="margin-top:8px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px;">';
+    html += '<div style="font-weight:600;font-size:11px;color:var(--text);margin-bottom:4px;">Grok-Recherche: AI in Psychiatric Rehab Europe</div>';
+    html += '<div style="font-size:11px;color:var(--text-muted);">' + esc(kb.grokResearch) + '</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  html += '</details>';
+
+  // ── PROFIL ──
+  html += '<details style="margin-bottom:16px;">';
+  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Mein Profil</summary>';
+  var pr = ik.profile || {};
+  html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;color:var(--text-muted);">';
+  html += '<strong>' + esc(pr.name || '') + '</strong> \u2014 ' + esc(pr.role || '') + '<br>';
+  html += esc(pr.clinic || '') + ', ' + esc(pr.department || '') + '<br>';
+  html += 'Arbeitstage: ' + esc(pr.workDays || '') + '<br>';
+  html += 'Fokus: ' + esc(pr.focus || '') + '<br>';
+  html += 'Hintergrund: ' + esc(pr.background || '');
+  html += '</div>';
+  html += '</details>';
+
+  container.innerHTML = html;
+}
+
+// ─── SYSTEM LOG ─────────────────────────────────────────────────────────────
 async function showSystemTab() {
   var container = document.getElementById('system-log-container');
   if (!container) return;
@@ -2595,22 +2839,23 @@ function renderSystemLog(container) {
     var d = new Date(e.ts);
     var timeStr = d.toLocaleDateString('de-CH', {day:'2-digit',month:'2-digit'}) + ' '
       + d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'});
-    return '<div class="sl-entry">'
-      + '<span class="sl-time">' + timeStr + '</span>'
-      + '<span class="sl-badge" style="background:' + tc.bg + '">' + tc.label + '</span>'
-      + '<div class="sl-body">'
-      + '<div class="sl-title">' + esc(e.title) + '</div>'
-      + (e.details ? '<div class="sl-details">' + esc(e.details) + '</div>' : '')
+    var detailId = 'syslog-detail-' + Math.random().toString(36).slice(2);
+    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">'
+      + '<span style="font-size:11px;color:var(--text-muted);min-width:80px;padding-top:2px;">' + timeStr + '</span>'
+      + '<span style="background:' + tc.bg + ';color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;min-width:52px;text-align:center;flex-shrink:0;">' + tc.label + '</span>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-weight:600;font-size:13px;color:var(--text);">' + esc(e.title) + '</div>'
+      + (e.details ? '<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">' + esc(e.details) + '</div>' : '')
       + '</div></div>';
   }
 
   var html = '';
 
   // Letzte 24h section
-  html += '<div class="sl-section">';
-  html += '<div class="sl-section-title">Letzte 24h</div>';
+  html += '<div style="margin-bottom:20px;">';
+  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:8px;">Letzte 24h</div>';
   if (recent.length === 0) {
-    html += '<div class="empty-state">Keine Aktivit\u00e4t in den letzten 24 Stunden.</div>';
+    html += '<div class="empty-state" style="padding:16px 0;">Keine Aktivit\u00e4t in den letzten 24 Stunden.</div>';
   } else {
     recent.forEach(function(e) { html += entryHtml(e); });
   }
@@ -2618,10 +2863,11 @@ function renderSystemLog(container) {
 
   // Older grouped by KW
   Object.keys(byKW).sort().reverse().forEach(function(kw) {
-    html += '<details class="sl-section" open>'
-      + '<summary class="sl-kw-header">'
-      + esc(kw)
-      + '<span class="sl-kw-count">(' + byKW[kw].length + ')</span>'
+    var kwId = 'kw-' + kw.replace(/\s/g, '');
+    html += '<details style="margin-bottom:12px;" open>'
+      + '<summary style="cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:6px 0;list-style:none;display:flex;align-items:center;gap:8px;">'
+      + '<span style="color:var(--accent);">&#9660;</span>' + esc(kw)
+      + '<span style="font-weight:400;color:var(--text-muted);">(' + byKW[kw].length + ' Eintr\u00e4ge)</span>'
       + '</summary>';
     byKW[kw].forEach(function(e) { html += entryHtml(e); });
     html += '</details>';
