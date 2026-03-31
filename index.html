@@ -2640,7 +2640,7 @@ function renderImperialKI(container) {
     if (diff <= 0) return 'JETZT';
     var days = Math.floor(diff / 86400000);
     var hours = Math.floor((diff % 86400000) / 3600000);
-    if (days > 0) return 'in ' + days + ' Tage' + (days === 1 ? '' : 'n') + ', ' + hours + ' Std.';
+    if (days > 0) return 'in ' + days + (days === 1 ? ' Tag' : ' Tagen') + ', ' + hours + ' Std.';
     var mins = Math.floor((diff % 3600000) / 60000);
     return 'in ' + hours + ' Std. ' + mins + ' Min.';
   }
