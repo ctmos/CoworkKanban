@@ -2388,6 +2388,23 @@ nav::-webkit-scrollbar { display: none; }
 }
 .ik-info-title { font-weight: 600; font-size: 13px; color: var(--text); margin-bottom: 8px; }
 
+/* ── SYSTEM DROPDOWNS ── */
+.sys-dropdown { margin-bottom: 16px; }
+.sys-dropdown-header {
+  cursor: pointer; font-size: 15px; font-weight: 600; color: var(--text);
+  padding: 14px 16px; list-style: none;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sys-dropdown-header::-webkit-details-marker { display: none; }
+.sys-dropdown-header::after { content: '\25BC'; font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
+.sys-dropdown[open] > .sys-dropdown-header::after { transform: rotate(180deg); }
+.sys-dropdown[open] > .sys-dropdown-header { border-radius: var(--radius) var(--radius) 0 0; border-bottom: 1px solid var(--border); }
+.sys-dropdown-body, .sys-dropdown > #system-log-container {
+  background: var(--surface); border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius); padding: 16px;
+}
+
 /* ── SYSTEM LOG ── */
 .sl-section { margin-bottom: 24px; }
 .sl-section-title {

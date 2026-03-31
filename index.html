@@ -109,9 +109,7 @@
 
     <button class="tab-btn" data-tab="imperialki">ImperialKI</button>
 
-    <button class="tab-btn" data-tab="settings">Einstellungen</button>
-
-    <button class="tab-btn" data-tab="system">&#x2699;&#xFE0F; System</button>
+    <button class="tab-btn" data-tab="system">System</button>
 
   </nav>
 
@@ -274,165 +272,92 @@
   </div>
 
   <div id="tab-system" class="tab-content">
-    <h2>&#x2699;&#xFE0F; System-Log</h2>
-    <div id="system-log-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
-  </div>
 
+    <details class="sys-dropdown" open>
+      <summary class="sys-dropdown-header">System-Log</summary>
+      <div id="system-log-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
+    </details>
 
+    <details class="sys-dropdown" id="settings-dropdown">
+      <summary class="sys-dropdown-header">Einstellungen</summary>
+      <div class="sys-dropdown-body">
 
-  <!-- EINSTELLUNGEN TAB -->
+        <div class="settings-section">
+          <h3>Design</h3>
+          <div class="settings-row">
+            <label class="settings-label">Farbschema</label>
+            <div class="theme-toggle-row">
+              <button class="theme-btn" id="btn-theme-dark">Dunkel</button>
+              <button class="theme-btn" id="btn-theme-light">Hell</button>
+            </div>
+          </div>
+        </div>
 
-  <div id="tab-settings" class="tab-content">
+        <div class="settings-section">
+          <h3>GitHub</h3>
+          <div class="settings-row">
+            <label class="settings-label">Personal Access Token</label>
+            <div class="settings-input-row">
+              <input type="password" class="settings-input" id="gh-token-input" placeholder="ghp_...">
+              <button class="btn-primary" id="btn-gh-save">Speichern</button>
+            </div>
+            <p class="settings-desc">Für GitHub-Sync (optional)</p>
+          </div>
+        </div>
 
-    <h2>Einstellungen</h2>
+        <div class="settings-section">
+          <h3>PIN</h3>
+          <div class="settings-row">
+            <label class="settings-label">Neuen PIN setzen</label>
+            <div class="settings-input-row">
+              <input type="password" class="settings-input" id="new-pin-input" maxlength="6" placeholder="Neuer PIN (4–6 Ziffern)" inputmode="numeric">
+              <button class="btn-primary" id="btn-pin-change">Ändern</button>
+            </div>
+          </div>
+        </div>
 
+        <div class="settings-section">
+          <h3>Notfall-Wiederherstellung</h3>
+          <div class="settings-row">
+            <label class="settings-label">Backup wiederherstellen</label>
+            <button id="btn-recovery" style="background:#ef4444;color:white;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px">Daten wiederherstellen</button>
+          </div>
+        </div>
 
+        <div class="settings-section">
+          <h3>Wochenbudget</h3>
+          <div class="settings-row">
+            <label class="settings-label">Max. Aufgaben/Woche</label>
+            <div class="settings-input-row">
+              <input type="number" class="settings-input" id="budget-input" placeholder="100" min="1" max="1000">
+              <button class="btn-primary" id="btn-budget-save">Speichern</button>
+            </div>
+          </div>
+        </div>
 
-    <div class="settings-section">
+        <div class="settings-section">
+          <h3>Daten</h3>
+          <div class="settings-row">
+            <button class="btn-secondary" id="btn-export" style="width:100%;margin-bottom:8px">Daten exportieren (JSON)</button>
+            <button class="btn-secondary" id="btn-import" style="width:100%;margin-bottom:8px">Daten importieren (JSON)</button>
+            <input type="file" id="import-file" accept=".json" style="display:none">
+          </div>
+        </div>
 
-      <h3>Design</h3>
-
-      <div class="settings-row">
-
-        <label class="settings-label">Farbschema</label>
-
-        <div class="theme-toggle-row">
-
-          <button class="theme-btn" id="btn-theme-dark">🌙 Dunkel</button>
-
-          <button class="theme-btn" id="btn-theme-light">☀️ Hell</button>
-
+        <div class="settings-section danger-zone">
+          <h3>Danger Zone</h3>
+          <div class="settings-row">
+            <button class="btn-danger" id="btn-reset" style="width:100%">Alle Daten löschen</button>
+            <p class="settings-desc">Löscht alle Karten, Patienten und Logs unwiderruflich.</p>
+          </div>
+          <div class="settings-row">
+            <button class="btn-secondary" id="btn-cache-reset" style="width:100%">Cache leeren &amp; von GitHub neu laden</button>
+            <p class="settings-desc">Löscht lokalen Cache (Floor, Backups) und lädt Daten frisch von GitHub.</p>
+          </div>
         </div>
 
       </div>
-
-    </div>
-
-
-
-    <div class="settings-section">
-
-      <h3>GitHub</h3>
-
-      <div class="settings-row">
-
-        <label class="settings-label">Personal Access Token</label>
-
-        <div class="settings-input-row">
-
-          <input type="password" class="settings-input" id="gh-token-input" placeholder="ghp_...">
-
-          <button class="btn-primary" id="btn-gh-save">Speichern</button>
-
-        </div>
-
-        <p class="settings-desc">Für GitHub-Sync (optional)</p>
-
-      </div>
-
-    </div>
-
-
-
-    <div class="settings-section">
-
-      <h3>PIN</h3>
-
-      <div class="settings-row">
-
-        <label class="settings-label">Neuen PIN setzen</label>
-
-        <div class="settings-input-row">
-
-          <input type="password" class="settings-input" id="new-pin-input" maxlength="6" placeholder="Neuer PIN (4–6 Ziffern)" inputmode="numeric">
-
-          <button class="btn-primary" id="btn-pin-change">Ändern</button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-
-    <div class="settings-section">
-
-      <h3>Notfall-Wiederherstellung</h3>
-
-      <div class="settings-row">
-
-        <label class="settings-label">Backup wiederherstellen</label>
-
-        <button id="btn-recovery" style="background:#ef4444;color:white;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px">&#x1F198; Daten wiederherstellen</button>
-
-      </div>
-
-    </div>
-
-
-
-    <div class="settings-section">
-
-      <h3>Wochenbudget</h3>
-
-      <div class="settings-row">
-
-        <label class="settings-label">Max. Aufgaben/Woche</label>
-
-        <div class="settings-input-row">
-
-          <input type="number" class="settings-input" id="budget-input" placeholder="100" min="1" max="1000">
-
-          <button class="btn-primary" id="btn-budget-save">Speichern</button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-
-    <div class="settings-section">
-
-      <h3>Daten</h3>
-
-      <div class="settings-row">
-
-        <button class="btn-secondary" id="btn-export" style="width:100%;margin-bottom:8px">Daten exportieren (JSON)</button>
-
-        <button class="btn-secondary" id="btn-import" style="width:100%;margin-bottom:8px">Daten importieren (JSON)</button>
-
-        <input type="file" id="import-file" accept=".json" style="display:none">
-
-      </div>
-
-    </div>
-
-
-
-    <div class="settings-section danger-zone">
-
-      <h3>Danger Zone</h3>
-
-      <div class="settings-row">
-
-        <button class="btn-danger" id="btn-reset" style="width:100%">Alle Daten löschen</button>
-
-        <p class="settings-desc">Löscht alle Karten, Patienten und Logs unwiderruflich.</p>
-
-      </div>
-
-      <div class="settings-row">
-
-        <button class="btn-secondary" id="btn-cache-reset" style="width:100%">Cache leeren &amp; von GitHub neu laden</button>
-
-        <p class="settings-desc">Löscht lokalen Cache (Floor, Backups) und lädt Daten frisch von GitHub.</p>
-
-      </div>
-
-    </div>
+    </details>
 
   </div>
 
@@ -1724,8 +1649,7 @@ function switchTab(id) {
   if (id === 'autonomy')  renderAL();
   if (id === 'backlog')   renderBacklog();
   if (id === 'projekte')  showProjectsTab();
-  if (id === 'settings')  initSettings();
-  if (id === 'system')    showSystemTab();
+  if (id === 'system')    { showSystemTab(); initSettings(); }
   if (id === 'imperialki') showImperialKITab();
 }
 
