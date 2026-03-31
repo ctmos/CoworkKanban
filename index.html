@@ -5381,6 +5381,22 @@ async function showImperialKITab() {
 
 
 
+// ── ImperialKI: Task Done Tracking ──
+var _ikDone = JSON.parse(localStorage.getItem('ikDone') || '{}');
+function toggleIkDone(taskKey) {
+  if (_ikDone[taskKey]) { delete _ikDone[taskKey]; }
+  else { _ikDone[taskKey] = new Date().toISOString(); }
+  localStorage.setItem('ikDone', JSON.stringify(_ikDone));
+  var container = document.getElementById('tab-imperialki');
+  if (container) renderImperialKI(container);
+}
+function isIkDone(taskKey) { return !!_ikDone[taskKey]; }
+function ikDoneTimestamp(taskKey) {
+  if (!_ikDone[taskKey]) return '';
+  var d = new Date(_ikDone[taskKey]);
+  return d.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
+}
+
 function renderImperialKI(container) {
 
   var ik = _ikCache;
@@ -5512,15 +5528,14 @@ function renderImperialKI(container) {
     html += '<div class="ik-action-label">\u26a0\ufe0f Manuell erledigen</div>';
 
     actions.forEach(function(a) {
-
-      html += '<div class="ik-action-item">';
-
+      var aKey = 'action_' + (a.title||'').replace(/\W/g,'_').substring(0,30);
+      var aDone = isIkDone(aKey);
+      html += '<div class="ik-action-item' + (aDone ? ' ik-done' : '') + '">';
+      html += '<input type="checkbox" class="ik-checkbox" ' + (aDone ? 'checked' : '') + ' onchange="toggleIkDone(\'' + aKey + '\')"/>';
       html += '<span class="ik-action-title"><a href="' + esc(a.url) + '" target="_blank">' + esc(a.title) + '</a></span>';
-
       if (a.deadline) html += '<span class="ik-action-deadline">bis ' + fmtDateShort(a.deadline) + '</span>';
-
+      if (aDone) html += '<span class="ik-done-ts">' + ikDoneTimestamp(aKey) + '</span>';
       html += '</div>';
-
     });
 
     html += '</div>';
@@ -5651,14 +5666,14 @@ function renderImperialKI(container) {
 
       var urgent = new Date(req.deadline) < new Date(now.getTime() + 3*86400000);
 
-      html += '<div class="ik-task">';
-
-      html += '<span>' + statusIcon + '</span>';
-
+      var tKey = 'task_' + (req.title||'').replace(/\W/g,'_').substring(0,30);
+      var tDone = isIkDone(tKey);
+      statusIcon = tDone ? '\u2705' : '\u23f3';
+      html += '<div class="ik-task' + (tDone ? ' ik-done' : '') + '">';
+      html += '<input type="checkbox" class="ik-checkbox" ' + (tDone ? 'checked' : '') + ' onchange="toggleIkDone(\'' + tKey + '\')"/>';
       html += '<span class="ik-task-name">' + esc(req.title) + '</span>';
-
       html += '<span class="ik-task-deadline ' + (urgent ? 'ik-deadline-urgent' : 'ik-deadline-normal') + '">bis ' + fmtDateShort(req.deadline) + '</span>';
-
+      if (tDone) html += '<span class="ik-done-ts">' + ikDoneTimestamp(tKey) + '</span>';
       html += '</div>';
 
     });
