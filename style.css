@@ -2010,11 +2010,15 @@ nav::-webkit-scrollbar { display: none; }
 .pat-blog-entry { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 8px; }
 .pat-blog-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .pat-blog-entry-date { font-size: 11px; color: var(--text-muted); }
+.pat-blog-entry-actions { display: flex; gap: 6px; align-items: center; }
+.pat-blog-entry-copy { background: var(--bg); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; font-size: 11px; padding: 2px 8px; border-radius: 4px; transition: all 0.15s; }
+.pat-blog-entry-copy:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pat-blog-entry-copy.copied { background: #16a34a; color: #fff; border-color: #16a34a; }
 .pat-blog-entry-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; opacity: 0.5; }
 .pat-blog-entry-delete:hover { opacity: 1; color: #ef4444; }
 .pat-blog-entry-text { font-size: 13px; line-height: 1.5; color: var(--text); }
-.pat-blog-entry-text.collapsed { max-height: 4.5em; overflow: hidden; position: relative; }
-.pat-blog-entry-text.collapsed::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2em; background: linear-gradient(transparent, var(--surface)); }
+.pat-blog-entry-text.collapsed { max-height: 7.5em; overflow: hidden; position: relative; }
+.pat-blog-entry-text.collapsed::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2em; background: linear-gradient(transparent, var(--surface)); pointer-events: none; }
 .pat-blog-expand { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 12px; margin-top: 4px; padding: 0; }
 /* ── Patient Detail (migrated from inline) ── */
 .patient-row:hover { border-color: var(--accent); }
