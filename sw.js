@@ -1,5 +1,5 @@
 // LifeOS Service Worker v4.7
-const CACHE_NAME = 'lifeos-v5.2';
+const CACHE_NAME = 'lifeos-v5.3';
 const APP_SHELL = [
   '/CoworkKanban/',
   '/CoworkKanban/index.html',
@@ -33,8 +33,9 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // GitHub API: Network-first with cache fallback (for offline)
+  // GitHub API: Network-first with cache fallback (for offline, GET only)
   if (url.hostname === 'api.github.com') {
+    if (event.request.method !== 'GET') return;
     event.respondWith(
       fetch(event.request.clone())
         .then(response => {
