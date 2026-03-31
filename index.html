@@ -1234,6 +1234,7 @@ async function syncToGitHub() {
     // ── LAYER 3: forceSetFloor after successful push (tracks exact current count)
     DataGuard.forceSetFloor(totalCards);
     WriteGuard.log({ status: 'ok', reason: 'auto-sync', count: totalCards });
+    _clearLocalBackup(); // Sync succeeded — backup no longer needed
   } catch(e) {
     // Rollback auf Backup-State
     _appState.cards = backupCards;
@@ -1375,40 +1376,50 @@ async function loadFromGitHub() {
   }
   setSyncStatus('syncing');
   try {
-    // Load cards -- ALWAYS use GitHub as source of truth, no localStorage comparison
+    // Load cards — check for unsaved local changes first
     var tasksRemote = await fetchFromGitHub('data/tasks.json');
     if (tasksRemote) {
       try {
         var remoteData = JSON.parse(tasksRemote.content);
         var loadedCards = remoteData.cards || {};
-        // Fix 3: Schema validation before accepting
-        var validationErrors = validateAllTasks(loadedCards);
-        if (validationErrors.length > 0) {
-          console.warn('[loadFromGitHub] Validation errors:', validationErrors);
-          _validationErrors = validationErrors;
-          // Filter out forbidden tasks (e.g. BB items)
-          var cleanCards = {};
-          Object.keys(loadedCards).forEach(function(key) {
-            var task = loadedCards[key];
-            var taskErrors = validateTask(task);
-            var hasForbidden = taskErrors.some(function(e) { return e.startsWith('Forbidden'); });
-            if (!hasForbidden) {
-              cleanCards[key] = task;
-            }
-          });
-          _appState.cards = cleanCards;
-          if (validationErrors.length <= 5) {
-            showToast('Warnung: ' + validationErrors.length + ' Validierungsfehler', true);
-          } else {
-            showErrorBanner(validationErrors.length + ' Validierungsfehler in Tasks');
-          }
+        var remoteSavedAt = (remoteData._meta && remoteData._meta.savedAt) || '';
+
+        // CHECK LOCAL BACKUP: if user made changes that never synced, keep them
+        var localBackup = null;
+        try { var raw = localStorage.getItem('cowork_cards_local'); if (raw) localBackup = JSON.parse(raw); } catch(e) {}
+        if (localBackup && localBackup.savedAt && remoteSavedAt && new Date(localBackup.savedAt) > new Date(remoteSavedAt)) {
+          console.warn('[loadFromGitHub] LOCAL BACKUP IS NEWER than GitHub (' + localBackup.savedAt + ' > ' + remoteSavedAt + ') — keeping local changes and re-syncing');
+          _appState.cards = localBackup.cards;
+          _appState.cards_savedAt = localBackup.savedAt;
+          DataGuard.forceSetFloor(Object.values(_appState.cards).length);
+          showToast('Lokale \u00c4nderungen wiederhergestellt \u2014 synchronisiere...', false);
+          scheduleSyncToGitHub();
         } else {
-          _appState.cards = loadedCards;
+          // GitHub is up to date — use remote data
+          var validationErrors = validateAllTasks(loadedCards);
+          if (validationErrors.length > 0) {
+            console.warn('[loadFromGitHub] Validation errors:', validationErrors);
+            _validationErrors = validationErrors;
+            var cleanCards = {};
+            Object.keys(loadedCards).forEach(function(key) {
+              var task = loadedCards[key];
+              var taskErrors = validateTask(task);
+              var hasForbidden = taskErrors.some(function(e) { return e.startsWith('Forbidden'); });
+              if (!hasForbidden) { cleanCards[key] = task; }
+            });
+            _appState.cards = cleanCards;
+            if (validationErrors.length <= 5) {
+              showToast('Warnung: ' + validationErrors.length + ' Validierungsfehler', true);
+            } else {
+              showErrorBanner(validationErrors.length + ' Validierungsfehler in Tasks');
+            }
+          } else {
+            _appState.cards = loadedCards;
+          }
+          DataGuard.forceSetFloor(Object.values(_appState.cards).length);
+          _appState.cards_savedAt = remoteSavedAt;
+          _clearLocalBackup(); // GitHub is current, no backup needed
         }
-        // LAYER 3: forceSetFloor after GitHub load — GitHub is authoritative.
-        // Resets any stale floor from previous sessions to reflect actual loaded count.
-        DataGuard.forceSetFloor(Object.values(_appState.cards).length);
-        _appState.cards_savedAt = (remoteData._meta && remoteData._meta.savedAt) || null;
       } catch(e) {
         console.error('[loadFromGitHub] tasks parse error:', e);
         showToast('Fehler beim Parsen der Tasks', true);
@@ -1689,8 +1700,14 @@ function unlockApp() {
 function getCards()    { return ls('cowork_cards', {}); }
 function saveCards(c) {
   lsSet('cowork_cards', c);
-  lsSet('cowork_cards_savedAt', new Date().toISOString());
+  var ts = new Date().toISOString();
+  lsSet('cowork_cards_savedAt', ts);
+  // LOCAL BACKUP: survive page reload if sync fails
+  try { localStorage.setItem('cowork_cards_local', JSON.stringify({cards: c, savedAt: ts})); } catch(e) {}
   scheduleSyncToGitHub();
+}
+function _clearLocalBackup() {
+  try { localStorage.removeItem('cowork_cards_local'); } catch(e) {}
 }
 function getPatients() { return ls('cowork_patients', []); }
 function savePatients(p) { lsSet('cowork_patients', p); }
