@@ -549,19 +549,18 @@
 
 
   <div id="tab-collect" class="tab-content">
-
     <div class="collect-header">
-
-      <h2>Collect</h2>
-
-      <button class="btn-primary" id="btn-collect-add">+ Link</button>
-
+      <h2>Collect <span id="collect-stats" class="collect-stats-badge"></span></h2>
+      <div class="collect-controls">
+        <input type="text" id="collect-search" class="form-input collect-search-input" placeholder="Suchen..." oninput="renderCollect()">
+        <select id="collect-filter-cat" class="form-input collect-filter-sel" onchange="renderCollect()">
+          <option value="">Alle</option>
+        </select>
+        <button class="btn-primary" id="btn-collect-add">+ Neu</button>
+      </div>
     </div>
-
     <div id="collect-toc"></div>
-
     <div id="collect-list"></div>
-
   </div>
 
 
@@ -6094,254 +6093,219 @@ function renderSystemLog(container) {
 // ─── COLLECT TAB ──────────────────────────────────────────────────────────────
 
 function getCollect() { return ls('cowork_collect', null); }
-
 function saveCollect(c) { lsSet('cowork_collect', c); }
+function initCollect() { if (!getCollect()) saveCollect({categories:[],items:[],nextCode:1}); }
 
-function initCollect() { if (!getCollect()) { saveCollect({categories:['KI','Tools','Gesundheit','Finanzen','Lernen','Sonstiges'],items:[]}); } }
+function genCollectCode(n) {
+  var L = String.fromCharCode(65 + Math.floor((n-1)/999));
+  var D = ((n-1)%999)+1;
+  return L + String(D).padStart(3,'0');
+}
 
+function nextCollectCode(data) {
+  if (!data.nextCode) data.nextCode = (data.items?data.items.length:0)+1;
+  var c = genCollectCode(data.nextCode);
+  data.nextCode++;
+  return c;
+}
 
+var _collectPage = {};
 
 function renderCollect() {
-
-  var data = getCollect() || {categories:[], items:[]};
-
+  var data = getCollect() || {categories:[],items:[]};
   var toc = document.getElementById('collect-toc');
-
   var list = document.getElementById('collect-list');
-
+  var statsEl = document.getElementById('collect-stats');
   if (!toc || !list) return;
 
+  var searchTerm = (document.getElementById('collect-search')||{}).value||'';
+  var filterCat = (document.getElementById('collect-filter-cat')||{}).value||'';
+  searchTerm = searchTerm.toLowerCase().trim();
 
-
-  if (data.items.length === 0) {
-
-    toc.innerHTML = '';
-
-    list.innerHTML = '<div class="empty-state">Keine Links gesammelt.</div>';
-
-    return;
-
-  }
-
-
-
-  var cats = data.categories || [];
-
-  toc.innerHTML = '<div class="collect-toc-bar">' + cats.map(function(cat) {
-
-    var count = data.items.filter(function(i){return i.category===cat;}).length;
-
-    if (count === 0) return '';
-
-    return '<a class="collect-toc-link" href="#collect-cat-'+esc(cat)+'" onclick="event.preventDefault();document.getElementById(\'collect-cat-'+esc(cat)+'\').scrollIntoView({behavior:\'smooth\'})">'+esc(cat)+' ('+count+')</a>';
-
-  }).join('') + '</div>';
-
-
-
-  var html = '';
-
-  cats.forEach(function(cat) {
-
-    var items = data.items.filter(function(i){return i.category===cat;}).sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);});
-
-    if (items.length === 0) return;
-
-    html += '<div class="collect-cat-section" id="collect-cat-'+esc(cat)+'">';
-
-    html += '<h3 class="collect-cat-title">'+esc(cat)+'</h3>';
-
-    items.forEach(function(item) {
-
-      var date = new Date(item.createdAt).toLocaleDateString('de-CH');
-
-      html += '<div class="collect-card" onclick="openCollectModal(\''+esc(item.id)+'\')">';
-
-      html += '<div class="collect-card-header">';
-
-      html += '<span class="collect-card-title">'+esc(item.title || item.url)+'</span>';
-
-      html += '<span class="collect-card-date">'+date+'</span>';
-
-      html += '</div>';
-
-      if (item.url) html += '<div class="collect-card-url">'+esc(item.url)+'</div>';
-
-      if (item.description) html += '<div class="collect-card-desc">'+esc(item.description)+'</div>';
-
-      if (item.screenshot) html += '<div class="collect-card-img"><img src="https://raw.githubusercontent.com/ctmos/cowork-data/main/data/collect-images/'+esc(item.screenshot)+'" alt="Screenshot" loading="lazy"></div>';
-
-      html += '<div class="collect-card-meta"><span class="collect-card-by">'+esc(item.createdBy||'')+'</span></div>';
-
-      html += '</div>';
-
-    });
-
-    html += '</div>';
-
+  var filtered = data.items.filter(function(item) {
+    if (filterCat && item.category !== filterCat) return false;
+    if (searchTerm) {
+      var h = ((item.code||'')+' '+(item.title||'')+' '+(item.description||'')+' '+(item.url||'')+' '+(item.raw_text||'')).toLowerCase();
+      return h.indexOf(searchTerm) !== -1;
+    }
+    return true;
   });
 
+  if (statsEl) statsEl.textContent = data.items.length + ' Eintr\u00e4ge';
+
+  // Build categories from items
+  var catMap = {};
+  filtered.forEach(function(item) {
+    var cat = item.category || 'Sonstiges';
+    if (!catMap[cat]) catMap[cat] = [];
+    catMap[cat].push(item);
+  });
+  var catKeys = Object.keys(catMap).sort(function(a,b) {
+    if (a === 'Texte & Notizen') return 1;
+    if (b === 'Texte & Notizen') return -1;
+    return catMap[b].length - catMap[a].length;
+  });
+
+  // Populate filter dropdown (preserve selection)
+  var sel = document.getElementById('collect-filter-cat');
+  if (sel) {
+    var allCats = {};
+    data.items.forEach(function(i) { allCats[i.category||'Sonstiges'] = true; });
+    var cv = sel.value;
+    sel.innerHTML = '<option value="">Alle</option>' +
+      Object.keys(allCats).sort().map(function(c) {
+        return '<option value="'+esc(c)+'"'+(c===cv?' selected':'')+'>'+esc(c)+'</option>';
+      }).join('');
+  }
+
+  if (filtered.length === 0) {
+    toc.innerHTML = '';
+    list.innerHTML = '<div class="empty-state">'+(searchTerm||filterCat?'Keine Treffer.':'Keine Eintr\u00e4ge.')+'</div>';
+    return;
+  }
+
+  // TOC
+  toc.innerHTML = '<div class="collect-toc-bar">' + catKeys.map(function(cat) {
+    var safeCat = encodeURIComponent(cat);
+    return '<a class="collect-toc-link" data-cat="'+esc(cat)+'" href="#" onclick="event.preventDefault();var el=document.getElementById(\'collect-cat-'+safeCat+'\');if(el)el.scrollIntoView({behavior:\'smooth\'})">'+esc(cat)+' ('+catMap[cat].length+')</a>';
+  }).join('') + '</div>';
+
+  // Render cards by category
+  var html = '';
+  catKeys.forEach(function(cat) {
+    var items = catMap[cat].sort(function(a,b) { return (b.timestamp||b.createdAt||'').localeCompare(a.timestamp||a.createdAt||''); });
+    var isText = (cat === 'Texte & Notizen');
+    var pk = cat;
+    if (!_collectPage[pk]) _collectPage[pk] = 24;
+    var visible = items.slice(0, _collectPage[pk]);
+    var hasMore = items.length > _collectPage[pk];
+    var safeCat = encodeURIComponent(cat);
+
+    html += '<div class="collect-cat-section" id="collect-cat-'+safeCat+'">';
+    html += '<h3 class="collect-cat-title">'+esc(cat)+' <span class="collect-cat-count">('+items.length+')</span></h3>';
+
+    if (isText) {
+      html += '<div class="collect-text-list">';
+      visible.forEach(function(item) {
+        var d = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-CH') : '';
+        var preview = item.title || (item.raw_text||'').substring(0,80);
+        if (preview.length > 80) preview = preview.substring(0,80) + '...';
+        html += '<details class="collect-text-entry">';
+        html += '<summary><span class="collect-code">'+esc(item.code||'')+'</span> <span class="collect-text-title">'+esc(preview)+'</span><span class="collect-card-date">'+d+'</span></summary>';
+        var body = esc(item.raw_text||item.description||'').replace(/\n/g,'<br>');
+        html += '<div class="collect-text-body">'+body+'</div>';
+        html += '</details>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="collect-grid">';
+      visible.forEach(function(item) {
+        var d = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-CH') : '';
+        var domain = '';
+        try { if (item.url) { var u = new URL(item.url); domain = u.hostname.replace(/^www\./,''); } } catch(e) {}
+        html += '<div class="collect-card" data-id="'+esc(item.id)+'">';
+        html += '<div class="collect-card-top"><span class="collect-code">'+esc(item.code||'')+'</span><span class="collect-card-date">'+d+'</span></div>';
+        html += '<div class="collect-card-title">'+esc(item.title||domain||'Ohne Titel')+'</div>';
+        if (item.url) html += '<a class="collect-card-url" href="'+esc(item.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+esc(domain||item.url)+'</a>';
+        if (item.description) html += '<div class="collect-card-desc">'+esc(item.description)+'</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    if (hasMore) {
+      html += '<button class="collect-show-more" onclick="_collectPage[\''+esc(cat).replace(/'/g,"\\'")+'\']+=24;renderCollect()">Mehr anzeigen ('+items.length+' total)</button>';
+    }
+    html += '</div>';
+  });
   list.innerHTML = html;
 
+  // Card click handlers
+  list.querySelectorAll('.collect-card[data-id]').forEach(function(c) {
+    c.addEventListener('click', function() { openCollectModal(c.getAttribute('data-id')); });
+  });
 }
-
-
 
 var collectEntryId = null;
-
 function openCollectModal(entryId) {
-
   collectEntryId = entryId;
-
   var data = getCollect() || {categories:[],items:[]};
-
   var entry = entryId ? data.items.find(function(e){return e.id===entryId;}) : null;
-
   var isNew = !entry;
-
-  document.getElementById('collect-modal-title').textContent = isNew ? 'Link sammeln' : 'Eintrag bearbeiten';
-
+  document.getElementById('collect-modal-title').textContent = isNew ? 'Neuer Eintrag' : (entry.code||'') + ' bearbeiten';
   document.getElementById('colm-url').value = (entry&&entry.url)||'';
-
   document.getElementById('colm-title').value = (entry&&entry.title)||'';
-
   document.getElementById('colm-desc').value = (entry&&entry.description)||'';
-
-  document.getElementById('colm-cat').value = (entry&&entry.category)||data.categories[0]||'Sonstiges';
-
+  document.getElementById('colm-cat').value = (entry&&entry.category)||'Sonstiges';
   document.getElementById('colm-delete').style.display = isNew ? 'none' : '';
-
   document.getElementById('colm-screenshot').value = '';
-
   var dl = document.getElementById('collect-cats');
-
-  dl.innerHTML = data.categories.map(function(c){return '<option value="'+esc(c)+'">';}).join('');
-
+  var allCats = {};
+  data.items.forEach(function(i) { allCats[i.category||'Sonstiges'] = true; });
+  dl.innerHTML = Object.keys(allCats).sort().map(function(c){return '<option value="'+esc(c)+'">';}).join('');
   document.getElementById('collect-modal-overlay').classList.add('open');
-
 }
-
 function closeCollectModal() {
-
   document.getElementById('collect-modal-overlay').classList.remove('open');
-
   collectEntryId = null;
-
 }
-
-
 
 document.getElementById('btn-collect-add').addEventListener('click', function(){ openCollectModal(null); });
 
-
-
 document.getElementById('colm-save').addEventListener('click', function() {
-
   var url = document.getElementById('colm-url').value.trim();
-
   var title = document.getElementById('colm-title').value.trim();
-
   var desc = document.getElementById('colm-desc').value.trim();
-
-  var cat = document.getElementById('colm-cat').value;
-
+  var cat = document.getElementById('colm-cat').value.trim() || 'Sonstiges';
   if (!url && !title) { document.getElementById('colm-url').focus(); return; }
-
   if (!title) title = url;
-
   var data = getCollect() || {categories:[],items:[]};
 
-
-
   var fileInput = document.getElementById('colm-screenshot');
-
   var file = fileInput.files && fileInput.files[0];
 
-
-
   if (collectEntryId) {
-
     var idx = data.items.findIndex(function(e){return e.id===collectEntryId;});
-
     if (idx !== -1) data.items[idx] = Object.assign({}, data.items[idx], {url:url, title:title, description:desc, category:cat});
-
   } else {
-
     var newId = 'col_' + Date.now();
-
-    var item = {id:newId, url:url, title:title, description:desc, category:cat, screenshot:null, createdAt:new Date().toISOString(), createdBy:'User'};
-
+    var code = nextCollectCode(data);
+    var type = url ? 'link' : 'text';
+    var item = {id:newId, code:code, type:type, url:url, title:title, description:desc, category:cat, screenshot:null, timestamp:new Date().toISOString(), createdAt:new Date().toISOString(), createdBy:'User'};
     data.items.push(item);
-
-
-
     if (file) {
-
       item.screenshot = newId + '.png';
-
       var reader = new FileReader();
-
       reader.onload = function(ev) {
-
         var b64 = ev.target.result.split(',')[1];
-
         safeWriteToGitHub('data/collect-images/' + item.screenshot, b64, 'upload: screenshot ' + item.screenshot);
-
       };
-
       reader.readAsDataURL(file);
-
     }
-
   }
-
-
 
   if (cat && data.categories.indexOf(cat) === -1) data.categories.push(cat);
 
-
-
   saveCollect(data);
-
   closeCollectModal();
-
   renderCollect();
-
   fileInput.value = '';
-
 });
-
-
 
 document.getElementById('colm-delete').addEventListener('click', function() {
-
-  confirmAction('Link löschen?', 'Dieser Eintrag wird gelöscht.', function() {
-
+  confirmAction('Eintrag l\u00f6schen?', 'Dieser Eintrag wird gel\u00f6scht.', function() {
     var data = getCollect() || {categories:[],items:[]};
-
     data.items = data.items.filter(function(e){return e.id !== collectEntryId;});
-
     saveCollect(data);
-
     closeCollectModal();
-
     renderCollect();
-
   });
-
 });
-
-
 
 document.getElementById('colm-cancel').addEventListener('click', closeCollectModal);
-
 document.getElementById('collect-modal-overlay').addEventListener('click', function(e) {
-
   if (e.target === e.currentTarget) closeCollectModal();
-
 });
-
-
 
 // ─── SERVICE WORKER: Auto-Update ─────────────────────────────────────────────
 
