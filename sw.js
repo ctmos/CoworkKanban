@@ -1,5 +1,5 @@
-// LifeOS Service Worker v4.0
-const CACHE_NAME = 'lifeos-v4.0';
+// LifeOS Service Worker v4.3
+const CACHE_NAME = 'lifeos-v4.3';
 const APP_SHELL = [
   '/CoworkKanban/',
   '/CoworkKanban/index.html',
