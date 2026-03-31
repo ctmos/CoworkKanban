@@ -1941,7 +1941,88 @@ nav::-webkit-scrollbar { display: none; }
 
 .done-archive-list .card-item { opacity: 0.6; }
 
+/* ── PAPIERKORB (TRASH) ── */
+.trash-section {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+.trash-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface2);
+  user-select: none;
+}
+.trash-header:hover { background: var(--border); }
+.trash-icon { font-size: 16px; }
+.trash-chevron { margin-left: auto; font-size: 12px; }
+.trash-body { padding: 8px; }
+.trash-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.trash-card:last-child { border-bottom: none; }
+.trash-card-id {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+  flex-shrink: 0;
+}
+.trash-card-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trash-card-lane {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.btn-restore {
+  font-size: 12px;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.btn-restore:hover { background: var(--accent); color: white; }
+.btn-perm-delete {
+  font-size: 14px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.btn-perm-delete:hover { color: #e03131; background: rgba(224,49,49,0.1); }
 
+/* ── SYNC BADGE ── */
+.pat-sync-badge {
+  font-size: 10px;
+  color: #2b8a3e;
+  background: rgba(43,138,62,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  font-weight: 600;
+}
 
 
 
