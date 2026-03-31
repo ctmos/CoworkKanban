@@ -1165,6 +1165,13 @@ nav::-webkit-scrollbar { display: none; }
 .ik-info-card strong { color: var(--text); font-weight: 600; }
 .ik-info-title { font-weight: 600; font-size: 12px; color: var(--text); margin-bottom: 6px; }
 
+/* ImperialKI Done marking */
+.ik-checkbox { width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; accent-color: var(--accent); }
+.ik-done { opacity: 0.5; }
+.ik-done .ik-action-title a, .ik-done .ik-task-name { text-decoration: line-through; color: var(--text-muted); }
+.ik-done .ik-action-deadline, .ik-done .ik-task-deadline { text-decoration: line-through; }
+.ik-done-ts { font-size: 9px; color: var(--accent); margin-left: auto; white-space: nowrap; padding-left: 8px; }
+
 /* ── SYSTEM DROPDOWNS ── */
 .sys-dropdown { margin-bottom: 16px; }
 .sys-dropdown-header {
