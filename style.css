@@ -2103,6 +2103,11 @@ nav::-webkit-scrollbar { display: none; }
 .dark-theme .pat-entry-type-badge.type-vorbereitung { background: #1e3a5f; color: #93c5fd; }
 .pat-entry-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .pat-entry-content { font-size: 13px; color: var(--text); line-height: 1.5; white-space: pre-wrap; }
+.pat-entry-content.collapsed { max-height: 7.5em; overflow: hidden; position: relative; }
+.pat-entry-content.collapsed::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2em; background: linear-gradient(transparent, var(--surface)); pointer-events: none; }
+.pat-entry-card.type-vorbericht .pat-entry-content.collapsed::after { background: linear-gradient(transparent, #e8f4fd); }
+.dark-theme .pat-entry-card.type-vorbericht .pat-entry-content.collapsed::after { background: linear-gradient(transparent, #1a2a3a); }
+.pat-entry-expand { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 12px; margin-top: 4px; padding: 0; font-family: inherit; }
 .pat-entry-actions { margin-top: 8px; display: flex; gap: 8px; }
 .pat-entry-actions button { font-size: 11px; padding: 3px 8px; background: none; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; color: var(--text-muted); font-family: inherit; }
 .pat-entry-actions button:hover { border-color: var(--accent); color: var(--accent); }
