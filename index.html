@@ -1954,8 +1954,8 @@ function renderKanban() {
         trashHtml += '<div class="trash-card"><span class="trash-card-id">' + esc(c.id) + '</span>';
         trashHtml += '<span class="trash-card-title">' + esc(c.title || '(kein Titel)') + '</span>';
         trashHtml += '<span class="trash-card-lane">' + esc(c.lane || '?') + '</span>';
-        trashHtml += '<button class="btn-restore" onclick="event.stopPropagation();restoreCard('' + esc(c.id) + '')">↩ Wiederherstellen</button>';
-        trashHtml += '<button class="btn-perm-delete" onclick="event.stopPropagation();permanentDeleteCard('' + esc(c.id) + '')">✕</button>';
+        trashHtml += '<button class="btn-restore" onclick="event.stopPropagation();restoreCard(\'' + esc(c.id) + '\')">↩ Wiederherstellen</button>';
+        trashHtml += '<button class="btn-perm-delete" onclick="event.stopPropagation();permanentDeleteCard(\'' + esc(c.id) + '\')">✕</button>';
         trashHtml += '</div>';
       });
       trashHtml += '</div>';
