@@ -2596,50 +2596,50 @@ function renderImperialKI(container) {
            d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'});
   }
 
-  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">';
+  html += '<div class="ik-dashboard">';
 
   // Next deadline card
-  html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;">';
-  html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#ef4444;margin-bottom:6px;">N\u00e4chste Deadline</div>';
+  html += '<div class="ik-card">';
+  html += '<div class="ik-card-label" style="color:#ef4444;">N\u00e4chste Deadline</div>';
   if (nextDeadline) {
-    html += '<div style="font-weight:600;font-size:14px;color:var(--text);">' + esc(nextDeadline.title) + '</div>';
-    html += '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + fmtDate(nextDeadline.date) + '</div>';
-    html += '<div style="font-size:18px;font-weight:700;color:#ef4444;margin-top:4px;">' + countdown(nextDeadline.date) + '</div>';
+    html += '<div class="ik-card-title">' + esc(nextDeadline.title) + '</div>';
+    html += '<div class="ik-card-sub">' + fmtDate(nextDeadline.date) + '</div>';
+    html += '<div class="ik-countdown" style="color:#ef4444;">' + countdown(nextDeadline.date) + '</div>';
   } else {
-    html += '<div style="color:var(--text-muted);font-size:12px;">Keine offenen Deadlines</div>';
+    html += '<div class="ik-card-sub">Keine offenen Deadlines</div>';
   }
   html += '</div>';
 
   // Next live session card
-  html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;">';
-  html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#3b82f6;margin-bottom:6px;">N\u00e4chste Live-Session</div>';
+  html += '<div class="ik-card">';
+  html += '<div class="ik-card-label" style="color:#3b82f6;">N\u00e4chste Live-Session</div>';
   if (nextLive) {
-    html += '<div style="font-weight:600;font-size:14px;color:var(--text);">' + esc(nextLive.title) + '</div>';
-    html += '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + fmtDate(nextLive.date) + '</div>';
-    html += '<div style="font-size:18px;font-weight:700;color:#3b82f6;margin-top:4px;">' + countdown(nextLive.date) + '</div>';
+    html += '<div class="ik-card-title">' + esc(nextLive.title) + '</div>';
+    html += '<div class="ik-card-sub">' + fmtDate(nextLive.date) + '</div>';
+    html += '<div class="ik-countdown" style="color:#3b82f6;">' + countdown(nextLive.date) + '</div>';
   } else {
-    html += '<div style="color:var(--text-muted);font-size:12px;">Keine geplanten Sessions</div>';
+    html += '<div class="ik-card-sub">Keine geplanten Sessions</div>';
   }
   html += '</div>';
   html += '</div>';
 
   // ── TERMINE ──
-  html += '<details open style="margin-bottom:16px;">';
-  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Termine</summary>';
+  html += '<details open class="ik-section">';
+  html += '<summary class="ik-section-title">Termine</summary>';
   var upcoming = (ik.schedule || []).filter(function(ev) { return new Date(ev.date) > now; }).sort(function(a,b) { return a.date.localeCompare(b.date); });
   if (upcoming.length === 0) {
-    html += '<div style="color:var(--text-muted);font-size:12px;padding:8px 0;">Keine kommenden Termine.</div>';
+    html += '<div class="ik-card-sub" style="padding:8px 0;">Keine kommenden Termine.</div>';
   } else {
     upcoming.forEach(function(ev) {
       var color = ev.type === 'live' ? '#3b82f6' : ev.type === 'deadline' ? '#ef4444' : '#f59e0b';
       var label = ev.type === 'live' ? 'Live' : ev.type === 'deadline' ? 'Deadline' : 'Event';
       var courseColor = ik.courses[ev.course] ? ik.courses[ev.course].color : '#6b7280';
-      html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">';
-      html += '<span style="font-size:11px;color:var(--text-muted);min-width:110px;">' + fmtDate(ev.date) + '</span>';
-      html += '<span style="background:' + color + ';color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;min-width:52px;text-align:center;">' + label + '</span>';
-      html += '<span style="width:8px;height:8px;border-radius:50%;background:' + courseColor + ';flex-shrink:0;"></span>';
-      html += '<span style="font-size:13px;font-weight:500;color:var(--text);">' + esc(ev.title) + '</span>';
-      html += '<span style="font-size:11px;color:var(--text-muted);margin-left:auto;">' + countdown(ev.date) + '</span>';
+      html += '<div class="ik-entry">';
+      html += '<span class="ik-time">' + fmtDate(ev.date) + '</span>';
+      html += '<span class="ik-badge" style="background:' + color + ';">' + label + '</span>';
+      html += '<span class="ik-dot" style="background:' + courseColor + ';"></span>';
+      html += '<span class="ik-name">' + esc(ev.title) + '</span>';
+      html += '<span class="ik-right">' + countdown(ev.date) + '</span>';
       html += '</div>';
     });
   }
@@ -2647,20 +2647,20 @@ function renderImperialKI(container) {
 
   // ── KURS AIH ──
   var aih = ik.courses.AIH;
-  html += '<details open style="margin-bottom:16px;">';
-  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:' + aih.color + ';cursor:pointer;margin-bottom:8px;">' + esc(aih.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(aktiv seit ' + aih.started + ')</span></summary>';
+  html += '<details open class="ik-section">';
+  html += '<summary class="ik-section-title" style="color:' + aih.color + ';">' + esc(aih.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(aktiv seit ' + aih.started + ')</span></summary>';
 
   // Pre-requisites
   if (aih.preReqs && aih.preReqs.length > 0) {
     html += '<div style="margin-bottom:12px;">';
-    html += '<div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">Offene Aufgaben</div>';
+    html += '<div class="sl-section-title">Offene Aufgaben</div>';
     aih.preReqs.forEach(function(req) {
       var statusIcon = req.status === 'done' ? '\u2705' : '\u23f3';
-      var deadlineColor = new Date(req.deadline) < new Date(now.getTime() + 3*86400000) ? '#ef4444' : 'var(--text-muted)';
-      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">';
+      var urgent = new Date(req.deadline) < new Date(now.getTime() + 3*86400000);
+      html += '<div class="ik-task">';
       html += '<span>' + statusIcon + '</span>';
-      html += '<span style="font-size:13px;color:var(--text);flex:1;">' + esc(req.title) + '</span>';
-      html += '<span style="font-size:11px;color:' + deadlineColor + ';">bis ' + req.deadline + '</span>';
+      html += '<span class="ik-task-name">' + esc(req.title) + '</span>';
+      html += '<span class="ik-task-deadline ' + (urgent ? 'ik-deadline-urgent' : 'ik-deadline-normal') + '">bis ' + req.deadline + '</span>';
       html += '</div>';
     });
     html += '</div>';
@@ -2669,17 +2669,16 @@ function renderImperialKI(container) {
   // Modules
   if (aih.modules && aih.modules.length > 0) {
     html += '<div style="margin-bottom:12px;">';
-    html += '<div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">Module</div>';
+    html += '<div class="sl-section-title">Module</div>';
     aih.modules.forEach(function(mod) {
       var statusBadge = mod.status === 'locked' ? '\uD83D\uDD12' : mod.status === 'open' ? '\uD83D\uDCD6' : '\u2705';
-      html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">';
-      html += '<div style="display:flex;align-items:center;gap:8px;">';
-      html += '<span style="font-size:16px;">' + statusBadge + '</span>';
+      html += '<div class="ik-module-card">';
+      html += '<span class="ik-module-icon">' + statusBadge + '</span>';
       html += '<div style="flex:1;">';
-      html += '<div style="font-weight:600;font-size:13px;color:var(--text);">' + esc(mod.id + ': ' + mod.title) + '</div>';
-      html += '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + esc(mod.description) + '</div>';
-      html += '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Geschaetzte Dauer: ~' + mod.hours + 'h</div>';
-      html += '</div></div></div>';
+      html += '<div class="ik-module-title">' + esc(mod.id + ': ' + mod.title) + '</div>';
+      html += '<div class="ik-module-desc">' + esc(mod.description) + '</div>';
+      html += '<div class="ik-module-desc">Geschaetzte Dauer: ~' + mod.hours + 'h</div>';
+      html += '</div></div>';
     });
     html += '</div>';
   }
@@ -2687,13 +2686,13 @@ function renderImperialKI(container) {
   // Discussions
   if (aih.discussions && aih.discussions.length > 0) {
     html += '<div style="margin-bottom:8px;">';
-    html += '<div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">Diskussionen</div>';
+    html += '<div class="sl-section-title">Diskussionen</div>';
     aih.discussions.forEach(function(disc) {
       var icon = disc.status === 'posted' ? '\u2705' : '\u270F\uFE0F';
-      html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">';
+      html += '<div class="ik-entry" style="padding:6px 16px;">';
       html += '<span>' + icon + '</span>';
-      html += '<a href="' + esc(disc.url) + '" target="_blank" style="font-size:13px;color:' + aih.color + ';">' + esc(disc.title) + '</a>';
-      html += '<span style="font-size:11px;color:var(--text-muted);">' + (disc.status === 'posted' ? 'gepostet ' + disc.postedDate : 'offen') + '</span>';
+      html += '<a href="' + esc(disc.url) + '" target="_blank" style="color:' + aih.color + ';" class="ik-name">' + esc(disc.title) + '</a>';
+      html += '<span class="ik-right">' + (disc.status === 'posted' ? 'gepostet ' + disc.postedDate : 'offen') + '</span>';
       html += '</div>';
     });
     html += '</div>';
@@ -2702,14 +2701,14 @@ function renderImperialKI(container) {
 
   // ── KURS DTH ──
   var dth = ik.courses.DTH;
-  html += '<details style="margin-bottom:16px;">';
-  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:' + dth.color + ';cursor:pointer;margin-bottom:8px;">' + esc(dth.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(Start: ' + dth.starts + ')</span></summary>';
-  html += '<div style="color:var(--text-muted);font-size:12px;padding:8px 0;">Kurs startet am ' + dth.starts + '. Orientation-Material wird noch erfasst.</div>';
+  html += '<details class="ik-section">';
+  html += '<summary class="ik-section-title" style="color:' + dth.color + ';">' + esc(dth.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(Start: ' + dth.starts + ')</span></summary>';
+  html += '<div class="ik-card-sub" style="padding:8px 0;">Kurs startet am ' + dth.starts + '. Orientation-Material wird noch erfasst.</div>';
   html += '</details>';
 
   // ── LOGBUCH ──
-  html += '<details style="margin-bottom:16px;">';
-  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Logbuch</summary>';
+  html += '<details class="ik-section">';
+  html += '<summary class="ik-section-title">Logbuch</summary>';
   var LOG_COLORS = { deploy:'#c47a2a', fix:'#b45309', success:'#15803d', error:'#b91c1c', info:'#6b7280' };
   var LOG_LABELS = { deploy:'Deploy', fix:'Fix', success:'Erfolg', error:'Fehler', info:'Info' };
   var logs = (ik.log || []).sort(function(a,b) { return b.ts.localeCompare(a.ts); });
@@ -2718,51 +2717,50 @@ function renderImperialKI(container) {
     var label = LOG_LABELS[entry.type] || 'Info';
     var d = new Date(entry.ts);
     var timeStr = d.toLocaleDateString('de-CH', {day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
-    html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">';
-    html += '<span style="font-size:11px;color:var(--text-muted);min-width:80px;">' + timeStr + '</span>';
-    html += '<span style="background:' + bg + ';color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;min-width:48px;text-align:center;">' + label + '</span>';
-    html += '<div style="flex:1;min-width:0;">';
-    html += '<div style="font-weight:600;font-size:13px;color:var(--text);">' + esc(entry.title) + '</div>';
-    if (entry.details) html += '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + esc(entry.details) + '</div>';
+    html += '<div class="sl-entry">';
+    html += '<span class="sl-time">' + timeStr + '</span>';
+    html += '<span class="sl-badge" style="background:' + bg + ';">' + label + '</span>';
+    html += '<div class="sl-body">';
+    html += '<div class="sl-title">' + esc(entry.title) + '</div>';
+    if (entry.details) html += '<div class="sl-details">' + esc(entry.details) + '</div>';
     html += '</div></div>';
   });
   html += '</details>';
 
   // ── TRIP REPORT ──
-  html += '<details style="margin-bottom:16px;">';
-  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Trip Report / Blog</summary>';
+  html += '<details class="ik-section">';
+  html += '<summary class="ik-section-title">Trip Report / Blog</summary>';
   var tr = ik.tripReport || {};
-  html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;">';
-  html += '<div style="font-weight:600;font-size:13px;color:var(--text);margin-bottom:6px;">Reflective Journal Anfrage</div>';
-  html += '<div style="font-size:12px;color:var(--text-muted);">';
+  html += '<div class="ik-info-card">';
+  html += '<div class="ik-info-title">Reflective Journal Anfrage</div>';
   html += 'Email gesendet: ' + (tr.emailSent || '?') + '<br>';
   html += 'Status: <span style="color:#f59e0b;font-weight:600;">' + (tr.status === 'awaiting_response' ? 'Warte auf Antwort' : tr.status || '?') + '</span><br>';
   html += 'Follow-up geplant: ' + (tr.followUpDate || '?');
-  html += '</div></div>';
-  html += '</details>';
-
-  // ── WISSENSDATENBANK ──
-  html += '<details style="margin-bottom:16px;">';
-  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Wissensdatenbank</summary>';
-  var kb = ik.knowledgeBase || {};
-  html += '<div style="font-size:12px;color:var(--text-muted);padding:4px 0;">';
-  html += '<strong>Klinik-Dokumente:</strong> ' + ((kb.clinicDocs || []).join(', ') || 'Keine') + '<br>';
-  html += '<strong>Transkripte:</strong> ' + ((kb.transcripts || []).length || 0) + ' Dateien<br>';
-  html += '<strong>NotebookLM:</strong> ' + (kb.notebookLM || 'nicht konfiguriert') + '<br>';
-  if (kb.grokResearch) {
-    html += '<div style="margin-top:8px;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px;">';
-    html += '<div style="font-weight:600;font-size:11px;color:var(--text);margin-bottom:4px;">Grok-Recherche: AI in Psychiatric Rehab Europe</div>';
-    html += '<div style="font-size:11px;color:var(--text-muted);">' + esc(kb.grokResearch) + '</div>';
-    html += '</div>';
-  }
   html += '</div>';
   html += '</details>';
 
+  // ── WISSENSDATENBANK ──
+  html += '<details class="ik-section">';
+  html += '<summary class="ik-section-title">Wissensdatenbank</summary>';
+  var kb = ik.knowledgeBase || {};
+  html += '<div class="ik-info-card">';
+  html += '<strong>Klinik-Dokumente:</strong> ' + ((kb.clinicDocs || []).join(', ') || 'Keine') + '<br>';
+  html += '<strong>Transkripte:</strong> ' + ((kb.transcripts || []).length || 0) + ' Dateien<br>';
+  html += '<strong>NotebookLM:</strong> ' + (kb.notebookLM || 'nicht konfiguriert');
+  html += '</div>';
+  if (kb.grokResearch) {
+    html += '<div class="ik-info-card" style="margin-top:8px;">';
+    html += '<div class="ik-info-title" style="font-size:11px;">Grok-Recherche: AI in Psychiatric Rehab Europe</div>';
+    html += '<div style="font-size:11px;">' + esc(kb.grokResearch) + '</div>';
+    html += '</div>';
+  }
+  html += '</details>';
+
   // ── PROFIL ──
-  html += '<details style="margin-bottom:16px;">';
-  html += '<summary style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);cursor:pointer;margin-bottom:8px;">Mein Profil</summary>';
+  html += '<details class="ik-section">';
+  html += '<summary class="ik-section-title">Mein Profil</summary>';
   var pr = ik.profile || {};
-  html += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;color:var(--text-muted);">';
+  html += '<div class="ik-info-card">';
   html += '<strong>' + esc(pr.name || '') + '</strong> \u2014 ' + esc(pr.role || '') + '<br>';
   html += esc(pr.clinic || '') + ', ' + esc(pr.department || '') + '<br>';
   html += 'Arbeitstage: ' + esc(pr.workDays || '') + '<br>';
