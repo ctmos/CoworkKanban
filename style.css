@@ -2194,22 +2194,38 @@ nav::-webkit-scrollbar { display: none; }
 .proc-item.status-running { border-left:3px solid var(--accent); }
 
 /* ── COLLECT TAB ── */
-.collect-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.collect-header h2 { font-size: 16px; font-weight: 600; }
-.collect-toc-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.collect-toc-link { font-size: 12px; padding: 4px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: all 0.15s; }
+.collect-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.collect-header h2 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.collect-stats-badge { font-size: 11px; font-weight: 400; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2px 8px; }
+.collect-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.collect-search-input { width: 160px; font-size: 12px; padding: 6px 10px; }
+.collect-filter-sel { width: 140px; font-size: 12px; padding: 6px 8px; }
+.collect-toc-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.collect-toc-link { font-size: 11px; padding: 3px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: all 0.15s; }
 .collect-toc-link:hover { border-color: var(--accent); color: var(--accent); }
-.collect-cat-section { margin-bottom: 24px; }
+.collect-cat-section { margin-bottom: 28px; }
 .collect-cat-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-.collect-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: box-shadow 0.15s; }
-.collect-card:hover { box-shadow: var(--shadow); }
-.collect-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 4px; }
-.collect-card-title { font-size: 14px; font-weight: 600; color: var(--text); }
-.collect-card-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
-.collect-card-url { font-size: 11px; color: var(--accent); margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.collect-card-desc { font-size: 13px; color: var(--text); line-height: 1.5; }
-.collect-card-img { margin-top: 8px; }
-.collect-card-img img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border); }
-.collect-card-meta { margin-top: 6px; font-size: 11px; color: var(--text-muted); }
+.collect-cat-count { font-weight: 400; }
+.collect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 600px) { .collect-grid { grid-template-columns: 1fr; } .collect-search-input, .collect-filter-sel { width: 100%; } }
+.collect-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
+.collect-card:hover { box-shadow: var(--shadow); border-color: var(--accent); }
+.collect-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.collect-code { font-size: 10px; font-weight: 700; font-family: var(--font-mono, monospace); color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); padding: 2px 6px; border-radius: 4px; letter-spacing: .04em; }
+.collect-card-date { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+.collect-card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.collect-card-url { display: block; font-size: 11px; color: var(--accent); margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+.collect-card-url:hover { text-decoration: underline; }
+.collect-card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.collect-text-list { display: flex; flex-direction: column; gap: 4px; }
+.collect-text-entry { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.collect-text-entry summary { display: flex; align-items: center; gap: 8px; padding: 10px 14px; cursor: pointer; font-size: 13px; list-style: none; }
+.collect-text-entry summary::-webkit-details-marker { display: none; }
+.collect-text-entry summary::before { content: '\25B6'; font-size: 9px; color: var(--text-muted); transition: transform 0.15s; flex-shrink: 0; }
+.collect-text-entry[open] summary::before { transform: rotate(90deg); }
+.collect-text-title { flex: 1; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.collect-text-body { padding: 0 14px 14px; font-size: 13px; line-height: 1.6; color: var(--text); border-top: 1px solid var(--border); margin-top: 0; padding-top: 12px; white-space: pre-wrap; word-break: break-word; }
+.collect-show-more { display: block; width: 100%; padding: 8px; margin-top: 8px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); color: var(--text-muted); font-size: 12px; cursor: pointer; text-align: center; }
+.collect-show-more:hover { border-color: var(--accent); color: var(--accent); }
 .pat-blog-entry-title { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
 .pat-blog-entry-type { font-size: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-muted); }
