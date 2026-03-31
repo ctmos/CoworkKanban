@@ -1151,6 +1151,15 @@ function setSyncStatus(status) {
   var dot = document.getElementById('sync-dot');
   if (!dot) return;
   dot.className = status;
+  if (status === 'synced') {
+    var ssbText = document.getElementById('ssb-text');
+    if (ssbText) {
+      var now = new Date();
+      var hh = String(now.getHours()).padStart(2,'0');
+      var mm = String(now.getMinutes()).padStart(2,'0');
+      ssbText.textContent = '\uD83D\uDCBE Letzte Sync: ' + hh + ':' + mm;
+    }
+  }
 }
 
 // ─── AUTO SYNC — CARDS (unified through safeWriteToGitHub) ───────────────────
@@ -1774,7 +1783,8 @@ async function loadCalendarEvents() {
       { headers: { Authorization: 'token ' + token } });
     if (!r.ok) return;
     var d = await r.json();
-    window._calEvents = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+    var _b64c = d.content.replace(/\n/g,'');
+    window._calEvents = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(_b64c), function(c){return c.charCodeAt(0);})));
   } catch(e) { console.warn('calendar load failed', e); }
 }
 
@@ -1897,7 +1907,7 @@ function renderCardItem(card, laneColor) {
   var descBox=descExpanded?'<div class="card-desc-box">'+esc(card.desc)+'</div>':'';
   var isHE=card.todayFlag||card.lane==='HE';
   var bgStyle=laneColor?'background:rgba('+hexToRgb(laneColor)+',0.08);':'';
-  return '<div class="card-item" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+  return '<div class="card-item" draggable="true" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
 }
 
 // ─── KANBAN ───────────────────────────────────────────────────────────────────
@@ -2568,7 +2578,8 @@ async function showImperialKITab() {
       { headers: { Authorization: 'token ' + token } });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var d = await r.json();
-    _ikCache = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+    var _b64ik = d.content.replace(/\n/g,'');
+    _ikCache = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(_b64ik), function(c){return c.charCodeAt(0);})));
   } catch(e) {
     container.innerHTML = '<div class="empty-state">Fehler: ' + esc(e.message) + '</div>';
     return;
@@ -2834,7 +2845,8 @@ async function showSystemTab() {
       { headers: { Authorization: 'token ' + token } });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var d = await r.json();
-    _systemLogCache = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+    var _b64sl = d.content.replace(/\n/g,'');
+    _systemLogCache = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(_b64sl), function(c){return c.charCodeAt(0);})));
   } catch(e) {
     container.innerHTML = '<div class="empty-state">Fehler beim Laden: ' + esc(e.message) + '</div>';
     return;
@@ -3360,7 +3372,9 @@ async function checkForRemoteChanges() {
         });
         if (pr.ok) {
           var pd = await pr.json();
-          var raw = JSON.parse(atob(pd.content.replace(/\n/g, '')));
+          var _b64p = pd.content.replace(/\n/g, '');
+          var _bytesP = Uint8Array.from(atob(_b64p), function(c) { return c.charCodeAt(0); });
+          var raw = JSON.parse(new TextDecoder('utf-8').decode(_bytesP));
           _appState.patients = Array.isArray(raw) ? raw : (raw.patients || []);
         }
       } catch(e) {}
