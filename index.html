@@ -2640,15 +2640,22 @@ function renderImperialKI(container) {
     if (diff <= 0) return 'JETZT';
     var days = Math.floor(diff / 86400000);
     var hours = Math.floor((diff % 86400000) / 3600000);
-    if (days > 0) return days + 'd ' + hours + 'h';
+    if (days > 0) return 'in ' + days + ' Tage' + (days === 1 ? '' : 'n') + ', ' + hours + ' Std.';
     var mins = Math.floor((diff % 3600000) / 60000);
-    return hours + 'h ' + mins + 'min';
+    return 'in ' + hours + ' Std. ' + mins + ' Min.';
   }
 
   function fmtDate(dateStr) {
     var d = new Date(dateStr);
-    return d.toLocaleDateString('de-CH', {weekday:'short', day:'2-digit', month:'2-digit'}) + ' ' +
-           d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'});
+    var hasTime = dateStr.indexOf('T') > -1 && dateStr.indexOf('T00:00:00') === -1;
+    var datePart = d.toLocaleDateString('de-CH', {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
+    if (hasTime) return datePart + ', ' + d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'}) + ' Uhr';
+    return datePart;
+  }
+  function fmtDateShort(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    return d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'numeric'});
   }
 
   // ── ACTION REQUIRED (pink box) ──
@@ -2679,7 +2686,7 @@ function renderImperialKI(container) {
     actions.forEach(function(a) {
       html += '<div class="ik-action-item">';
       html += '<span class="ik-action-title"><a href="' + esc(a.url) + '" target="_blank">' + esc(a.title) + '</a></span>';
-      if (a.deadline) html += '<span class="ik-action-deadline">bis ' + a.deadline + '</span>';
+      if (a.deadline) html += '<span class="ik-action-deadline">bis ' + fmtDateShort(a.deadline) + '</span>';
       html += '</div>';
     });
     html += '</div>';
@@ -2737,7 +2744,7 @@ function renderImperialKI(container) {
   // ── KURS AIH ──
   var aih = ik.courses.AIH;
   html += '<details open class="ik-section">';
-  html += '<summary class="ik-section-title" style="color:' + aih.color + ';">' + esc(aih.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(aktiv seit ' + aih.started + ')</span></summary>';
+  html += '<summary class="ik-section-title" style="color:' + aih.color + ';">' + esc(aih.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(aktiv seit ' + fmtDateShort(aih.started) + ')</span></summary>';
 
   // Pre-requisites
   if (aih.preReqs && aih.preReqs.length > 0) {
@@ -2749,7 +2756,7 @@ function renderImperialKI(container) {
       html += '<div class="ik-task">';
       html += '<span>' + statusIcon + '</span>';
       html += '<span class="ik-task-name">' + esc(req.title) + '</span>';
-      html += '<span class="ik-task-deadline ' + (urgent ? 'ik-deadline-urgent' : 'ik-deadline-normal') + '">bis ' + req.deadline + '</span>';
+      html += '<span class="ik-task-deadline ' + (urgent ? 'ik-deadline-urgent' : 'ik-deadline-normal') + '">bis ' + fmtDateShort(req.deadline) + '</span>';
       html += '</div>';
     });
     html += '</div>';
@@ -2766,7 +2773,7 @@ function renderImperialKI(container) {
       html += '<div style="flex:1;">';
       html += '<div class="ik-module-title">' + esc(mod.id + ': ' + mod.title) + '</div>';
       html += '<div class="ik-module-desc">' + esc(mod.description) + '</div>';
-      html += '<div class="ik-module-desc">Geschaetzte Dauer: ~' + mod.hours + 'h</div>';
+      html += '<div class="ik-module-desc">Geschätzte Dauer: ~' + mod.hours + ' Stunden</div>';
       html += '</div></div>';
     });
     html += '</div>';
@@ -2781,7 +2788,7 @@ function renderImperialKI(container) {
       html += '<div class="ik-entry" style="padding:6px 16px;">';
       html += '<span>' + icon + '</span>';
       html += '<a href="' + esc(disc.url) + '" target="_blank" style="color:' + aih.color + ';" class="ik-name">' + esc(disc.title) + '</a>';
-      html += '<span class="ik-right">' + (disc.status === 'posted' ? 'gepostet ' + disc.postedDate : 'offen') + '</span>';
+      html += '<span class="ik-right">' + (disc.status === 'posted' ? 'gepostet ' + fmtDateShort(disc.postedDate) : 'offen') + '</span>';
       html += '</div>';
     });
     html += '</div>';
@@ -2791,8 +2798,8 @@ function renderImperialKI(container) {
   // ── KURS DTH ──
   var dth = ik.courses.DTH;
   html += '<details class="ik-section">';
-  html += '<summary class="ik-section-title" style="color:' + dth.color + ';">' + esc(dth.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(Start: ' + dth.starts + ')</span></summary>';
-  html += '<div class="ik-card-sub" style="padding:8px 0;">Kurs startet am ' + dth.starts + '. Orientation-Material wird noch erfasst.</div>';
+  html += '<summary class="ik-section-title" style="color:' + dth.color + ';">' + esc(dth.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(Start: ' + fmtDateShort(dth.starts) + ')</span></summary>';
+  html += '<div class="ik-card-sub" style="padding:8px 0;">Kurs startet am ' + fmtDateShort(dth.starts) + '. Orientation-Material wird noch erfasst.</div>';
   html += '</details>';
 
   // ── LOGBUCH ──
@@ -2822,9 +2829,9 @@ function renderImperialKI(container) {
   var tr = ik.tripReport || {};
   html += '<div class="ik-info-card">';
   html += '<div class="ik-info-title">Reflective Journal Anfrage</div>';
-  html += 'Email gesendet: ' + (tr.emailSent || '?') + '<br>';
+  html += 'Email gesendet: ' + fmtDateShort(tr.emailSent || '') + (tr.emailSent ? '' : '?') + '<br>';
   html += 'Status: <span style="color:#f59e0b;font-weight:600;">' + (tr.status === 'awaiting_response' ? 'Warte auf Antwort' : tr.status || '?') + '</span><br>';
-  html += 'Follow-up geplant: ' + (tr.followUpDate || '?');
+  html += 'Follow-up geplant: ' + fmtDateShort(tr.followUpDate || '') + (tr.followUpDate ? '' : '?');
   html += '</div>';
   html += '</details>';
 
