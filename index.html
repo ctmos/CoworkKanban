@@ -2087,7 +2087,7 @@ function showPatientDetail(patId) {
   var pat = patients.find(function(p){ return p.id === patId; });
   if (!pat) { showPatientList(); return; }
 
-  var ampelLabels = { austritt:'Austritt', ambulant:'Ambulant', tagesstruktur:'Tagesstruktur', wiedereingliederung:'Wiedereingliederung' };
+  var ampelLabels = { austritt:'Wohnsituation', ambulant:'Ambulant', tagesstruktur:'Tagesstruktur', wiedereingliederung:'Wiedereingliederung' };
 
   var html = '<div class="pat-detail-header">'
     + '<button class="pat-detail-back" onclick="showPatientList()">← Zurück</button>'
