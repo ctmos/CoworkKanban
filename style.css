@@ -665,7 +665,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-  padding: 20px 16px;
+  padding: 8px 16px;
 
 
 
@@ -1525,7 +1525,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-  padding: 16px;
+  padding: 8px 16px;
 
 
 
@@ -2298,10 +2298,11 @@ nav::-webkit-scrollbar { display: none; }
 
 /* ── GLOBAL LAYOUT ── */
 #tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-collect {
-  padding: 20px 16px;
+  padding: 8px 16px;
   max-width: 900px;
   margin: 0 auto;
 }
+.tab-content > *:first-child { margin-top: 0 !important; }
 
 /* ── IMPERIALKI ── */
 .ik-action-box {
