@@ -745,7 +745,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
 
 
 
@@ -758,6 +758,8 @@ nav::-webkit-scrollbar { display: none; }
 
 
   }
+
+  .status-group:last-child { grid-column: 1 / -1; }
 
 
 
