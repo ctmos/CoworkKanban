@@ -3030,6 +3030,24 @@ document.getElementById('collect-modal-overlay').addEventListener('click', funct
   if (e.target === e.currentTarget) closeCollectModal();
 });
 
+// ─── SERVICE WORKER: Auto-Update ─────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/CoworkKanban/sw.js', { updateViaCache: 'none' }).then(function(reg) {
+    // Check for updates on every page load
+    reg.update();
+    // When new SW is found and installed, auto-reload
+    reg.addEventListener('updatefound', function() {
+      var newWorker = reg.installing;
+      newWorker.addEventListener('statechange', function() {
+        if (newWorker.state === 'activated') {
+          console.log('[SW] New version activated — reloading');
+          window.location.reload();
+        }
+      });
+    });
+  }).catch(function(err) { console.warn('[SW] Registration failed:', err); });
+}
+
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 initPinScreen();
 
