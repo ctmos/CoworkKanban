@@ -897,7 +897,7 @@ const WriteGuard = {
 };
 
 // ─── SCHEMA VALIDATION (Fix 3) ─────────────────────────────────────────────
-const VALID_LANES = ['HE','HD','HB','BA','WB','IK','PA','FI','FA','FR','PR','EV','EM','EX','MA','TB','EK'];
+const VALID_LANES = ['JZ','HE','HD','HB','BA','WB','IK','PA','FI','FA','FR','PR','EV','EM','EX','MA','TB','EK'];
 const ID_PATTERN = /^[A-Z]{2}\d{3}$/;
 const FORBIDDEN_ID_PATTERNS = [/^[Bb][Bb]\d+$/];
 
@@ -1500,6 +1500,7 @@ WriteGuard.log({ status: 'ok', reason: 'Data loaded successfully' });
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const LANES = [
+  {id:'JZ', name:'Jetzt',       isJetzt:true, color:'#e03131'},
   {id:'HE', name:'Heute',       isHeute:true, color:'#ff6b6b'},
   {id:'BA', name:'Barmelweid',  isBA:true,    color:'#ffa94d'},
   {id:'WB', name:'PSP WB',                    color:'#69db7c'},
@@ -1547,7 +1548,7 @@ const _appState = {
   collapsed: {},
   budget: 100,
   gh_token: '',
-  seqs: { HE:0, BA:0, WB:0, IK:0, PA:0, FI:0, FA:0, FR:0, PR:0, EV:0, EM:0, EX:0, MA:0, TB:0, EK:0 }
+  seqs: { JZ:0, HE:0, BA:0, WB:0, IK:0, PA:0, FI:0, FA:0, FR:0, PR:0, EV:0, EM:0, EX:0, MA:0, TB:0, EK:0 }
 };
 
 // Fix 2: Clean up stale localStorage keys on boot
@@ -1820,7 +1821,8 @@ function renderStatusTab() {
   var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   var todayISO = now.toISOString().split('T')[0];
 
-  var heuteCards = Object.values(cards).filter(function(c) { return !c.archived && (c.todayFlag || c.lane === 'HE' || c.deadline === todayISO); });
+  var heuteCards = Object.values(cards).filter(function(c) { return !c.archived && (c.lane === 'JZ' || c.todayFlag || c.lane === 'HE' || c.deadline === todayISO); });
+  heuteCards.sort(function(a, b) { var aJZ = a.lane === 'JZ' ? 0 : 1; var bJZ = b.lane === 'JZ' ? 0 : 1; return aJZ - bJZ; });
   var heuteList = document.getElementById('heute-list');
   if (heuteList) {
     if (heuteCards.length === 0) {
@@ -1875,7 +1877,7 @@ function renderStatusTab() {
     }
   }
 
-  var weitereCards = Object.values(cards).filter(function(c) { if(c.archived) return false; if(c.todayFlag||c.lane==='HE') return false; if(c.deadline){return new Date(c.deadline)>=in7;} return c.priority==='hoch'||c.priority==='high'; });
+  var weitereCards = Object.values(cards).filter(function(c) { if(c.archived) return false; if(c.todayFlag||c.lane==='HE'||c.lane==='JZ') return false; if(c.deadline){return new Date(c.deadline)>=in7;} return c.priority==='hoch'||c.priority==='high'; });
   var weitereList = document.getElementById('weitere-list');
   if (weitereList) {
     if (weitereCards.length === 0) {
@@ -1915,6 +1917,10 @@ var doneExpandState = {};
 var descExpandState = {};
 function toggleDescExpand(cardId) { descExpandState[cardId]=!descExpandState[cardId]; renderKanban(); }
 function toggleDoneArchive(laneId) { doneExpandState[laneId]=!doneExpandState[laneId]; renderKanban(); }
+var trashExpanded = false;
+function toggleTrash() { trashExpanded = !trashExpanded; renderKanban(); }
+function restoreCard(cardId) { var cards=getCards(); if(cards[cardId]){cards[cardId].archived=false; saveCards(cards); showToast(cardId+' wiederhergestellt'); renderKanban(); if(currentTab==='heute')renderHeute();} }
+function permanentDeleteCard(cardId) { confirmAction('Endgültig löschen?','Diese Karte wird UNWIDERRUFLICH gelöscht.',function(){var cards=getCards(); delete cards[cardId]; saveCards(cards); showToast(cardId+' gelöscht'); renderKanban();}); }
 function toggleKanbanView(){var g=document.getElementById('kanban-grid');var t=document.getElementById('tab-kanban');var btn=document.getElementById('kanban-view-toggle');if(g.classList.contains('kanban-board')){g.classList.remove('kanban-board');t.classList.remove('board-active');btn.textContent='Board-Ansicht';localStorage.setItem('kanban_view','grid');}else{g.classList.add('kanban-board');t.classList.add('board-active');btn.textContent='Grid-Ansicht';localStorage.setItem('kanban_view','board');}}
 (function(){if(localStorage.getItem('kanban_view')==='board'){var g=document.getElementById('kanban-grid');var t=document.getElementById('tab-kanban');if(g)g.classList.add('kanban-board');if(t)t.classList.add('board-active');var b=document.getElementById('kanban-view-toggle');if(b)b.textContent='Grid-Ansicht';}})();
 
@@ -1932,6 +1938,31 @@ function renderKanban() {
     if(lane.isBA){vh='<div class="vorlagen-wrap" onclick="event.stopPropagation()"><button class="btn-vorlagen" onclick="toggleVorlagen(\''+lane.id+'\')">Vorlagen \u25be</button><div class="vorlagen-dropdown" id="vd-'+lane.id+'">'+BA_TPLS.map(function(t){return '<button class="vorlagen-item" onclick="addVorlage(\''+lane.id+'\',\''+t.replace(/'/g,"\\'")+'\');closeVorlagen(\''+lane.id+'\')">'+t+'</button>';}).join('')+'</div></div>';}
     return '<div class="lane" id="lane-'+lane.id+'"><div class="lane-header" onclick="toggleCollapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,\''+lane.id+'\')">+ Karte</button>'+vh+'<button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'" id="lb-'+lane.id+'">'+ch+dh+'</div></div>';
   }).join('');
+  // Remove old trash section before re-render
+  var oldTrashEl = document.querySelector('.trash-section');
+  if (oldTrashEl) oldTrashEl.remove();
+  // Papierkorb (Trash) section
+  var archivedCards = Object.values(cards).filter(function(c){ return c.archived; }).sort(function(a,b){ return (b.order||0) - (a.order||0); });
+  if (archivedCards.length > 0) {
+    var trashHtml = '<div class="trash-section">';
+    trashHtml += '<div class="trash-header" onclick="toggleTrash()">';
+    trashHtml += '<span class="trash-icon">🗑️</span> Papierkorb <span class="lane-count">' + archivedCards.length + '</span>';
+    trashHtml += '<span class="trash-chevron">' + (trashExpanded ? '▴' : '▾') + '</span></div>';
+    if (trashExpanded) {
+      trashHtml += '<div class="trash-body">';
+      archivedCards.forEach(function(c) {
+        trashHtml += '<div class="trash-card"><span class="trash-card-id">' + esc(c.id) + '</span>';
+        trashHtml += '<span class="trash-card-title">' + esc(c.title || '(kein Titel)') + '</span>';
+        trashHtml += '<span class="trash-card-lane">' + esc(c.lane || '?') + '</span>';
+        trashHtml += '<button class="btn-restore" onclick="event.stopPropagation();restoreCard('' + esc(c.id) + '')">↩ Wiederherstellen</button>';
+        trashHtml += '<button class="btn-perm-delete" onclick="event.stopPropagation();permanentDeleteCard('' + esc(c.id) + '')">✕</button>';
+        trashHtml += '</div>';
+      });
+      trashHtml += '</div>';
+    }
+    trashHtml += '</div>';
+    grid.insertAdjacentHTML('afterend', trashHtml);
+  }
   grid.querySelectorAll('.card-item').forEach(function(el){el.addEventListener('click',function(){openCardModal(el.dataset.id);});});
 }
 
@@ -1966,9 +1997,9 @@ document.getElementById('cm-save').addEventListener('click',function() {
   var cards=getCards();
   if(cmCardId){Object.assign(cards[cmCardId],{title:title,deadline:deadline,desc:desc,status:status});if(!cards[cmCardId].createdAt)cards[cmCardId].createdAt=new Date().toISOString();}
   else{var id=nextCardId(cmLaneId);cards[id]={id:id,lane:cmLaneId,title:title,deadline:deadline,desc:desc,status:status,archived:false,order:Date.now(),createdAt:new Date().toISOString()};}
-  saveCards(cards); closeCardModal(); if(currentTab==='heute')renderHeute(); if(currentTab==='kanban')renderKanban();
+  saveCards(cards); syncPACardsToPatients(); closeCardModal(); if(currentTab==='heute')renderHeute(); if(currentTab==='kanban')renderKanban();
 });
-document.getElementById('cm-delete').addEventListener('click',function(){confirmAction('Karte l\u00f6schen?','Diese Karte wird unwiderruflich gel\u00f6scht.',function(){var cards=getCards();if(cmCardId){cards[cmCardId].archived=true;saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});});
+document.getElementById('cm-delete').addEventListener('click',function(){confirmAction('In Papierkorb?','Karte kann im Papierkorb wiederhergestellt werden.',function(){var cards=getCards();if(cmCardId){cards[cmCardId].archived=true;saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});});
 document.getElementById('cm-heute').addEventListener('click',function(){var cards=getCards();if(cmCardId&&cards[cmCardId]){cards[cmCardId].lane='HE';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});
 
 // ─── PATIENTEN ────────────────────────────────────────────────────────────────
@@ -3266,18 +3297,11 @@ setInterval(function() {
     card.id = newId;
     card.lane = targetLane;
     card.order = Date.now();
-    // Sync todayFlag with HE lane moves (mirror moveFromToday/moveToToday logic)
-    if ((oldLane === 'HB' || oldLane === 'HD') && targetLane !== 'HB' && targetLane !== 'HD') {
+    // Clear todayFlag when moving OUT of today-group lanes
+    var todayGroup = ['HE','HB','HD','JZ'];
+    if (todayGroup.indexOf(targetLane) === -1) {
       card.todayFlag = false;
       delete card.originalLane;
-    }
-    if (targetLane === 'HB' && oldLane !== 'HB') {
-      card.todayFlag = true;
-      if (!card.originalLane || card.originalLane === 'HB' || card.originalLane === 'HD') card.originalLane = oldLane;
-    }
-    if (targetLane === 'HD' && oldLane !== 'HD') {
-      card.todayFlag = false;
-      if (!card.originalLane || card.originalLane === 'HB' || card.originalLane === 'HD') card.originalLane = oldLane;
     }
     cards[newId] = card;
 
@@ -3336,14 +3360,102 @@ function openPatDetail(patId){_currentPatId=patId;var patients=getPatients();var
 function closePatDetail(){_currentPatId=null;document.getElementById('pat-detail-view').classList.remove('active');document.getElementById('pat-list').style.display='';document.querySelector('.pat-header').style.display='';}
 function renderPatAmpel(pat){var a=pat.ampel||{};var fields=['austritt','ambulant','tagesstruktur','wiedereingliederung'];var labels={austritt:'Austrittsplanung',ambulant:'Ambulante Weiterbehandlung',tagesstruktur:'Tagesstruktur',wiedereingliederung:'Wiedereingliederung'};var c=document.getElementById('pat-detail-ampel');c.innerHTML=fields.map(function(f){var st=(a[f]&&a[f].status)||'offen';var tx=(a[f]&&a[f].text)||'';return '<div class="pat-ampel-chip" data-status="'+st+'" onclick="cycleAmpel(\''+f+'\')" title="'+esc(labels[f]+(tx?' \u2014 '+tx:''))+'"><span class="pat-ampel-dot" data-status="'+st+'"></span>'+esc(labels[f])+'</div>';}).join('');}
 function cycleAmpel(field){var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat)return;if(!pat.ampel)pat.ampel={};if(!pat.ampel[field])pat.ampel[field]={status:'offen',text:''};var order=['offen','gruen','gelb','rot'];var idx=order.indexOf(pat.ampel[field].status);pat.ampel[field].status=order[(idx+1)%4];savePatients(patients);renderPatAmpel(pat);}
-function renderPatBlog(pat){var entries=pat.entries||[];var c=document.getElementById('pat-blog-list');if(entries.length===0){c.innerHTML='<div class="empty-state">Noch keine Verlaufseintr\u00e4ge.</div>';return;}c.innerHTML=entries.map(function(e){var text=e.content||e.text||'';var isLong=text.length>300;var exp=_blogExpanded[e.id];var cls=isLong&&!exp?'pat-blog-entry-text collapsed':'pat-blog-entry-text';var btn=isLong?'<button class="pat-blog-expand" onclick="toggleBlogExpand(\''+e.id+'\')">'+(exp?'Weniger':'Mehr anzeigen...')+'</button>':'';var dateStr=e.date||e.ts?new Date(e.date||e.ts).toLocaleString('de-CH'):'';var titleStr=e.title?'<span class="pat-blog-entry-title">'+esc(e.title)+'</span>':'';var typeStr=e.type?'<span class="pat-blog-entry-type">'+esc(e.type)+'</span>':'';return '<div class="pat-blog-entry"><div class="pat-blog-entry-header"><span class="pat-blog-entry-date">'+dateStr+'</span>'+typeStr+'<button class="pat-blog-entry-delete" onclick="deleteEntry(\''+e.id+'\')">L\u00f6schen</button></div>'+titleStr+'<div class="'+cls+'">'+esc(text)+'</div>'+btn+'</div>';}).join('');}
+function renderPatBlog(pat){var entries=pat.entries||[];var c=document.getElementById('pat-blog-list');if(entries.length===0){c.innerHTML='<div class="empty-state">Noch keine Verlaufseintr\u00e4ge.</div>';return;}c.innerHTML=entries.map(function(e){var text=e.content||e.text||'';var isLong=text.length>300;var exp=_blogExpanded[e.id];var cls=isLong&&!exp?'pat-blog-entry-text collapsed':'pat-blog-entry-text';var btn=isLong?'<button class="pat-blog-expand" onclick="toggleBlogExpand(\''+e.id+'\')">'+(exp?'Weniger':'Mehr anzeigen...')+'</button>':'';var dateStr=e.date||e.ts?new Date(e.date||e.ts).toLocaleString('de-CH'):'';var titleStr=e.title?'<span class="pat-blog-entry-title">'+esc(e.title)+'</span>':'';var typeStr=e.type?'<span class="pat-blog-entry-type">'+esc(e.type)+'</span>':'';var syncBadge=e.status_sync==='synced'?'<span class="pat-sync-badge">✔ synced</span>':'';return '<div class="pat-blog-entry"><div class="pat-blog-entry-header"><span class="pat-blog-entry-date">'+dateStr+'</span>'+typeStr+syncBadge+'<button class="pat-blog-entry-delete" onclick="deleteEntry(\''+e.id+'\')">L\u00f6schen</button></div>'+titleStr+'<div class="'+cls+'">'+esc(text)+'</div>'+btn+'</div>';}).join('');}
 function addBlogEntry(){var t=document.getElementById('pat-blog-text').value.trim();if(!t)return;var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat)return;if(!pat.entries)pat.entries=[];pat.entries.unshift({id:'entry'+Date.now(),date:new Date().toISOString(),content:t,type:'notiz',source:'manual'});savePatients(patients);document.getElementById('pat-blog-text').value='';renderPatBlog(pat);}
 function deleteEntry(entryId){confirmAction('Eintrag l\u00f6schen?','Dieser Verlaufseintrag wird gel\u00f6scht.',function(){var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat||!pat.entries)return;pat.entries=pat.entries.filter(function(e){return e.id!==entryId;});savePatients(patients);renderPatBlog(pat);});}
 function toggleBlogExpand(blogId){_blogExpanded[blogId]=!_blogExpanded[blogId];var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(pat)renderPatBlog(pat);}
 
+// Import function for audiorec pipeline transcripts
+function importAnonEntry(patientId, entry) {
+  var patients = getPatients();
+  var pat = patients.find(function(p) { return p.id === patientId || p.code === patientId; });
+  if (!pat) return 'Patient ' + patientId + ' nicht gefunden';
+  if (!pat.entries) pat.entries = [];
+  // Prevent duplicate import
+  var exists = pat.entries.find(function(e) { return e.id === entry.id; });
+  if (exists) return 'Entry ' + entry.id + ' existiert bereits';
+  pat.entries.unshift(entry);
+  savePatients(patients);
+  return 'OK: Entry importiert fuer ' + patientId;
+}
+
+// Sync PA-lane cards to patient entries (cards starting with patient code)
+function syncPACardsToPatients() {
+  var cards = getCards();
+  var patients = getPatients();
+  if (!patients || patients.length === 0) return;
+  var patCodes = {};
+  patients.forEach(function(p) { patCodes[p.id] = p; if(p.code) patCodes[p.code] = p; });
+  var changed = false;
+  Object.values(cards).forEach(function(c) {
+    if (c.archived) return;
+    var title = (c.title || '').trim();
+    if (!title) return;
+    // Check if title starts with a patient code
+    var firstWord = title.split(/\s+/)[0];
+    var pat = patCodes[firstWord];
+    if (!pat) return;
+    if (!pat.entries) pat.entries = [];
+    var syncId = 'kanban_' + c.id;
+    var existing = pat.entries.find(function(e) { return e.id === syncId; });
+    var entryContent = title.replace(firstWord, '').trim();
+    if (!entryContent) entryContent = title;
+    if (existing) {
+      // Update if content changed
+      if (existing.content !== entryContent || existing.title !== c.id) {
+        existing.content = entryContent;
+        existing.title = c.id;
+        existing.status_sync = 'synced';
+        changed = true;
+      }
+    } else {
+      // Create new synced entry
+      pat.entries.unshift({
+        id: syncId,
+        date: c.createdAt || new Date().toISOString(),
+        title: c.id,
+        content: entryContent,
+        type: 'kanban',
+        source: 'kanban',
+        status_sync: 'synced'
+      });
+      changed = true;
+    }
+  });
+  if (changed) savePatients(patients);
+}
+
 
 
 // BB-112: MULTI-DEVICE SYNC (Smart Polling)
+// Ctrl+Enter save shortcut for all input areas
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'Enter') {
+    e.preventDefault();
+    // Card modal
+    var cardModal = document.getElementById('card-modal-overlay');
+    if (cardModal && cardModal.classList.contains('open')) {
+      document.getElementById('cm-save').click(); return;
+    }
+    // Patient entry modal
+    var peModal = document.getElementById('pat-entry-modal-overlay');
+    if (peModal && peModal.classList.contains('open')) {
+      document.getElementById('pe-save').click(); return;
+    }
+    // Patient blog text
+    var blogText = document.getElementById('pat-blog-text');
+    if (blogText && document.activeElement === blogText) {
+      addBlogEntry(); return;
+    }
+    // Settings modal
+    var settingsModal = document.getElementById('settings-modal-overlay');
+    if (settingsModal && settingsModal.classList.contains('open')) {
+      var saveBtn = settingsModal.querySelector('.btn-primary');
+      if (saveBtn) { saveBtn.click(); return; }
+    }
+  }
+});
+
 var _lastKnownSHA = null;
 var _syncInterval = null;
 
