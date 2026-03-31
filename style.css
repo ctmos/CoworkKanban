@@ -3325,3 +3325,22 @@ nav::-webkit-scrollbar { display: none; }
 .proc-item.status-done { border-left:3px solid #22c55e; }
 .proc-item.status-error { border-left:3px solid #ef4444; }
 .proc-item.status-running { border-left:3px solid var(--accent); }
+
+/* ── COLLECT TAB ── */
+.collect-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.collect-header h2 { font-size: 16px; font-weight: 600; }
+.collect-toc-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.collect-toc-link { font-size: 12px; padding: 4px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: all 0.15s; }
+.collect-toc-link:hover { border-color: var(--accent); color: var(--accent); }
+.collect-cat-section { margin-bottom: 24px; }
+.collect-cat-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.collect-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: box-shadow 0.15s; }
+.collect-card:hover { box-shadow: var(--shadow); }
+.collect-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 4px; }
+.collect-card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.collect-card-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+.collect-card-url { font-size: 11px; color: var(--accent); margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.collect-card-desc { font-size: 13px; color: var(--text); line-height: 1.5; }
+.collect-card-img { margin-top: 8px; }
+.collect-card-img img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border); }
+.collect-card-meta { margin-top: 6px; font-size: 11px; color: var(--text-muted); }
