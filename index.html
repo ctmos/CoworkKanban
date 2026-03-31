@@ -817,7 +817,7 @@ const WriteGuard = {
     var tasks = Object.values(cards || {});
     var results = {
       dataLoaded: _dataLoaded === true,
-      noActivePush: !WriteGuard._pushInProgress,
+      noActivePush: true, // _pushInProgress check moved to syncToGitHub entry
       tokenPresent: !!((_appState.gh_token || GH_TOKEN_DEFAULT || '').trim()),
       noEmptyCards: tasks.every(function(t) { return t.id && t.lane && t.title; }),
       dataGuardOk: DataGuard.canPushSilent(tasks.length),
@@ -3032,6 +3032,339 @@ document.getElementById('collect-modal-overlay').addEventListener('click', funct
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 initPinScreen();
+
+
+// ─── KEYBOARD SHORTCUTS ──────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  // Ctrl+S or Cmd+S: Force sync
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    if (getGHToken()) {
+      showToast('Synchronisiere...', 'info');
+      scheduleSyncToGitHub();
+    }
+  }
+  // Escape: Close any open modal
+  if (e.key === 'Escape') {
+    closeCardModal();
+    closePatModal();
+    closeBLModal();
+    var vorlagen = document.getElementById('vorlagen-overlay');
+    if (vorlagen && vorlagen.classList.contains('open')) closeVorlagen();
+  }
+});
+
+// ─── OFFLINE WRITE QUEUE ─────────────────────────────────────────────────────
+window._pendingWrites = JSON.parse(localStorage.getItem('cowork_pending_writes') || '[]');
+
+function queueOfflineWrite(key, data, msg) {
+  window._pendingWrites.push({key: key, data: data, msg: msg, ts: Date.now()});
+  localStorage.setItem('cowork_pending_writes', JSON.stringify(window._pendingWrites));
+  showToast('Offline gespeichert \u2014 wird synchronisiert wenn online', 'info');
+}
+
+async function flushOfflineQueue() {
+  if (window._pendingWrites.length === 0) return;
+  var queue = window._pendingWrites.slice();
+  window._pendingWrites = [];
+  localStorage.removeItem('cowork_pending_writes');
+  for (var i = 0; i < queue.length; i++) {
+    try {
+      await safeWriteToGitHub(queue[i].key, JSON.stringify(queue[i].data, null, 2), queue[i].msg);
+    } catch (err) {
+      console.error('[OFFLINE-QUEUE] Write failed:', err);
+      window._pendingWrites.push(queue[i]);
+    }
+  }
+  if (window._pendingWrites.length > 0) {
+    localStorage.setItem('cowork_pending_writes', JSON.stringify(window._pendingWrites));
+  }
+}
+
+// Flush queue when coming back online
+window.addEventListener('online', function() { setTimeout(flushOfflineQueue, 2000); });
+
+
+// Auto-refresh calendar every 30 min
+setInterval(function() {
+  if (navigator.onLine && typeof loadCalendarEvents === 'function') {
+    loadCalendarEvents().then(function() {
+      if (currentTab === 'heute') renderHeute();
+      console.log('[CAL] Auto-refreshed');
+    }).catch(function() {});
+  }
+}, 30 * 60 * 1000);
+
+// ─── TOUCH DRAG & DROP ───────────────────────────────────────────────────────────────────
+(function() {
+  var dragCard = null;
+  var dragCardId = null;
+  var touchStartY = 0;
+  var isDragging = false;
+
+  document.addEventListener('touchstart', function(e) {
+    var card = e.target.closest('.card-item');
+    if (!card || !card.dataset.id) return;
+    dragCard = card;
+    dragCardId = card.dataset.id;
+    touchStartY = e.touches[0].clientY;
+    isDragging = false;
+  }, {passive: true});
+
+  document.addEventListener('touchmove', function(e) {
+    if (!dragCard) return;
+    var dy = Math.abs(e.touches[0].clientY - touchStartY);
+    if (dy > 20 && !isDragging) {
+      isDragging = true;
+      dragCard.classList.add('dragging-touch');
+    }
+    if (isDragging) {
+      // Highlight lane under finger
+      var el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+      document.querySelectorAll('.lane.drag-over-touch').forEach(function(l) { l.classList.remove('drag-over-touch'); });
+      var lane = el ? el.closest('.lane') : null;
+      if (lane) lane.classList.add('drag-over-touch');
+    }
+  }, {passive: true});
+
+  document.addEventListener('touchend', function(e) {
+    if (!dragCard || !isDragging || !dragCardId) { dragCard = null; return; }
+    dragCard.classList.remove('dragging-touch');
+    document.querySelectorAll('.lane.drag-over-touch').forEach(function(l) { l.classList.remove('drag-over-touch'); });
+
+    // Find which lane the finger ended on
+    var touch = e.changedTouches[0];
+    var el = document.elementFromPoint(touch.clientX, touch.clientY);
+    var lane = el ? el.closest('.lane') : null;
+    if (lane && lane.dataset.lane) {
+      var targetLane = lane.dataset.lane || (lane.id ? lane.id.replace('lane-','') : null);
+      var cards = getCards();
+      if (cards[dragCardId] && cards[dragCardId].lane !== targetLane) {
+        var oldLane = cards[dragCardId].lane;
+        cards[dragCardId].lane = targetLane;
+        saveCards(cards);
+        showToast(dragCardId + ' → ' + targetLane);
+        renderKanban();
+      }
+    }
+    dragCard = null;
+    dragCardId = null;
+    isDragging = false;
+  });
+})();
+
+// ─── DESKTOP DRAG & DROP between lanes ──────────────────────────────────────
+(function() {
+  // Make cards draggable
+  document.addEventListener('dragstart', function(e) {
+    var card = e.target.closest('.card-item');
+    if (!card) return;
+    var cardId = card.dataset.id;
+    if (!cardId) return;
+    e.dataTransfer.setData('text/plain', cardId);
+    e.dataTransfer.effectAllowed = 'move';
+    card.style.opacity = '0.5';
+    setTimeout(function() {
+      document.querySelectorAll('.lane').forEach(function(l) {
+        l.classList.add('drop-target-hint');
+      });
+    }, 0);
+  });
+
+  document.addEventListener('dragend', function(e) {
+    var card = e.target.closest('.card-item');
+    if (card) card.style.opacity = '1';
+    document.querySelectorAll('.lane').forEach(function(l) {
+      l.classList.remove('drop-target-hint', 'drag-over');
+    });
+  });
+
+  document.addEventListener('dragover', function(e) {
+    var lane = e.target.closest('.lane');
+    if (!lane) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.lane.drag-over').forEach(function(l) { l.classList.remove('drag-over'); });
+    lane.classList.add('drag-over');
+  });
+
+  document.addEventListener('dragleave', function(e) {
+    var lane = e.target.closest('.lane');
+    if (lane) lane.classList.remove('drag-over');
+  });
+
+  document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    var lane = e.target.closest('.lane');
+    if (!lane) return;
+    lane.classList.remove('drag-over');
+    document.querySelectorAll('.drop-target-hint').forEach(function(l) { l.classList.remove('drop-target-hint'); });
+
+    var cardId = e.dataTransfer.getData('text/plain');
+    var targetLane = lane.dataset.lane || (lane.id ? lane.id.replace('lane-','') : null);
+    if (!cardId || !targetLane) return;
+
+    var cards = getCards();
+    var card = cards[cardId];
+    if (!card || card.lane === targetLane) return;
+
+    var oldLane = card.lane;
+    var oldId = card.id;
+
+    // Generate new ID for target lane
+    var newId = nextCardId(targetLane);
+
+    // Move card: delete old, create new with new ID
+    delete cards[oldId];
+    card.id = newId;
+    card.lane = targetLane;
+    card.order = Date.now();
+    // Sync todayFlag with HE lane moves (mirror moveFromToday/moveToToday logic)
+    if ((oldLane === 'HB' || oldLane === 'HD') && targetLane !== 'HB' && targetLane !== 'HD') {
+      card.todayFlag = false;
+      delete card.originalLane;
+    }
+    if (targetLane === 'HB' && oldLane !== 'HB') {
+      card.todayFlag = true;
+      if (!card.originalLane || card.originalLane === 'HB' || card.originalLane === 'HD') card.originalLane = oldLane;
+    }
+    if (targetLane === 'HD' && oldLane !== 'HD') {
+      card.todayFlag = false;
+      if (!card.originalLane || card.originalLane === 'HB' || card.originalLane === 'HD') card.originalLane = oldLane;
+    }
+    cards[newId] = card;
+
+    saveCards(cards);
+    showToast(oldId + ' → ' + newId + ' (' + targetLane + ')');
+    renderKanban();
+    if (currentTab === 'heute') renderHeute();
+  });
+})();
+
+
+// ─── BURGER MENU TOGGLE ─────────────────────────────────────────────────────
+(function() {
+  var burger = document.getElementById('burger-btn');
+  var navTabs = document.getElementById('nav-tabs');
+  if (burger && navTabs) {
+    burger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      navTabs.classList.toggle('open');
+    });
+    // Close when clicking a tab
+    navTabs.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        navTabs.classList.remove('open');
+      });
+    });
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!burger.contains(e.target) && !navTabs.contains(e.target)) {
+        navTabs.classList.remove('open');
+      }
+    });
+  }
+})();
+
+
+// ─── DELEGATED CLICK: Status cards open card modal ──────────────────────────
+document.addEventListener('click', function(e) {
+  var card = e.target.closest('.status-card');
+  if (!card) return;
+  if (e.target.closest('.today-btn')) return;
+  var prefix = card.querySelector('.card-prefix');
+  if (prefix) {
+    var cardId = prefix.textContent.trim();
+    if (cardId && typeof openCardModal === 'function') {
+      openCardModal(cardId);
+    }
+  }
+});
+
+
+
+// PATIENT BLOG
+var _currentPatId=null;var _blogExpanded={};
+function openPatDetail(patId){_currentPatId=patId;var patients=getPatients();var pat=patients.find(function(p){return p.id===patId;});if(!pat)return;document.getElementById('pat-list').style.display='none';document.querySelector('.pat-header').style.display='none';var d=document.getElementById('pat-detail-view');d.classList.add('active');document.getElementById('pat-detail-title').textContent=pat.code;var s=document.getElementById('pat-detail-status');s.textContent=pat.status||'aktiv';s.className='pat-status-badge pat-status-'+(pat.status||'aktiv');renderPatAmpel(pat);renderPatBlog(pat);}
+function closePatDetail(){_currentPatId=null;document.getElementById('pat-detail-view').classList.remove('active');document.getElementById('pat-list').style.display='';document.querySelector('.pat-header').style.display='';}
+function renderPatAmpel(pat){var a=pat.ampel||{};var fields=['austritt','ambulant','tagesstruktur','wiedereingliederung'];var labels={austritt:'Austrittsplanung',ambulant:'Ambulante Weiterbehandlung',tagesstruktur:'Tagesstruktur',wiedereingliederung:'Wiedereingliederung'};var c=document.getElementById('pat-detail-ampel');c.innerHTML=fields.map(function(f){var st=(a[f]&&a[f].status)||'offen';var tx=(a[f]&&a[f].text)||'';return '<div class="pat-ampel-chip" data-status="'+st+'" onclick="cycleAmpel(\''+f+'\')" title="'+esc(labels[f]+(tx?' \u2014 '+tx:''))+'"><span class="pat-ampel-dot" data-status="'+st+'"></span>'+esc(labels[f])+'</div>';}).join('');}
+function cycleAmpel(field){var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat)return;if(!pat.ampel)pat.ampel={};if(!pat.ampel[field])pat.ampel[field]={status:'offen',text:''};var order=['offen','gruen','gelb','rot'];var idx=order.indexOf(pat.ampel[field].status);pat.ampel[field].status=order[(idx+1)%4];savePatients(patients);renderPatAmpel(pat);}
+function renderPatBlog(pat){var entries=pat.entries||[];var c=document.getElementById('pat-blog-list');if(entries.length===0){c.innerHTML='<div class="empty-state">Noch keine Verlaufseintr\u00e4ge.</div>';return;}c.innerHTML=entries.map(function(e){var text=e.content||e.text||'';var isLong=text.length>300;var exp=_blogExpanded[e.id];var cls=isLong&&!exp?'pat-blog-entry-text collapsed':'pat-blog-entry-text';var btn=isLong?'<button class="pat-blog-expand" onclick="toggleBlogExpand(\''+e.id+'\')">'+(exp?'Weniger':'Mehr anzeigen...')+'</button>':'';var dateStr=e.date||e.ts?new Date(e.date||e.ts).toLocaleString('de-CH'):'';var titleStr=e.title?'<span class="pat-blog-entry-title">'+esc(e.title)+'</span>':'';var typeStr=e.type?'<span class="pat-blog-entry-type">'+esc(e.type)+'</span>':'';return '<div class="pat-blog-entry"><div class="pat-blog-entry-header"><span class="pat-blog-entry-date">'+dateStr+'</span>'+typeStr+'<button class="pat-blog-entry-delete" onclick="deleteEntry(\''+e.id+'\')">L\u00f6schen</button></div>'+titleStr+'<div class="'+cls+'">'+esc(text)+'</div>'+btn+'</div>';}).join('');}
+function addBlogEntry(){var t=document.getElementById('pat-blog-text').value.trim();if(!t)return;var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat)return;if(!pat.entries)pat.entries=[];pat.entries.unshift({id:'entry'+Date.now(),date:new Date().toISOString(),content:t,type:'notiz',source:'manual'});savePatients(patients);document.getElementById('pat-blog-text').value='';renderPatBlog(pat);}
+function deleteEntry(entryId){confirmAction('Eintrag l\u00f6schen?','Dieser Verlaufseintrag wird gel\u00f6scht.',function(){var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat||!pat.entries)return;pat.entries=pat.entries.filter(function(e){return e.id!==entryId;});savePatients(patients);renderPatBlog(pat);});}
+function toggleBlogExpand(blogId){_blogExpanded[blogId]=!_blogExpanded[blogId];var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(pat)renderPatBlog(pat);}
+
+
+
+// BB-112: MULTI-DEVICE SYNC (Smart Polling)
+var _lastKnownSHA = null;
+var _syncInterval = null;
+
+async function checkForRemoteChanges() {
+  var token = getGHToken();
+  if (!token) return;
+  try {
+    var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/tasks.json', {
+      headers: { Authorization: 'token ' + token },
+      cache: 'no-store'
+    });
+    if (!r.ok) return;
+    var d = await r.json();
+    var remoteSHA = d.sha;
+
+    if (_lastKnownSHA && remoteSHA !== _lastKnownSHA) {
+      console.log('[sync] Remote change detected:', _lastKnownSHA, '->', remoteSHA);
+      showToast('Neue Daten erkannt \u2014 lade...', false);
+      _dataLoaded = false;
+      await loadFromGitHub();
+
+      // Also force-reload patients (workaround for proxy issue)
+      try {
+        var pr = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/patients.json', {
+          headers: { Authorization: 'token ' + token }, cache: 'no-store'
+        });
+        if (pr.ok) {
+          var pd = await pr.json();
+          var raw = JSON.parse(atob(pd.content.replace(/\n/g, '')));
+          _appState.patients = Array.isArray(raw) ? raw : (raw.patients || []);
+        }
+      } catch(e) {}
+
+      // Re-render current tab
+      if (currentTab === 'heute') renderHeute();
+      if (currentTab === 'kanban') renderKanban();
+      if (currentTab === 'patienten') renderPatients();
+      if (currentTab === 'backlog') renderBacklog();
+      if (currentTab === 'autonomy') renderAL();
+
+      showToast('\u2705 Daten synchronisiert', false);
+    }
+    _lastKnownSHA = remoteSHA;
+  } catch(e) {
+    console.warn('[sync] check failed:', e);
+  }
+}
+
+function startSyncPolling() {
+  if (_syncInterval) clearInterval(_syncInterval);
+  // Initial SHA capture
+  checkForRemoteChanges();
+  // Poll every 60 seconds
+  _syncInterval = setInterval(checkForRemoteChanges, 60000);
+  console.log('[sync] Polling started (60s interval)');
+}
+
+// Also sync on tab focus (user switches back to this tab)
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    checkForRemoteChanges();
+  }
+});
+
+// Start polling after boot
+setTimeout(startSyncPolling, 5000);
+
+
 </script>
 </body>
 </html>

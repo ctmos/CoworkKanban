@@ -3243,6 +3243,7 @@ nav::-webkit-scrollbar { display: none; }
 .pat-blog-entry-text.collapsed { max-height: 4.5em; overflow: hidden; position: relative; }
 .pat-blog-entry-text.collapsed::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2em; background: linear-gradient(transparent, var(--surface)); }
 .pat-blog-expand { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 12px; margin-top: 4px; padding: 0; }
+<<<<<<< HEAD
 
 /* ── Patient Detail (migrated from inline) ── */
 .patient-row:hover { border-color: var(--accent); }
@@ -3345,3 +3346,5 @@ nav::-webkit-scrollbar { display: none; }
 .collect-card-img { margin-top: 8px; }
 .collect-card-img img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border); }
 .collect-card-meta { margin-top: 6px; font-size: 11px; color: var(--text-muted); }
+.pat-blog-entry-title { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.pat-blog-entry-type { font-size: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-muted); }
