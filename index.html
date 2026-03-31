@@ -2102,6 +2102,69 @@ function renderPatients(filter) {
   }
 }
 
+// --- VORBERICHTE SUMMARY + ERSTKONTAKT VORBEREITUNG ---
+function getVorberichte(pat) {
+  return (pat.entries||[]).filter(function(e){ return e.type === 'vorbericht'; })
+    .sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+}
+function generateVorberichtSummary(pat) {
+  var vbs = getVorberichte(pat);
+  if (vbs.length === 0) return null;
+  var allText = vbs.map(function(v){ return (v.title?v.title+': ':'')+v.content; }).join('\n\n');
+  var sentences = allText.replace(/\n+/g,' ').split(/(?<=[.!?])\s+/).filter(function(s){ return s.trim().length > 10; });
+  if (sentences.length === 0) return allText.substring(0,500);
+  var summary = sentences.slice(0,6).join(' ');
+  if (summary.length > 600) summary = summary.substring(0,597) + '...';
+  return summary;
+}
+function generateErstkontaktVorbereitung(pat) {
+  var vbs = getVorberichte(pat);
+  if (vbs.length === 0) return null;
+  var allText = vbs.map(function(v){ return (v.title?v.title+': ':'')+v.content; }).join('\n\n');
+  var sections = [];
+  var diagMatch = allText.match(/diagnos[en]*[:\s]+([^\n.]{5,120})/i);
+  sections.push('Diagnosen: ' + (diagMatch ? diagMatch[1].trim() : 'Aus Vorberichten entnehmen'));
+  var stoerMatch = allText.match(/st[\u00f6o]rungsmodell[:\s]+([^\n]{5,150})/i) || allText.match(/st[\u00f6o]rungsbild[:\s]+([^\n]{5,150})/i);
+  sections.push('St\u00f6rungsmodell: ' + (stoerMatch ? stoerMatch[1].trim() : 'Noch zu kl\u00e4ren'));
+  var therapieMatch = allText.match(/therapie[verlauf]*[:\s]+([^\n]{5,150})/i) || allText.match(/behandlung[sverlauf]*[:\s]+([^\n]{5,150})/i);
+  sections.push('Bisheriger Therapieverlauf: ' + (therapieMatch ? therapieMatch[1].trim() : 'Aus Vorberichten entnehmen'));
+  sections.push('\u2500\u2500\u2500 Offene Fragen f\u00fcr Erstkontakt \u2500\u2500\u2500');
+  sections.push('\u25a1 Wohnsituation nach Austritt?');
+  sections.push('\u25a1 Tagesstruktur vorhanden?');
+  sections.push('\u25a1 Reintegrationsplan (beruflich/sozial)?');
+  sections.push('\u25a1 Ambulante Therapie gesichert?');
+  sections.push('\u25a1 Suizidalit\u00e4t aktuell?');
+  sections.push('\u25a1 Selbstverletzung aktuell/Vergangenheit?');
+  return sections.join('\n');
+}
+var _vorberichtBoxExpanded = {};
+function toggleVorberichtBox(boxId) {
+  _vorberichtBoxExpanded[boxId] = !_vorberichtBoxExpanded[boxId];
+  var box = document.getElementById(boxId);
+  if (!box) return;
+  box.classList.toggle('expanded', !!_vorberichtBoxExpanded[boxId]);
+  var toggle = box.querySelector('.vb-box-toggle');
+  if (toggle) toggle.textContent = _vorberichtBoxExpanded[boxId] ? '\u25b2' : '\u25bc';
+}
+function copyBoxContent(boxId) {
+  var box = document.getElementById(boxId + '-text');
+  if (!box) return;
+  navigator.clipboard.writeText(box.textContent).then(function(){
+    var btn = box.parentElement.querySelector('.vb-copy-btn');
+    if (btn) { btn.textContent = '\u2713 Kopiert'; setTimeout(function(){ btn.textContent = '\u2398 Copy'; }, 1500); }
+  });
+}
+function changeEntryType(entryId, newType) {
+  var patients = getPatients().map(migratePatientEntries);
+  var pat = patients.find(function(p){ return p.id === _patCurrentId; });
+  if (!pat) return;
+  var entry = (pat.entries||[]).find(function(e){ return e.id === entryId; });
+  if (!entry) return;
+  entry.type = newType;
+  savePatients(patients);
+  showPatientDetail(_patCurrentId);
+}
+
 function showPatientDetail(patId) {
   _patCurrentView = 'detail';
   _patCurrentId = patId;
@@ -2152,6 +2215,36 @@ function showPatientDetail(patId) {
   });
   html += '</div>';
 
+  // --- VORBERICHTE SUMMARY BOXES ---
+  var vbSummary = generateVorberichtSummary(pat);
+  var ekVorbereitung = generateErstkontaktVorbereitung(pat);
+  if (vbSummary || ekVorbereitung) {
+    html += '<div class="vb-boxes-row">';
+    if (vbSummary) {
+      var vbExp = _vorberichtBoxExpanded['vb-summary-box'];
+      html += '<div class="vb-box vb-box-blue'+(vbExp?' expanded':'')+'" id="vb-summary-box">'
+        + '<div class="vb-box-header" onclick="toggleVorberichtBox(\x27vb-summary-box\x27)">'
+        + '<span class="vb-box-title">Zusammenfassung Vorberichte</span>'
+        + '<span class="vb-box-toggle">'+(vbExp?'\u25b2':'\u25bc')+'</span>'
+        + '</div>'
+        + '<div class="vb-box-content" id="vb-summary-box-text">'+esc(vbSummary)+'</div>'
+        + '<button class="vb-copy-btn" onclick="event.stopPropagation();copyBoxContent(\x27vb-summary-box\x27)">\u2398 Copy</button>'
+        + '</div>';
+    }
+    if (ekVorbereitung) {
+      var ekExp = _vorberichtBoxExpanded['vb-erstk-box'];
+      html += '<div class="vb-box vb-box-orange'+(ekExp?' expanded':'')+'" id="vb-erstk-box">'
+        + '<div class="vb-box-header" onclick="toggleVorberichtBox(\x27vb-erstk-box\x27)">'
+        + '<span class="vb-box-title">Vorbereitung Erstkontakt</span>'
+        + '<span class="vb-box-toggle">'+(ekExp?'\u25b2':'\u25bc')+'</span>'
+        + '</div>'
+        + '<div class="vb-box-content" id="vb-erstk-box-text">'+esc(ekVorbereitung).replace(/\n/g,'<br>')+'</div>'
+        + '<button class="vb-copy-btn" onclick="event.stopPropagation();copyBoxContent(\x27vb-erstk-box\x27)">\u2398 Copy</button>'
+        + '</div>';
+    }
+    html += '</div>';
+  }
+
   html += '<div class="pat-entries-section">'
     + '<div class="pat-entries-header"><h3>Verlauf</h3>'
     + '<button class="btn-primary" onclick="openEntryModal(null)">+ Neuer Eintrag</button></div>';
@@ -2162,11 +2255,16 @@ function showPatientDetail(patId) {
   } else {
     entries.forEach(function(e){
       var d = new Date(e.date);
+      var curType = e.type||'notiz';
       var dateStr = d.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
-      html += '<div class="pat-entry-card type-'+esc(e.type||'notiz')+'">'
+      html += '<div class="pat-entry-card type-'+esc(curType)+'">'
         + '<div class="pat-entry-meta">'
         + '<span class="pat-entry-date">'+esc(dateStr)+'</span>'
-        + '<span class="pat-entry-type-badge type-'+esc(e.type||'notiz')+'">'+esc(e.type||'notiz')+'</span>'
+        + '<select class="pat-entry-type-select" onchange="changeEntryType(\x27'+esc(e.id)+'\x27,this.value)">'
+        + '<option value="verlaufsbericht"'+(curType==='verlaufsbericht'?' selected':'')+'>Verlaufsbericht</option>'
+        + '<option value="vorbericht"'+(curType==='vorbericht'?' selected':'')+'>Vorbericht</option>'
+        + '<option value="notiz"'+(curType==='notiz'?' selected':'')+'>Notiz</option>'
+        + '</select>'
         + '</div>'
         + '<div class="pat-entry-title">'+esc(e.title||'')+'</div>'
         + '<div class="pat-entry-content">'+esc(e.content||'')+'</div>'
