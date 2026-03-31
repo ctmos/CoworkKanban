@@ -2596,6 +2596,40 @@ function renderImperialKI(container) {
            d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'});
   }
 
+  // ── ACTION REQUIRED (pink box) ──
+  var actions = [];
+  // Collect open pre-reqs with deadlines
+  Object.keys(ik.courses).forEach(function(ck) {
+    var c = ik.courses[ck];
+    (c.preReqs || []).forEach(function(req) {
+      if (req.status !== 'done') actions.push({ title: req.title, deadline: req.deadline, course: ck, url: c.url + '/modules' });
+    });
+    // Open discussions
+    (c.discussions || []).forEach(function(d) {
+      if (d.status !== 'posted') actions.push({ title: d.title, deadline: null, course: ck, url: d.url });
+    });
+  });
+  // Upcoming live sessions within 48h
+  (ik.schedule || []).forEach(function(ev) {
+    var d = new Date(ev.date);
+    if (ev.type === 'live' && d > now && d < new Date(now.getTime() + 48*3600000)) {
+      actions.push({ title: ev.title + ' (Live-Session)', deadline: ev.date.split('T')[0], course: ev.course, url: (ik.courses[ev.course] || {}).url + '/external_tools/37723' });
+    }
+  });
+
+  if (actions.length > 0) {
+    actions.sort(function(a,b) { return (a.deadline||'9').localeCompare(b.deadline||'9'); });
+    html += '<div class="ik-action-box">';
+    html += '<div class="ik-action-label">\u26a0\ufe0f Manuell erledigen</div>';
+    actions.forEach(function(a) {
+      html += '<div class="ik-action-item">';
+      html += '<span class="ik-action-title"><a href="' + esc(a.url) + '" target="_blank">' + esc(a.title) + '</a></span>';
+      if (a.deadline) html += '<span class="ik-action-deadline">bis ' + a.deadline + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
   html += '<div class="ik-dashboard">';
 
   // Next deadline card
