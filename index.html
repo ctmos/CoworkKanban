@@ -1285,17 +1285,40 @@ async function pullMergePushPatients() {
       var localPatients = _appState.patients || [];
       var localIds = {};
       localPatients.forEach(function(p) { if (p.id) localIds[p.id] = true; });
-      // Step 2: Merge — add remote patients not present locally
-      var added = 0;
+      // Step 2: Merge — add new patients + merge blog/entries for existing
+      var added = 0; var updated = 0;
+      var localMap = {};
+      localPatients.forEach(function(p) { if (p.id) localMap[p.id] = p; });
       remotePatients.forEach(function(rp) {
-        if (rp.id && !localIds[rp.id]) {
+        if (!rp.id) return;
+        if (!localMap[rp.id]) {
           localPatients.push(rp);
           added++;
+        } else {
+          // Merge blog entries from remote that don't exist locally
+          var lp = localMap[rp.id];
+          if (rp.blog && rp.blog.length > 0) {
+            if (!lp.blog) lp.blog = [];
+            var localBlogIds = {};
+            lp.blog.forEach(function(b) { localBlogIds[b.id] = true; });
+            rp.blog.forEach(function(b) {
+              if (b.id && !localBlogIds[b.id]) { lp.blog.push(b); updated++; }
+            });
+          }
+          // Merge entries from remote that don't exist locally
+          if (rp.entries && rp.entries.length > 0) {
+            if (!lp.entries) lp.entries = [];
+            var localEntryIds = {};
+            lp.entries.forEach(function(e) { localEntryIds[e.id] = true; });
+            rp.entries.forEach(function(e) {
+              if (e.id && !localEntryIds[e.id]) { lp.entries.push(e); updated++; }
+            });
+          }
         }
       });
       _appState.patients = localPatients;
-      if (added > 0) {
-        console.log('[pullMergePushPatients] Added ' + added + ' new patients from GitHub');
+      if (added > 0 || updated > 0) {
+        console.log('[pullMergePushPatients] Added ' + added + ' patients, merged ' + updated + ' entries from GitHub');
         renderPatients();
       }
     } catch(e) {
