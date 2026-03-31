@@ -1997,7 +1997,7 @@ document.getElementById('cm-save').addEventListener('click',function() {
   var cards=getCards();
   if(cmCardId){Object.assign(cards[cmCardId],{title:title,deadline:deadline,desc:desc,status:status});if(!cards[cmCardId].createdAt)cards[cmCardId].createdAt=new Date().toISOString();}
   else{var id=nextCardId(cmLaneId);cards[id]={id:id,lane:cmLaneId,title:title,deadline:deadline,desc:desc,status:status,archived:false,order:Date.now(),createdAt:new Date().toISOString()};}
-  saveCards(cards); syncPACardsToPatients(); closeCardModal(); if(currentTab==='heute')renderHeute(); if(currentTab==='kanban')renderKanban();
+  saveCards(cards); syncPACardsToPatients(); savePatientsToGitHub(); closeCardModal(); if(currentTab==='heute')renderHeute(); if(currentTab==='kanban')renderKanban();
 });
 document.getElementById('cm-delete').addEventListener('click',function(){confirmAction('In Papierkorb?','Karte kann im Papierkorb wiederhergestellt werden.',function(){var cards=getCards();if(cmCardId){cards[cmCardId].archived=true;saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});});
 document.getElementById('cm-heute').addEventListener('click',function(){var cards=getCards();if(cmCardId&&cards[cmCardId]){cards[cmCardId].lane='HE';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});
