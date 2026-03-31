@@ -3718,17 +3718,14 @@ function renderStatusTab() {
 
     if (todayCalEvs.length > 0) {
 
-      var calHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\uD83D\uDCC5 Kalender heute</div>';
-
+      var calHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">';
+      calHtml += '<button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'\':\'none\';this.querySelector(\'.cal-arrow\').textContent=this.nextElementSibling.style.display===\'none\'?\'\u25b6\':\'\u25bc\'" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:0;display:flex;align-items:center;gap:4px;font-family:inherit"><span class="cal-arrow">\u25b6</span>\uD83D\uDCC5 Kalender heute ('+todayCalEvs.length+')</button>';
+      calHtml += '<div style="display:none">';
       calHtml += todayCalEvs.map(renderCalEventChip).join('');
-
       if (window._calEvents && window._calEvents.syncedAt) {
-
         calHtml += '<div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:0.6">Sync: vor '+Math.round((Date.now()-new Date(window._calEvents.syncedAt))/60000)+' Min.</div>';
-
       }
-
-      calHtml += '</div>';
+      calHtml += '</div></div>';
 
       heuteList.innerHTML += calHtml;
 
@@ -3771,26 +3768,18 @@ function renderStatusTab() {
         if (!grouped[lbl]) return;
 
         html += '<div class="day-group-header">'+lbl+'</div>';
-
-        grouped[lbl].forEach(function(c) {
-
-          if (c._isEvent) {
-
-            html += '<div class="status-card"><div style="flex:1;min-width:0;"><div class="card-title">\ud83d\udcc5 '+esc(c.title||c.summary||'')+'</div></div></div>';
-
-          } else {
-
+        var dayTasks = grouped[lbl].filter(function(c){return !c._isEvent;});
+        var dayEvents = grouped[lbl].filter(function(c){return c._isEvent;});
+        dayTasks.forEach(function(c) {
             var isHE=c.todayFlag||c.lane==='HE'; var cId=esc(c.id||'');
-
             html += '<div class="status-card"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div></div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
-
-          }
-
         });
-
-        var _isoMap={'Heute':todayISO,'Morgen':new Date(todayStart.getTime()+86400000).toISOString().split('T')[0],'\u00dcbermorgen':new Date(todayStart.getTime()+2*86400000).toISOString().split('T')[0]};
-
-        if(_isoMap[lbl]) getEventsForDay(_isoMap[lbl]).forEach(function(e){html+=renderCalEventChip(e);});
+        if (dayEvents.length > 0) {
+          html += '<button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'\':\'none\';this.querySelector(\'.cal-arrow\').textContent=this.nextElementSibling.style.display===\'none\'?\'\u25b6\':\'\u25bc\'" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:4px 0;display:flex;align-items:center;gap:4px;font-family:inherit"><span class="cal-arrow">\u25b6</span>\ud83d\udcc5 Kalender ('+dayEvents.length+')</button>';
+          html += '<div style="display:none">';
+          dayEvents.forEach(function(c) { html += renderCalEventChip(Object.assign({},c,{summary:c.title||c.summary})); });
+          html += '</div>';
+        }
 
       });
 
@@ -4939,9 +4928,11 @@ async function showProjectsTab(){
 
     pIds.forEach(function(id,i){var meta=metas[i];if(!meta)return;var lc=(logs[i]&&logs[i].content)||'';var fl=lc.split('\n').map(function(l){return l.trim();}).find(function(l){return l&&l!=='---'&&!l.startsWith('**[');})||'';
 
-    cards+='<div class="proj-card" onclick="showProjectDetail(\''+esc(id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name">'+esc(meta.name||id)+'</div><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';});
-
-    container.innerHTML=hdr+'<div class="proj-grid">'+cards+'</div>';
+    if(meta.status==='archiviert')return;cards+='<div class="proj-card" onclick="showProjectDetail(\''+esc(id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name">'+esc(meta.name||id)+'</div><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'<div class="proj-card-actions" onclick="event.stopPropagation()"><button class="proj-action-btn" onclick="archiveProject(\''+esc(id)+'\')" title="Archivieren">\ud83d\udce6</button><button class="proj-action-btn proj-action-delete" onclick="deleteProject(\''+esc(id)+'\',\''+esc(meta.name||id)+'\')" title="L\u00f6schen">\ud83d\uddd1</button></div></div>';});
+    var archivedMetas=metas.filter(function(m){return m&&m.status==='archiviert';});
+    var archHtml='';
+    if(archivedMetas.length>0){archHtml='<div style="margin-top:16px"><button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'\':\'none\';this.querySelector(\'.arch-arrow\').textContent=this.nextElementSibling.style.display===\'none\'?\'\u25b6\':\'\u25bc\'" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;font-family:inherit"><span class="arch-arrow">\u25b6</span>Archiviert ('+archivedMetas.length+')</button><div style="display:none" class="proj-grid">';archivedMetas.forEach(function(meta){archHtml+='<div class="proj-card" style="opacity:0.6" onclick="showProjectDetail(\''+esc(meta.id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name">'+esc(meta.name||meta.id)+'</div><span class="proj-status-badge" style="background:var(--bg-muted);color:var(--text-muted)">Archiviert</span></div>';});archHtml+='</div></div>';}
+    container.innerHTML=hdr+'<div class="proj-grid">'+cards+'</div>'+archHtml;
 
   }catch(e){container.innerHTML=hdr+'<div class="empty-state">Fehler: '+esc(e.message)+'</div>';}
 
@@ -4963,15 +4954,11 @@ async function showProjectDetail(projectId){
 
     var cards=getCards();var linked=(meta.kanbanCards||[]).map(function(id){return cards[id];}).filter(Boolean);
 
-    var sCls={aktiv:'proj-status-aktiv',pausiert:'proj-status-pausiert',abgeschlossen:'proj-status-abgeschlossen'};
-
-    var sLbl={aktiv:'Aktiv',pausiert:'Pausiert',abgeschlossen:'Abgeschlossen'};
-
+    var sCls={aktiv:'proj-status-aktiv',pausiert:'proj-status-pausiert',abgeschlossen:'proj-status-abgeschlossen',archiviert:''};
+    var sLbl={aktiv:'Aktiv',pausiert:'Pausiert',abgeschlossen:'Abgeschlossen',archiviert:'Archiviert'};
     var cb=meta.color?' style="border-top:4px solid '+esc(meta.color)+'"':'';
-
-    container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span></div>'
-
-      +'<div class="proj-section"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status</label><select class="form-select" id="pjd-status" style="width:auto"><option value="aktiv"'+(meta.status==='aktiv'?' selected':'')+'>Aktiv</option><option value="pausiert"'+(meta.status==='pausiert'?' selected':'')+'>Pausiert</option><option value="abgeschlossen"'+(meta.status==='abgeschlossen'?' selected':'')+'>Abgeschlossen</option></select></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
+    container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span><div style="margin-left:auto;display:flex;gap:8px"><button class="proj-action-btn" onclick="archiveProject(\''+esc(projectId)+'\')" title="Archivieren" style="font-size:16px">\ud83d\udce6</button><button class="proj-action-btn proj-action-delete" onclick="deleteProject(\''+esc(projectId)+'\',\''+esc(meta.name||projectId)+'\')" title="L\u00f6schen" style="font-size:16px">\ud83d\uddd1</button></div></div>'
+      +'<div class="proj-section"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status</label><select class="form-select" id="pjd-status" style="width:auto"><option value="aktiv"'+(meta.status==='aktiv'?' selected':'')+'>Aktiv</option><option value="pausiert"'+(meta.status==='pausiert'?' selected':'')+'>Pausiert</option><option value="abgeschlossen"'+(meta.status==='abgeschlossen'?' selected':'')+'>Abgeschlossen</option><option value="archiviert"'+(meta.status==='archiviert'?' selected':'')+'>Archiviert</option></select></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
 
       +'<div class="proj-section"><h3>Log</h3><pre class="proj-log-content" id="pjd-log-display">'+(logContent?esc(logContent):'<span style="color:var(--text-muted)">Noch keine Eintr\u00e4ge.</span>')+'</pre><div class="proj-log-form"><textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><button class="btn-primary" id="pjd-log-btn" style="flex-shrink:0">Eintrag hinzuf\u00fcgen</button></div></div>'
 
@@ -4987,6 +4974,8 @@ async function showProjectDetail(projectId){
 
 
 
+async function archiveProject(id){var meta=_localProjectsMeta[id]||await loadProjectMeta(id);if(!meta)return;meta.status='archiviert';meta.updatedAt=new Date().toISOString();try{await saveProject(meta);showToast('Projekt archiviert');showProjectsTab();}catch(e){showToast('Fehler: '+e.message,true);}}
+async function deleteProject(id,name){if(!confirm('Projekt "'+name+'" wirklich l\u00f6schen?'))return;var token=getGHToken();if(!token)return;try{var files=['meta.json','log.md'];for(var i=0;i<files.length;i++){var path='projects/'+id+'/'+files[i];var existing=await fetchFromGitHub(path);if(existing&&existing.sha){await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/'+path,{method:'DELETE',headers:{Authorization:'token '+token,'Content-Type':'application/json'},body:JSON.stringify({message:'project: delete '+name,sha:existing.sha})});}}delete _localProjectsMeta[id];showToast('Projekt gel\u00f6scht');showProjectsTab();}catch(e){showToast('Fehler: '+e.message,true);}}
 function openCreateProjectModal(){document.getElementById('pjm-name').value='';document.getElementById('pjm-desc').value='';document.getElementById('pjm-status').value='aktiv';document.querySelectorAll('.proj-color-swatch').forEach(function(s,i){s.classList.toggle('selected',i===0);});var errEl=document.getElementById('pjm-error');if(errEl){errEl.textContent='';errEl.style.display='none';}document.getElementById('proj-modal-overlay').classList.add('open');setTimeout(function(){document.getElementById('pjm-name').focus();},50);}
 
 function selectProjColor(el){document.querySelectorAll('.proj-color-swatch').forEach(function(s){s.classList.remove('selected');});el.classList.add('selected');}

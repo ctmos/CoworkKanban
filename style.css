@@ -1535,6 +1535,17 @@ nav::-webkit-scrollbar { display: none; }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.proj-card-actions {
+  display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end;
+}
+.proj-action-btn {
+  background: none; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 4px 8px; cursor: pointer; font-size: 13px; color: var(--text-muted);
+  transition: all 0.15s; font-family: inherit;
+}
+.proj-action-btn:hover { background: var(--bg-hover); }
+.proj-action-delete:hover { background: #fee2e2; border-color: #fca5a5; }
+:root.dark-theme .proj-action-delete:hover { background: #3b1a1a; border-color: #7f1d1d; }
 .proj-detail-header {
   display: flex;
   align-items: center;
@@ -1933,7 +1944,7 @@ nav::-webkit-scrollbar { display: none; }
 /* Board view — full viewport */
 #tab-kanban.board-active {
   max-width: 100%;
-  padding: 0 20px;
+  padding: 0 8px;
   height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
