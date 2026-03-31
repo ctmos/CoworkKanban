@@ -1045,6 +1045,7 @@ nav::-webkit-scrollbar { display: none; }
   max-width: 900px;
   margin: 0 auto;
 }
+#tab-collect { max-width: 960px; box-sizing: border-box; overflow-x: hidden; }
 .tab-content > *:first-child { margin-top: 0 !important; }
 
 /* ══════════════════════════════════════════════════
@@ -2206,9 +2207,9 @@ nav::-webkit-scrollbar { display: none; }
 .collect-cat-section { margin-bottom: 28px; }
 .collect-cat-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
 .collect-cat-count { font-weight: 400; }
-.collect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.collect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box; }
 @media (max-width: 600px) { .collect-grid { grid-template-columns: 1fr; } .collect-search-input, .collect-filter-sel { width: 100%; } }
-.collect-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
+.collect-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; overflow: hidden; min-width: 0; }
 .collect-card:hover { box-shadow: var(--shadow); border-color: var(--accent); }
 .collect-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .collect-code { font-size: 10px; font-weight: 700; font-family: var(--font-mono, monospace); color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); padding: 2px 6px; border-radius: 4px; letter-spacing: .04em; }
