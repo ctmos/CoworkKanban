@@ -2297,11 +2297,73 @@ nav::-webkit-scrollbar { display: none; }
 }
 
 /* ── GLOBAL LAYOUT ── */
-#tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings, #tab-system {
+#tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki {
   padding: 20px 16px;
   max-width: 900px;
   margin: 0 auto;
 }
+
+/* ── IMPERIALKI ── */
+.ik-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.ik-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow);
+}
+.ik-card-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px;
+}
+.ik-card-title { font-weight: 600; font-size: 14px; color: var(--text); }
+.ik-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.ik-countdown { font-size: 20px; font-weight: 700; margin-top: 6px; }
+
+.ik-section { margin-bottom: 20px; }
+.ik-section-title {
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px;
+}
+.ik-section-title::-webkit-details-marker { display: none; }
+
+.ik-entry {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; margin-bottom: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.ik-entry:hover { box-shadow: var(--shadow); }
+
+.ik-badge {
+  color: #fff; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
+  min-width: 52px; text-align: center; flex-shrink: 0;
+}
+.ik-time { font-size: 11px; color: var(--text-muted); min-width: 110px; flex-shrink: 0; }
+.ik-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ik-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.ik-right { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+
+.ik-module-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 8px; box-shadow: var(--shadow);
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.ik-module-icon { font-size: 18px; flex-shrink: 0; padding-top: 1px; }
+.ik-module-title { font-weight: 600; font-size: 13px; color: var(--text); }
+.ik-module-desc { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+
+.ik-task {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px; margin-bottom: 4px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.ik-task-name { font-size: 13px; color: var(--text); flex: 1; }
+.ik-task-deadline { font-size: 11px; }
+.ik-deadline-urgent { color: #ef4444; font-weight: 600; }
+.ik-deadline-normal { color: var(--text-muted); }
+
+.ik-info-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow); font-size: 12px; color: var(--text-muted); line-height: 1.6;
+}
+.ik-info-title { font-weight: 600; font-size: 13px; color: var(--text); margin-bottom: 8px; }
 
 /* ── SYSTEM LOG ── */
 .sl-section { margin-bottom: 24px; }
