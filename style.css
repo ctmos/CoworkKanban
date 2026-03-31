@@ -2304,6 +2304,29 @@ nav::-webkit-scrollbar { display: none; }
 }
 
 /* ── IMPERIALKI ── */
+.ik-action-box {
+  background: #fdf2f8; border: 1px solid #f9a8d4; border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 16px; box-shadow: var(--shadow);
+}
+:root.dark-theme .ik-action-box { background: #3b1a2e; border-color: #6b2145; }
+.ik-action-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: #db2777; margin-bottom: 8px;
+}
+:root.dark-theme .ik-action-label { color: #f472b6; }
+.ik-action-item {
+  display: flex; align-items: center; gap: 10px; padding: 6px 0;
+  border-bottom: 1px solid #fce7f3;
+}
+:root.dark-theme .ik-action-item { border-bottom-color: #4a1e36; }
+.ik-action-item:last-child { border-bottom: none; }
+.ik-action-title { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+.ik-action-title a { color: #db2777; text-decoration: none; }
+.ik-action-title a:hover { text-decoration: underline; }
+:root.dark-theme .ik-action-title a { color: #f472b6; }
+.ik-action-deadline { font-size: 11px; font-weight: 600; color: #be185d; }
+:root.dark-theme .ik-action-deadline { color: #f472b6; }
+
 .ik-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
 .ik-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
