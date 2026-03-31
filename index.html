@@ -202,9 +202,10 @@
   <!-- KANBAN TAB -->
 
   <div id="tab-kanban" class="tab-content">
-
+    <div class="kanban-toolbar">
+      <button id="kanban-view-toggle" class="btn-secondary" onclick="toggleKanbanView()">Board-Ansicht</button>
+    </div>
     <div class="kanban-grid" id="kanban-grid"></div>
-
   </div>
 
 
@@ -1894,6 +1895,8 @@ var doneExpandState = {};
 var descExpandState = {};
 function toggleDescExpand(cardId) { descExpandState[cardId]=!descExpandState[cardId]; renderKanban(); }
 function toggleDoneArchive(laneId) { doneExpandState[laneId]=!doneExpandState[laneId]; renderKanban(); }
+function toggleKanbanView(){var g=document.getElementById('kanban-grid');var btn=document.getElementById('kanban-view-toggle');if(g.classList.contains('kanban-board')){g.classList.remove('kanban-board');btn.textContent='Board-Ansicht';localStorage.setItem('kanban_view','grid');}else{g.classList.add('kanban-board');btn.textContent='Grid-Ansicht';localStorage.setItem('kanban_view','board');}}
+(function(){if(localStorage.getItem('kanban_view')==='board'){var g=document.getElementById('kanban-grid');if(g)g.classList.add('kanban-board');var b=document.getElementById('kanban-view-toggle');if(b)b.textContent='Grid-Ansicht';}})();
 
 function renderKanban() {
   var cards=getCards(); var grid=document.getElementById('kanban-grid'); var collapsed=_appState.collapsed;

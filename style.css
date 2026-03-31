@@ -1265,11 +1265,11 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-  padding: 6px 10px;
+  padding: 8px 32px 8px 10px;
 
 
 
-  margin-bottom: 2px;
+  margin-bottom: 6px;
 
 
 
@@ -1889,7 +1889,7 @@ nav::-webkit-scrollbar { display: none; }
 
 
 
-.card-date-dl { font-size: 10px; color: #868e96; white-space: nowrap; }
+.card-date-dl { font-size: 10px; color: #b91c1c; font-weight: 500; white-space: nowrap; }
 
 
 
@@ -3086,6 +3086,25 @@ nav::-webkit-scrollbar { display: none; }
   #tab-kanban .kanban-grid {
     grid-template-columns: 1fr;
   }
+}
+/* Kanban toolbar */
+.kanban-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.kanban-toolbar .btn-secondary { font-size: 12px; padding: 5px 12px; }
+/* Board view — horizontal scroll */
+#tab-kanban .kanban-grid.kanban-board {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+#tab-kanban .kanban-grid.kanban-board .lane {
+  min-width: 280px;
+  max-width: 320px;
+  flex-shrink: 0;
+}
+@media (max-width: 768px) {
+  .kanban-toolbar { display: none; }
 }
 /* Lane collapsed state */
 .lane.collapsed .lane-body { display: none; }
