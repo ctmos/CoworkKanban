@@ -6231,9 +6231,10 @@ function renderCollect() {
       var url = c.getAttribute('data-url');
       var type = c.getAttribute('data-type');
       var file = c.getAttribute('data-file');
-      if (type === 'image' && file) {
-        // Show fullsize image overlay
-        var imgUrl = 'collect-images/' + encodeURIComponent(file);
+      if (type === 'image') {
+        // Show thumbnail enlarged in overlay (full images not on server)
+        var thumbImg = c.querySelector('.collect-card-thumb img');
+        var imgUrl = thumbImg ? thumbImg.src : ('collect-images/' + encodeURIComponent(file || ''));
         showCollectImageOverlay(imgUrl);
       } else if (url) {
         window.open(url, '_blank', 'noopener');
