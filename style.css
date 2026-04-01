@@ -2357,6 +2357,25 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .proc-item.status-error { border-left:3px solid #ef4444; }
 .proc-item.status-running { border-left:3px solid var(--accent); }
 
+/* ── SCRAPER PROGRESS ── */
+#scraper-progress-box { display:none; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin:0 0 12px 0; }
+.scraper-header { font-size:13px; font-weight:600; color:var(--text); margin-bottom:8px; }
+.scraper-platform { background:var(--bg); border-radius:7px; padding:10px 12px; margin-bottom:6px; }
+.scraper-platform:last-of-type { margin-bottom:0; }
+.scraper-platform-header { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+.scraper-platform-icon { font-size:14px; }
+.scraper-platform-name { font-size:13px; font-weight:600; color:var(--text); }
+.scraper-platform-step { font-size:12px; color:var(--text-muted); margin-left:auto; }
+.scraper-bar-wrap { background:var(--border); border-radius:4px; height:6px; overflow:hidden; margin-bottom:3px; }
+.scraper-bar-fill { height:100%; border-radius:4px; transition:width 0.4s ease; }
+.scraper-bar-fill.running { background:var(--accent); }
+.scraper-bar-fill.completed { background:#22c55e; }
+.scraper-bar-fill.error { background:#ef4444; }
+.scraper-bar-fill.pending { background:var(--border); }
+.scraper-bar-pct { font-size:11px; color:var(--text-muted); }
+.scraper-eta { font-size:12px; color:var(--text-muted); margin-top:8px; }
+.scraper-updated { font-size:10px; color:var(--text-muted); margin-top:4px; opacity:0.6; }
+
 /* ── COLLECT TAB ── */
 .collect-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .collect-header h2 { font-size: 16px; font-weight: 600; }
