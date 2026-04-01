@@ -246,7 +246,7 @@
 
     <div id="process-status-box"></div>
 
-
+    <div id="scraper-progress-box"></div>
 
     <div class="status-grid">
 
@@ -5400,13 +5400,106 @@ async function fetchProcessStatus() {
 function startProcessStatusPolling() {
 
   fetchProcessStatus();
+  fetchScraperProgress();
 
   if (_procStatusInterval) clearInterval(_procStatusInterval);
 
-  _procStatusInterval = setInterval(fetchProcessStatus, 30000);
+  _procStatusInterval = setInterval(function() {
+    fetchProcessStatus();
+    fetchScraperProgress();
+  }, 30000);
 
 }
 
+
+// ─── BOOKMARK SCRAPER PROGRESS ───────────────────────────────────────────────
+
+async function fetchScraperProgress() {
+  var box = document.getElementById('scraper-progress-box');
+  if (!box) return;
+  var result = await fetchFromGitHub('data/scraper-progress.json');
+  if (!result) { box.style.display = 'none'; return; }
+  var data;
+  try { data = JSON.parse(result.content); } catch(e) { box.style.display = 'none'; return; }
+  if (!data) { box.style.display = 'none'; return; }
+
+  var platforms = ['instagram', 'tiktok'];
+  var allDone = true;
+  var hasAny = false;
+
+  platforms.forEach(function(p) {
+    if (data[p] && data[p].status !== 'completed') allDone = false;
+    if (data[p]) hasAny = true;
+  });
+
+  if (!hasAny || allDone) { box.style.display = 'none'; return; }
+
+  box.style.display = 'block';
+  var html = '<div class="scraper-header">Bookmark Scraper</div>';
+
+  platforms.forEach(function(key) {
+    var p = data[key];
+    if (!p) return;
+    var label = key.charAt(0).toUpperCase() + key.slice(1);
+    var statusClass = p.status || 'pending';
+    var icon = statusClass === 'running' ? '⬇️' : statusClass === 'error' ? '❌' : statusClass === 'completed' ? '✅' : '⏳';
+
+    // Calculate progress: average of 3 phases (collect, download, upload)
+    var total = p.total_bookmarks || 0;
+    var pct = 0;
+    if (total > 0) {
+      var collectPct = Math.min(100, (p.urls_collected || 0) / total * 100);
+      var dlPct = Math.min(100, (p.media_downloaded || 0) / total * 100);
+      var ulPct = Math.min(100, (p.media_uploaded || 0) / total * 100);
+      pct = Math.round((collectPct + dlPct + ulPct) / 3);
+    }
+
+    // Step description
+    var step = '';
+    if (statusClass === 'pending') {
+      step = 'Ausstehend';
+    } else if (statusClass === 'running') {
+      if ((p.media_uploaded || 0) > 0) step = 'Upload: ' + p.media_uploaded + '/' + total;
+      else if ((p.media_downloaded || 0) > 0) step = 'Download: ' + p.media_downloaded + '/' + total;
+      else if ((p.urls_collected || 0) > 0) step = 'URLs: ' + p.urls_collected + '/' + (total || '?');
+      else step = 'Starte...';
+    } else if (statusClass === 'error') {
+      step = p.errors + ' Fehler';
+    } else if (statusClass === 'completed') {
+      step = 'Fertig — ' + (p.media_uploaded || 0) + ' Dateien';
+    }
+
+    html += '<div class="scraper-platform">';
+    html += '<div class="scraper-platform-header">';
+    html += '<span class="scraper-platform-icon">' + icon + '</span>';
+    html += '<span class="scraper-platform-name">' + label + '</span>';
+    html += '<span class="scraper-platform-step">' + step + '</span>';
+    html += '</div>';
+    html += '<div class="scraper-bar-wrap"><div class="scraper-bar-fill ' + statusClass + '" style="width:' + pct + '%"></div></div>';
+    if (pct > 0) html += '<div class="scraper-bar-pct">' + pct + '%</div>';
+    html += '</div>';
+  });
+
+  // Estimated time remaining
+  if (data.instagram && data.instagram.started_at && data.instagram.status === 'running') {
+    var total = data.instagram.total_bookmarks || 0;
+    var done = (data.instagram.media_uploaded || 0);
+    if (done > 0 && total > done) {
+      var elapsed = (Date.now() - new Date(data.instagram.started_at).getTime()) / 1000;
+      var rate = done / elapsed;
+      var remaining = Math.round((total - done) / rate / 86400);
+      if (remaining > 0) html += '<div class="scraper-eta">~' + remaining + ' Tag' + (remaining > 1 ? 'e' : '') + ' verbleibend</div>';
+    }
+  }
+
+  // Last update
+  if (data.last_updated) {
+    var mins = Math.round((Date.now() - new Date(data.last_updated).getTime()) / 60000);
+    html += '<div class="scraper-updated">Aktualisiert vor ' + mins + ' Min.</div>';
+  }
+
+  box.innerHTML = html;
+}
 
 
 // ─── SYSTEM TAB ───────────────────────────────────────────────────────────────
