@@ -5419,6 +5419,20 @@ var _systemLogCache = null;
 
 var _ikCache = null;
 
+// ── Schema-Migration: Alte Datenformate automatisch upgraden ──
+function migrateIKData(ik) {
+  if (!ik) return ik;
+  var v = ik.version || 1;
+  // v1 → v2: Add briefing, coach, drafts
+  if (v < 2) {
+    if (!ik.briefing) ik.briefing = { date: '', generatedAt: '', cards: { new: { count: 0, items: [] }, done: { count: 0, items: [] }, discussions: { count: 0, items: [] }, deadlines: { count: 0, items: [] } } };
+    if (!ik.coach) ik.coach = { currentPhase: 'orientation', weeklyFocus: '', dailyPlan: [], nextMilestone: null, tips: [] };
+    if (!ik.drafts) ik.drafts = [];
+    ik.version = 2;
+  }
+  return ik;
+}
+
 async function showImperialKITab() {
   var container = document.getElementById('ik-container');
   if (!container) return;
@@ -5432,6 +5446,7 @@ async function showImperialKITab() {
     var d = await r.json();
     var _b64ik = d.content.replace(/\n/g,'');
     _ikCache = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(_b64ik), function(c){return c.charCodeAt(0);})));
+    _ikCache = migrateIKData(_ikCache);
   } catch(e) {
     container.innerHTML = '<div class="empty-state">Fehler: ' + esc(e.message) + '</div>';
     return;
