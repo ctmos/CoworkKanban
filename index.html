@@ -7074,46 +7074,35 @@ document.addEventListener('keydown', function(e) {
 
     e.preventDefault();
 
-    // Card modal
-
-    var cardModal = document.getElementById('card-modal-overlay');
-
-    if (cardModal && cardModal.classList.contains('open')) {
-
-      document.getElementById('cm-save').click(); return;
-
-    }
-
-    // Patient entry modal
-
-    var peModal = document.getElementById('pat-entry-modal-overlay');
-
-    if (peModal && peModal.classList.contains('open')) {
-
-      document.getElementById('pe-save').click(); return;
-
+    // Check all modals — find any open modal and click its primary button
+    var modalIds = ['card-modal-overlay','pat-entry-modal-overlay','pat-modal-overlay','bl-modal-overlay','proj-modal-overlay','collect-modal-overlay','settings-modal-overlay'];
+    for (var mi = 0; mi < modalIds.length; mi++) {
+      var modal = document.getElementById(modalIds[mi]);
+      if (modal && modal.classList.contains('open')) {
+        var saveBtn = modal.querySelector('.btn-primary');
+        if (saveBtn && !saveBtn.disabled) { saveBtn.click(); return; }
+      }
     }
 
     // Patient blog text
-
     var blogText = document.getElementById('pat-blog-text');
-
     if (blogText && document.activeElement === blogText) {
-
       addBlogEntry(); return;
-
     }
 
-    // Settings modal
+    // Project detail: log entry
+    var pjdLogEntry = document.getElementById('pjd-log-entry');
+    if (pjdLogEntry && document.activeElement === pjdLogEntry) {
+      var pjdLogBtn = document.getElementById('pjd-log-btn');
+      if (pjdLogBtn && !pjdLogBtn.disabled) { pjdLogBtn.click(); return; }
+    }
 
-    var settingsModal = document.getElementById('settings-modal-overlay');
-
-    if (settingsModal && settingsModal.classList.contains('open')) {
-
-      var saveBtn = settingsModal.querySelector('.btn-primary');
-
-      if (saveBtn) { saveBtn.click(); return; }
-
+    // Project detail: save name/status
+    var pjdName = document.getElementById('pjd-name');
+    var pjdStatus = document.getElementById('pjd-status');
+    if ((pjdName && document.activeElement === pjdName) || (pjdStatus && document.activeElement === pjdStatus)) {
+      var pjdSaveBtn = document.getElementById('pjd-save-btn');
+      if (pjdSaveBtn && !pjdSaveBtn.disabled) { pjdSaveBtn.click(); return; }
     }
 
   }
