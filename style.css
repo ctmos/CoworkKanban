@@ -1605,6 +1605,32 @@ nav::-webkit-scrollbar { display: none; }
   resize: vertical;
 }
 .proj-log-input:focus { border-color: var(--accent); }
+
+/* Project Entry Cards */
+.proj-entry-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
+.proj-entry-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.proj-entry-date { font-size: 11px; color: var(--text-muted); }
+.proj-entry-edited { font-size: 10px; color: var(--text-muted); margin-left: 6px; }
+.proj-entry-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+.proj-entry-card:hover .proj-entry-actions { opacity: 1; }
+.proj-entry-btn { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); transition: background 0.15s; }
+.proj-entry-btn:hover { background: var(--bg); color: var(--text); }
+.proj-entry-del:hover { color: #c0392b; border-color: #c0392b; }
+.proj-entry-restore:hover { color: var(--accent); border-color: var(--accent); }
+.proj-entry-text { font-size: 13px; line-height: 1.6; color: var(--text); white-space: pre-wrap; }
+.proj-entry-collapse { font-size: 13px; }
+.proj-entry-collapse summary { cursor: pointer; color: var(--text-muted); font-size: 12px; padding: 2px 0; list-style: none; }
+.proj-entry-collapse summary::before { content: '\25B6\0020'; font-size: 10px; }
+.proj-entry-collapse[open] summary::before { content: '\25BC\0020'; }
+.proj-entry-edit-form { margin-top: 4px; }
+.proj-entry-edit-input { width: 100%; min-height: 80px; padding: 8px; border: 1px solid var(--accent); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; font-family: inherit; resize: vertical; box-sizing: border-box; }
+.proj-entry-edit-actions { display: flex; gap: 8px; margin-top: 6px; }
+.proj-entry-cancel-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--text-muted); }
+.proj-entry-cancel-btn:hover { background: var(--bg); }
+.proj-entry-trash { margin-top: 24px; }
+.proj-entry-trash-toggle { cursor: pointer; font-size: 13px; color: var(--text-muted); list-style: none; padding: 6px 0; }
+.proj-entry-trash-list { margin-top: 8px; opacity: 0.7; }
+
 .proj-kanban-chips {
   display: flex;
   flex-wrap: wrap;
