@@ -1669,6 +1669,11 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.proj-card-archived { opacity: 0.6; }
+.proj-description { font-size: 14px; line-height: 1.6; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+.proj-status-archiviert { background: var(--surface2); color: var(--text-muted); }
+.proj-trash-section { margin-top: 24px; }
+.proj-danger-zone { display: flex; justify-content: flex-end; }
 .proj-card-log {
   font-size: 12px;
   color: var(--text-muted);
