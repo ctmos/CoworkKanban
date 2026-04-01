@@ -2204,6 +2204,7 @@ nav::-webkit-scrollbar { display: none; }
 .collect-toc-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
 .collect-toc-link { font-size: 11px; padding: 3px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: all 0.15s; }
 .collect-toc-link:hover { border-color: var(--accent); color: var(--accent); }
+.collect-toc-active { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
 .collect-cat-section { margin-bottom: 28px; }
 .collect-cat-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
 .collect-cat-count { font-weight: 400; }
