@@ -6205,7 +6205,7 @@ function renderCollect() {
         try { if (item.url) { var u = new URL(item.url); domain = u.hostname.replace(/^www\./,''); } } catch(e) {}
         var hasLink = !!item.url;
         var isImage = item.type === 'image';
-        var thumbUrl = item.screenshot ? 'https://raw.githubusercontent.com/ctmos/cowork-data/main/data/collect-images/' + encodeURIComponent(item.screenshot) : '';
+        var thumbUrl = item.screenshot ? 'https://ctmos.github.io/CoworkKanban/collect-images/' + encodeURIComponent(item.screenshot) : '';
         html += '<div class="collect-card'+(isImage?' collect-card-image':'')+'" data-id="'+esc(item.id)+'" data-url="'+(item.url?esc(item.url):'')+'" data-type="'+(item.type||'link')+'"'+(item.filename?' data-file="'+esc(item.filename)+'"':'')+'>';
         html += '<div class="collect-card-top"><span class="collect-code">'+esc(item.code||'')+'</span><span class="collect-card-date">'+d+'</span><button class="collect-edit-btn" onclick="event.stopPropagation();openCollectModal(\''+esc(item.id)+'\')" title="Bearbeiten">\u270E</button></div>';
         if (thumbUrl) html += '<div class="collect-card-thumb"><img src="'+thumbUrl+'" alt="" loading="lazy"></div>';
@@ -6233,7 +6233,7 @@ function renderCollect() {
       var file = c.getAttribute('data-file');
       if (type === 'image' && file) {
         // Show fullsize image overlay
-        var imgUrl = 'https://raw.githubusercontent.com/ctmos/cowork-data/main/data/collect-images/' + encodeURIComponent(file);
+        var imgUrl = 'https://ctmos.github.io/CoworkKanban/collect-images/' + encodeURIComponent(file);
         showCollectImageOverlay(imgUrl);
       } else if (url) {
         window.open(url, '_blank', 'noopener');
