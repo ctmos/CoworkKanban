@@ -553,9 +553,6 @@
       <h2>Collect <span id="collect-stats" class="collect-stats-badge"></span></h2>
       <div class="collect-controls">
         <input type="text" id="collect-search" class="form-input collect-search-input" placeholder="Suchen..." oninput="renderCollect()">
-        <select id="collect-filter-cat" class="form-input collect-filter-sel" onchange="renderCollect()">
-          <option value="">Alle</option>
-        </select>
         <button class="btn-primary" id="btn-collect-add">+ Neu</button>
       </div>
     </div>
@@ -6110,6 +6107,13 @@ function nextCollectCode(data) {
 }
 
 var _collectPage = {};
+var _collectViewMode = 'recent'; // 'recent', 'category:XY', 'all'
+
+function setCollectView(mode) {
+  _collectViewMode = mode;
+  _collectPage = {};
+  renderCollect();
+}
 
 function renderCollect() {
   var data = getCollect() || {categories:[],items:[]};
@@ -6119,21 +6123,42 @@ function renderCollect() {
   if (!toc || !list) return;
 
   var searchTerm = (document.getElementById('collect-search')||{}).value||'';
-  var filterCat = (document.getElementById('collect-filter-cat')||{}).value||'';
   searchTerm = searchTerm.toLowerCase().trim();
 
+  // Build full catMap for TOC counts (always from all items)
+  var allCatMap = {};
+  data.items.forEach(function(item) {
+    var cat = item.category || 'Sonstiges';
+    if (!allCatMap[cat]) allCatMap[cat] = 0;
+    allCatMap[cat]++;
+  });
+
+  // Filter items based on view mode
+  var mode = searchTerm ? 'search' : _collectViewMode;
+  var now = new Date();
+  var twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  var twoWeeksStr = twoWeeksAgo.toISOString().slice(0, 10);
+
   var filtered = data.items.filter(function(item) {
-    if (filterCat && item.category !== filterCat) return false;
+    // Search always overrides view mode
     if (searchTerm) {
       var h = ((item.code||'')+' '+(item.title||'')+' '+(item.description||'')+' '+(item.url||'')+' '+(item.raw_text||'')).toLowerCase();
       return h.indexOf(searchTerm) !== -1;
     }
-    return true;
+    // View mode filtering
+    if (mode === 'recent') {
+      return (item.timestamp || '') >= twoWeeksStr;
+    }
+    if (mode.indexOf('category:') === 0) {
+      var targetCat = mode.substring(9);
+      return (item.category || 'Sonstiges') === targetCat;
+    }
+    return true; // 'all'
   });
 
   if (statsEl) statsEl.textContent = data.items.length + ' Eintr\u00e4ge';
 
-  // Build categories from items
+  // Build catMap from filtered items
   var catMap = {};
   filtered.forEach(function(item) {
     var cat = item.category || 'Sonstiges';
@@ -6146,82 +6171,82 @@ function renderCollect() {
     return catMap[b].length - catMap[a].length;
   });
 
-  // Populate filter dropdown (preserve selection)
-  var sel = document.getElementById('collect-filter-cat');
-  if (sel) {
-    var allCats = {};
-    data.items.forEach(function(i) { allCats[i.category||'Sonstiges'] = true; });
-    var cv = sel.value;
-    sel.innerHTML = '<option value="">Alle</option>' +
-      Object.keys(allCats).sort().map(function(c) {
-        return '<option value="'+esc(c)+'"'+(c===cv?' selected':'')+'>'+esc(c)+'</option>';
-      }).join('');
-  }
+  // All category keys sorted by count for TOC
+  var allCatKeys = Object.keys(allCatMap).sort(function(a,b) {
+    if (a === 'Texte & Notizen') return 1;
+    if (b === 'Texte & Notizen') return -1;
+    return allCatMap[b] - allCatMap[a];
+  });
+
+  // TOC: Neu + Alle + Category buttons
+  var tocHtml = '<div class="collect-toc-bar">';
+  tocHtml += '<a class="collect-toc-link'+(mode==='recent'?' collect-toc-active':'')+'" href="#" onclick="event.preventDefault();setCollectView(\'recent\')">Neu</a>';
+  tocHtml += '<a class="collect-toc-link'+(mode==='all'?' collect-toc-active':'')+'" href="#" onclick="event.preventDefault();setCollectView(\'all\')">Alle</a>';
+  allCatKeys.forEach(function(cat) {
+    var isActive = mode === 'category:'+cat;
+    tocHtml += '<a class="collect-toc-link'+(isActive?' collect-toc-active':'')+'" href="#" onclick="event.preventDefault();setCollectView(\'category:'+esc(cat).replace(/'/g,"\\'")+'\')">'+esc(cat)+' ('+allCatMap[cat]+')</a>';
+  });
+  tocHtml += '</div>';
+  toc.innerHTML = tocHtml;
 
   if (filtered.length === 0) {
-    toc.innerHTML = '';
-    list.innerHTML = '<div class="empty-state">'+(searchTerm||filterCat?'Keine Treffer.':'Keine Eintr\u00e4ge.')+'</div>';
+    var msg = searchTerm ? 'Keine Treffer.' : (mode === 'recent' ? 'Keine Eintr\u00e4ge der letzten 2 Wochen.' : 'Keine Eintr\u00e4ge.');
+    list.innerHTML = '<div class="empty-state">'+msg+'</div>';
     return;
   }
 
-  // TOC
-  toc.innerHTML = '<div class="collect-toc-bar">' + catKeys.map(function(cat) {
-    var safeCat = encodeURIComponent(cat);
-    return '<a class="collect-toc-link" data-cat="'+esc(cat)+'" href="#" onclick="event.preventDefault();var el=document.getElementById(\'collect-cat-'+safeCat+'\');if(el)el.scrollIntoView({behavior:\'smooth\'})">'+esc(cat)+' ('+catMap[cat].length+')</a>';
-  }).join('') + '</div>';
-
-  // Render cards by category
+  // For 'recent' mode: flat chronological list (no category grouping)
   var html = '';
-  catKeys.forEach(function(cat) {
-    var items = catMap[cat].sort(function(a,b) { return (b.timestamp||b.createdAt||'').localeCompare(a.timestamp||a.createdAt||''); });
-    var isText = (cat === 'Texte & Notizen');
-    var pk = cat;
-    if (!_collectPage[pk]) _collectPage[pk] = 24;
-    var visible = items.slice(0, _collectPage[pk]);
-    var hasMore = items.length > _collectPage[pk];
-    var safeCat = encodeURIComponent(cat);
-
-    html += '<div class="collect-cat-section" id="collect-cat-'+safeCat+'">';
-    html += '<h3 class="collect-cat-title">'+esc(cat)+' <span class="collect-cat-count">('+items.length+')</span></h3>';
-
-    if (isText) {
-      html += '<div class="collect-text-list">';
-      visible.forEach(function(item) {
-        var d = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-CH') : '';
-        var preview = item.title || (item.raw_text||'').substring(0,80);
-        if (preview.length > 80) preview = preview.substring(0,80) + '...';
-        html += '<details class="collect-text-entry">';
-        html += '<summary><span class="collect-code">'+esc(item.code||'')+'</span> <span class="collect-text-title">'+esc(preview)+'</span><span class="collect-card-date">'+d+'</span></summary>';
-        var body = esc(item.raw_text||item.description||'').replace(/\n/g,'<br>');
-        html += '<div class="collect-text-body">'+body+'</div>';
-        html += '</details>';
-      });
-      html += '</div>';
-    } else {
-      html += '<div class="collect-grid">';
-      visible.forEach(function(item) {
-        var d = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-CH') : '';
-        var domain = '';
-        try { if (item.url) { var u = new URL(item.url); domain = u.hostname.replace(/^www\./,''); } } catch(e) {}
-        var hasLink = !!item.url;
-        var isImage = item.type === 'image';
-        var thumbUrl = item.filename && item.type === 'image' ? 'collect-images/' + encodeURIComponent(item.filename) : (item.screenshot ? 'collect-images/' + encodeURIComponent(item.screenshot) : '');
-        html += '<div class="collect-card'+(isImage?' collect-card-image':'')+'" data-id="'+esc(item.id)+'" data-url="'+(item.url?esc(item.url):'')+'" data-type="'+(item.type||'link')+'"'+(item.filename?' data-file="'+esc(item.filename)+'"':'')+'>';
-        html += '<div class="collect-card-top"><span class="collect-code">'+esc(item.code||'')+'</span><span class="collect-card-date">'+d+'</span><button class="collect-edit-btn" onclick="event.stopPropagation();openCollectModal(\''+esc(item.id)+'\')" title="Bearbeiten">\u270E</button></div>';
-        if (thumbUrl) html += '<div class="collect-card-thumb"><img src="'+thumbUrl+'" alt="" loading="lazy"></div>';
-        html += '<div class="collect-card-title">'+esc(item.title||domain||'Ohne Titel')+'</div>';
-        if (hasLink) html += '<a class="collect-card-url" href="'+esc(item.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">\u2197 '+esc(domain||item.url)+'</a>';
-        if (item.description) html += '<div class="collect-card-desc">'+esc(item.description)+'</div>';
-        html += '</div>';
-      });
-      html += '</div>';
-    }
-
-    if (hasMore) {
-      html += '<button class="collect-show-more" onclick="_collectPage[\''+esc(cat).replace(/'/g,"\\'")+'\']+=24;renderCollect()">Mehr anzeigen ('+items.length+' total)</button>';
-    }
+  if (mode === 'recent' || mode === 'search') {
+    var sorted = filtered.sort(function(a,b) { return (b.timestamp||b.createdAt||'').localeCompare(a.timestamp||a.createdAt||''); });
+    if (!_collectPage['_flat']) _collectPage['_flat'] = 48;
+    var visible = sorted.slice(0, _collectPage['_flat']);
+    var hasMore = sorted.length > _collectPage['_flat'];
+    html += '<div class="collect-grid">';
+    visible.forEach(function(item) { html += renderCollectCard(item); });
     html += '</div>';
-  });
+    if (hasMore) {
+      html += '<button class="collect-show-more" onclick="_collectPage[\'_flat\']+=48;renderCollect()">Mehr anzeigen ('+sorted.length+' total)</button>';
+    }
+  } else {
+    // Category or All view: grouped by category
+    catKeys.forEach(function(cat) {
+      var items = catMap[cat].sort(function(a,b) { return (b.timestamp||b.createdAt||'').localeCompare(a.timestamp||a.createdAt||''); });
+      var isText = (cat === 'Texte & Notizen');
+      var pk = cat;
+      if (!_collectPage[pk]) _collectPage[pk] = 24;
+      var visible = items.slice(0, _collectPage[pk]);
+      var hasMore = items.length > _collectPage[pk];
+      var safeCat = encodeURIComponent(cat);
+
+      html += '<div class="collect-cat-section" id="collect-cat-'+safeCat+'">';
+      html += '<h3 class="collect-cat-title">'+esc(cat)+' <span class="collect-cat-count">('+items.length+')</span></h3>';
+
+      if (isText) {
+        html += '<div class="collect-text-list">';
+        visible.forEach(function(item) {
+          var d = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-CH') : '';
+          var preview = item.title || (item.raw_text||'').substring(0,80);
+          if (preview.length > 80) preview = preview.substring(0,80) + '...';
+          html += '<details class="collect-text-entry">';
+          html += '<summary><span class="collect-code">'+esc(item.code||'')+'</span> <span class="collect-text-title">'+esc(preview)+'</span><span class="collect-card-date">'+d+'</span></summary>';
+          var body = esc(item.raw_text||item.description||'').replace(/\n/g,'<br>');
+          html += '<div class="collect-text-body">'+body+'</div>';
+          html += '</details>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="collect-grid">';
+        visible.forEach(function(item) { html += renderCollectCard(item); });
+        html += '</div>';
+      }
+
+      if (hasMore) {
+        html += '<button class="collect-show-more" onclick="_collectPage[\''+esc(cat).replace(/'/g,"\\'")+'\']+=24;renderCollect()">Mehr anzeigen ('+items.length+' total)</button>';
+      }
+      html += '</div>';
+    });
+  }
   list.innerHTML = html;
 
   // Card click: open URL/image directly, edit via pencil icon only
@@ -6232,7 +6257,6 @@ function renderCollect() {
       var type = c.getAttribute('data-type');
       var file = c.getAttribute('data-file');
       if (type === 'image') {
-        // Show thumbnail enlarged in overlay (full images not on server)
         var thumbImg = c.querySelector('.collect-card-thumb img');
         var imgUrl = thumbImg ? thumbImg.src : ('collect-images/' + encodeURIComponent(file || ''));
         showCollectImageOverlay(imgUrl);
@@ -6243,6 +6267,24 @@ function renderCollect() {
       }
     });
   });
+}
+
+function renderCollectCard(item) {
+  var d = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-CH') : '';
+  var domain = '';
+  try { if (item.url) { var u = new URL(item.url); domain = u.hostname.replace(/^www\./,''); } } catch(e) {}
+  var hasLink = !!item.url;
+  var isImage = item.type === 'image';
+  var thumbUrl = item.filename && item.type === 'image' ? 'collect-images/' + encodeURIComponent(item.filename) : (item.screenshot ? 'collect-images/' + encodeURIComponent(item.screenshot) : '');
+  var h = '';
+  h += '<div class="collect-card'+(isImage?' collect-card-image':'')+'" data-id="'+esc(item.id)+'" data-url="'+(item.url?esc(item.url):'')+'" data-type="'+(item.type||'link')+'"'+(item.filename?' data-file="'+esc(item.filename)+'"':'')+'>';
+  h += '<div class="collect-card-top"><span class="collect-code">'+esc(item.code||'')+'</span><span class="collect-card-date">'+d+'</span><button class="collect-edit-btn" onclick="event.stopPropagation();openCollectModal(\''+esc(item.id)+'\')" title="Bearbeiten">\u270E</button></div>';
+  if (thumbUrl) h += '<div class="collect-card-thumb"><img src="'+thumbUrl+'" alt="" loading="lazy"></div>';
+  h += '<div class="collect-card-title">'+esc(item.title||domain||'Ohne Titel')+'</div>';
+  if (hasLink) h += '<a class="collect-card-url" href="'+esc(item.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">\u2197 '+esc(domain||item.url)+'</a>';
+  if (item.description) h += '<div class="collect-card-desc">'+esc(item.description)+'</div>';
+  h += '</div>';
+  return h;
 }
 
 var collectEntryId = null;
