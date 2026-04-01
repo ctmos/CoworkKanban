@@ -6203,10 +6203,14 @@ function renderCollect() {
         var d = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-CH') : '';
         var domain = '';
         try { if (item.url) { var u = new URL(item.url); domain = u.hostname.replace(/^www\./,''); } } catch(e) {}
-        html += '<div class="collect-card" data-id="'+esc(item.id)+'">';
-        html += '<div class="collect-card-top"><span class="collect-code">'+esc(item.code||'')+'</span><span class="collect-card-date">'+d+'</span></div>';
+        var hasLink = !!item.url;
+        var isImage = item.type === 'image';
+        var thumbUrl = item.screenshot ? 'https://raw.githubusercontent.com/ctmos/cowork-data/main/data/collect-images/' + encodeURIComponent(item.screenshot) : '';
+        html += '<div class="collect-card'+(isImage?' collect-card-image':'')+'" data-id="'+esc(item.id)+'" data-url="'+(item.url?esc(item.url):'')+'" data-type="'+(item.type||'link')+'"'+(item.filename?' data-file="'+esc(item.filename)+'"':'')+'>';
+        html += '<div class="collect-card-top"><span class="collect-code">'+esc(item.code||'')+'</span><span class="collect-card-date">'+d+'</span><button class="collect-edit-btn" onclick="event.stopPropagation();openCollectModal(\''+esc(item.id)+'\')" title="Bearbeiten">\u270E</button></div>';
+        if (thumbUrl) html += '<div class="collect-card-thumb"><img src="'+thumbUrl+'" alt="" loading="lazy"></div>';
         html += '<div class="collect-card-title">'+esc(item.title||domain||'Ohne Titel')+'</div>';
-        if (item.url) html += '<a class="collect-card-url" href="'+esc(item.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">'+esc(domain||item.url)+'</a>';
+        if (hasLink) html += '<a class="collect-card-url" href="'+esc(item.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">\u2197 '+esc(domain||item.url)+'</a>';
         if (item.description) html += '<div class="collect-card-desc">'+esc(item.description)+'</div>';
         html += '</div>';
       });
@@ -6220,9 +6224,23 @@ function renderCollect() {
   });
   list.innerHTML = html;
 
-  // Card click handlers
+  // Card click: open URL/image directly, edit via pencil icon only
   list.querySelectorAll('.collect-card[data-id]').forEach(function(c) {
-    c.addEventListener('click', function() { openCollectModal(c.getAttribute('data-id')); });
+    c.addEventListener('click', function(e) {
+      if (e.target.closest('.collect-edit-btn') || e.target.closest('a')) return;
+      var url = c.getAttribute('data-url');
+      var type = c.getAttribute('data-type');
+      var file = c.getAttribute('data-file');
+      if (type === 'image' && file) {
+        // Show fullsize image overlay
+        var imgUrl = 'https://raw.githubusercontent.com/ctmos/cowork-data/main/data/collect-images/' + encodeURIComponent(file);
+        showCollectImageOverlay(imgUrl);
+      } else if (url) {
+        window.open(url, '_blank', 'noopener');
+      } else {
+        openCollectModal(c.getAttribute('data-id'));
+      }
+    });
   });
 }
 
@@ -6245,6 +6263,18 @@ function openCollectModal(entryId) {
   dl.innerHTML = Object.keys(allCats).sort().map(function(c){return '<option value="'+esc(c)+'">';}).join('');
   document.getElementById('collect-modal-overlay').classList.add('open');
 }
+
+function showCollectImageOverlay(src) {
+  var existing = document.getElementById('collect-img-overlay');
+  if (existing) existing.remove();
+  var ov = document.createElement('div');
+  ov.id = 'collect-img-overlay';
+  ov.className = 'collect-img-overlay';
+  ov.onclick = function() { ov.remove(); };
+  ov.innerHTML = '<img src="'+src+'" alt="Vollbild"><div class="collect-img-close">\u2715</div>';
+  document.body.appendChild(ov);
+}
+
 function closeCollectModal() {
   document.getElementById('collect-modal-overlay').classList.remove('open');
   collectEntryId = null;
