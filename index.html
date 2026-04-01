@@ -549,15 +549,19 @@
 
 
   <div id="tab-collect" class="tab-content">
+
     <div class="collect-header">
-      <h2>Collect <span id="collect-stats" class="collect-stats-badge"></span></h2>
-      <div class="collect-controls">
-        <input type="text" id="collect-search" class="form-input collect-search-input" placeholder="Suchen..." oninput="renderCollect()">
-        <button class="btn-primary" id="btn-collect-add">+ Neu</button>
-      </div>
+
+      <h2>Collect</h2>
+
+      <button class="btn-primary" id="btn-collect-add">+ Link</button>
+
     </div>
+
     <div id="collect-toc"></div>
+
     <div id="collect-list"></div>
+
   </div>
 
 
@@ -3714,14 +3718,17 @@ function renderStatusTab() {
 
     if (todayCalEvs.length > 0) {
 
-      var calHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">';
-      calHtml += '<button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'\':\'none\';this.querySelector(\'.cal-arrow\').textContent=this.nextElementSibling.style.display===\'none\'?\'\u25b6\':\'\u25bc\'" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:0;display:flex;align-items:center;gap:4px;font-family:inherit"><span class="cal-arrow">\u25b6</span>\uD83D\uDCC5 Kalender heute ('+todayCalEvs.length+')</button>';
-      calHtml += '<div style="display:none">';
+      var calHtml = '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\uD83D\uDCC5 Kalender heute</div>';
+
       calHtml += todayCalEvs.map(renderCalEventChip).join('');
+
       if (window._calEvents && window._calEvents.syncedAt) {
+
         calHtml += '<div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:0.6">Sync: vor '+Math.round((Date.now()-new Date(window._calEvents.syncedAt))/60000)+' Min.</div>';
+
       }
-      calHtml += '</div></div>';
+
+      calHtml += '</div>';
 
       heuteList.innerHTML += calHtml;
 
@@ -3764,18 +3771,26 @@ function renderStatusTab() {
         if (!grouped[lbl]) return;
 
         html += '<div class="day-group-header">'+lbl+'</div>';
-        var dayTasks = grouped[lbl].filter(function(c){return !c._isEvent;});
-        var dayEvents = grouped[lbl].filter(function(c){return c._isEvent;});
-        dayTasks.forEach(function(c) {
+
+        grouped[lbl].forEach(function(c) {
+
+          if (c._isEvent) {
+
+            html += '<div class="status-card"><div style="flex:1;min-width:0;"><div class="card-title">\ud83d\udcc5 '+esc(c.title||c.summary||'')+'</div></div></div>';
+
+          } else {
+
             var isHE=c.todayFlag||c.lane==='HE'; var cId=esc(c.id||'');
+
             html += '<div class="status-card"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:6px;"><span class="card-prefix">'+cId+'</span><span class="card-title">'+esc(c.title||'')+'</span></div></div><button class="today-btn'+(isHE?' is-today':'')+'" onclick="'+(isHE?"moveFromToday('"+cId+"')":"moveToToday('"+cId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+
+          }
+
         });
-        if (dayEvents.length > 0) {
-          html += '<button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'\':\'none\';this.querySelector(\'.cal-arrow\').textContent=this.nextElementSibling.style.display===\'none\'?\'\u25b6\':\'\u25bc\'" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:4px 0;display:flex;align-items:center;gap:4px;font-family:inherit"><span class="cal-arrow">\u25b6</span>\ud83d\udcc5 Kalender ('+dayEvents.length+')</button>';
-          html += '<div style="display:none">';
-          dayEvents.forEach(function(c) { html += renderCalEventChip(Object.assign({},c,{summary:c.title||c.summary})); });
-          html += '</div>';
-        }
+
+        var _isoMap={'Heute':todayISO,'Morgen':new Date(todayStart.getTime()+86400000).toISOString().split('T')[0],'\u00dcbermorgen':new Date(todayStart.getTime()+2*86400000).toISOString().split('T')[0]};
+
+        if(_isoMap[lbl]) getEventsForDay(_isoMap[lbl]).forEach(function(e){html+=renderCalEventChip(e);});
 
       });
 
@@ -3868,10 +3883,8 @@ function toggleDescExpand(cardId) { descExpandState[cardId]=!descExpandState[car
 function toggleDoneArchive(laneId) { doneExpandState[laneId]=!doneExpandState[laneId]; renderKanban(); }
 
 var trashExpanded = false;
-var projTrashExpanded = false;
 
 function toggleTrash() { trashExpanded = !trashExpanded; renderKanban(); }
-function toggleProjTrash() { projTrashExpanded = !projTrashExpanded; showProjectsTab(); }
 
 function restoreCard(cardId) { var cards=getCards(); if(cards[cardId]){cards[cardId].archived=false; saveCards(cards); showToast(cardId+' wiederhergestellt'); renderKanban(); if(currentTab==='heute')renderHeute();} }
 
@@ -4926,14 +4939,9 @@ async function showProjectsTab(){
 
     pIds.forEach(function(id,i){var meta=metas[i];if(!meta)return;var lc=(logs[i]&&logs[i].content)||'';var fl=lc.split('\n').map(function(l){return l.trim();}).find(function(l){return l&&l!=='---'&&!l.startsWith('**[');})||'';
 
-    if(meta.status==='archiviert'||meta.status==='geloescht')return;cards+='<div class="proj-card" onclick="showProjectDetail(\''+esc(id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name">'+esc(meta.name||id)+'</div><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'<div class="proj-card-actions" onclick="event.stopPropagation()"><button class="proj-action-btn" onclick="archiveProject(\''+esc(id)+'\')" title="Archivieren">\ud83d\udce6</button><button class="proj-action-btn proj-action-delete" onclick="deleteProject(\''+esc(id)+'\',\''+esc(meta.name||id)+'\')" title="In Papierkorb">\ud83d\uddd1</button></div></div>';});
-    var archivedMetas=metas.filter(function(m){return m&&m.status==='archiviert';});
-    var archHtml='';
-    if(archivedMetas.length>0){archHtml='<div style="margin-top:16px"><button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'\':\'none\';this.querySelector(\'.arch-arrow\').textContent=this.nextElementSibling.style.display===\'none\'?\'\u25b6\':\'\u25bc\'" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;font-family:inherit"><span class="arch-arrow">\u25b6</span>Archiviert ('+archivedMetas.length+')</button><div style="display:none" class="proj-grid">';archivedMetas.forEach(function(meta){archHtml+='<div class="proj-card" style="opacity:0.6" onclick="showProjectDetail(\''+esc(meta.id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name">'+esc(meta.name||meta.id)+'</div><span class="proj-status-badge" style="background:var(--bg-muted);color:var(--text-muted)">Archiviert</span></div>';});archHtml+='</div></div>';}
-    var deletedMetas=metas.filter(function(m){return m&&m.status==='geloescht';});
-    var trashHtml='';
-    if(deletedMetas.length>0){trashHtml='<div class="trash-section" style="margin-top:16px"><div class="trash-header" onclick="toggleProjTrash()"><span class="trash-icon">\ud83d\uddd1\ufe0f</span> Papierkorb <span class="lane-count">'+deletedMetas.length+'</span><span class="trash-chevron">'+(projTrashExpanded?'\u25b4':'\u25be')+'</span></div>';if(projTrashExpanded){trashHtml+='<div class="trash-body">';deletedMetas.forEach(function(meta){trashHtml+='<div class="trash-card"><span class="trash-card-title">'+esc(meta.name||meta.id)+'</span><button class="btn-restore" onclick="event.stopPropagation();restoreProject(\''+esc(meta.id)+'\')">\u21a9 Wiederherstellen</button><button class="btn-perm-delete" onclick="event.stopPropagation();permanentDeleteProject(\''+esc(meta.id)+'\',\''+esc(meta.name||meta.id)+'\')">\u2715</button></div>';});trashHtml+='</div>';}trashHtml+='</div>';}
-    container.innerHTML=hdr+'<div class="proj-grid">'+cards+'</div>'+archHtml+trashHtml;
+    cards+='<div class="proj-card" onclick="showProjectDetail(\''+esc(id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name">'+esc(meta.name||id)+'</div><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';});
+
+    container.innerHTML=hdr+'<div class="proj-grid">'+cards+'</div>';
 
   }catch(e){container.innerHTML=hdr+'<div class="empty-state">Fehler: '+esc(e.message)+'</div>';}
 
@@ -4955,11 +4963,15 @@ async function showProjectDetail(projectId){
 
     var cards=getCards();var linked=(meta.kanbanCards||[]).map(function(id){return cards[id];}).filter(Boolean);
 
-    var sCls={aktiv:'proj-status-aktiv',pausiert:'proj-status-pausiert',abgeschlossen:'proj-status-abgeschlossen',archiviert:''};
-    var sLbl={aktiv:'Aktiv',pausiert:'Pausiert',abgeschlossen:'Abgeschlossen',archiviert:'Archiviert'};
+    var sCls={aktiv:'proj-status-aktiv',pausiert:'proj-status-pausiert',abgeschlossen:'proj-status-abgeschlossen'};
+
+    var sLbl={aktiv:'Aktiv',pausiert:'Pausiert',abgeschlossen:'Abgeschlossen'};
+
     var cb=meta.color?' style="border-top:4px solid '+esc(meta.color)+'"':'';
-    container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span><div style="margin-left:auto;display:flex;gap:8px"><button class="proj-action-btn" onclick="archiveProject(\''+esc(projectId)+'\')" title="Archivieren" style="font-size:16px">\ud83d\udce6</button><button class="proj-action-btn proj-action-delete" onclick="deleteProject(\''+esc(projectId)+'\',\''+esc(meta.name||projectId)+'\')" title="In Papierkorb" style="font-size:16px">\ud83d\uddd1</button></div></div>'
-      +'<div class="proj-section"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status</label><select class="form-select" id="pjd-status" style="width:auto"><option value="aktiv"'+(meta.status==='aktiv'?' selected':'')+'>Aktiv</option><option value="pausiert"'+(meta.status==='pausiert'?' selected':'')+'>Pausiert</option><option value="abgeschlossen"'+(meta.status==='abgeschlossen'?' selected':'')+'>Abgeschlossen</option><option value="archiviert"'+(meta.status==='archiviert'?' selected':'')+'>Archiviert</option></select></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
+
+    container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span></div>'
+
+      +'<div class="proj-section"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status</label><select class="form-select" id="pjd-status" style="width:auto"><option value="aktiv"'+(meta.status==='aktiv'?' selected':'')+'>Aktiv</option><option value="pausiert"'+(meta.status==='pausiert'?' selected':'')+'>Pausiert</option><option value="abgeschlossen"'+(meta.status==='abgeschlossen'?' selected':'')+'>Abgeschlossen</option></select></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
 
       +'<div class="proj-section"><h3>Log</h3><pre class="proj-log-content" id="pjd-log-display">'+(logContent?esc(logContent):'<span style="color:var(--text-muted)">Noch keine Eintr\u00e4ge.</span>')+'</pre><div class="proj-log-form"><textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><button class="btn-primary" id="pjd-log-btn" style="flex-shrink:0">Eintrag hinzuf\u00fcgen</button></div></div>'
 
@@ -4975,10 +4987,6 @@ async function showProjectDetail(projectId){
 
 
 
-async function archiveProject(id){var meta=_localProjectsMeta[id]||await loadProjectMeta(id);if(!meta)return;meta.status='archiviert';meta.updatedAt=new Date().toISOString();try{await saveProject(meta);showToast('Projekt archiviert');showProjectsTab();}catch(e){showToast('Fehler: '+e.message,true);}}
-async function deleteProject(id,name){var meta=_localProjectsMeta[id]||await loadProjectMeta(id);if(!meta)return;meta.status='geloescht';meta.updatedAt=new Date().toISOString();try{await saveProject(meta);showToast('In Papierkorb verschoben');showProjectsTab();}catch(e){showToast('Fehler: '+e.message,true);}}
-async function restoreProject(id){var meta=_localProjectsMeta[id]||await loadProjectMeta(id);if(!meta)return;meta.status='aktiv';meta.updatedAt=new Date().toISOString();try{await saveProject(meta);showToast('Projekt wiederhergestellt');showProjectsTab();}catch(e){showToast('Fehler: '+e.message,true);}}
-async function permanentDeleteProject(id,name){if(!confirm('Projekt "'+name+'" ENDG\u00dcLTIG l\u00f6schen? Das kann nicht r\u00fcckg\u00e4ngig gemacht werden.'))return;var token=getGHToken();if(!token)return;try{var files=['meta.json','log.md'];for(var i=0;i<files.length;i++){var path='projects/'+id+'/'+files[i];var existing=await fetchFromGitHub(path);if(existing&&existing.sha){await fetch(GH_API_BASE+'/repos/'+GH_DATA_REPO+'/contents/'+path,{method:'DELETE',headers:{Authorization:'token '+token,'Content-Type':'application/json'},body:JSON.stringify({message:'project: permanently delete '+name,sha:existing.sha})});}}try{var pjRemote=await fetchFromGitHub('data/projects.json');if(pjRemote){var pjArr=JSON.parse(pjRemote.content);var filtered=pjArr.filter(function(p){return p.id!==id;});if(filtered.length<pjArr.length){await safeWriteToGitHub('data/projects.json',JSON.stringify(filtered,null,2),'project: remove '+name+' from index');}}}catch(e2){}delete _localProjectsMeta[id];showToast('Projekt endg\u00fcltig gel\u00f6scht');showProjectsTab();}catch(e){showToast('Fehler: '+e.message,true);}}
 function openCreateProjectModal(){document.getElementById('pjm-name').value='';document.getElementById('pjm-desc').value='';document.getElementById('pjm-status').value='aktiv';document.querySelectorAll('.proj-color-swatch').forEach(function(s,i){s.classList.toggle('selected',i===0);});var errEl=document.getElementById('pjm-error');if(errEl){errEl.textContent='';errEl.style.display='none';}document.getElementById('proj-modal-overlay').classList.add('open');setTimeout(function(){document.getElementById('pjm-name').focus();},50);}
 
 function selectProjColor(el){document.querySelectorAll('.proj-color-swatch').forEach(function(s){s.classList.remove('selected');});el.classList.add('selected');}
@@ -6097,295 +6105,254 @@ function renderSystemLog(container) {
 // ─── COLLECT TAB ──────────────────────────────────────────────────────────────
 
 function getCollect() { return ls('cowork_collect', null); }
+
 function saveCollect(c) { lsSet('cowork_collect', c); }
-function initCollect() { if (!getCollect()) saveCollect({categories:[],items:[],nextCode:1}); }
 
-function genCollectCode(n) {
-  var L = String.fromCharCode(65 + Math.floor((n-1)/999));
-  var D = ((n-1)%999)+1;
-  return L + String(D).padStart(3,'0');
-}
+function initCollect() { if (!getCollect()) { saveCollect({categories:['KI','Tools','Gesundheit','Finanzen','Lernen','Sonstiges'],items:[]}); } }
 
-function nextCollectCode(data) {
-  if (!data.nextCode) data.nextCode = (data.items?data.items.length:0)+1;
-  var c = genCollectCode(data.nextCode);
-  data.nextCode++;
-  return c;
-}
 
-var _collectPage = {};
-var _collectViewMode = 'recent'; // 'recent', 'category:XY', 'all'
-
-function setCollectView(mode) {
-  _collectViewMode = mode;
-  _collectPage = {};
-  renderCollect();
-}
 
 function renderCollect() {
-  var data = getCollect() || {categories:[],items:[]};
+
+  var data = getCollect() || {categories:[], items:[]};
+
   var toc = document.getElementById('collect-toc');
+
   var list = document.getElementById('collect-list');
-  var statsEl = document.getElementById('collect-stats');
+
   if (!toc || !list) return;
 
-  var searchTerm = (document.getElementById('collect-search')||{}).value||'';
-  searchTerm = searchTerm.toLowerCase().trim();
 
-  // Build full catMap for TOC counts (always from all items)
-  var allCatMap = {};
-  data.items.forEach(function(item) {
-    var cat = item.category || 'Sonstiges';
-    if (!allCatMap[cat]) allCatMap[cat] = 0;
-    allCatMap[cat]++;
-  });
 
-  // Filter items based on view mode
-  var mode = searchTerm ? 'search' : _collectViewMode;
-  var now = new Date();
-  var twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-  var twoWeeksStr = twoWeeksAgo.toISOString().slice(0, 10);
+  if (data.items.length === 0) {
 
-  var filtered = data.items.filter(function(item) {
-    // Search always overrides view mode
-    if (searchTerm) {
-      var h = ((item.code||'')+' '+(item.title||'')+' '+(item.description||'')+' '+(item.url||'')+' '+(item.raw_text||'')).toLowerCase();
-      return h.indexOf(searchTerm) !== -1;
-    }
-    // View mode filtering
-    if (mode === 'recent') {
-      return (item.timestamp || '') >= twoWeeksStr;
-    }
-    if (mode.indexOf('category:') === 0) {
-      var targetCat = mode.substring(9);
-      return (item.category || 'Sonstiges') === targetCat;
-    }
-    return true; // 'all'
-  });
+    toc.innerHTML = '';
 
-  if (statsEl) statsEl.textContent = data.items.length + ' Eintr\u00e4ge';
+    list.innerHTML = '<div class="empty-state">Keine Links gesammelt.</div>';
 
-  // Build catMap from filtered items
-  var catMap = {};
-  filtered.forEach(function(item) {
-    var cat = item.category || 'Sonstiges';
-    if (!catMap[cat]) catMap[cat] = [];
-    catMap[cat].push(item);
-  });
-  var catKeys = Object.keys(catMap).sort(function(a,b) {
-    if (a === 'Texte & Notizen') return 1;
-    if (b === 'Texte & Notizen') return -1;
-    return catMap[b].length - catMap[a].length;
-  });
-
-  // All category keys sorted by count for TOC
-  var allCatKeys = Object.keys(allCatMap).sort(function(a,b) {
-    if (a === 'Texte & Notizen') return 1;
-    if (b === 'Texte & Notizen') return -1;
-    return allCatMap[b] - allCatMap[a];
-  });
-
-  // TOC: Neu + Alle + Category buttons
-  var tocHtml = '<div class="collect-toc-bar">';
-  tocHtml += '<a class="collect-toc-link'+(mode==='recent'?' collect-toc-active':'')+'" href="#" onclick="event.preventDefault();setCollectView(\'recent\')">Neu</a>';
-  tocHtml += '<a class="collect-toc-link'+(mode==='all'?' collect-toc-active':'')+'" href="#" onclick="event.preventDefault();setCollectView(\'all\')">Alle</a>';
-  allCatKeys.forEach(function(cat) {
-    var isActive = mode === 'category:'+cat;
-    tocHtml += '<a class="collect-toc-link'+(isActive?' collect-toc-active':'')+'" href="#" onclick="event.preventDefault();setCollectView(\'category:'+esc(cat).replace(/'/g,"\\'")+'\')">'+esc(cat)+' ('+allCatMap[cat]+')</a>';
-  });
-  tocHtml += '</div>';
-  toc.innerHTML = tocHtml;
-
-  if (filtered.length === 0) {
-    var msg = searchTerm ? 'Keine Treffer.' : (mode === 'recent' ? 'Keine Eintr\u00e4ge der letzten 2 Wochen.' : 'Keine Eintr\u00e4ge.');
-    list.innerHTML = '<div class="empty-state">'+msg+'</div>';
     return;
+
   }
 
-  // For 'recent' mode: flat chronological list (no category grouping)
+
+
+  var cats = data.categories || [];
+
+  toc.innerHTML = '<div class="collect-toc-bar">' + cats.map(function(cat) {
+
+    var count = data.items.filter(function(i){return i.category===cat;}).length;
+
+    if (count === 0) return '';
+
+    return '<a class="collect-toc-link" href="#collect-cat-'+esc(cat)+'" onclick="event.preventDefault();document.getElementById(\'collect-cat-'+esc(cat)+'\').scrollIntoView({behavior:\'smooth\'})">'+esc(cat)+' ('+count+')</a>';
+
+  }).join('') + '</div>';
+
+
+
   var html = '';
-  if (mode === 'recent' || mode === 'search') {
-    var sorted = filtered.sort(function(a,b) { return (b.timestamp||b.createdAt||'').localeCompare(a.timestamp||a.createdAt||''); });
-    if (!_collectPage['_flat']) _collectPage['_flat'] = 48;
-    var visible = sorted.slice(0, _collectPage['_flat']);
-    var hasMore = sorted.length > _collectPage['_flat'];
-    html += '<div class="collect-grid">';
-    visible.forEach(function(item) { html += renderCollectCard(item); });
-    html += '</div>';
-    if (hasMore) {
-      html += '<button class="collect-show-more" onclick="_collectPage[\'_flat\']+=48;renderCollect()">Mehr anzeigen ('+sorted.length+' total)</button>';
-    }
-  } else {
-    // Category or All view: grouped by category
-    catKeys.forEach(function(cat) {
-      var items = catMap[cat].sort(function(a,b) { return (b.timestamp||b.createdAt||'').localeCompare(a.timestamp||a.createdAt||''); });
-      var isText = (cat === 'Texte & Notizen');
-      var pk = cat;
-      if (!_collectPage[pk]) _collectPage[pk] = 24;
-      var visible = items.slice(0, _collectPage[pk]);
-      var hasMore = items.length > _collectPage[pk];
-      var safeCat = encodeURIComponent(cat);
 
-      html += '<div class="collect-cat-section" id="collect-cat-'+safeCat+'">';
-      html += '<h3 class="collect-cat-title">'+esc(cat)+' <span class="collect-cat-count">('+items.length+')</span></h3>';
+  cats.forEach(function(cat) {
 
-      if (isText) {
-        html += '<div class="collect-text-list">';
-        visible.forEach(function(item) {
-          var d = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-CH') : '';
-          var preview = item.title || (item.raw_text||'').substring(0,80);
-          if (preview.length > 80) preview = preview.substring(0,80) + '...';
-          html += '<details class="collect-text-entry">';
-          html += '<summary><span class="collect-code">'+esc(item.code||'')+'</span> <span class="collect-text-title">'+esc(preview)+'</span><span class="collect-card-date">'+d+'</span></summary>';
-          var body = esc(item.raw_text||item.description||'').replace(/\n/g,'<br>');
-          html += '<div class="collect-text-body">'+body+'</div>';
-          html += '</details>';
-        });
-        html += '</div>';
-      } else {
-        html += '<div class="collect-grid">';
-        visible.forEach(function(item) { html += renderCollectCard(item); });
-        html += '</div>';
-      }
+    var items = data.items.filter(function(i){return i.category===cat;}).sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);});
 
-      if (hasMore) {
-        html += '<button class="collect-show-more" onclick="_collectPage[\''+esc(cat).replace(/'/g,"\\'")+'\']+=24;renderCollect()">Mehr anzeigen ('+items.length+' total)</button>';
-      }
+    if (items.length === 0) return;
+
+    html += '<div class="collect-cat-section" id="collect-cat-'+esc(cat)+'">';
+
+    html += '<h3 class="collect-cat-title">'+esc(cat)+'</h3>';
+
+    items.forEach(function(item) {
+
+      var date = new Date(item.createdAt).toLocaleDateString('de-CH');
+
+      html += '<div class="collect-card" onclick="openCollectModal(\''+esc(item.id)+'\')">';
+
+      html += '<div class="collect-card-header">';
+
+      html += '<span class="collect-card-title">'+esc(item.title || item.url)+'</span>';
+
+      html += '<span class="collect-card-date">'+date+'</span>';
+
       html += '</div>';
+
+      if (item.url) html += '<div class="collect-card-url">'+esc(item.url)+'</div>';
+
+      if (item.description) html += '<div class="collect-card-desc">'+esc(item.description)+'</div>';
+
+      if (item.screenshot) html += '<div class="collect-card-img"><img src="https://raw.githubusercontent.com/ctmos/cowork-data/main/data/collect-images/'+esc(item.screenshot)+'" alt="Screenshot" loading="lazy"></div>';
+
+      html += '<div class="collect-card-meta"><span class="collect-card-by">'+esc(item.createdBy||'')+'</span></div>';
+
+      html += '</div>';
+
     });
-  }
+
+    html += '</div>';
+
+  });
+
   list.innerHTML = html;
 
-  // Card click: open URL/image directly, edit via pencil icon only
-  list.querySelectorAll('.collect-card[data-id]').forEach(function(c) {
-    c.addEventListener('click', function(e) {
-      if (e.target.closest('.collect-edit-btn') || e.target.closest('a')) return;
-      var url = c.getAttribute('data-url');
-      var type = c.getAttribute('data-type');
-      var file = c.getAttribute('data-file');
-      if (type === 'image') {
-        var thumbImg = c.querySelector('.collect-card-thumb img');
-        var imgUrl = thumbImg ? thumbImg.src : ('collect-images/' + encodeURIComponent(file || ''));
-        showCollectImageOverlay(imgUrl);
-      } else if (url) {
-        window.open(url, '_blank', 'noopener');
-      } else {
-        openCollectModal(c.getAttribute('data-id'));
-      }
-    });
-  });
 }
 
-function renderCollectCard(item) {
-  var d = item.timestamp ? new Date(item.timestamp).toLocaleDateString('de-CH') : '';
-  var domain = '';
-  try { if (item.url) { var u = new URL(item.url); domain = u.hostname.replace(/^www\./,''); } } catch(e) {}
-  var hasLink = !!item.url;
-  var isImage = item.type === 'image';
-  var thumbUrl = item.filename && item.type === 'image' ? 'collect-images/' + encodeURIComponent(item.filename) : (item.screenshot ? 'collect-images/' + encodeURIComponent(item.screenshot) : '');
-  var h = '';
-  h += '<div class="collect-card'+(isImage?' collect-card-image':'')+'" data-id="'+esc(item.id)+'" data-url="'+(item.url?esc(item.url):'')+'" data-type="'+(item.type||'link')+'"'+(item.filename?' data-file="'+esc(item.filename)+'"':'')+'>';
-  h += '<div class="collect-card-top"><span class="collect-code">'+esc(item.code||'')+'</span><span class="collect-card-date">'+d+'</span><button class="collect-edit-btn" onclick="event.stopPropagation();openCollectModal(\''+esc(item.id)+'\')" title="Bearbeiten">\u270E</button></div>';
-  if (thumbUrl) h += '<div class="collect-card-thumb"><img src="'+thumbUrl+'" alt="" loading="lazy"></div>';
-  h += '<div class="collect-card-title">'+esc(item.title||domain||'Ohne Titel')+'</div>';
-  if (hasLink) h += '<a class="collect-card-url" href="'+esc(item.url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">\u2197 '+esc(domain||item.url)+'</a>';
-  if (item.description) h += '<div class="collect-card-desc">'+esc(item.description)+'</div>';
-  h += '</div>';
-  return h;
-}
+
 
 var collectEntryId = null;
-function openCollectModal(entryId) {
-  collectEntryId = entryId;
-  var data = getCollect() || {categories:[],items:[]};
-  var entry = entryId ? data.items.find(function(e){return e.id===entryId;}) : null;
-  var isNew = !entry;
-  document.getElementById('collect-modal-title').textContent = isNew ? 'Neuer Eintrag' : (entry.code||'') + ' bearbeiten';
-  document.getElementById('colm-url').value = (entry&&entry.url)||'';
-  document.getElementById('colm-title').value = (entry&&entry.title)||'';
-  document.getElementById('colm-desc').value = (entry&&entry.description)||'';
-  document.getElementById('colm-cat').value = (entry&&entry.category)||'Sonstiges';
-  document.getElementById('colm-delete').style.display = isNew ? 'none' : '';
-  document.getElementById('colm-screenshot').value = '';
-  var dl = document.getElementById('collect-cats');
-  var allCats = {};
-  data.items.forEach(function(i) { allCats[i.category||'Sonstiges'] = true; });
-  dl.innerHTML = Object.keys(allCats).sort().map(function(c){return '<option value="'+esc(c)+'">';}).join('');
-  document.getElementById('collect-modal-overlay').classList.add('open');
-}
 
-function showCollectImageOverlay(src) {
-  var existing = document.getElementById('collect-img-overlay');
-  if (existing) existing.remove();
-  var ov = document.createElement('div');
-  ov.id = 'collect-img-overlay';
-  ov.className = 'collect-img-overlay';
-  ov.onclick = function() { ov.remove(); };
-  ov.innerHTML = '<img src="'+src+'" alt="Vollbild"><div class="collect-img-close">\u2715</div>';
-  document.body.appendChild(ov);
+function openCollectModal(entryId) {
+
+  collectEntryId = entryId;
+
+  var data = getCollect() || {categories:[],items:[]};
+
+  var entry = entryId ? data.items.find(function(e){return e.id===entryId;}) : null;
+
+  var isNew = !entry;
+
+  document.getElementById('collect-modal-title').textContent = isNew ? 'Link sammeln' : 'Eintrag bearbeiten';
+
+  document.getElementById('colm-url').value = (entry&&entry.url)||'';
+
+  document.getElementById('colm-title').value = (entry&&entry.title)||'';
+
+  document.getElementById('colm-desc').value = (entry&&entry.description)||'';
+
+  document.getElementById('colm-cat').value = (entry&&entry.category)||data.categories[0]||'Sonstiges';
+
+  document.getElementById('colm-delete').style.display = isNew ? 'none' : '';
+
+  document.getElementById('colm-screenshot').value = '';
+
+  var dl = document.getElementById('collect-cats');
+
+  dl.innerHTML = data.categories.map(function(c){return '<option value="'+esc(c)+'">';}).join('');
+
+  document.getElementById('collect-modal-overlay').classList.add('open');
+
 }
 
 function closeCollectModal() {
+
   document.getElementById('collect-modal-overlay').classList.remove('open');
+
   collectEntryId = null;
+
 }
+
+
 
 document.getElementById('btn-collect-add').addEventListener('click', function(){ openCollectModal(null); });
 
+
+
 document.getElementById('colm-save').addEventListener('click', function() {
+
   var url = document.getElementById('colm-url').value.trim();
+
   var title = document.getElementById('colm-title').value.trim();
+
   var desc = document.getElementById('colm-desc').value.trim();
-  var cat = document.getElementById('colm-cat').value.trim() || 'Sonstiges';
+
+  var cat = document.getElementById('colm-cat').value;
+
   if (!url && !title) { document.getElementById('colm-url').focus(); return; }
+
   if (!title) title = url;
+
   var data = getCollect() || {categories:[],items:[]};
 
+
+
   var fileInput = document.getElementById('colm-screenshot');
+
   var file = fileInput.files && fileInput.files[0];
 
+
+
   if (collectEntryId) {
+
     var idx = data.items.findIndex(function(e){return e.id===collectEntryId;});
+
     if (idx !== -1) data.items[idx] = Object.assign({}, data.items[idx], {url:url, title:title, description:desc, category:cat});
+
   } else {
+
     var newId = 'col_' + Date.now();
-    var code = nextCollectCode(data);
-    var type = url ? 'link' : 'text';
-    var item = {id:newId, code:code, type:type, url:url, title:title, description:desc, category:cat, screenshot:null, timestamp:new Date().toISOString(), createdAt:new Date().toISOString(), createdBy:'User'};
+
+    var item = {id:newId, url:url, title:title, description:desc, category:cat, screenshot:null, createdAt:new Date().toISOString(), createdBy:'User'};
+
     data.items.push(item);
+
+
+
     if (file) {
+
       item.screenshot = newId + '.png';
+
       var reader = new FileReader();
+
       reader.onload = function(ev) {
+
         var b64 = ev.target.result.split(',')[1];
+
         safeWriteToGitHub('data/collect-images/' + item.screenshot, b64, 'upload: screenshot ' + item.screenshot);
+
       };
+
       reader.readAsDataURL(file);
+
     }
+
   }
+
+
 
   if (cat && data.categories.indexOf(cat) === -1) data.categories.push(cat);
 
+
+
   saveCollect(data);
+
   closeCollectModal();
+
   renderCollect();
+
   fileInput.value = '';
+
 });
+
+
 
 document.getElementById('colm-delete').addEventListener('click', function() {
-  confirmAction('Eintrag l\u00f6schen?', 'Dieser Eintrag wird gel\u00f6scht.', function() {
+
+  confirmAction('Link löschen?', 'Dieser Eintrag wird gelöscht.', function() {
+
     var data = getCollect() || {categories:[],items:[]};
+
     data.items = data.items.filter(function(e){return e.id !== collectEntryId;});
+
     saveCollect(data);
+
     closeCollectModal();
+
     renderCollect();
+
   });
+
 });
 
+
+
 document.getElementById('colm-cancel').addEventListener('click', closeCollectModal);
+
 document.getElementById('collect-modal-overlay').addEventListener('click', function(e) {
+
   if (e.target === e.currentTarget) closeCollectModal();
+
 });
+
+
 
 // ─── SERVICE WORKER: Auto-Update ─────────────────────────────────────────────
 
@@ -7074,35 +7041,46 @@ document.addEventListener('keydown', function(e) {
 
     e.preventDefault();
 
-    // Check all modals — find any open modal and click its primary button
-    var modalIds = ['card-modal-overlay','pat-entry-modal-overlay','pat-modal-overlay','bl-modal-overlay','proj-modal-overlay','collect-modal-overlay','settings-modal-overlay'];
-    for (var mi = 0; mi < modalIds.length; mi++) {
-      var modal = document.getElementById(modalIds[mi]);
-      if (modal && modal.classList.contains('open')) {
-        var saveBtn = modal.querySelector('.btn-primary');
-        if (saveBtn && !saveBtn.disabled) { saveBtn.click(); return; }
-      }
+    // Card modal
+
+    var cardModal = document.getElementById('card-modal-overlay');
+
+    if (cardModal && cardModal.classList.contains('open')) {
+
+      document.getElementById('cm-save').click(); return;
+
+    }
+
+    // Patient entry modal
+
+    var peModal = document.getElementById('pat-entry-modal-overlay');
+
+    if (peModal && peModal.classList.contains('open')) {
+
+      document.getElementById('pe-save').click(); return;
+
     }
 
     // Patient blog text
+
     var blogText = document.getElementById('pat-blog-text');
+
     if (blogText && document.activeElement === blogText) {
+
       addBlogEntry(); return;
+
     }
 
-    // Project detail: log entry
-    var pjdLogEntry = document.getElementById('pjd-log-entry');
-    if (pjdLogEntry && document.activeElement === pjdLogEntry) {
-      var pjdLogBtn = document.getElementById('pjd-log-btn');
-      if (pjdLogBtn && !pjdLogBtn.disabled) { pjdLogBtn.click(); return; }
-    }
+    // Settings modal
 
-    // Project detail: save name/status
-    var pjdName = document.getElementById('pjd-name');
-    var pjdStatus = document.getElementById('pjd-status');
-    if ((pjdName && document.activeElement === pjdName) || (pjdStatus && document.activeElement === pjdStatus)) {
-      var pjdSaveBtn = document.getElementById('pjd-save-btn');
-      if (pjdSaveBtn && !pjdSaveBtn.disabled) { pjdSaveBtn.click(); return; }
+    var settingsModal = document.getElementById('settings-modal-overlay');
+
+    if (settingsModal && settingsModal.classList.contains('open')) {
+
+      var saveBtn = settingsModal.querySelector('.btn-primary');
+
+      if (saveBtn) { saveBtn.click(); return; }
+
     }
 
   }
