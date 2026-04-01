@@ -5416,44 +5416,24 @@ var _systemLogCache = null;
 
 var _ikCache = null;
 
-
-
 async function showImperialKITab() {
-
   var container = document.getElementById('ik-container');
-
   if (!container) return;
-
   container.innerHTML = '<div class="empty-state">Wird geladen\u2026</div>';
-
   var token = getGHToken();
-
   if (!token) { container.innerHTML = '<div class="empty-state">Bitte Token in Einstellungen eintragen.</div>'; return; }
-
   try {
-
     var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/imperialki.json',
-
       { headers: { Authorization: 'token ' + token } });
-
     if (!r.ok) throw new Error('HTTP ' + r.status);
-
     var d = await r.json();
-
     var _b64ik = d.content.replace(/\n/g,'');
-
     _ikCache = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(_b64ik), function(c){return c.charCodeAt(0);})));
-
   } catch(e) {
-
     container.innerHTML = '<div class="empty-state">Fehler: ' + esc(e.message) + '</div>';
-
     return;
-
   }
-
   renderImperialKI(container);
-
 }
 
 
@@ -5464,7 +5444,7 @@ function toggleIkDone(taskKey) {
   if (_ikDone[taskKey]) { delete _ikDone[taskKey]; }
   else { _ikDone[taskKey] = new Date().toISOString(); }
   localStorage.setItem('ikDone', JSON.stringify(_ikDone));
-  var container = document.getElementById('tab-imperialki');
+  var container = document.getElementById('ik-container');
   if (container) renderImperialKI(container);
 }
 function isIkDone(taskKey) { return !!_ikDone[taskKey]; }
@@ -5474,455 +5454,298 @@ function ikDoneTimestamp(taskKey) {
   return d.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
 }
 
-function renderImperialKI(container) {
-
+function ikCopyDraft(draftId) {
   var ik = _ikCache;
+  if (!ik) return;
+  var draft = (ik.drafts || []).find(function(d) { return d.id === draftId; });
+  if (!draft) return;
+  navigator.clipboard.writeText(draft.content).then(function() {
+    var btn = document.querySelector('[data-draft-copy="' + draftId + '"]');
+    if (btn) { btn.textContent = 'Kopiert!'; setTimeout(function() { btn.textContent = 'Kopieren'; }, 2000); }
+  });
+}
 
+function renderImperialKI(container) {
+  var ik = _ikCache;
   if (!ik) { container.innerHTML = '<div class="empty-state">Keine Daten.</div>'; return; }
 
-
-
   var now = new Date();
-
   var html = '';
 
-
-
-  // ── HEADER DASHBOARD ──
-
-  var nextDeadline = null, nextLive = null;
-
-  (ik.schedule || []).forEach(function(ev) {
-
-    var d = new Date(ev.date);
-
-    if (d <= now) return;
-
-    if (ev.type === 'deadline' && (!nextDeadline || d < new Date(nextDeadline.date))) nextDeadline = ev;
-
-    if (ev.type === 'live' && (!nextLive || d < new Date(nextLive.date))) nextLive = ev;
-
-  });
-
-
-
   function countdown(dateStr) {
-
     var d = new Date(dateStr);
-
     var diff = d - now;
-
-    if (diff <= 0) return 'JETZT';
-
+    if (diff <= 0) return 'vorbei';
     var days = Math.floor(diff / 86400000);
-
     var hours = Math.floor((diff % 86400000) / 3600000);
-
     if (days > 0) return 'in ' + days + (days === 1 ? ' Tag' : ' Tagen') + ', ' + hours + ' Std.';
-
     var mins = Math.floor((diff % 3600000) / 60000);
-
     return 'in ' + hours + ' Std. ' + mins + ' Min.';
-
   }
-
-
-
   function fmtDate(dateStr) {
-
     var d = new Date(dateStr);
-
     var hasTime = dateStr.indexOf('T') > -1 && dateStr.indexOf('T00:00:00') === -1;
-
     var datePart = d.toLocaleDateString('de-CH', {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
-
     if (hasTime) return datePart + ', ' + d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'}) + ' Uhr';
-
     return datePart;
-
   }
-
   function fmtDateShort(dateStr) {
-
     if (!dateStr) return '';
-
     var d = new Date(dateStr);
-
     return d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'numeric'});
-
   }
 
 
 
-  // ── ACTION REQUIRED (pink box) ──
+  // ── 1. MORGEN-BRIEFING (4 Dashboard-Cards) ──
+  var br = ik.briefing || {};
+  var cards = br.cards || {};
 
-  var actions = [];
+  html += '<div class="ik-briefing-header">';
+  html += '<div class="ik-briefing-title">Briefing vom ' + fmtDateShort(br.date || '') + '</div>';
+  if (br.generatedAt) html += '<div class="ik-briefing-meta">Aktualisiert ' + new Date(br.generatedAt).toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'}) + ' Uhr</div>';
+  html += '</div>';
 
-  // Collect open pre-reqs with deadlines
+  html += '<div class="ik-briefing-grid">';
 
-  Object.keys(ik.courses).forEach(function(ck) {
+  // Card: Neu (blau)
+  var newItems = (cards.new || {}).items || [];
+  html += '<details class="ik-bcard ik-bcard-new">';
+  html += '<summary><span class="ik-bcard-count">' + newItems.length + '</span><span class="ik-bcard-label">Neu</span></summary>';
+  if (newItems.length === 0) { html += '<div class="ik-bcard-empty">Nichts Neues seit gestern.</div>'; }
+  newItems.forEach(function(item) {
+    html += '<div class="ik-bcard-item">';
+    if (item.url) html += '<a href="' + esc(item.url) + '" target="_blank">' + esc(item.title) + '</a>';
+    else html += '<span>' + esc(item.title) + '</span>';
+    if (item.details) html += '<div class="ik-bcard-details">' + esc(item.details) + '</div>';
+    html += '</div>';
+  });
+  html += '</details>';
 
-    var c = ik.courses[ck];
+  // Card: Erledigt (gruen)
+  var doneItems = (cards.done || {}).items || [];
+  html += '<details class="ik-bcard ik-bcard-done">';
+  html += '<summary><span class="ik-bcard-count">' + doneItems.length + '</span><span class="ik-bcard-label">Erledigt</span></summary>';
+  if (doneItems.length === 0) { html += '<div class="ik-bcard-empty">Noch nichts abgehakt.</div>'; }
+  doneItems.forEach(function(item) {
+    html += '<div class="ik-bcard-item"><span>' + esc(item.title) + '</span>';
+    if (item.date) html += '<span class="ik-bcard-date">' + fmtDateShort(item.date) + '</span>';
+    html += '</div>';
+  });
+  html += '</details>';
 
-    (c.preReqs || []).forEach(function(req) {
+  // Card: Diskussionen (orange)
+  var discItems = (cards.discussions || {}).items || [];
+  html += '<details class="ik-bcard ik-bcard-disc">';
+  html += '<summary><span class="ik-bcard-count">' + discItems.length + '</span><span class="ik-bcard-label">Diskussionen</span></summary>';
+  if (discItems.length === 0) { html += '<div class="ik-bcard-empty">Keine offenen Diskussionen.</div>'; }
+  discItems.forEach(function(item) {
+    html += '<div class="ik-bcard-item">';
+    if (item.url) html += '<a href="' + esc(item.url) + '" target="_blank">' + esc(item.title) + '</a>';
+    else html += '<span>' + esc(item.title) + '</span>';
+    if (item.hint) html += '<div class="ik-bcard-details">' + esc(item.hint) + '</div>';
+    if (item.draftId) html += '<a href="#ik-drafts" class="ik-bcard-draft-link">Entwurf lesen</a>';
+    html += '</div>';
+  });
+  html += '</details>';
 
-      if (req.status !== 'done') actions.push({ title: req.title, deadline: req.deadline, course: ck, url: c.url + '/modules' });
+  // Card: Zu erledigen (rot)
+  var dlItems = (cards.deadlines || {}).items || [];
+  html += '<details open class="ik-bcard ik-bcard-todo">';
+  html += '<summary><span class="ik-bcard-count">' + dlItems.length + '</span><span class="ik-bcard-label">Zu erledigen</span></summary>';
+  if (dlItems.length === 0) { html += '<div class="ik-bcard-empty">Alles erledigt!</div>'; }
+  dlItems.forEach(function(item) {
+    var tKey = 'dl_' + (item.title||'').replace(/\W/g,'_').substring(0,30);
+    var tDone = isIkDone(tKey);
+    html += '<div class="ik-bcard-item ik-bcard-task' + (tDone ? ' ik-done' : '') + '">';
+    html += '<input type="checkbox" class="ik-checkbox" ' + (tDone ? 'checked' : '') + ' onchange="toggleIkDone(\'' + tKey + '\')"/>';
+    if (item.url) html += '<a href="' + esc(item.url) + '" target="_blank">' + esc(item.title) + '</a>';
+    else html += '<span>' + esc(item.title) + '</span>';
+    var meta = [];
+    if (item.deadline) meta.push('bis ' + fmtDateShort(item.deadline));
+    if (item.estimatedMinutes) meta.push('~' + item.estimatedMinutes + ' min');
+    if (meta.length) html += '<span class="ik-bcard-meta' + (item.priority === 'high' ? ' ik-priority-high' : '') + '">' + meta.join(' | ') + '</span>';
+    if (tDone) html += '<span class="ik-done-ts">' + ikDoneTimestamp(tKey) + '</span>';
+    html += '</div>';
+  });
+  html += '</details>';
 
-    });
+  html += '</div>'; // end briefing-grid
 
-    // Open discussions
+  // ── 2. TAGES-COACH ──
+  var coach = ik.coach || {};
+  var plan = coach.dailyPlan || [];
 
-    (c.discussions || []).forEach(function(d) {
+  html += '<div class="ik-coach-box">';
+  html += '<div class="ik-coach-header">';
+  html += '<div class="ik-coach-title">Dein Tagesplan</div>';
+  if (coach.currentPhase) html += '<span class="ik-coach-phase">' + esc(coach.currentPhase) + '</span>';
+  html += '</div>';
 
-      if (d.status !== 'posted') actions.push({ title: d.title, deadline: null, course: ck, url: d.url });
+  if (coach.weeklyFocus) {
+    html += '<div class="ik-coach-focus">' + esc(coach.weeklyFocus) + '</div>';
+  }
 
-    });
+  // Progress bar
+  if (plan.length > 0) {
+    var planDone = plan.filter(function(p) { var k = 'plan_' + (p.title||'').replace(/\W/g,'_').substring(0,30); return isIkDone(k); }).length;
+    var pct = Math.round(planDone / plan.length * 100);
+    html += '<div class="ik-coach-progress">';
+    html += '<div class="ik-coach-progress-bar" style="width:' + pct + '%;"></div>';
+    html += '</div>';
+    html += '<div class="ik-coach-progress-label">' + planDone + ' von ' + plan.length + ' erledigt</div>';
+  }
 
+  var TYPE_ICONS = { admin: '\u{1F4CB}', test: '\u{1F4DD}', networking: '\u{1F91D}', study: '\u{1F4D6}', assignment: '\u{1F4DA}', discussion: '\u{1F4AC}' };
+  plan.forEach(function(item) {
+    var pKey = 'plan_' + (item.title||'').replace(/\W/g,'_').substring(0,30);
+    var pDone = isIkDone(pKey);
+    var icon = TYPE_ICONS[item.type] || '\u{2022}';
+    html += '<div class="ik-coach-item' + (pDone ? ' ik-done' : '') + '">';
+    html += '<input type="checkbox" class="ik-checkbox" ' + (pDone ? 'checked' : '') + ' onchange="toggleIkDone(\'' + pKey + '\')"/>';
+    html += '<span class="ik-coach-icon">' + icon + '</span>';
+    if (item.url) html += '<a href="' + esc(item.url) + '" target="_blank" class="ik-coach-task-name">' + esc(item.title) + '</a>';
+    else html += '<span class="ik-coach-task-name">' + esc(item.title) + '</span>';
+    if (item.estimatedMinutes) html += '<span class="ik-coach-time">~' + item.estimatedMinutes + ' min</span>';
+    if (pDone) html += '<span class="ik-done-ts">' + ikDoneTimestamp(pKey) + '</span>';
+    html += '</div>';
   });
 
-  // Upcoming live sessions within 48h
+  // Tips
+  if (coach.tips && coach.tips.length > 0) {
+    html += '<div class="ik-coach-tips">';
+    coach.tips.forEach(function(tip) {
+      html += '<div class="ik-coach-tip">' + esc(tip) + '</div>';
+    });
+    html += '</div>';
+  }
 
-  (ik.schedule || []).forEach(function(ev) {
+  // Milestone
+  if (coach.nextMilestone) {
+    var ms = coach.nextMilestone;
+    html += '<div class="ik-coach-milestone">';
+    html += '<span class="ik-coach-milestone-label">Naechster Meilenstein:</span> ';
+    html += '<strong>' + esc(ms.title) + '</strong>';
+    if (ms.target) html += ' <span class="ik-coach-milestone-date">(' + countdown(ms.target + 'T23:59:00Z') + ')</span>';
+    html += '</div>';
+  }
 
-    var d = new Date(ev.date);
+  html += '</div>'; // end coach-box
 
-    if (ev.type === 'live' && d > now && d < new Date(now.getTime() + 48*3600000)) {
+  // ── 3. VORBEREITETE ENTWUERFE ──
+  var drafts = ik.drafts || [];
+  if (drafts.length > 0) {
+    html += '<details class="ik-section" id="ik-drafts">';
+    html += '<summary class="ik-section-title">Vorbereitete Entwuerfe (' + drafts.length + ')</summary>';
+    drafts.forEach(function(draft) {
+      var statusClass = draft.status === 'posted' ? 'ik-draft-posted' : draft.status === 'skipped' ? 'ik-draft-skipped' : '';
+      html += '<div class="ik-draft-card ' + statusClass + '">';
+      html += '<div class="ik-draft-header">';
+      html += '<span class="ik-draft-type">' + esc(draft.type || 'Entwurf') + '</span>';
+      if (draft.status) html += '<span class="ik-draft-status ik-draft-status-' + draft.status + '">' + esc(draft.status) + '</span>';
+      html += '</div>';
+      if (draft.context) html += '<div class="ik-draft-context">' + esc(draft.context) + '</div>';
+      html += '<div class="ik-draft-content">' + esc(draft.content) + '</div>';
+      html += '<div class="ik-draft-actions">';
+      html += '<button class="ik-draft-copy" data-draft-copy="' + esc(draft.id) + '" onclick="ikCopyDraft(\'' + esc(draft.id) + '\')">Kopieren</button>';
+      if (draft.targetUrl) html += '<a href="' + esc(draft.targetUrl) + '" target="_blank" class="ik-draft-post">Auf Emeritus posten</a>';
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</details>';
+  }
 
-      actions.push({ title: ev.title + ' (Live-Session)', deadline: ev.date.split('T')[0], course: ev.course, url: (ik.courses[ev.course] || {}).url + '/external_tools/37723' });
+  // ── 4. ZEITPLAN (Termine + Deadlines merged) ──
+  html += '<details open class="ik-section">';
+  html += '<summary class="ik-section-title">Zeitplan</summary>';
+  var upcoming = (ik.schedule || []).filter(function(ev) { return new Date(ev.date) > now; }).sort(function(a,b) { return a.date.localeCompare(b.date); });
+  if (upcoming.length === 0) {
+    html += '<div class="ik-card-sub" style="padding:8px 0;">Keine kommenden Termine.</div>';
+  } else {
+    upcoming.forEach(function(ev) {
+      var color = ev.type === 'live' ? '#3b82f6' : ev.type === 'deadline' ? '#ef4444' : '#f59e0b';
+      var label = ev.type === 'live' ? 'Live' : ev.type === 'deadline' ? 'Deadline' : 'Event';
+      var courseColor = ik.courses[ev.course] ? ik.courses[ev.course].color : '#6b7280';
+      html += '<div class="ik-entry">';
+      html += '<span class="ik-time">' + fmtDate(ev.date) + '</span>';
+      html += '<span class="ik-badge" style="background:' + color + ';">' + label + '</span>';
+      html += '<span class="ik-dot" style="background:' + courseColor + ';"></span>';
+      html += '<span class="ik-name">' + esc(ev.title) + '</span>';
+      html += '<span class="ik-right">' + countdown(ev.date) + '</span>';
+      html += '</div>';
+    });
+  }
+  html += '</details>';
 
+  // ── 5. KURS-DETAILS (Accordions) ──
+  Object.keys(ik.courses).forEach(function(ck) {
+    var c = ik.courses[ck];
+    var isActive = c.status === 'active';
+    html += '<details' + (isActive ? ' open' : '') + ' class="ik-section">';
+    html += '<summary class="ik-section-title" style="color:' + c.color + ';">' + esc(c.shortName);
+    if (c.started) html += ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(seit ' + fmtDateShort(c.started) + ')</span>';
+    else if (c.starts) html += ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(Start: ' + fmtDateShort(c.starts) + ')</span>';
+    html += '</summary>';
+
+    // Modules
+    if (c.modules && c.modules.length > 0) {
+      html += '<div style="margin-bottom:12px;">';
+      html += '<div class="sl-section-title">Module</div>';
+      c.modules.forEach(function(mod) {
+        var statusBadge = mod.status === 'locked' ? '\uD83D\uDD12' : mod.status === 'open' ? '\uD83D\uDCD6' : '\u2705';
+        html += '<div class="ik-module-card">';
+        html += '<span class="ik-module-icon">' + statusBadge + '</span>';
+        html += '<div style="flex:1;">';
+        html += '<div class="ik-module-title">' + esc(mod.id + ': ' + mod.title) + '</div>';
+        html += '<div class="ik-module-desc">' + esc(mod.description) + '</div>';
+        html += '<div class="ik-module-desc">~' + mod.hours + ' Stunden</div>';
+        html += '</div></div>';
+      });
+      html += '</div>';
     }
 
+    // Discussions
+    if (c.discussions && c.discussions.length > 0) {
+      html += '<div style="margin-bottom:8px;">';
+      html += '<div class="sl-section-title">Diskussionen</div>';
+      c.discussions.forEach(function(disc) {
+        var icon = disc.status === 'posted' ? '\u2705' : '\u270F\uFE0F';
+        html += '<div class="ik-entry" style="padding:6px 16px;">';
+        html += '<span>' + icon + '</span>';
+        html += '<a href="' + esc(disc.url) + '" target="_blank" style="color:' + c.color + ';" class="ik-name">' + esc(disc.title) + '</a>';
+        html += '<span class="ik-right">' + (disc.status === 'posted' ? 'gepostet ' + fmtDateShort(disc.postedDate) : 'offen') + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    if (!isActive && c.starts) {
+      html += '<div class="ik-card-sub" style="padding:8px 14px;">Kurs startet am ' + fmtDateShort(c.starts) + '.</div>';
+    }
+    html += '</details>';
   });
 
-
-
-  if (actions.length > 0) {
-
-    actions.sort(function(a,b) { return (a.deadline||'9').localeCompare(b.deadline||'9'); });
-
-    html += '<div class="ik-action-box">';
-
-    html += '<div class="ik-action-label">\u26a0\ufe0f Manuell erledigen</div>';
-
-    actions.forEach(function(a) {
-      var aKey = 'action_' + (a.title||'').replace(/\W/g,'_').substring(0,30);
-      var aDone = isIkDone(aKey);
-      html += '<div class="ik-action-item' + (aDone ? ' ik-done' : '') + '">';
-      html += '<input type="checkbox" class="ik-checkbox" ' + (aDone ? 'checked' : '') + ' onchange="toggleIkDone(\'' + aKey + '\')"/>';
-      html += '<span class="ik-action-title"><a href="' + esc(a.url) + '" target="_blank">' + esc(a.title) + '</a></span>';
-      if (a.deadline) html += '<span class="ik-action-deadline">bis ' + fmtDateShort(a.deadline) + '</span>';
-      if (aDone) html += '<span class="ik-done-ts">' + ikDoneTimestamp(aKey) + '</span>';
-      html += '</div>';
-    });
-
-    html += '</div>';
-
-  }
-
-
-
-  html += '<div class="ik-dashboard">';
-
-
-
-  // Next deadline card
-
-  html += '<div class="ik-card">';
-
-  html += '<div class="ik-card-label" style="color:#ef4444;">N\u00e4chste Deadline</div>';
-
-  if (nextDeadline) {
-
-    html += '<div class="ik-card-title">' + esc(nextDeadline.title) + '</div>';
-
-    html += '<div class="ik-card-sub">' + fmtDate(nextDeadline.date) + '</div>';
-
-    html += '<div class="ik-countdown" style="color:#ef4444;">' + countdown(nextDeadline.date) + '</div>';
-
-  } else {
-
-    html += '<div class="ik-card-sub">Keine offenen Deadlines</div>';
-
-  }
-
-  html += '</div>';
-
-
-
-  // Next live session card
-
-  html += '<div class="ik-card">';
-
-  html += '<div class="ik-card-label" style="color:#3b82f6;">N\u00e4chste Live-Session</div>';
-
-  if (nextLive) {
-
-    html += '<div class="ik-card-title">' + esc(nextLive.title) + '</div>';
-
-    html += '<div class="ik-card-sub">' + fmtDate(nextLive.date) + '</div>';
-
-    html += '<div class="ik-countdown" style="color:#3b82f6;">' + countdown(nextLive.date) + '</div>';
-
-  } else {
-
-    html += '<div class="ik-card-sub">Keine geplanten Sessions</div>';
-
-  }
-
-  html += '</div>';
-
-  html += '</div>';
-
-
-
-  // ── TERMINE ──
-
-  html += '<details open class="ik-section">';
-
-  html += '<summary class="ik-section-title">Termine</summary>';
-
-  var upcoming = (ik.schedule || []).filter(function(ev) { return new Date(ev.date) > now; }).sort(function(a,b) { return a.date.localeCompare(b.date); });
-
-  if (upcoming.length === 0) {
-
-    html += '<div class="ik-card-sub" style="padding:8px 0;">Keine kommenden Termine.</div>';
-
-  } else {
-
-    upcoming.forEach(function(ev) {
-
-      var color = ev.type === 'live' ? '#3b82f6' : ev.type === 'deadline' ? '#ef4444' : '#f59e0b';
-
-      var label = ev.type === 'live' ? 'Live' : ev.type === 'deadline' ? 'Deadline' : 'Event';
-
-      var courseColor = ik.courses[ev.course] ? ik.courses[ev.course].color : '#6b7280';
-
-      html += '<div class="ik-entry">';
-
-      html += '<span class="ik-time">' + fmtDate(ev.date) + '</span>';
-
-      html += '<span class="ik-badge" style="background:' + color + ';">' + label + '</span>';
-
-      html += '<span class="ik-dot" style="background:' + courseColor + ';"></span>';
-
-      html += '<span class="ik-name">' + esc(ev.title) + '</span>';
-
-      html += '<span class="ik-right">' + countdown(ev.date) + '</span>';
-
-      html += '</div>';
-
-    });
-
-  }
-
-  html += '</details>';
-
-
-
-  // ── KURS AIH ──
-
-  var aih = ik.courses.AIH;
-
-  html += '<details open class="ik-section">';
-
-  html += '<summary class="ik-section-title" style="color:' + aih.color + ';">' + esc(aih.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(aktiv seit ' + fmtDateShort(aih.started) + ')</span></summary>';
-
-
-
-  // Pre-requisites
-
-  if (aih.preReqs && aih.preReqs.length > 0) {
-
-    html += '<div style="margin-bottom:12px;">';
-
-    html += '<div class="sl-section-title">Offene Aufgaben</div>';
-
-    aih.preReqs.forEach(function(req) {
-
-      var statusIcon = req.status === 'done' ? '\u2705' : '\u23f3';
-
-      var urgent = new Date(req.deadline) < new Date(now.getTime() + 3*86400000);
-
-      var tKey = 'task_' + (req.title||'').replace(/\W/g,'_').substring(0,30);
-      var tDone = isIkDone(tKey);
-      statusIcon = tDone ? '\u2705' : '\u23f3';
-      html += '<div class="ik-task' + (tDone ? ' ik-done' : '') + '">';
-      html += '<input type="checkbox" class="ik-checkbox" ' + (tDone ? 'checked' : '') + ' onchange="toggleIkDone(\'' + tKey + '\')"/>';
-      html += '<span class="ik-task-name">' + esc(req.title) + '</span>';
-      html += '<span class="ik-task-deadline ' + (urgent ? 'ik-deadline-urgent' : 'ik-deadline-normal') + '">bis ' + fmtDateShort(req.deadline) + '</span>';
-      if (tDone) html += '<span class="ik-done-ts">' + ikDoneTimestamp(tKey) + '</span>';
-      html += '</div>';
-
-    });
-
-    html += '</div>';
-
-  }
-
-
-
-  // Modules
-
-  if (aih.modules && aih.modules.length > 0) {
-
-    html += '<div style="margin-bottom:12px;">';
-
-    html += '<div class="sl-section-title">Module</div>';
-
-    aih.modules.forEach(function(mod) {
-
-      var statusBadge = mod.status === 'locked' ? '\uD83D\uDD12' : mod.status === 'open' ? '\uD83D\uDCD6' : '\u2705';
-
-      html += '<div class="ik-module-card">';
-
-      html += '<span class="ik-module-icon">' + statusBadge + '</span>';
-
-      html += '<div style="flex:1;">';
-
-      html += '<div class="ik-module-title">' + esc(mod.id + ': ' + mod.title) + '</div>';
-
-      html += '<div class="ik-module-desc">' + esc(mod.description) + '</div>';
-
-      html += '<div class="ik-module-desc">Geschätzte Dauer: ~' + mod.hours + ' Stunden</div>';
-
-      html += '</div></div>';
-
-    });
-
-    html += '</div>';
-
-  }
-
-
-
-  // Discussions
-
-  if (aih.discussions && aih.discussions.length > 0) {
-
-    html += '<div style="margin-bottom:8px;">';
-
-    html += '<div class="sl-section-title">Diskussionen</div>';
-
-    aih.discussions.forEach(function(disc) {
-
-      var icon = disc.status === 'posted' ? '\u2705' : '\u270F\uFE0F';
-
-      html += '<div class="ik-entry" style="padding:6px 16px;">';
-
-      html += '<span>' + icon + '</span>';
-
-      html += '<a href="' + esc(disc.url) + '" target="_blank" style="color:' + aih.color + ';" class="ik-name">' + esc(disc.title) + '</a>';
-
-      html += '<span class="ik-right">' + (disc.status === 'posted' ? 'gepostet ' + fmtDateShort(disc.postedDate) : 'offen') + '</span>';
-
-      html += '</div>';
-
-    });
-
-    html += '</div>';
-
-  }
-
-  html += '</details>';
-
-
-
-  // ── KURS DTH ──
-
-  var dth = ik.courses.DTH;
-
+  // ── 6. WISSENSDATENBANK + TRIP REPORT + LOGBUCH ──
+  // Trip Report
   html += '<details class="ik-section">';
-
-  html += '<summary class="ik-section-title" style="color:' + dth.color + ';">' + esc(dth.shortName) + ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(Start: ' + fmtDateShort(dth.starts) + ')</span></summary>';
-
-  html += '<div class="ik-card-sub" style="padding:8px 0;">Kurs startet am ' + fmtDateShort(dth.starts) + '. Orientation-Material wird noch erfasst.</div>';
-
-  html += '</details>';
-
-
-
-  // ── LOGBUCH ──
-
-  html += '<details class="ik-section">';
-
-  html += '<summary class="ik-section-title">Logbuch</summary>';
-
-  var LOG_COLORS = { deploy:'#c47a2a', fix:'#b45309', success:'#15803d', error:'#b91c1c', info:'#6b7280' };
-
-  var LOG_LABELS = { deploy:'Deploy', fix:'Fix', success:'Erfolg', error:'Fehler', info:'Info' };
-
-  var logs = (ik.log || []).sort(function(a,b) { return b.ts.localeCompare(a.ts); });
-
-  logs.forEach(function(entry) {
-
-    var bg = LOG_COLORS[entry.type] || LOG_COLORS.info;
-
-    var label = LOG_LABELS[entry.type] || 'Info';
-
-    var d = new Date(entry.ts);
-
-    var timeStr = d.toLocaleDateString('de-CH', {day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
-
-    html += '<div class="sl-entry">';
-
-    html += '<span class="sl-time">' + timeStr + '</span>';
-
-    html += '<span class="sl-badge" style="background:' + bg + ';">' + label + '</span>';
-
-    html += '<div class="sl-body">';
-
-    html += '<div class="sl-title">' + esc(entry.title) + '</div>';
-
-    if (entry.details) html += '<div class="sl-details">' + esc(entry.details) + '</div>';
-
-    html += '</div></div>';
-
-  });
-
-  html += '</details>';
-
-
-
-  // ── TRIP REPORT ──
-
-  html += '<details class="ik-section">';
-
   html += '<summary class="ik-section-title">Trip Report / Blog</summary>';
-
   var tr = ik.tripReport || {};
-
   html += '<div class="ik-info-card">';
-
   html += '<div class="ik-info-title">Reflective Journal Anfrage</div>';
-
-  html += 'Email gesendet: ' + fmtDateShort(tr.emailSent || '') + (tr.emailSent ? '' : '?') + '<br>';
-
+  html += 'Email gesendet: ' + fmtDateShort(tr.emailSent || '') + '<br>';
   html += 'Status: <span style="color:#f59e0b;font-weight:600;">' + (tr.status === 'awaiting_response' ? 'Warte auf Antwort' : tr.status || '?') + '</span><br>';
-
-  html += 'Follow-up geplant: ' + fmtDateShort(tr.followUpDate || '') + (tr.followUpDate ? '' : '?');
-
+  if (tr.followUpDate) html += 'Follow-up geplant: ' + fmtDateShort(tr.followUpDate);
   html += '</div>';
-
   html += '</details>';
 
-
-
-  // ── WISSENSDATENBANK ──
-
+  // Wissensdatenbank
   html += '<details class="ik-section">';
-
   html += '<summary class="ik-section-title">Wissensdatenbank</summary>';
-
   var kb = ik.knowledgeBase || {};
-
   html += '<div class="ik-info-card">';
-
   html += '<strong>Klinik-Dokumente:</strong> ' + ((kb.clinicDocs || []).join(', ') || 'Keine') + '<br>';
-
   html += '<strong>Transkripte:</strong> ' + ((kb.transcripts || []).length || 0) + ' Dateien<br>';
-
   html += '<strong>NotebookLM:</strong> ' + (kb.notebookLM || 'nicht konfiguriert');
-
   html += '</div>';
 
   if (kb.grokResearch) {
