@@ -4080,6 +4080,8 @@ function migratePatientEntries(pat) {
 
   });
 
+  if (!pat.austrittsplanung) pat.austrittsplanung = { datum:'', farbe:'', kommentar:'' };
+
   if (pat.notizen && pat.entries.length === 0) {
 
     pat.entries.push({ id:'mig'+Date.now(), date:pat.aufnahme?(new Date(pat.aufnahme)).toISOString():(new Date()).toISOString(), title:'Notiz (migriert)', content:pat.notizen, type:'notiz' });
@@ -4150,7 +4152,13 @@ function renderPatients(filter) {
 
     var preview = lastEntry ? esc((lastEntry.title||'').substring(0,30)) : '';
 
-    return '<div class="patient-row'+(p.status==='archiviert'?' pat-archived':'')+'" onclick="showPatientDetail(\''+esc(p.id)+'\')"><span class="pat-code" style="font-weight:600;min-width:80px">'+esc(p.code)+'</span><span style="display:flex;gap:3px;align-items:center">'+ampelDots+'</span><span class="pat-info" style="flex:1;font-size:12px;color:var(--text-muted)">'+esc(p.aufnahme||'')+(preview?' \u00b7 '+preview:'')+'</span><span class="pat-status-badge pat-status-'+(p.status||'aktiv')+'">'+(p.status||'aktiv')+'</span></div>';
+    var ap = p.austrittsplanung || {};
+    var austrittBadge = '';
+    if (ap.datum) {
+      var dd = ap.datum.split('-'); var fmtDate = dd.length===3 ? dd[2]+'.'+dd[1]+'.'+dd[0].substring(2) : ap.datum;
+      austrittBadge = '<span class="pat-austritt-badge'+(ap.farbe?' pat-austritt-'+ap.farbe:'')+'">Austritt: '+esc(fmtDate)+'</span>';
+    }
+    return '<div class="patient-row'+(p.status==='archiviert'?' pat-archived':'')+'" onclick="showPatientDetail(\''+esc(p.id)+'\')"><span class="pat-code" style="font-weight:600;min-width:80px">'+esc(p.code)+'</span>'+austrittBadge+'<span style="display:flex;gap:3px;align-items:center">'+ampelDots+'</span><span class="pat-info" style="flex:1;font-size:12px;color:var(--text-muted)">'+esc(p.aufnahme||'')+(preview?' \u00b7 '+preview:'')+'</span><span class="pat-status-badge pat-status-'+(p.status||'aktiv')+'">'+(p.status||'aktiv')+'</span></div>';
 
   }
 
@@ -4369,6 +4377,21 @@ function showPatientDetail(patId) {
 
 
 
+  // --- AUSTRITTSPLANUNG ---
+  var apData = pat.austrittsplanung || { datum:'', farbe:'', kommentar:'' };
+  html += '<div class="pat-austrittsplanung-section">'
+    + '<h3 class="pat-section-title">Austrittsplanung</h3>'
+    + '<div class="pat-ap-fields">'
+    + '<div class="pat-ap-field"><label>Datum</label><input type="date" class="pat-ap-date" id="ap-datum" value="'+esc(apData.datum||'')+'" onchange="setAustrittsplanung(\'datum\',this.value)"></div>'
+    + '<div class="pat-ap-field"><label>Farbe</label><div class="pat-ap-colors">'
+    + '<div class="pat-ap-color-btn'+(apData.farbe==='gruen'?' selected':'')+'" data-val="gruen" style="background:#22c55e" onclick="setAustrittsplanung(\'farbe\',\'gruen\')"></div>'
+    + '<div class="pat-ap-color-btn'+(apData.farbe==='gelb'?' selected':'')+'" data-val="gelb" style="background:#eab308" onclick="setAustrittsplanung(\'farbe\',\'gelb\')"></div>'
+    + '<div class="pat-ap-color-btn'+(apData.farbe==='blau'?' selected':'')+'" data-val="blau" style="background:#3b82f6" onclick="setAustrittsplanung(\'farbe\',\'blau\')"></div>'
+    + '<div class="pat-ap-color-btn'+(apData.farbe==='rot'?' selected':'')+'" data-val="rot" style="background:#ef4444" onclick="setAustrittsplanung(\'farbe\',\'rot\')"></div>'
+    + '</div></div>'
+    + '<div class="pat-ap-field pat-ap-field-wide"><label>Kommentar</label><input type="text" class="pat-ap-kommentar" id="ap-kommentar" value="'+esc(apData.kommentar||'')+'" placeholder="z.B. Wohnung gefunden, wartet auf Platz…" onchange="setAustrittsplanung(\'kommentar\',this.value)"></div>'
+    + '</div></div>';
+
   // --- VORBERICHTE SUMMARY BOXES ---
   var vbSummary = generateVorberichtSummary(pat);
   var ekVorbereitung = generateErstkontaktVorbereitung(pat);
@@ -4546,6 +4569,13 @@ function addAmpelLog(key) {
 }
 
 
+
+function setAustrittsplanung(field, value) {
+  _getPatAndSave(function(pat){
+    if (!pat.austrittsplanung) pat.austrittsplanung = { datum:'', farbe:'', kommentar:'' };
+    pat.austrittsplanung[field] = value;
+  });
+}
 
 function openEntryModal(entryId) {
 
@@ -4769,7 +4799,7 @@ document.getElementById('pm-save').addEventListener('click', function(){
 
   } else {
 
-    patients.push({ id:'PAT'+Date.now(), code:code, aufnahme:aufnahme, status:status, entries:[], ampel:{ austritt:{status:'offen',date:'',log:[]}, ambulant:{status:'offen',date:'',log:[]}, tagesstruktur:{status:'offen',date:'',log:[]}, wiedereingliederung:{status:'offen',date:'',log:[]} } });
+    patients.push({ id:'PAT'+Date.now(), code:code, aufnahme:aufnahme, status:status, entries:[], ampel:{ austritt:{status:'offen',date:'',log:[]}, ambulant:{status:'offen',date:'',log:[]}, tagesstruktur:{status:'offen',date:'',log:[]}, wiedereingliederung:{status:'offen',date:'',log:[]} }, austrittsplanung:{ datum:'', farbe:'', kommentar:'' } });
 
   }
 
