@@ -2158,6 +2158,8 @@ async function safeWriteToGitHub(path, content, message, maxRetries) {
 
       var sha = null;
 
+      var remoteSize = 0;
+
       var getRes = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/contents/' + path, {
 
         headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' }
@@ -2169,6 +2171,8 @@ async function safeWriteToGitHub(path, content, message, maxRetries) {
         var getData = await getRes.json();
 
         sha = getData.sha;
+
+        remoteSize = getData.size || 0;
 
         if (ghSHA.hasOwnProperty(path)) ghSHA[path] = sha;
 
@@ -2183,6 +2187,18 @@ async function safeWriteToGitHub(path, content, message, maxRetries) {
       // Step 2: Encode content (proper UTF-8)
 
       var bytes = new TextEncoder().encode(content);
+
+      // Step 2b: SizeGuard — block if new content < 50% of remote (data loss protection)
+
+      if (remoteSize > 500 && bytes.length < remoteSize * 0.5) {
+
+        var sgMsg = '[SizeGuard] BLOCKED: ' + path + ' new size ' + bytes.length + ' < 50% of remote ' + remoteSize + '. Possible data loss.';
+
+        console.error(sgMsg);
+
+        throw new Error(sgMsg);
+
+      }
 
       var binary = '';
 
