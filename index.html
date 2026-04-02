@@ -4152,6 +4152,58 @@ function renderPatients(filter) {
 
     + '<button class="btn-primary" id="btn-pat-add">+ Patient</button></div></div>';
 
+  // Wochenplanung Dropdown
+  var wpOpen = window._wochenplanungOpen || false;
+  html += '<div class="wp-section">'
+    + '<button class="wp-toggle" onclick="window._wochenplanungOpen=!window._wochenplanungOpen;renderPatients();">'
+    + 'Wochenplanung ' + (wpOpen ? '\u25b4' : '\u25be') + '</button>';
+  if (wpOpen) {
+    var wpData = window._wochenplanungData || {};
+    var dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+    var activePats = (getPatients().map(migratePatientEntries)).filter(function(p){ return p.status !== 'archiviert'; });
+    activePats.sort(function(a,b){ return (a.code||'').localeCompare(b.code||''); });
+    html += '<div class="wp-table-wrap"><table class="wp-table"><thead><tr>'
+      + '<th>Patient</th><th>WEBEs</th><th>1. Termin</th><th>2. Termin</th>'
+      + '</tr></thead><tbody>';
+    activePats.forEach(function(p) {
+      var pid = p.id;
+      var wp = wpData[pid] || { webes:'standard', webesText:'', t1date:'', t1time:'', t1min:45, t2date:'', t2time:'', t2min:45 };
+      // WEBEs cell
+      var webesCell = '<select class="wp-select" onchange="wpSetWebes(\'' + pid + '\',this.value)">'
+        + '<option value="standard"' + (wp.webes==='standard'?' selected':'') + '>Standard</option>'
+        + '<option value="textfeld"' + (wp.webes==='textfeld'?' selected':'') + '>Textfeld</option>'
+        + '<option value="station"' + (wp.webes==='station'?' selected':'') + '>auf Station</option>'
+        + '</select>';
+      if (wp.webes === 'textfeld') {
+        webesCell += '<input type="text" class="wp-text-input wp-text-red" value="' + esc(wp.webesText||'') + '" placeholder="Eingabe..." onchange="wpSetWebesText(\'' + pid + '\',this.value)">';
+      } else if (wp.webes === 'station') {
+        webesCell = '<span class="wp-station-label">auf Station</span>';
+      }
+      // Termin helper
+      function renderTermin(prefix, dateVal, timeVal, minVal) {
+        var display = '';
+        if (dateVal && timeVal) {
+          var dt = new Date(dateVal + 'T' + timeVal);
+          display = dayNames[dt.getDay()] + ' ' + timeVal;
+          if (minVal) display += ' (' + minVal + 'min)';
+        }
+        return '<div class="wp-termin">'
+          + '<input type="date" class="wp-date" value="' + esc(dateVal||'') + '" onchange="wpSetTermin(\'' + pid + '\',\'' + prefix + '\',\'date\',this.value)">'
+          + '<input type="time" class="wp-time" value="' + esc(timeVal||'') + '" onchange="wpSetTermin(\'' + pid + '\',\'' + prefix + '\',\'time\',this.value)">'
+          + '<input type="number" class="wp-min" value="' + (minVal||45) + '" min="5" max="120" step="5" onchange="wpSetTermin(\'' + pid + '\',\'' + prefix + '\',\'min\',this.value)">'
+          + (display ? '<div class="wp-termin-display">' + display + '</div>' : '')
+          + '</div>';
+      }
+      html += '<tr><td class="wp-pat-code">' + esc(p.code) + '</td>'
+        + '<td class="wp-webes-cell">' + webesCell + '</td>'
+        + '<td>' + renderTermin('t1', wp.t1date, wp.t1time, wp.t1min) + '</td>'
+        + '<td>' + renderTermin('t2', wp.t2date, wp.t2time, wp.t2min) + '</td>'
+        + '</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+  html += '</div>';
+
   // Sort
   var cards = typeof getCards === 'function' ? getCards() : {};
   var paCards = {};
@@ -4675,6 +4727,33 @@ function setBerichtStatus(field, value) {
     if (!pat.bericht) pat.bericht = { farbe:'', kommentar:'' };
     pat.bericht[field] = value;
   });
+}
+
+// ─── WOCHENPLANUNG ───────────────────────────────────────────────────────────
+if (!window._wochenplanungData) window._wochenplanungData = {};
+
+function _wpGet(pid) {
+  if (!window._wochenplanungData[pid]) window._wochenplanungData[pid] = { webes:'standard', webesText:'', t1date:'', t1time:'', t1min:45, t2date:'', t2time:'', t2min:45 };
+  return window._wochenplanungData[pid];
+}
+
+function wpSetWebes(pid, val) {
+  var wp = _wpGet(pid);
+  wp.webes = val;
+  if (val !== 'textfeld') wp.webesText = '';
+  renderPatients();
+}
+
+function wpSetWebesText(pid, val) {
+  _wpGet(pid).webesText = val;
+}
+
+function wpSetTermin(pid, prefix, field, val) {
+  var wp = _wpGet(pid);
+  if (field === 'date') wp[prefix + 'date'] = val;
+  if (field === 'time') wp[prefix + 'time'] = val;
+  if (field === 'min') wp[prefix + 'min'] = parseInt(val) || 45;
+  renderPatients();
 }
 
 function openEntryModal(entryId) {
