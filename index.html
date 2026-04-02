@@ -244,6 +244,8 @@
 
 
 
+    <div id="usage-widget"></div>
+
     <div id="process-status-box"></div>
 
     <div id="scraper-progress-box"></div>
@@ -5500,10 +5502,133 @@ async function fetchProcessStatus() {
 
 
 
+// ─── USAGE WIDGET ────────────────────────────────────────────────────────────
+
+async function fetchUsageData() {
+  try {
+    var token = getGHToken();
+    if (!token) return;
+    var res = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/contents/data/usage.json', {
+      headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) return;
+    var data = await res.json();
+    var decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+    var usage = JSON.parse(decoded);
+    renderUsageWidget(usage);
+  } catch(e) {
+    console.warn('[usage] fetch failed', e);
+  }
+}
+
+function usageColor(pct) {
+  if (pct < 60) return 'green';
+  if (pct < 85) return 'yellow';
+  return 'red';
+}
+
+function fmtTokens(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
+  return String(n);
+}
+
+function renderUsageWidget(u) {
+  var el = document.getElementById('usage-widget');
+  if (!el || !u) return;
+
+  var c5 = usageColor(u.current5h.pct);
+  var cw = usageColor(u.currentWeek.pct);
+
+  // Updated time
+  var updatedAgo = '';
+  try {
+    var diff = Math.floor((Date.now() - new Date(u.updatedAt).getTime()) / 60000);
+    updatedAgo = diff < 1 ? 'gerade' : diff + ' min';
+  } catch(e) { updatedAgo = '?'; }
+
+  // Weekly chart — letzte 7 Tage aus daily
+  var days = (u.daily || []).slice(-7);
+  var maxEff = Math.max.apply(null, days.map(function(d) { return d.effective || 0; }));
+  if (maxEff < 1) maxEff = 1;
+  var budgetLine = u.currentWeek.dailyBudget || 0;
+  var budgetPct = budgetLine > 0 ? Math.min(Math.round(budgetLine / maxEff * 100), 100) : 0;
+  var dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  var todayStr = new Date().toISOString().slice(0, 10);
+
+  var barsHtml = days.map(function(d) {
+    var h = Math.max(Math.round((d.effective || 0) / maxEff * 100), 1);
+    var isToday = d.date === todayStr;
+    return '<div class="usage-chart-bar' + (isToday ? ' today' : '') + '" style="height:' + h + '%" title="' + d.date + ': ' + fmtTokens(d.effective || 0) + '"></div>';
+  }).join('');
+
+  var labelsHtml = days.map(function(d) {
+    var dn = dayNames[new Date(d.date + 'T12:00:00').getDay()];
+    return '<span>' + dn + '</span>';
+  }).join('');
+
+  // Models
+  var modelsHtml = '';
+  if (u.models) {
+    var totalEff = 0;
+    Object.keys(u.models).forEach(function(k) { totalEff += u.models[k].effective || 0; });
+    Object.keys(u.models).forEach(function(k) {
+      if (k.indexOf('synthetic') >= 0) return;
+      var pct = totalEff > 0 ? Math.round((u.models[k].effective || 0) / totalEff * 100) : 0;
+      var name = k.replace('claude-', '').replace('-4-6', '').replace('-4-5', '');
+      name = name.charAt(0).toUpperCase() + name.slice(1);
+      modelsHtml += '<span>' + name + ': ' + pct + '%</span>';
+    });
+  }
+
+  // Budget tag
+  var budgetTag = u.currentWeek.overBudget
+    ? '<span class="usage-budget-tag over">ueber Budget</span>'
+    : '<span class="usage-budget-tag ok">im Plan</span>';
+
+  el.innerHTML =
+    '<div class="usage-header">' +
+      '<span class="usage-header-title">Token Usage</span>' +
+      '<span class="usage-header-updated">' + updatedAgo + '</span>' +
+    '</div>' +
+
+    '<div class="usage-meter">' +
+      '<div class="usage-meter-label">' +
+        '<span class="usage-meter-name">5h-Fenster</span>' +
+        '<span class="usage-meter-pct ' + c5 + '">' + Math.round(u.current5h.pct) + '%</span>' +
+      '</div>' +
+      '<div class="usage-bar-wrap"><div class="usage-bar-fill ' + c5 + '" style="width:' + Math.min(u.current5h.pct, 100) + '%"></div></div>' +
+      '<div class="usage-meter-sub">' + fmtTokens(u.current5h.used) + ' / ' + fmtTokens(u.limits.window5h) + '</div>' +
+    '</div>' +
+
+    '<div class="usage-meter">' +
+      '<div class="usage-meter-label">' +
+        '<span class="usage-meter-name">Woche</span>' +
+        '<span class="usage-meter-pct ' + cw + '">' + Math.round(u.currentWeek.pct) + '%</span>' +
+      '</div>' +
+      '<div class="usage-bar-wrap"><div class="usage-bar-fill ' + cw + '" style="width:' + Math.min(u.currentWeek.pct, 100) + '%"></div></div>' +
+      '<div class="usage-meter-sub">' + fmtTokens(u.currentWeek.used) + ' / ' + fmtTokens(u.limits.weekly) + ' · ' + u.currentWeek.daysLeft + ' Tage · ' + budgetTag + '</div>' +
+    '</div>' +
+
+    '<div style="position:relative;">' +
+      '<div class="usage-chart">' + barsHtml + '</div>' +
+      (budgetPct > 0 && budgetPct < 100 ? '<div class="usage-chart-budget" style="bottom:' + Math.round(budgetPct * 48 / 100) + 'px;"></div>' : '') +
+    '</div>' +
+    '<div class="usage-chart-labels">' + labelsHtml + '</div>' +
+
+    '<div class="usage-models">' + modelsHtml + '</div>';
+
+  el.style.display = 'block';
+}
+
+
+
 function startProcessStatusPolling() {
 
   fetchProcessStatus();
   fetchScraperProgress();
+  fetchUsageData();
 
   if (_procStatusInterval) clearInterval(_procStatusInterval);
 
