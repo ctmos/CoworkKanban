@@ -4182,17 +4182,28 @@ function renderPatients(filter) {
     wiedereingliederung: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 12-9.373 9.373a1 1 0 0 1-3.001-3L12 9"/><path d="m18 15 4-4"/><path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172v-.344a2 2 0 0 0-.586-1.414l-1.657-1.657A6 6 0 0 0 12.516 3H9l1.243 1.243A6 6 0 0 1 12 8.485V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"/></svg>'
   };
 
+  var _ampelTooltipLabels = { austritt:'Wohnsituation', ambulant:'Ambulant', tagesstruktur:'Tagesstruktur', wiedereingliederung:'Wiedereingliederung' };
+
   function renderPatRow(p) {
 
     var ampelIcons = ['austritt','ambulant','tagesstruktur','wiedereingliederung'].map(function(k){
       var s = (p.ampel && p.ampel[k]) ? p.ampel[k].status : 'offen';
       var colors = { gruen:'#22c55e', gelb:'#eab308', rot:'#ef4444', offen:'#94a3b8' };
-      return '<span class="pat-ampel-icon" style="color:'+(colors[s]||'#94a3b8')+'">'+_ampelIcons[k]+'</span>';
+      var a = (p.ampel && p.ampel[k]) || {};
+      var lastLog = (a.log && a.log.length > 0) ? a.log[a.log.length-1] : null;
+      var tooltip = _ampelTooltipLabels[k] + ': ' + (s === 'offen' ? 'Offen' : s.charAt(0).toUpperCase()+s.slice(1));
+      if (lastLog) tooltip += '\n' + lastLog.date + ': ' + lastLog.text;
+      return '<span class="pat-ampel-icon" style="color:'+(colors[s]||'#94a3b8')+'" title="'+esc(tooltip)+'">'+_ampelIcons[k]+'</span>';
     }).join('');
 
     var lastEntry = (p.entries||[]).length > 0 ? p.entries[0] : null;
-
-    var preview = lastEntry ? esc((lastEntry.title||'').substring(0,30)) : '';
+    var entryInfo = '';
+    if (lastEntry) {
+      var eDate = lastEntry.date ? lastEntry.date.substring(0,10) : '';
+      var eDateFmt = eDate;
+      if (eDate && eDate.includes('-')) { var dp=eDate.split('-'); eDateFmt=dp[2]+'.'+dp[1]+'.'+dp[0].substring(2); }
+      entryInfo = esc((lastEntry.title||'').substring(0,40)) + (eDateFmt ? ' ('+eDateFmt+')' : '');
+    }
 
     var ap = p.austrittsplanung || {};
     var austrittBadge = '';
@@ -4200,7 +4211,7 @@ function renderPatients(filter) {
       var dd = ap.datum.split('-'); var fmtDate = dd.length===3 ? dd[2]+'.'+dd[1]+'.'+dd[0].substring(2) : ap.datum;
       austrittBadge = '<span class="pat-austritt-badge'+(ap.farbe?' pat-austritt-'+ap.farbe:'')+'">Austritt: '+esc(fmtDate)+(ap.kommentar?' — '+esc(ap.kommentar):'')+'</span>';
     }
-    return '<div class="patient-row'+(p.status==='archiviert'?' pat-archived':'')+'" onclick="showPatientDetail(\''+esc(p.id)+'\')"><span class="pat-code" style="font-weight:600;min-width:80px">'+esc(p.code)+'</span>'+austrittBadge+'<span class="pat-ampel-icons">'+ampelIcons+'</span><span class="pat-info" style="flex:1;font-size:12px;color:var(--text-muted)">'+esc(p.aufnahme||'')+(preview?' \u00b7 '+preview:'')+'</span><span class="pat-status-badge pat-status-'+(p.status||'aktiv')+'">'+(p.status||'aktiv')+'</span></div>';
+    return '<div class="patient-row'+(p.status==='archiviert'?' pat-archived':'')+'" onclick="showPatientDetail(\''+esc(p.id)+'\')"><span class="pat-code" style="font-weight:600;min-width:80px">'+esc(p.code)+'</span>'+austrittBadge+'<span class="pat-ampel-icons">'+ampelIcons+'</span><span class="pat-info" style="flex:1;font-size:12px;color:var(--text-muted)">'+entryInfo+'</span><span class="pat-status-badge pat-status-'+(p.status||'aktiv')+'">'+(p.status||'aktiv')+'</span></div>';
 
   }
 
@@ -4376,21 +4387,22 @@ function showPatientDetail(patId) {
     austrittsplanung: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14"/><path d="M2 20h20"/><path d="M14 12v.01"/></svg>'
   };
 
-  html += '<div class="pat-planung-grid">';
+  html += '<div class="pat-planung-list">';
 
-  // 4 Ampel-Kategorien
+  // 4 Ampel-Kategorien — gleiches Layout wie Austrittsplanung
   ['austritt','ambulant','tagesstruktur','wiedereingliederung'].forEach(function(k){
     var a = pat.ampel[k] || {status:'offen',date:'',log:[]};
     var statusColors = { gruen:'#22c55e', gelb:'#eab308', rot:'#ef4444', offen:'#94a3b8' };
     var iconColor = statusColors[a.status] || '#94a3b8';
+    var lastLog = (a.log && a.log.length > 0) ? a.log[a.log.length-1] : null;
+    var kommentarVal = lastLog ? lastLog.text : '';
 
-    html += '<div class="pat-planung-card" data-status="'+esc(a.status)+'">'
+    html += '<div class="pat-planung-card">'
       + '<div class="pat-planung-header">'
       + '<span class="pat-planung-icon" style="color:'+iconColor+'">'+(_detailIcons[k]||'')+'</span>'
       + '<span class="pat-planung-title">'+esc(ampelLabels[k])+'</span>'
       + '</div>'
-      + '<div class="pat-planung-body">'
-      + '<div class="pat-planung-row">'
+      + '<div class="pat-planung-body"><div class="pat-planung-row">'
       + '<div class="pat-ap-field"><label>Status</label><div class="pat-ap-colors">'
       + '<div class="pat-ap-color-btn'+(a.status==='offen'?' selected':'')+'" data-val="offen" style="background:#94a3b8" onclick="setAmpelStatus(\''+k+'\',\'offen\')"></div>'
       + '<div class="pat-ap-color-btn'+(a.status==='gruen'?' selected':'')+'" data-val="gruen" style="background:#22c55e" onclick="setAmpelStatus(\''+k+'\',\'gruen\')"></div>'
@@ -4398,29 +4410,21 @@ function showPatientDetail(patId) {
       + '<div class="pat-ap-color-btn'+(a.status==='rot'?' selected':'')+'" data-val="rot" style="background:#ef4444" onclick="setAmpelStatus(\''+k+'\',\'rot\')"></div>'
       + '</div></div>'
       + '<div class="pat-ap-field"><label>Datum</label><input type="date" class="pat-ap-date" id="ampel-date-'+k+'" value="'+esc(a.date||'')+'" onchange="setAmpelDate(\''+k+'\',this.value)"></div>'
-      + '</div>'
-      + '<div class="pat-planung-row">'
-      + '<div class="pat-ap-field pat-ap-field-wide"><label>Notiz</label>'
-      + '<div class="pat-planung-log-add"><input type="text" id="ampel-log-text-'+k+'" placeholder="Eintrag hinzufuegen..." onkeydown="if(event.key===\'Enter\')addAmpelLog(\''+k+'\')"><button class="btn-primary" onclick="addAmpelLog(\''+k+'\')">+</button></div>'
-      + '<div class="pat-planung-log" id="ampel-log-'+k+'">'
-      + (a.log||[]).map(function(l){ return '<div class="pat-planung-log-entry"><strong>'+esc(l.date)+'</strong> '+esc(l.text)+'</div>'; }).join('')
-      + '</div>'
-      + '</div></div>'
-      + '</div></div>';
+      + '<div class="pat-ap-field pat-ap-field-wide"><label>Kommentar</label><input type="text" class="pat-ap-kommentar" id="ampel-log-text-'+k+'" value="'+esc(kommentarVal)+'" placeholder="z.B. Anmeldung laeuft..." onchange="addAmpelLog(\''+k+'\')"></div>'
+      + '</div></div></div>';
   });
 
-  // Austrittsplanung als 5. Karte
+  // Austrittsplanung als 5. Karte — identisches Layout
   var apData = pat.austrittsplanung || { datum:'', farbe:'', kommentar:'' };
   var apColors = { gruen:'#22c55e', gelb:'#eab308', blau:'#3b82f6', rot:'#ef4444' };
   var apIconColor = apColors[apData.farbe] || '#94a3b8';
 
-  html += '<div class="pat-planung-card pat-planung-card-wide" data-status="'+esc(apData.farbe||'offen')+'">'
+  html += '<div class="pat-planung-card">'
     + '<div class="pat-planung-header">'
     + '<span class="pat-planung-icon" style="color:'+apIconColor+'">'+_detailIcons.austrittsplanung+'</span>'
     + '<span class="pat-planung-title">Austrittsplanung</span>'
     + '</div>'
-    + '<div class="pat-planung-body">'
-    + '<div class="pat-planung-row">'
+    + '<div class="pat-planung-body"><div class="pat-planung-row">'
     + '<div class="pat-ap-field"><label>Farbe</label><div class="pat-ap-colors">'
     + '<div class="pat-ap-color-btn'+(apData.farbe==='gruen'?' selected':'')+'" data-val="gruen" style="background:#22c55e" onclick="setAustrittsplanung(\'farbe\',\'gruen\')"></div>'
     + '<div class="pat-ap-color-btn'+(apData.farbe==='gelb'?' selected':'')+'" data-val="gelb" style="background:#eab308" onclick="setAustrittsplanung(\'farbe\',\'gelb\')"></div>'
