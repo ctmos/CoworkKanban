@@ -1368,6 +1368,93 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
   border-radius: 0 0 var(--radius) var(--radius); padding: 16px;
 }
 
+/* ── SYSTEM-UEBERSICHT ── */
+.ub-section { margin-bottom: 20px; }
+.ub-section:last-child { margin-bottom: 0; }
+.ub-section-title {
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.ub-mermaid-container {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; overflow-x: auto; text-align: center; min-height: 100px;
+}
+.ub-mermaid-container svg { max-width: 100%; height: auto; }
+
+/* Agent Cards */
+.ub-agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.ub-agent-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); transition: box-shadow var(--transition), transform var(--transition);
+  overflow: hidden;
+}
+.ub-agent-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.ub-agent-header {
+  padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.ub-agent-lifeos { border-top: 3px solid var(--accent); }
+.ub-agent-hermine { border-top: 3px solid #3b82f6; }
+.ub-agent-kitt { border-top: 3px solid #a855f7; }
+.ub-agent-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.ub-agent-body { padding: 12px 14px; }
+.ub-agent-role {
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--text-muted); margin-bottom: 8px;
+}
+.ub-agent-list {
+  list-style: none; padding: 0; margin: 0 0 10px 0;
+}
+.ub-agent-list li {
+  font-size: 12px; color: var(--text); padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ub-agent-list li:last-child { border-bottom: none; }
+.ub-agent-list li::before { content: '\203A '; color: var(--text-muted); margin-right: 4px; }
+.ub-agent-stats { display: flex; flex-wrap: wrap; gap: 6px; }
+.ub-stat {
+  font-size: 10px; font-weight: 600; color: var(--text-muted);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 2px 8px;
+}
+
+/* Pipeline Grid */
+.ub-pipeline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ub-pipeline-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+}
+.ub-pipeline-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.ub-pipeline-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* Datenfluss */
+.ub-dataflow { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.ub-df-row {
+  display: grid; grid-template-columns: 1fr 2fr 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+}
+.ub-df-row:last-child { border-bottom: none; }
+.ub-df-header {
+  background: var(--surface2);
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted);
+}
+.ub-df-cell { padding: 8px 12px; font-size: 12px; color: var(--text); }
+.ub-df-bold { font-weight: 600; }
+.ub-principle {
+  font-size: 11px; color: var(--text-muted); text-align: center;
+  margin-top: 8px; padding: 6px; font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .ub-agent-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 500px) {
+  .ub-pipeline-grid { grid-template-columns: 1fr; }
+  .ub-df-row { grid-template-columns: 1fr 1fr; }
+  .ub-df-header { display: none; }
+}
+
 /* ── SYSTEM LOG ── */
 .sl-section { margin-bottom: 24px; }
 .sl-section-title {

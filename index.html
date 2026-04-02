@@ -570,7 +570,171 @@
 
   <div id="tab-system" class="tab-content">
 
+    <!-- System-Uebersicht -->
+    <details class="sys-dropdown" id="uebersicht-dropdown">
+      <summary class="sys-dropdown-header">System-Uebersicht</summary>
+      <div class="sys-dropdown-body">
 
+        <!-- Architektur-Diagramm -->
+        <div class="ub-section">
+          <h3 class="ub-section-title">Architektur</h3>
+          <div id="ub-mermaid" class="ub-mermaid-container">
+            <div class="empty-state">Diagramm wird geladen...</div>
+          </div>
+        </div>
+
+        <!-- 3 Agent-Cards -->
+        <div class="ub-section">
+          <h3 class="ub-section-title">Agenten</h3>
+          <div class="ub-agent-grid">
+
+            <div class="ub-agent-card">
+              <div class="ub-agent-header ub-agent-lifeos">
+                <span class="ub-agent-name">LifeOS (PWA)</span>
+              </div>
+              <div class="ub-agent-body">
+                <div class="ub-agent-role">Dashboard &amp; Datenhub</div>
+                <ul class="ub-agent-list">
+                  <li>8 Tabs, 16 Kanban-Lanes</li>
+                  <li>Multi-Device Sync (60s Polling)</li>
+                  <li>WriteGuard v2.0, PIN Auth</li>
+                  <li>Offline-faehig (PWA, Network-First)</li>
+                  <li>Collect: 2094 Eintraege, 24 Kategorien</li>
+                  <li>ImperialKI v2.0: Briefing + Coach</li>
+                </ul>
+                <div class="ub-agent-stats">
+                  <span class="ub-stat">26 Karten</span>
+                  <span class="ub-stat">24 Patienten</span>
+                  <span class="ub-stat">37 Backlog</span>
+                  <span class="ub-stat">6 Projekte</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="ub-agent-card">
+              <div class="ub-agent-header ub-agent-hermine">
+                <span class="ub-agent-name">Hermine (Bot)</span>
+              </div>
+              <div class="ub-agent-body">
+                <div class="ub-agent-role">24/7 Automation</div>
+                <ul class="ub-agent-list">
+                  <li>Telegram + WhatsApp + Android</li>
+                  <li>AWS Lightsail, Grok-4-1-fast</li>
+                  <li>Google Workspace (Gmail, Drive, Calendar)</li>
+                  <li>Cron: Briefing, Backups, Usage-Tracker</li>
+                  <li>Skills: ImperialKI-Coach, Gmail, Niffler</li>
+                  <li>Gmail: 70k Mails, Inbox Zero, 8 Labels</li>
+                </ul>
+                <div class="ub-agent-stats">
+                  <span class="ub-stat">7+ Skills</span>
+                  <span class="ub-stat">6 Crons</span>
+                  <span class="ub-stat">3 Channels</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="ub-agent-card">
+              <div class="ub-agent-header ub-agent-kitt">
+                <span class="ub-agent-name">KITT (Claude Code)</span>
+              </div>
+              <div class="ub-agent-body">
+                <div class="ub-agent-role">Development Agent</div>
+                <ul class="ub-agent-list">
+                  <li>Opus 4.6, 1M Context, Max-Plan</li>
+                  <li>/sync /deploy /validate /fix-bug /review</li>
+                  <li>3 Safety-Hooks (JS, CSS, SW)</li>
+                  <li>Autonomie: selbst / fragen / nie</li>
+                  <li>Memory-System (6 aktive Dateien)</li>
+                  <li>Infrastruktur: push_safe, smoke_test</li>
+                </ul>
+                <div class="ub-agent-stats">
+                  <span class="ub-stat">7 Skills</span>
+                  <span class="ub-stat">3 Hooks</span>
+                  <span class="ub-stat">3 Stufen</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Pipelines -->
+        <div class="ub-section">
+          <h3 class="ub-section-title">Pipelines &amp; Tools</h3>
+          <div class="ub-pipeline-grid">
+            <div class="ub-pipeline-card">
+              <div class="ub-pipeline-info">
+                <div class="ub-pipeline-name">Anon-Pipeline v0.2.0</div>
+                <div class="ub-pipeline-desc">PDF-Zuweisungen anonymisieren, Patient-Blog</div>
+              </div>
+            </div>
+            <div class="ub-pipeline-card">
+              <div class="ub-pipeline-info">
+                <div class="ub-pipeline-name">AUDIOREC v0.2.0</div>
+                <div class="ub-pipeline-desc">Therapie-Audio transkribieren + Speaker Diarization</div>
+              </div>
+            </div>
+            <div class="ub-pipeline-card">
+              <div class="ub-pipeline-info">
+                <div class="ub-pipeline-name">Bookmark Scraper v1.0.0</div>
+                <div class="ub-pipeline-desc">Web-Inhalte archivieren (yt-dlp, rclone)</div>
+              </div>
+            </div>
+            <div class="ub-pipeline-card">
+              <div class="ub-pipeline-info">
+                <div class="ub-pipeline-name">Niffler Trading v0.4.0</div>
+                <div class="ub-pipeline-desc">Paper Trading (Bybit Testnet, 3 Strategien)</div>
+              </div>
+            </div>
+            <div class="ub-pipeline-card">
+              <div class="ub-pipeline-info">
+                <div class="ub-pipeline-name">Gmail Tool v1.0.0</div>
+                <div class="ub-pipeline-desc">E-Mail-Management, Inbox Zero, 8 Labels</div>
+              </div>
+            </div>
+            <div class="ub-pipeline-card">
+              <div class="ub-pipeline-info">
+                <div class="ub-pipeline-name">Mail-Archiv</div>
+                <div class="ub-pipeline-desc">3202 Outlook-Mails durchsuchbar (FTS5)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datenfluss -->
+        <div class="ub-section">
+          <h3 class="ub-section-title">Datenfluss</h3>
+          <div class="ub-dataflow">
+            <div class="ub-df-row ub-df-header">
+              <span class="ub-df-cell">Repository</span>
+              <span class="ub-df-cell">Inhalt</span>
+              <span class="ub-df-cell">Lesen</span>
+              <span class="ub-df-cell">Schreiben</span>
+            </div>
+            <div class="ub-df-row">
+              <span class="ub-df-cell ub-df-bold">CoworkKanban</span>
+              <span class="ub-df-cell">PWA-Code (HTML, CSS, JS)</span>
+              <span class="ub-df-cell">LifeOS</span>
+              <span class="ub-df-cell">KITT</span>
+            </div>
+            <div class="ub-df-row">
+              <span class="ub-df-cell ub-df-bold">cowork-data</span>
+              <span class="ub-df-cell">Tasks, Patienten, Kalender, Collect</span>
+              <span class="ub-df-cell">Alle</span>
+              <span class="ub-df-cell">LifeOS + Hermine</span>
+            </div>
+            <div class="ub-df-row">
+              <span class="ub-df-cell ub-df-bold">dispatch-memory</span>
+              <span class="ub-df-cell">Doku, State, Rules, Config</span>
+              <span class="ub-df-cell">Alle</span>
+              <span class="ub-df-cell">KITT + Hermine</span>
+            </div>
+          </div>
+          <div class="ub-principle">GET &rarr; merge &rarr; PUT mit SHA &mdash; Daten sind heilig</div>
+        </div>
+
+      </div>
+    </details>
 
     <details class="sys-dropdown" id="settings-dropdown" open>
 
@@ -5406,7 +5570,7 @@ function renderHeutePlaceholder(){['heute-list','woche-list','weitere-list'].for
 
 // ─── THEME ────────────────────────────────────────────────────────────────────
 
-function applyTheme(theme){if(theme==="dark"){document.documentElement.classList.add("dark-theme");document.documentElement.classList.remove("light-theme");}else{document.documentElement.classList.remove("dark-theme");document.documentElement.classList.add("light-theme");}localStorage.setItem("cowork_theme",theme);var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");if(bd)bd.classList.toggle("active",theme==="dark");if(bl)bl.classList.toggle("active",theme!=="dark");}
+function applyTheme(theme){if(theme==="dark"){document.documentElement.classList.add("dark-theme");document.documentElement.classList.remove("light-theme");}else{document.documentElement.classList.remove("dark-theme");document.documentElement.classList.add("light-theme");}localStorage.setItem("cowork_theme",theme);var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");if(bd)bd.classList.toggle("active",theme==="dark");if(bl)bl.classList.toggle("active",theme!=="dark");if(typeof _mermaidLoaded!=='undefined'&&_mermaidLoaded){var dd=document.getElementById('uebersicht-dropdown');if(dd&&dd.open)initUebersichtMermaid();}}
 
 (function(){var t=localStorage.getItem("cowork_theme")||"light";if(t==="dark")document.documentElement.classList.add("dark-theme");else document.documentElement.classList.add("light-theme");})();
 
@@ -6248,6 +6412,75 @@ function renderImperialKI(container) {
 }
 
 
+
+// ─── SYSTEM-UEBERSICHT (Mermaid lazy-load) ──────────────────────────────────
+
+var _mermaidLoaded = false;
+function initUebersichtMermaid() {
+  var container = document.getElementById('ub-mermaid');
+  if (!container) return;
+  var isDark = document.documentElement.classList.contains('dark-theme');
+  var graphDef = [
+    'graph LR',
+    '  subgraph User[" "]',
+    '    Browser["Browser / PWA"]',
+    '    TG["Telegram / WhatsApp"]',
+    '    CLI["Terminal / Claude Code"]',
+    '  end',
+    '  subgraph Agents["CoworkOS"]',
+    '    LifeOS["LifeOS\\nDashboard"]',
+    '    Hermine["Hermine\\n24/7 Bot"]',
+    '    KITT["KITT\\nDev Agent"]',
+    '  end',
+    '  subgraph Data["GitHub"]',
+    '    CK["CoworkKanban\\nCode"]',
+    '    CD["cowork-data\\nDaten"]',
+    '    DM["dispatch-memory\\nDocs"]',
+    '  end',
+    '  Browser --> LifeOS',
+    '  TG --> Hermine',
+    '  CLI --> KITT',
+    '  LifeOS -- "R/W" --> CD',
+    '  Hermine -- "R/W" --> CD',
+    '  Hermine -- "R" --> DM',
+    '  KITT -- "R/W" --> CK',
+    '  KITT -- "R/W" --> DM',
+    '  KITT -. "deploy" .-> LifeOS',
+    '  Hermine -. "eskaliert" .-> KITT'
+  ].join('\n');
+
+  function renderDiagram() {
+    var theme = isDark ? 'dark' : 'default';
+    var vars = isDark ? {
+      primaryColor: '#3d352a', primaryTextColor: '#e8e0d4', primaryBorderColor: '#c47a2a',
+      lineColor: '#9a8e7d', secondaryColor: '#2e2820', background: '#252019',
+      mainBkg: '#2e2820', nodeBorder: '#c47a2a', clusterBkg: '#1a1714', clusterBorder: '#3d352a'
+    } : {
+      primaryColor: '#fff7ed', primaryTextColor: '#1a1815', primaryBorderColor: '#c47a2a',
+      lineColor: '#6b6560', secondaryColor: '#f5f0ea', background: '#ffffff',
+      mainBkg: '#fff7ed', nodeBorder: '#c47a2a', clusterBkg: '#f5f0ea', clusterBorder: '#e8e3dc'
+    };
+    mermaid.initialize({ startOnLoad: false, theme: theme, themeVariables: vars, securityLevel: 'loose' });
+    mermaid.render('ub-mermaid-svg', graphDef).then(function(result) {
+      container.innerHTML = result.svg;
+    }).catch(function() {
+      container.innerHTML = '<div class="empty-state">Diagramm konnte nicht gerendert werden.</div>';
+    });
+  }
+
+  if (_mermaidLoaded) { renderDiagram(); return; }
+  container.innerHTML = '<div class="empty-state">Lade Diagramm...</div>';
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+  s.onload = function() { _mermaidLoaded = true; renderDiagram(); };
+  s.onerror = function() { container.innerHTML = '<div class="empty-state">Mermaid konnte nicht geladen werden (offline?).</div>'; };
+  document.head.appendChild(s);
+}
+
+(function() {
+  var dd = document.getElementById('uebersicht-dropdown');
+  if (dd) dd.addEventListener('toggle', function() { if (dd.open) initUebersichtMermaid(); });
+})();
 
 // ─── SYSTEM LOG ─────────────────────────────────────────────────────────────
 
