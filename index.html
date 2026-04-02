@@ -3518,6 +3518,14 @@ function generateEncKeyHex() {
   return Array.from(bytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
+function bytesToBase64(bytes) {
+  var bin = '', len = bytes.length, chunk = 8192;
+  for (var i = 0; i < len; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunk, len)));
+  }
+  return btoa(bin);
+}
+
 async function encryptJSON(jsonString) {
   if (!_encKey) return jsonString;
   var iv = crypto.getRandomValues(new Uint8Array(12));
@@ -3526,8 +3534,8 @@ async function encryptJSON(jsonString) {
   return JSON.stringify({
     encrypted: true,
     version: 1,
-    iv: btoa(String.fromCharCode.apply(null, iv)),
-    data: btoa(String.fromCharCode.apply(null, new Uint8Array(ciphertext)))
+    iv: bytesToBase64(iv),
+    data: bytesToBase64(new Uint8Array(ciphertext))
   }, null, 2);
 }
 
