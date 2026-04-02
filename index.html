@@ -5641,14 +5641,6 @@ function usageColor(pct) {
   return 'red';
 }
 
-function fmtResetTime(iso) {
-  try {
-    var d = new Date(iso);
-    var days = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-    return days[d.getDay()] + ' ' + d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'});
-  } catch(e) { return '?'; }
-}
-
 function fmtMinutes(min) {
   if (!min || min <= 0) return 'jetzt';
   var h = Math.floor(min / 60);
@@ -5658,15 +5650,19 @@ function fmtMinutes(min) {
   return m + 'min';
 }
 
+function fmtTimestampDE(iso) {
+  try {
+    var d = new Date(iso);
+    return d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'numeric'}) + ', ' +
+           d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'}) + ' Uhr';
+  } catch(e) { return '?'; }
+}
+
 function renderUsageWidget(u) {
   var el = document.getElementById('usage-widget');
   if (!el || !u) return;
 
-  var updatedAgo = '';
-  try {
-    var diff = Math.floor((Date.now() - new Date(u.updatedAt).getTime()) / 60000);
-    updatedAgo = diff < 1 ? 'gerade eben' : 'vor ' + fmtMinutes(diff);
-  } catch(e) { updatedAgo = '?'; }
+  var updatedStr = u.updatedAt ? fmtTimestampDE(u.updatedAt) : '?';
 
   var sessionPct = (u.session && u.session.pct) || 0;
   var sessionColor = usageColor(sessionPct);
@@ -5674,33 +5670,27 @@ function renderUsageWidget(u) {
 
   var allPct = (u.weekly && u.weekly.allModels && u.weekly.allModels.pct) || 0;
   var allColor = usageColor(allPct);
-  var allReset = u.weekly && u.weekly.allModels && u.weekly.allModels.resetsAt ? 'Reset ' + fmtResetTime(u.weekly.allModels.resetsAt) : '';
+  var allReset = u.weekly && u.weekly.allModels && u.weekly.allModels.resetsLabel ? 'Reset ' + u.weekly.allModels.resetsLabel : '';
 
   var sonnetPct = (u.weekly && u.weekly.sonnetOnly && u.weekly.sonnetOnly.pct) || 0;
   var sonnetColor = usageColor(sonnetPct);
-  var sonnetReset = u.weekly && u.weekly.sonnetOnly && u.weekly.sonnetOnly.resetsAt ? 'Reset ' + fmtResetTime(u.weekly.sonnetOnly.resetsAt) : '';
+  var sonnetReset = u.weekly && u.weekly.sonnetOnly && u.weekly.sonnetOnly.resetsLabel ? 'Reset ' + u.weekly.sonnetOnly.resetsLabel : '';
 
   var extraHtml = '';
   if (u.extra && u.extra.enabled) {
     var sym = u.extra.currency === 'EUR' ? '\u20ac' : '$';
-    var extraPct = u.extra.limit > 0 ? Math.round(u.extra.spent / u.extra.limit * 100) : 0;
+    var extraPct = u.extra.pct || 0;
     var extraColor = usageColor(extraPct);
-    var extraResetStr = '';
-    if (u.extra.resetsAt) {
-      try {
-        var rd = new Date(u.extra.resetsAt + 'T00:00:00');
-        extraResetStr = 'Reset ' + rd.toLocaleDateString('de-CH', {day:'numeric', month:'short'});
-      } catch(e) {}
-    }
+    var extraResetStr = u.extra.resetsLabel ? 'Reset ' + u.extra.resetsLabel : '';
     extraHtml =
       '<div class="usage-section-title">Extra Usage</div>' +
       '<div class="usage-meter">' +
         '<div class="usage-meter-label">' +
-          '<span class="usage-meter-name">' + sym + u.extra.spent.toFixed(2) + ' / ' + sym + u.extra.limit + '</span>' +
+          '<span class="usage-meter-name">' + sym + (u.extra.spent || 0).toFixed(2) + ' / ' + sym + u.extra.limit + '</span>' +
           '<span class="usage-meter-pct ' + extraColor + '">' + extraPct + '%</span>' +
         '</div>' +
         '<div class="usage-bar-wrap"><div class="usage-bar-fill ' + extraColor + '" style="width:' + Math.min(extraPct, 100) + '%"></div></div>' +
-        '<div class="usage-meter-sub">' + extraResetStr + ' \u00b7 Guthaben: ' + sym + u.extra.balance.toFixed(2) + '</div>' +
+        '<div class="usage-meter-sub">' + extraResetStr + ' \u00b7 Guthaben: ' + sym + (u.extra.balance || 0).toFixed(2) + '</div>' +
       '</div>';
   }
 
@@ -5709,7 +5699,6 @@ function renderUsageWidget(u) {
       '<span class="usage-header-title">Claude Usage</span>' +
       '<span class="usage-header-plan">' + (u.plan || '').toUpperCase() + '</span>' +
     '</div>' +
-    '<div class="usage-header-updated">' + updatedAgo + '</div>' +
 
     '<div class="usage-meter">' +
       '<div class="usage-meter-label">' +
@@ -5740,7 +5729,9 @@ function renderUsageWidget(u) {
       '<div class="usage-meter-sub">' + sonnetReset + '</div>' +
     '</div>' +
 
-    extraHtml;
+    extraHtml +
+
+    '<div class="usage-updated-ts">Stand: ' + updatedStr + '</div>';
 
   el.style.display = 'block';
 }
