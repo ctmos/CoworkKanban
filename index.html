@@ -4459,7 +4459,7 @@ function showPatientDetail(patId) {
 
   // Bericht-Karte — Farbe + Kommentar
   var brData = pat.bericht || { farbe:'', kommentar:'' };
-  var brColors = { gruen:'#22c55e', gelb:'#eab308', blau:'#3b82f6', rot:'#ef4444' };
+  var brColors = { gruen:'#22c55e', gelb:'#eab308', grau:'#4b5563', rot:'#ef4444' };
   var brIconColor = brColors[brData.farbe] || '#94a3b8';
 
   html += '<div class="pat-planung-card">'
@@ -4471,7 +4471,7 @@ function showPatientDetail(patId) {
     + '<div class="pat-ap-field"><label>Farbe</label><div class="pat-ap-colors">'
     + '<div class="pat-ap-color-btn'+(brData.farbe==='gruen'?' selected':'')+'" data-val="gruen" style="background:#22c55e" onclick="setBerichtStatus(\'farbe\',\'gruen\')"></div>'
     + '<div class="pat-ap-color-btn'+(brData.farbe==='gelb'?' selected':'')+'" data-val="gelb" style="background:#eab308" onclick="setBerichtStatus(\'farbe\',\'gelb\')"></div>'
-    + '<div class="pat-ap-color-btn'+(brData.farbe==='blau'?' selected':'')+'" data-val="blau" style="background:#3b82f6" onclick="setBerichtStatus(\'farbe\',\'blau\')"></div>'
+    + '<div class="pat-ap-color-btn'+(brData.farbe==='grau'?' selected':'')+'" data-val="grau" style="background:#4b5563" onclick="setBerichtStatus(\'farbe\',\'grau\')"></div>'
     + '<div class="pat-ap-color-btn'+(brData.farbe==='rot'?' selected':'')+'" data-val="rot" style="background:#ef4444" onclick="setBerichtStatus(\'farbe\',\'rot\')"></div>'
     + '</div></div>'
     + '<div class="pat-ap-field pat-ap-field-wide"><label>Kommentar</label><input type="text" class="pat-ap-kommentar" id="br-kommentar" value="'+esc(brData.kommentar||'')+'" placeholder="z.B. Bericht fertig, zur Kontrolle..." onchange="setBerichtStatus(\'kommentar\',this.value)"></div>'
