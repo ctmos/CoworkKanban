@@ -2275,6 +2275,30 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .pat-ampel-log-input button { padding: 5px 10px; font-size: 12px; }
 .pat-ampel-close-btn { position: absolute; top: 6px; right: 8px; background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); line-height: 1; }
 
+/* ── Austrittsplanung Badge (Overview) ── */
+.pat-austritt-badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; white-space: nowrap; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); }
+.pat-austritt-gruen { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #15803d; }
+.pat-austritt-gelb { background: rgba(234,179,8,0.15); border-color: #eab308; color: #a16207; }
+.pat-austritt-blau { background: rgba(59,130,246,0.15); border-color: #3b82f6; color: #1d4ed8; }
+.pat-austritt-rot { background: rgba(239,68,68,0.15); border-color: #ef4444; color: #b91c1c; }
+.dark-theme .pat-austritt-gruen { background: rgba(34,197,94,0.2); color: #4ade80; }
+.dark-theme .pat-austritt-gelb { background: rgba(234,179,8,0.2); color: #facc15; }
+.dark-theme .pat-austritt-blau { background: rgba(59,130,246,0.2); color: #60a5fa; }
+.dark-theme .pat-austritt-rot { background: rgba(239,68,68,0.2); color: #f87171; }
+
+/* ── Austrittsplanung Section (Detail) ── */
+.pat-austrittsplanung-section { margin: 16px 0; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.pat-section-title { font-size: 14px; font-weight: 700; margin: 0 0 12px; color: var(--text); }
+.pat-ap-fields { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.pat-ap-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.pat-ap-date { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 13px; font-family: inherit; }
+.pat-ap-colors { display: flex; gap: 8px; }
+.pat-ap-color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.15s; }
+.pat-ap-color-btn:hover { transform: scale(1.15); }
+.pat-ap-color-btn.selected { border-color: var(--text); box-shadow: 0 0 0 2px var(--accent); }
+.pat-ap-field-wide { flex: 1; min-width: 180px; }
+.pat-ap-kommentar { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 13px; font-family: inherit; }
+
 /* ── Vorberichte Summary Boxes ── */
 .vb-boxes-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
 @media (max-width: 700px) { .vb-boxes-row { grid-template-columns: 1fr; } }
