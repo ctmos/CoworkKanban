@@ -2288,6 +2288,7 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .dark-theme .pat-austritt-gelb { background: rgba(234,179,8,0.2); color: #facc15; }
 .dark-theme .pat-austritt-blau { background: rgba(59,130,246,0.2); color: #60a5fa; }
 .dark-theme .pat-austritt-rot { background: rgba(239,68,68,0.2); color: #f87171; }
+.pat-dauer-badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; white-space: nowrap; background: rgba(107,102,96,0.1); border: 1px solid var(--border); color: var(--text-muted); }
 .pat-bericht-badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; white-space: nowrap; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; }
 .pat-bericht-gruen { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #15803d; }
 .pat-bericht-gelb { background: rgba(234,179,8,0.15); border-color: #eab308; color: #a16207; }
