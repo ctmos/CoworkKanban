@@ -94,6 +94,8 @@
 
 <title>LifeOS</title>
 
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://api.github.com; img-src 'self' data: https://raw.githubusercontent.com; frame-src 'none'; object-src 'none'; base-uri 'self';">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3462,6 +3464,8 @@ var pinFailures = 0;
 
 var pinLocked = false;
 
+var pinLockUntil = 0;
+
 
 
 function hashPin(pin) { return btoa(pin + 'cowork'); }
@@ -3488,17 +3492,59 @@ function showPinUnlockUI(stored) {
 
   document.getElementById('pin-btn').addEventListener('click', function() {
 
+    if (pinLocked && Date.now() < pinLockUntil) {
+
+      var secs = Math.ceil((pinLockUntil - Date.now()) / 1000);
+
+      showPinError('Gesperrt \u2014 ' + secs + 's warten');
+
+      return;
+
+    }
+
+    pinLocked = false;
+
     var p = document.getElementById('pin-input').value.trim();
 
     var hash = _appState.pin_hash || stored;
 
     if (btoa(p + 'cowork') === hash) {
 
+      pinFailures = 0;
+
       sessionStorage.setItem('cowork_pin_set', 'true');
 
       unlockApp();
 
-    } else { showPinError('Falscher PIN'); }
+    } else {
+
+      pinFailures++;
+
+      if (pinFailures >= 10) {
+
+        pinLocked = true;
+
+        pinLockUntil = Date.now() + 900000;
+
+        showPinError('10 Fehlversuche \u2014 15 Min gesperrt');
+
+      } else if (pinFailures >= 3) {
+
+        pinLocked = true;
+
+        var delay = Math.pow(2, pinFailures - 3) * 1000;
+
+        pinLockUntil = Date.now() + delay;
+
+        showPinError('Falscher PIN \u2014 ' + (delay/1000) + 's warten');
+
+      } else {
+
+        showPinError('Falscher PIN');
+
+      }
+
+    }
 
   });
 
