@@ -1,13 +1,15 @@
 // LifeOS Service Worker v4.7
-const CACHE_NAME = 'lifeos-v5.50';
+const CACHE_NAME = 'lifeos-v5.51';
+const isCustomDomain = self.location.hostname === 'lifeos.moser.ai';
+const BASE = isCustomDomain ? '/' : '/CoworkKanban/';
 const APP_SHELL = [
-  '/CoworkKanban/',
-  '/CoworkKanban/index.html',
-  '/CoworkKanban/app.js',
-  '/CoworkKanban/style.css',
-  '/CoworkKanban/manifest.json',
-  '/CoworkKanban/icon-192.png',
-  '/CoworkKanban/icon-512.png'
+  BASE,
+  BASE + 'index.html',
+  BASE + 'app.js',
+  BASE + 'style.css',
+  BASE + 'manifest.json',
+  BASE + 'icon-192.png',
+  BASE + 'icon-512.png'
 ];
 
 // Install: pre-cache app shell

@@ -5431,7 +5431,8 @@ document.getElementById('collect-modal-overlay').addEventListener('click', funct
 
 if ('serviceWorker' in navigator) {
 
-  navigator.serviceWorker.register('/CoworkKanban/sw.js', { updateViaCache: 'none' }).then(function(reg) {
+  var swPath = location.hostname === 'lifeos.moser.ai' ? '/sw.js' : '/CoworkKanban/sw.js';
+  navigator.serviceWorker.register(swPath, { updateViaCache: 'none' }).then(function(reg) {
 
     // Check for updates on every page load
 
