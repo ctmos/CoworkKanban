@@ -22,7 +22,7 @@ function verifyPin(input) {
 
 // ─── GITHUB HELPERS ──────────────────────────────────────────────────────────
 
-const GH_TOKEN = ['ghp_IphgmZsko0VXxf3U', '12JKQE8aOQKfwQ3gN35d'].join('');
+const GH_TOKEN = '';
 
 const GH_DATA_BASE = 'https://api.github.com/repos/ctmos/cowork-data/contents/data';
 
@@ -30,7 +30,7 @@ const GH_DATA_REPO = 'ctmos/cowork-data';
 
 const GH_API_BASE  = 'https://api.github.com';
 
-const GH_TOKEN_DEFAULT = GH_TOKEN;
+const GH_TOKEN_DEFAULT = '';
 
 
 
@@ -468,7 +468,7 @@ const ghSHA = {
 
 function getGHToken() {
 
-  return _appState.gh_token || GH_TOKEN_DEFAULT;
+  return _appState.gh_token || localStorage.getItem('cowork_gh_token') || '';
 
 }
 
