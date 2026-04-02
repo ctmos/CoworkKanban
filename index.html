@@ -4058,6 +4058,8 @@ var _patCurrentView = 'list';
 
 var _patCurrentId = null;
 
+var _patSortMode = 'alpha';
+
 var pmPatId = null;
 
 var _peEntryId = null;
@@ -4124,13 +4126,50 @@ function renderPatients(filter) {
 
     + '<input type="search" class="search-input" id="pat-search" placeholder="Suchen…">'
 
+    + '<select class="pat-sort-select" id="pat-sort"><option value="alpha"'+ (_patSortMode==='alpha'?' selected':'') +'>A–Z</option><option value="austritt"'+ (_patSortMode==='austritt'?' selected':'') +'>Austritt</option><option value="todo"'+ (_patSortMode==='todo'?' selected':'') +'>To-Do</option></select>'
+
     + '<button class="btn-secondary" id="sync-patients-btn">↑↓ Sync</button>'
 
     + '<button class="btn-primary" id="btn-pat-add">+ Patient</button></div></div>';
 
-
+  // Sort
+  var cards = typeof getCards === 'function' ? getCards() : {};
+  var paCards = {};
+  Object.values(cards).forEach(function(c){ if (!c.archived && c.lane === 'PA') paCards[c.title] = c; });
 
   var active = patients.filter(function(p){ return p.status !== 'archiviert'; });
+
+  if (_patSortMode === 'alpha') {
+    active.sort(function(a,b){ return (a.code||'').localeCompare(b.code||''); });
+  } else if (_patSortMode === 'austritt') {
+    active.sort(function(a,b){
+      var da = (a.austrittsplanung||{}).datum || '';
+      var db = (b.austrittsplanung||{}).datum || '';
+      if (da && !db) return -1;
+      if (!da && db) return 1;
+      if (da && db) return da.localeCompare(db);
+      return (a.code||'').localeCompare(b.code||'');
+    });
+  } else if (_patSortMode === 'todo') {
+    active.sort(function(a,b){
+      var findCard = function(pat) {
+        var code = (pat.code||'').toUpperCase();
+        var found = null;
+        Object.values(paCards).forEach(function(c){
+          if ((c.title||'').toUpperCase().includes(code)) found = c;
+        });
+        return found;
+      };
+      var ca = findCard(a), cb = findCard(b);
+      var ha = ca ? 1 : 0, hb = cb ? 1 : 0;
+      if (ha !== hb) return hb - ha;
+      if (ca && cb) {
+        var dda = ca.deadline || '9999', ddb = cb.deadline || '9999';
+        return dda.localeCompare(ddb);
+      }
+      return (a.code||'').localeCompare(b.code||'');
+    });
+  }
 
   var archived = patients.filter(function(p){ return p.status === 'archiviert'; });
 
@@ -4194,6 +4233,8 @@ function renderPatients(filter) {
 
 
   document.getElementById('pat-search').addEventListener('input', function(){ renderPatients(); });
+
+  document.getElementById('pat-sort').addEventListener('change', function(){ _patSortMode = this.value; renderPatients(); });
 
   document.getElementById('btn-pat-add').addEventListener('click', function(){ openPatModal(null); });
 
