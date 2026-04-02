@@ -3536,6 +3536,8 @@ function switchTab(id) {
 
   currentTab = id;
 
+  if (location.hash !== '#' + id) location.hash = id;
+
   document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === id); });
 
   document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.toggle('active', c.id === 'tab-' + id); });
@@ -5266,11 +5268,21 @@ async function initApp() {
 
   loadCalendarEvents().catch(function(e) { console.warn('cal fail', e); });
 
-  renderHeute();
+  var hashTab = location.hash.replace('#', '');
+
+  switchTab(hashTab && document.getElementById('tab-' + hashTab) ? hashTab : 'heute');
 
   setTimeout(startProcessStatusPolling, 2000);
 
 }
+
+window.addEventListener('hashchange', function() {
+
+  var h = location.hash.replace('#', '');
+
+  if (h && h !== currentTab && document.getElementById('tab-' + h)) switchTab(h);
+
+});
 
 function renderHeutePlaceholder(){['heute-list','woche-list','weitere-list'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<div class="empty-state">Daten werden geladen\u2026</div>';});}
 
