@@ -2294,11 +2294,9 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .pat-ampel-icon { display: inline-flex; align-items: center; line-height: 0; }
 .pat-ampel-icon svg { display: block; }
 
-/* ── Planung Grid (Detail — alle 5 Kategorien) ── */
-.pat-planung-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-@media (max-width: 700px) { .pat-planung-grid { grid-template-columns: 1fr; } }
+/* ── Planung List (Detail — alle 5 Kategorien einheitlich) ── */
+.pat-planung-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 .pat-planung-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-.pat-planung-card-wide { grid-column: 1 / -1; }
 .pat-planung-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
 .pat-planung-icon { display: inline-flex; align-items: center; line-height: 0; flex-shrink: 0; }
 .pat-planung-title { font-size: 13px; font-weight: 700; color: var(--text); }
