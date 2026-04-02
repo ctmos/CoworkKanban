@@ -2275,6 +2275,9 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .pat-ampel-log-input button { padding: 5px 10px; font-size: 12px; }
 .pat-ampel-close-btn { position: absolute; top: 6px; right: 8px; background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); line-height: 1; }
 
+/* ── Patient Sort Dropdown ── */
+.pat-sort-select { padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 13px; font-family: inherit; cursor: pointer; }
+
 /* ── Austrittsplanung Badge (Overview) ── */
 .pat-austritt-badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; white-space: nowrap; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); }
 .pat-austritt-gruen { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #15803d; }
