@@ -2286,10 +2286,30 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .dark-theme .pat-austritt-blau { background: rgba(59,130,246,0.2); color: #60a5fa; }
 .dark-theme .pat-austritt-rot { background: rgba(239,68,68,0.2); color: #f87171; }
 
-/* ── Austrittsplanung Section (Detail) ── */
-.pat-austrittsplanung-section { margin: 16px 0; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
-.pat-section-title { font-size: 14px; font-weight: 700; margin: 0 0 12px; color: var(--text); }
-.pat-ap-fields { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+/* ── Ampel Icons (Overview) ── */
+.pat-ampel-icons { display: flex; gap: 4px; align-items: center; }
+.pat-ampel-icon { display: inline-flex; align-items: center; line-height: 0; }
+.pat-ampel-icon svg { display: block; }
+
+/* ── Planung Grid (Detail — alle 5 Kategorien) ── */
+.pat-planung-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+@media (max-width: 700px) { .pat-planung-grid { grid-template-columns: 1fr; } }
+.pat-planung-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.pat-planung-card-wide { grid-column: 1 / -1; }
+.pat-planung-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.pat-planung-icon { display: inline-flex; align-items: center; line-height: 0; flex-shrink: 0; }
+.pat-planung-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.pat-planung-body { padding: 12px 14px; }
+.pat-planung-row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 8px; }
+.pat-planung-row:last-child { margin-bottom: 0; }
+.pat-planung-log-add { display: flex; gap: 6px; margin-bottom: 6px; }
+.pat-planung-log-add input { flex: 1; padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 12px; font-family: inherit; }
+.pat-planung-log-add button { padding: 5px 10px; font-size: 12px; }
+.pat-planung-log { max-height: 80px; overflow-y: auto; font-size: 12px; color: var(--text-muted); }
+.pat-planung-log-entry { padding: 2px 0; }
+.pat-planung-log-entry strong { color: var(--text); }
+
+/* ── Shared field styles (Planung) ── */
 .pat-ap-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 .pat-ap-date { padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 13px; font-family: inherit; }
 .pat-ap-colors { display: flex; gap: 8px; }
