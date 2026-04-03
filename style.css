@@ -2411,7 +2411,7 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 /* ── Ampel Icons (Overview) ── */
 .pat-ampel-icons { display: flex; gap: 4px; align-items: center; }
 .pat-ampel-icon { display: inline-flex; align-items: center; line-height: 0; }
-.pat-ampel-icon svg { display: block; }
+.pat-ampel-icon svg { display: block; width: 18px; height: 18px; }
 
 /* ── Planung List (Detail — alle 5 Kategorien einheitlich) ── */
 .pat-planung-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
