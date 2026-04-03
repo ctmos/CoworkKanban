@@ -222,7 +222,7 @@
 
 
 
-    <button class="tab-btn" data-tab="collect">Collect</button>
+    <button class="tab-btn" data-tab="rag">RAG</button>
 
 
 
@@ -556,20 +556,44 @@
     <div id="on-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
   </div>
 
-  <div id="tab-collect" class="tab-content">
+  <!-- RAG TAB -->
+  <div id="tab-rag" class="tab-content">
+    <h2>RAG</h2>
 
-    <div class="collect-header">
-
-      <h2>Collect</h2>
-
-      <button class="btn-primary" id="btn-collect-add">+ Link</button>
-
+    <!-- Upload Section -->
+    <div class="rag-upload-section">
+      <div class="rag-upload-zone" id="rag-drop-zone">
+        <div class="rag-upload-icon">+</div>
+        <div class="rag-upload-text">Dateien hierher ziehen oder klicken</div>
+        <div class="rag-upload-hint">PDF, TXT, MD, JSON, DOCX, Bilder</div>
+        <input type="file" id="rag-file-input" multiple accept=".pdf,.txt,.md,.json,.docx,.png,.jpg,.jpeg,.gif,.webp" style="display:none">
+      </div>
+      <div id="rag-upload-queue" style="display:none"></div>
     </div>
 
-    <div id="collect-toc"></div>
+    <!-- RAG Stats -->
+    <div id="rag-stats-bar" class="rag-stats-bar"></div>
 
-    <div id="collect-list"></div>
+    <!-- Collect Section (Dropdown) -->
+    <details class="sys-dropdown" id="rag-collect-dropdown">
+      <summary class="sys-dropdown-header">Collect</summary>
+      <div class="sys-dropdown-body">
+        <div class="collect-header" style="margin-bottom:8px">
+          <span></span>
+          <button class="btn-primary" id="btn-collect-add">+ Link</button>
+        </div>
+        <div id="collect-toc"></div>
+        <div id="collect-list"></div>
+      </div>
+    </details>
 
+    <!-- Inbox (uploaded files pending ingestion) -->
+    <details class="sys-dropdown" id="rag-inbox-dropdown">
+      <summary class="sys-dropdown-header">Inbox</summary>
+      <div class="sys-dropdown-body">
+        <div id="rag-inbox-list"><div class="on-no-data">Wird geladen...</div></div>
+      </div>
+    </details>
   </div>
 
 

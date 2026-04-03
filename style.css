@@ -1040,7 +1040,7 @@ nav::-webkit-scrollbar { display: none; }
 }
 
 /* ── GLOBAL LAYOUT ── */
-#tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-collect, #tab-on {
+#tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-rag, #tab-on {
   padding: 8px 16px;
   max-width: 900px;
   margin: 0 auto;
@@ -2652,3 +2652,53 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
   margin: 12px 0 6px 0;
 }
 .on-no-data { font-size: 13px; color: var(--text-muted); padding: 8px 0; }
+
+/* ══════════════════════════════════════════════════
+   RAG TAB — Upload + Knowledge Base
+   ══════════════════════════════════════════════════ */
+#tab-rag { max-width: 900px; }
+#tab-rag h2 {
+  font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--text);
+  letter-spacing: -0.4px;
+}
+.rag-upload-section { margin-bottom: 16px; }
+.rag-upload-zone {
+  border: 2px dashed var(--border); border-radius: var(--radius);
+  padding: 32px 16px; text-align: center; cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+.rag-upload-zone:hover, .rag-upload-zone.drag-over {
+  border-color: var(--accent); background: rgba(204,120,92,0.05);
+}
+.rag-upload-icon { font-size: 28px; color: var(--text-muted); margin-bottom: 6px; font-weight: 300; }
+.rag-upload-text { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.rag-upload-hint { font-size: 12px; color: var(--text-muted); }
+.rag-stats-bar {
+  display: flex; gap: 16px; padding: 10px 0; font-size: 12px; color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.rag-stats-bar:empty { display: none; }
+.rag-stat { display: flex; align-items: center; gap: 4px; }
+.rag-stat-value { font-weight: 600; color: var(--text); }
+#rag-upload-queue {
+  margin-top: 10px; display: flex; flex-direction: column; gap: 6px;
+}
+.rag-queue-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 13px;
+}
+.rag-queue-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rag-queue-size { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.rag-queue-status { font-size: 11px; font-weight: 500; flex-shrink: 0; }
+.rag-queue-status.pending { color: var(--text-muted); }
+.rag-queue-status.uploading { color: var(--accent); }
+.rag-queue-status.done { color: #22c55e; }
+.rag-queue-status.error { color: #ef4444; }
+.rag-inbox-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 0;
+  border-bottom: 1px solid var(--border); font-size: 13px;
+}
+.rag-inbox-item:last-child { border-bottom: none; }
+.rag-inbox-name { flex: 1; font-weight: 500; }
+.rag-inbox-date { font-size: 11px; color: var(--text-muted); }

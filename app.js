@@ -427,7 +427,7 @@ function switchTab(id) {
 
   if (id === 'imperialki') showImperialKITab();
 
-  if (id === 'collect') renderCollect();
+  if (id === 'rag') showRAGTab();
 
   if (id === 'on') showONTab();
 
@@ -4524,6 +4524,178 @@ document.addEventListener('visibilitychange', function() {
 // Start polling after boot
 
 setTimeout(startSyncPolling, 5000);
+
+
+// ─── RAG TAB (Upload + Knowledge Base) ───────────────────────────────────────
+
+function showRAGTab() {
+  // Render collect inside the RAG tab dropdown
+  renderCollect();
+  // Load RAG stats and inbox
+  loadRAGStats();
+  loadRAGInbox();
+  // Setup upload handlers (only once)
+  if (!showRAGTab._initialized) {
+    showRAGTab._initialized = true;
+    var dropZone = document.getElementById('rag-drop-zone');
+    var fileInput = document.getElementById('rag-file-input');
+    if (dropZone && fileInput) {
+      dropZone.addEventListener('click', function() { fileInput.click(); });
+      dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+      dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('drag-over'); });
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault(); dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) handleRAGUpload(e.dataTransfer.files);
+      });
+      fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) handleRAGUpload(fileInput.files);
+        fileInput.value = '';
+      });
+    }
+  }
+}
+
+var _ragUploadQueue = [];
+var _ragUploading = false;
+
+function handleRAGUpload(files) {
+  var queueEl = document.getElementById('rag-upload-queue');
+  if (!queueEl) return;
+  queueEl.style.display = 'flex';
+
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i];
+    var item = { file: f, name: f.name, size: f.size, status: 'pending' };
+    _ragUploadQueue.push(item);
+    var sizeStr = f.size < 1024 ? f.size + ' B' : (f.size / 1024).toFixed(1) + ' KB';
+    var div = document.createElement('div');
+    div.className = 'rag-queue-item';
+    div.id = 'rag-q-' + _ragUploadQueue.length;
+    div.innerHTML = '<span class="rag-queue-name">' + esc(f.name) + '</span>' +
+      '<span class="rag-queue-size">' + sizeStr + '</span>' +
+      '<span class="rag-queue-status pending">Wartend</span>';
+    queueEl.appendChild(div);
+  }
+
+  if (!_ragUploading) processRAGQueue();
+}
+
+async function processRAGQueue() {
+  _ragUploading = true;
+  var token = getGHToken();
+  if (!token) {
+    showToast('Kein GitHub-Token gesetzt', true);
+    _ragUploading = false;
+    return;
+  }
+
+  for (var i = 0; i < _ragUploadQueue.length; i++) {
+    var item = _ragUploadQueue[i];
+    if (item.status !== 'pending') continue;
+
+    item.status = 'uploading';
+    var statusEl = document.querySelector('#rag-q-' + (i + 1) + ' .rag-queue-status');
+    if (statusEl) { statusEl.textContent = 'Hochladen...'; statusEl.className = 'rag-queue-status uploading'; }
+
+    try {
+      var reader = new FileReader();
+      var b64 = await new Promise(function(resolve, reject) {
+        reader.onload = function(ev) { resolve(ev.target.result.split(',')[1]); };
+        reader.onerror = reject;
+        reader.readAsDataURL(item.file);
+      });
+
+      var path = 'data/rag-inbox/' + item.name;
+      var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/' + path, {
+        method: 'PUT',
+        headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'rag-upload: ' + item.name, content: b64 })
+      });
+
+      if (r.status === 422) {
+        // File already exists, get SHA and update
+        var existing = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/' + path, {
+          headers: { Authorization: 'token ' + token }
+        });
+        if (existing.ok) {
+          var ed = await existing.json();
+          r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/' + path, {
+            method: 'PUT',
+            headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'rag-upload: ' + item.name, content: b64, sha: ed.sha })
+          });
+        }
+      }
+
+      if (r.ok || r.status === 200 || r.status === 201) {
+        item.status = 'done';
+        if (statusEl) { statusEl.textContent = 'Hochgeladen'; statusEl.className = 'rag-queue-status done'; }
+      } else {
+        throw new Error('HTTP ' + r.status);
+      }
+    } catch(e) {
+      item.status = 'error';
+      if (statusEl) { statusEl.textContent = 'Fehler'; statusEl.className = 'rag-queue-status error'; }
+    }
+  }
+
+  _ragUploading = false;
+  _ragUploadQueue = [];
+  loadRAGInbox();
+  showToast('Upload abgeschlossen');
+}
+
+async function loadRAGStats() {
+  var bar = document.getElementById('rag-stats-bar');
+  if (!bar) return;
+  var hb = null;
+  try {
+    var r = await fetchFromGitHub('data/fleet-heartbeat.json');
+    if (r && r.content) hb = JSON.parse(r.content);
+  } catch(e) {}
+
+  if (hb && hb.rag) {
+    bar.innerHTML = '<span class="rag-stat"><span class="on-dot ' + (hb.rag.status === 'healthy' ? 'on-dot--healthy' : 'on-dot--down') + '"></span> RAG ' + esc(hb.rag.status) + '</span>' +
+      '<span class="rag-stat">Dokumente: <span class="rag-stat-value">' + (hb.rag.documents_indexed || 0) + '</span></span>' +
+      '<span class="rag-stat">Update: <span class="rag-stat-value">' + (hb.updated_at ? fmtTimestampDE(hb.updated_at) : '-') + '</span></span>';
+  } else {
+    bar.innerHTML = '<span class="rag-stat"><span class="on-dot on-dot--unknown"></span> RAG Status unbekannt</span>';
+  }
+}
+
+async function loadRAGInbox() {
+  var list = document.getElementById('rag-inbox-list');
+  if (!list) return;
+  var token = getGHToken();
+  if (!token) { list.innerHTML = '<div class="on-no-data">Kein Token</div>'; return; }
+
+  try {
+    var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/rag-inbox', {
+      headers: { Authorization: 'token ' + token }
+    });
+    if (r.status === 404) {
+      list.innerHTML = '<div class="on-no-data">Inbox leer</div>';
+      return;
+    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var files = await r.json();
+    if (!Array.isArray(files) || files.length === 0) {
+      list.innerHTML = '<div class="on-no-data">Inbox leer</div>';
+      return;
+    }
+    var html = '';
+    files.forEach(function(f) {
+      var sizeStr = f.size < 1024 ? f.size + ' B' : (f.size / 1024).toFixed(1) + ' KB';
+      html += '<div class="rag-inbox-item">';
+      html += '<span class="rag-inbox-name">' + esc(f.name) + '</span>';
+      html += '<span class="rag-inbox-date">' + sizeStr + '</span>';
+      html += '</div>';
+    });
+    list.innerHTML = html;
+  } catch(e) {
+    list.innerHTML = '<div class="on-no-data">Fehler: ' + esc(e.message) + '</div>';
+  }
+}
 
 
 // ─── ON TAB (Operations / Monitoring) ────────────────────────────────────────
