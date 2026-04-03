@@ -3389,7 +3389,7 @@ function renderCollect() {
 
   cats.forEach(function(cat) {
 
-    var items = data.items.filter(function(i){return i.category===cat;}).sort(function(a,b){return b.createdAt.localeCompare(a.createdAt);});
+    var items = data.items.filter(function(i){return i.category===cat;}).sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
 
     if (items.length === 0) return;
 
