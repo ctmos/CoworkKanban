@@ -2330,7 +2330,8 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .pat-detail-back { background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 12px; cursor: pointer; font-size: 13px; color: var(--text); font-family: inherit; }
 .pat-detail-back:hover { border-color: var(--accent); color: var(--accent); }
 .pat-detail-code { font-size: 18px; font-weight: 700; color: var(--text); }
-.pat-detail-meta { font-size: 12px; color: var(--text-muted); }
+.pat-detail-meta { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+.pat-aufnahme-input { padding: 2px 6px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font-size: 12px; font-family: inherit; width: 130px; }
 .pat-detail-actions { margin-left: auto; display: flex; gap: 8px; }
 
 /* ── Patient Ampel Circles ── */
