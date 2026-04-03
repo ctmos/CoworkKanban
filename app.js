@@ -1307,7 +1307,7 @@ function showPatientDetail(patId) {
 
     + '<span class="pat-status-badge pat-status-'+(pat.status||'aktiv')+'">'+(pat.status||'aktiv')+'</span>'
 
-    + '<span class="pat-detail-meta">Aufnahme: '+esc(pat.aufnahme||'–')+'</span>'
+    + '<span class="pat-detail-meta">Aufnahme: <input type="date" class="pat-aufnahme-input" value="'+esc(pat.aufnahme||'')+'" onchange="setAufnahmedatum(this.value)"></span>'
 
     + '<div class="pat-detail-actions">'
 
@@ -1554,6 +1554,10 @@ function setAmpelStatus(key, status) {
 
   _getPatAndSave(function(pat){ pat.ampel[key].status = status; });
 
+}
+
+function setAufnahmedatum(dateVal) {
+  _getPatAndSave(function(pat){ pat.aufnahme = dateVal; });
 }
 
 function setAmpelDate(key, dateVal) {
