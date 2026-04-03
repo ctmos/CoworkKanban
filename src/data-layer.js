@@ -1212,9 +1212,31 @@ async function pullMergePushPatients() {
 
         } else {
 
-          // Merge blog entries from remote that don't exist locally
-
           var lp = localMap[rp.id];
+
+          // Field-level merge: if remote is newer, take remote fields (except sub-arrays)
+
+          var rTime = rp.updatedAt || '';
+
+          var lTime = lp.updatedAt || '';
+
+          if (rTime > lTime) {
+
+            // Remote is newer — update scalar fields
+
+            ['notes','status','active','aufnahme','austrittsplanung','ampel'].forEach(function(f) {
+
+              if (rp[f] !== undefined) lp[f] = rp[f];
+
+            });
+
+            lp.updatedAt = rp.updatedAt;
+
+            updated++;
+
+          }
+
+          // Always merge blog entries additively (regardless of updatedAt)
 
           if (rp.blog && rp.blog.length > 0) {
 
@@ -1232,7 +1254,7 @@ async function pullMergePushPatients() {
 
           }
 
-          // Merge entries from remote that don't exist locally
+          // Always merge entries additively
 
           if (rp.entries && rp.entries.length > 0) {
 

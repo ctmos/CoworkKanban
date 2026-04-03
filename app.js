@@ -366,7 +366,14 @@ function _clearLocalBackup() {
 
 function getPatients() { return ls('cowork_patients', []); }
 
-function savePatients(p) { lsSet('cowork_patients', p); }
+function savePatients(p, touchedId) {
+  var id = touchedId || (typeof _currentPatId !== 'undefined' ? _currentPatId : null);
+  if (id) {
+    var pat = p.find(function(x) { return x.id === id; });
+    if (pat) pat.updatedAt = new Date().toISOString();
+  }
+  lsSet('cowork_patients', p);
+}
 
 function getALLog()    { return ls('cowork_autonomy_log', null); }
 
