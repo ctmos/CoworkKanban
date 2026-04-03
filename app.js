@@ -1895,44 +1895,6 @@ function updateALBadge(){var badge=document.getElementById('al-badge');if(!badge
 
 // ─── BACKLOG ──────────────────────────────────────────────────────────────────
 
-var BL_DEMOS=[{id:'bl001',title:'Nacht-Autopilot aktivieren',prio:'hoch',cat:'KI',status:'geplant',desc:'Automatische Aufgaben-Priorisierung nach 22 Uhr.'},{id:'bl002',title:'Google Drive Integration',prio:'mittel',cat:'Integration',status:'geplant',desc:'Berichte direkt in Drive speichern.'},{id:'bl003',title:'Patienten-Timeline Variante C',prio:'hoch',cat:'Patienten',status:'in-arbeit',desc:'Chronologische Verlaufsansicht pro Patient.'},{id:'bl004',title:'Offline-Modus & PWA-Install',prio:'mittel',cat:'Tech',status:'geplant',desc:'Service Worker f\u00fcr Offline-Nutzung.'},{id:'bl005',title:'Wochenr\u00fcckblick-Report (PDF)',prio:'niedrig',cat:'Reporting',status:'geplant',desc:'Automatisch generierter PDF-Report.'}];
-
-function getBacklog(){return ls('cowork_backlog',null);}
-
-function saveBacklog(b){lsSet('cowork_backlog',b);}
-
-function initBacklog(){if(!getBacklog()){saveBacklog(BL_DEMOS);}}
-
-var PRIO_LABELS={hoch:'\uD83D\uDD34 Hoch',mittel:'\uD83D\uDFE1 Mittel',niedrig:'\uD83D\uDFE2 Niedrig'};
-
-var PRIO_ORDER={hoch:0,mittel:1,niedrig:2};
-
-var BL_STATUS_CLS={geplant:'bl-geplant','in-arbeit':'bl-in-arbeit',abgeschlossen:'bl-abgeschlossen'};
-
-var BL_STATUS_LABELS={geplant:'Geplant','in-arbeit':'In Arbeit',abgeschlossen:'Abgeschlossen'};
-
-function normBL(e){e.prio=e.prio||e.priority||'mittel';e.cat=e.cat||e.category||'';e.desc=e.desc||e.description||'';if(e.status)e.status=e.status.toLowerCase().replace(/\s+/g,'-');if(!e.status)e.status='geplant';return e;}
-
-function renderBacklog(){var bl=(getBacklog()||[]).map(normBL);var filter=document.getElementById('bl-filter').value;if(filter)bl=bl.filter(function(e){return e.prio===filter;});bl=bl.slice().sort(function(a,b){return(PRIO_ORDER[a.prio]||1)-(PRIO_ORDER[b.prio]||1);});var list=document.getElementById('bl-list');if(bl.length===0){list.innerHTML='<div class="empty-state">Keine Eintr\u00e4ge.</div>';return;}list.innerHTML=bl.map(function(e){return '<div class="bl-card" onclick="openBLModal(\''+esc(e.id)+'\')"><div class="bl-card-top"><span class="bl-prio">'+((PRIO_LABELS[e.prio]||'').slice(0,2)||'\uD83D\uDCCB')+'</span><span class="bl-title">'+esc(e.title)+'</span><span class="bl-status-badge '+(BL_STATUS_CLS[e.status]||'bl-geplant')+'">'+(BL_STATUS_LABELS[e.status]||e.status)+'</span></div><div class="bl-card-meta"><span>'+(PRIO_LABELS[e.prio]||e.prio)+'</span>'+(e.cat?'<span>'+esc(e.cat)+'</span>':'')+'</div>'+(e.desc?'<div class="bl-desc">'+esc(e.desc.substring(0,120))+(e.desc.length>120?'\u2026':'')+'</div>':'')+'</div>';}).join('');}
-
-document.getElementById('bl-filter').addEventListener('change',renderBacklog);
-
-document.getElementById('btn-bl-add').addEventListener('click',function(){openBLModal(null);});
-
-var blEntryId=null;
-
-function openBLModal(entryId){blEntryId=entryId;var bl=(getBacklog()||[]).map(normBL);var entry=entryId?bl.find(function(e){return e.id===entryId;}):null;var isNew=!entry;document.getElementById('bl-modal-title').textContent=isNew?'Neuer Eintrag':entry.title;document.getElementById('blm-title').value=(entry&&entry.title)||'';document.getElementById('blm-prio').value=(entry&&entry.prio)||'mittel';document.getElementById('blm-cat').value=(entry&&entry.cat)||'';document.getElementById('blm-status').value=(entry&&entry.status)||'geplant';document.getElementById('blm-desc').value=(entry&&entry.desc)||'';document.getElementById('blm-delete').style.display=isNew?'none':'';document.getElementById('bl-modal-overlay').classList.add('open');}
-
-function closeBLModal(){document.getElementById('bl-modal-overlay').classList.remove('open');blEntryId=null;}
-
-document.getElementById('blm-cancel').addEventListener('click',closeBLModal);
-
-document.getElementById('bl-modal-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeBLModal();});
-
-document.getElementById('blm-save').addEventListener('click',function(){var title=document.getElementById('blm-title').value.trim();var prio=document.getElementById('blm-prio').value;var cat=document.getElementById('blm-cat').value.trim();var status=document.getElementById('blm-status').value;var desc=document.getElementById('blm-desc').value.trim();if(!title){document.getElementById('blm-title').focus();return;}var bl=getBacklog()||[];if(blEntryId){var idx=bl.findIndex(function(e){return e.id===blEntryId;});if(idx!==-1)bl[idx]=Object.assign({},bl[idx],{title:title,prio:prio,cat:cat,status:status,desc:desc});}else{bl.push({id:'bl'+Date.now(),title:title,prio:prio,cat:cat,status:status,desc:desc});}saveBacklog(bl);closeBLModal();renderBacklog();});
-
-document.getElementById('blm-delete').addEventListener('click',function(){confirmAction('Eintrag l\u00f6schen?','Dieser Backlog-Eintrag wird gel\u00f6scht.',function(){var bl=getBacklog()||[];bl=bl.filter(function(e){return e.id!==blEntryId;});saveBacklog(bl);closeBLModal();renderBacklog();});});
-
 
 
 // ─── EINSTELLUNGEN ────────────────────────────────────────────────────────────
@@ -2257,7 +2219,7 @@ async function initApp() {
 
   }
 
-  initAL(); initBacklog(); initCollect(); updateALBadge();
+  initAL(); initCollect(); updateALBadge();
 
   loadCalendarEvents().catch(function(e) { console.warn('cal fail', e); });
 
@@ -3726,8 +3688,6 @@ document.addEventListener('keydown', function(e) {
 
     closePatModal();
 
-    closeBLModal();
-
     var vorlagen = document.getElementById('vorlagen-overlay');
 
     if (vorlagen && vorlagen.classList.contains('open')) closeVorlagen();
@@ -4464,8 +4424,6 @@ async function checkForRemoteChanges() {
       if (currentTab === 'kanban') renderKanban();
 
       if (currentTab === 'patienten') renderPatients();
-
-      if (currentTab === 'backlog') renderBacklog();
 
       if (currentTab === 'autonomy') renderAL();
 
