@@ -782,11 +782,11 @@ async function safeWriteToGitHub(path, content, message, maxRetries) {
 
       var bytes = new TextEncoder().encode(content);
 
-      // Step 2b: SizeGuard — block if new content < 50% of remote (data loss protection)
+      // Step 2b: SizeGuard — block if new content < 85% of remote (data loss protection)
 
-      if (remoteSize > 500 && bytes.length < remoteSize * 0.5) {
+      if (remoteSize > 500 && bytes.length < remoteSize * 0.85) {
 
-        var sgMsg = '[SizeGuard] BLOCKED: ' + path + ' new size ' + bytes.length + ' < 50% of remote ' + remoteSize + '. Possible data loss.';
+        var sgMsg = '[SizeGuard] BLOCKED: ' + path + ' new size ' + bytes.length + ' < 85% of remote ' + remoteSize + '. Possible data loss.';
 
         console.error(sgMsg);
 
@@ -986,9 +986,7 @@ async function syncToGitHub() {
 
     if (WriteGuard._pushInProgress) {
 
-      console.warn('[WriteGuard] Push timeout after 30s — resetting _pushInProgress');
-
-      WriteGuard._pushInProgress = false;
+      console.warn('[WriteGuard] Push timeout after 30s — fetch may still be running');
 
       WriteGuard.log({ status: 'timeout', reason: 'Push timeout 30s' });
 
