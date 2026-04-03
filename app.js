@@ -55,6 +55,57 @@ async function decryptJSON(content) {
   }
 })();
 
+// ─── SECURE TOKEN STORAGE (PIN-encrypted) ───────────────────────────────────
+
+async function deriveKeyFromPin(pin, salt) {
+  var enc = new TextEncoder();
+  var keyMaterial = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: enc.encode(salt || 'cowork-vault'), iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+
+async function encryptWithPin(plaintext, pin) {
+  var key = await deriveKeyFromPin(pin);
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  var encoded = new TextEncoder().encode(plaintext);
+  var ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, encoded);
+  return JSON.stringify({ iv: bytesToBase64(iv), data: bytesToBase64(new Uint8Array(ciphertext)) });
+}
+
+async function decryptWithPin(encryptedJson, pin) {
+  try {
+    var obj = JSON.parse(encryptedJson);
+    var key = await deriveKeyFromPin(pin);
+    var iv = Uint8Array.from(atob(obj.iv), function(c) { return c.charCodeAt(0); });
+    var ciphertext = Uint8Array.from(atob(obj.data), function(c) { return c.charCodeAt(0); });
+    var decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+    return new TextDecoder().decode(decrypted);
+  } catch(e) {
+    return null;
+  }
+}
+
+async function storeSecureVault(pin) {
+  var vault = JSON.stringify({
+    gh_token: _appState.gh_token || localStorage.getItem('cowork_gh_token') || '',
+    enc_key: localStorage.getItem('cowork_enc_key') || ''
+  });
+  var encrypted = await encryptWithPin(vault, pin);
+  localStorage.setItem('cowork_vault', encrypted);
+}
+
+async function unlockSecureVault(pin) {
+  var encrypted = localStorage.getItem('cowork_vault');
+  if (!encrypted) return false;
+  var vault = await decryptWithPin(encrypted, pin);
+  if (!vault) return false;
+  try {
+    var v = JSON.parse(vault);
+    if (v.gh_token) { _appState.gh_token = v.gh_token; }
+    if (v.enc_key && v.enc_key.length === 64) { _encKey = await importEncKey(v.enc_key); }
+    return true;
+  } catch(e) { return false; }
+}
+
 // ─── PIN SYSTEM ──────────────────────────────────────────────────────────────
 
 var pinFailures = 0;
@@ -111,7 +162,9 @@ function showPinUnlockUI(stored) {
 
       sessionStorage.setItem('cowork_pin_set', 'true');
 
-      unlockApp();
+      sessionStorage.setItem('cowork_pin_val', p);
+
+      unlockSecureVault(p).then(function() { unlockApp(); });
 
     } else {
 
@@ -1877,13 +1930,13 @@ function initSettings(){var settings=ls('cowork_settings',{});var token=settings
 
 (function(){var saved=localStorage.getItem('cowork_gh_token');if(saved&&!_appState.gh_token){_appState.gh_token=saved;}})();
 
-document.getElementById('btn-gh-save').addEventListener('click',async function(){var v=document.getElementById('gh-token-input').value.trim();lsSet('cowork_gh_token',v);localStorage.setItem('cowork_gh_token',v);if(v){try{await safeWriteToGitHub('settings/config.json',JSON.stringify({updated:new Date().toISOString()},null,2),'sync: update config');showToast('\u2705 Token gespeichert & synchronisiert');}catch(e){showToast('\u2705 Token lokal gespeichert');}}else{showToast('\u2705 Token gespeichert');}});
+document.getElementById('btn-gh-save').addEventListener('click',async function(){var v=document.getElementById('gh-token-input').value.trim();lsSet('cowork_gh_token',v);localStorage.setItem('cowork_gh_token',v);_appState.gh_token=v;var pin=sessionStorage.getItem('cowork_pin_val');if(pin)await storeSecureVault(pin);if(v){try{await safeWriteToGitHub('settings/config.json',JSON.stringify({updated:new Date().toISOString()},null,2),'sync: update config');showToast('\u2705 Token gespeichert & verschl\u00fcsselt');}catch(e){showToast('\u2705 Token lokal gespeichert');}}else{showToast('\u2705 Token gespeichert');}});
 
 document.getElementById('btn-budget-save').addEventListener('click',function(){var v=parseInt(document.getElementById('budget-input').value)||100;lsSet('cowork_budget',v);showToast('\u2705 Budget gespeichert');if(currentTab==='heute')renderHeute();});
 
 document.getElementById('btn-pin-change').addEventListener('click',async function(){var val=document.getElementById('new-pin-input').value.trim();if(val.length<4||val.length>6||!/^\d+$/.test(val)){showToast('PIN muss 4\u20136 Ziffern sein',true);return;}var newHash=hashPin(val);_appState.pin_hash=newHash;sessionStorage.setItem('cowork_pin_set','true');document.getElementById('new-pin-input').value='';try{await safeWriteToGitHub('settings/pin.json',JSON.stringify({pin_hash:newHash},null,2),'sync: update PIN');showToast('\u2705 PIN ge\u00e4ndert & synchronisiert');}catch(e){showToast('\u274c PIN-Sync fehlgeschlagen',true);}});
 
-document.getElementById('btn-enc-save').addEventListener('click',async function(){var hex=document.getElementById('enc-key-input').value.trim();if(!/^[0-9a-fA-F]{64}$/.test(hex)){showToast('Key muss 64 Hex-Zeichen sein',true);return;}localStorage.setItem('cowork_enc_key',hex);_encKey=await importEncKey(hex);document.getElementById('enc-key-input').value='';document.getElementById('enc-status').textContent='Verschl\u00fcsselung aktiv';showToast('\u2705 Verschl\u00fcsselungs-Key gespeichert');});
+document.getElementById('btn-enc-save').addEventListener('click',async function(){var hex=document.getElementById('enc-key-input').value.trim();if(!/^[0-9a-fA-F]{64}$/.test(hex)){showToast('Key muss 64 Hex-Zeichen sein',true);return;}localStorage.setItem('cowork_enc_key',hex);_encKey=await importEncKey(hex);var pin=sessionStorage.getItem('cowork_pin_val');if(pin)await storeSecureVault(pin);document.getElementById('enc-key-input').value='';document.getElementById('enc-status').textContent='Verschl\u00fcsselung aktiv';showToast('\u2705 Key gespeichert & verschl\u00fcsselt');});
 
 document.getElementById('btn-enc-generate').addEventListener('click',function(){var hex=generateEncKeyHex();document.getElementById('enc-key-input').value=hex;document.getElementById('enc-key-input').type='text';document.getElementById('enc-status').textContent='Key generiert \u2014 JETZT KOPIEREN und sicher aufbewahren, dann Speichern klicken';});
 
