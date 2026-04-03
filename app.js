@@ -30,6 +30,46 @@ const GH_DATA_REPO = 'ctmos/cowork-data';
 
 const GH_API_BASE  = 'https://api.github.com';
 
+// ─── WRITE QUEUE (Single-Flight per file) ───────────────────────────────────
+
+var _writeQueue = {};
+
+var _writeRunning = {};
+
+async function queuedWrite(path, writeFn) {
+
+  if (_writeRunning[path]) {
+
+    _writeQueue[path] = writeFn;
+
+    return;
+
+  }
+
+  _writeRunning[path] = true;
+
+  try {
+
+    await writeFn();
+
+  } finally {
+
+    _writeRunning[path] = false;
+
+    if (_writeQueue[path]) {
+
+      var next = _writeQueue[path];
+
+      _writeQueue[path] = null;
+
+      await queuedWrite(path, next);
+
+    }
+
+  }
+
+}
+
 const GH_TOKEN_DEFAULT = '';
 
 
@@ -474,21 +514,35 @@ function getGHToken() {
 
 
 
-// ─── SAFE READ FROM GITHUB ──────────────────────────────────────────────────
+// ─── SAFE READ FROM GITHUB (with ETag support) ─────────────────────────────
 
-async function fetchFromGitHub(path) {
+var _etagCache = {};
+
+async function fetchFromGitHub(path, options) {
 
   var token = getGHToken();
 
   if (!token) return null;
 
+  var useEtag = options && options.conditional;
+
   try {
+
+    var headers = { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' };
+
+    if (useEtag && _etagCache[path]) {
+
+      headers['If-None-Match'] = _etagCache[path];
+
+    }
 
     var r = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/contents/' + path, {
 
-      headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' }
+      headers: headers
 
     });
+
+    if (r.status === 304) return { notModified: true };
 
     if (!r.ok) {
 
@@ -499,6 +553,10 @@ async function fetchFromGitHub(path) {
       return null;
 
     }
+
+    var etag = r.headers.get('ETag');
+
+    if (etag) _etagCache[path] = etag;
 
     var d = await r.json();
 
@@ -1084,23 +1142,27 @@ function scheduleSavePatientsToGitHub() {
 
 async function savePatientsToGitHub() {
 
-  try {
+  await queuedWrite('data/patients.json', async function() {
 
-    var pJson = JSON.stringify(_appState.patients, null, 2);
+    try {
 
-    var pContent = await encryptJSON(pJson);
+      var pJson = JSON.stringify(_appState.patients, null, 2);
 
-    await safeWriteToGitHub('data/patients.json', pContent, 'sync: auto-save patients');
+      var pContent = await encryptJSON(pJson);
 
-  } catch(e) {
+      await safeWriteToGitHub('data/patients.json', pContent, 'sync: auto-save patients');
 
-    console.error('[savePatientsToGitHub]', e);
+    } catch(e) {
 
-    setSyncStatus('error');
+      console.error('[savePatientsToGitHub]', e);
 
-    showToast('Patienten-Sync fehlgeschlagen', true);
+      setSyncStatus('error');
 
-  }
+      showToast('Patienten-Sync fehlgeschlagen', true);
+
+    }
+
+  });
 
 }
 
@@ -1581,6 +1643,40 @@ async function loadFromGitHub() {
     }
 
 
+
+    // ─── FILE SIZE MONITORING (warn before GitHub API 1MB limit) ──────────────
+
+    var _sizeChecks = [
+
+      { name: 'collect.json', data: _appState.collect },
+
+      { name: 'patients.json', data: _appState.patients },
+
+      { name: 'tasks.json', data: _appState.cards },
+
+      { name: 'backlog.json', data: _appState.backlog }
+
+    ];
+
+    _sizeChecks.forEach(function(f) {
+
+      if (!f.data) return;
+
+      var size = new Blob([JSON.stringify(f.data)]).size;
+
+      if (size > 900000) {
+
+        console.error('[SizeMonitor] CRITICAL: ' + f.name + ' = ' + (size/1024).toFixed(0) + 'KB — approaching 1MB GitHub limit!');
+
+        showToast(f.name + ' ist ' + (size/1024).toFixed(0) + 'KB — bald zu gross!', true);
+
+      } else if (size > 700000) {
+
+        console.warn('[SizeMonitor] WARNING: ' + f.name + ' = ' + (size/1024).toFixed(0) + 'KB');
+
+      }
+
+    });
 
     // FIX 5: Mark data as loaded -- writes now allowed
 
@@ -6177,19 +6273,13 @@ async function checkForRemoteChanges() {
 
   try {
 
-    var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/tasks.json', {
+    var result = await fetchFromGitHub('data/tasks.json', { conditional: true });
 
-      headers: { Authorization: 'token ' + token },
+    if (!result) return;
 
-      cache: 'no-store'
+    if (result.notModified) return;
 
-    });
-
-    if (!r.ok) return;
-
-    var d = await r.json();
-
-    var remoteSHA = d.sha;
+    var remoteSHA = result.sha;
 
 
 
