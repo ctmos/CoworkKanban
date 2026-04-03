@@ -419,8 +419,6 @@ function switchTab(id) {
 
   if (id === 'autonomy')  renderAL();
 
-  if (id === 'backlog')   renderBacklog();
-
   if (id === 'projekte')  showProjectsTab();
 
   if (id === 'system')    { showSystemTab(); initSettings(); }

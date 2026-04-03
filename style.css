@@ -1040,7 +1040,7 @@ nav::-webkit-scrollbar { display: none; }
 }
 
 /* ── GLOBAL LAYOUT ── */
-#tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-rag, #tab-on {
+#tab-kanban, #tab-patienten, #tab-autonomy, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-rag, #tab-on {
   padding: 8px 16px;
   max-width: 900px;
   margin: 0 auto;
