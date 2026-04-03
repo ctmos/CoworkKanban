@@ -577,6 +577,15 @@
       <summary class="sys-dropdown-header">System-Uebersicht</summary>
       <div class="sys-dropdown-body">
 
+        <!-- System-Beschreibung -->
+        <div class="ub-section">
+          <div style="font-size:13px;line-height:1.7;color:var(--text);opacity:0.85;margin-bottom:16px;">
+            <p style="margin:0 0 12px 0"><strong>CoworkOS</strong> ist ein persoenliches Drei-Agenten-System fuer den klinischen Alltag. Es kombiniert ein visuelles Dashboard (LifeOS), einen 24/7-Chatbot (Hermine) und einen Development-Partner (KITT) zu einem integrierten Arbeitssystem. Gebaut mit Vanilla JS, gehostet auf GitHub Pages, synchronisiert ueber die GitHub API &mdash; ohne eigenen Backend-Server, ohne Framework, ohne Build-System.</p>
+            <p style="margin:0 0 12px 0">Patientendaten werden clientseitig mit <strong>AES-256-GCM</strong> verschluesselt bevor sie GitHub erreichen. Alle sensiblen Repos sind privat, die Git-History ist bereinigt, und der Zugriff laeuft ueber einen Fine-Grained PAT mit minimalen Rechten. Der Token wird im Browser mit dem PIN verschluesselt gespeichert (PBKDF2-Vault) &mdash; kein Klartext in localStorage.</p>
+            <p style="margin:0">Das System pollt alle 60 Sekunden mit <strong>ETag-Conditional GET</strong> (304 Not Modified spart API-Kontingent), nutzt eine Write-Queue fuer konfliktfreie Schreibzugriffe und merged Patientendaten deterministisch auf Feldebene (updatedAt). Aktuell: SW v5.56, HTTPS enforced, CSP aktiv.</p>
+          </div>
+        </div>
+
         <!-- Architektur-Diagramm -->
         <div class="ub-section">
           <h3 class="ub-section-title">Architektur</h3>
@@ -598,17 +607,17 @@
                 <div class="ub-agent-role">Dashboard &amp; Datenhub</div>
                 <ul class="ub-agent-list">
                   <li>8 Tabs, 16 Kanban-Lanes</li>
-                  <li>Multi-Device Sync (60s Polling)</li>
-                  <li>WriteGuard v2.0, PIN Auth</li>
-                  <li>Offline-faehig (PWA, Network-First)</li>
-                  <li>Collect: 2094 Eintraege, 24 Kategorien</li>
-                  <li>ImperialKI v2.0: Briefing + Coach</li>
+                  <li>ETag-Polling (60s, 304-optimiert)</li>
+                  <li>AES-256-GCM Patienten-Verschluesselung</li>
+                  <li>PIN-Vault (PBKDF2), CSP, HTTPS enforced</li>
+                  <li>Write-Queue + Field-Level-Merge</li>
+                  <li>Modular: data-layer.js + app.js</li>
                 </ul>
                 <div class="ub-agent-stats">
-                  <span class="ub-stat">26 Karten</span>
+                  <span class="ub-stat">62 Karten</span>
                   <span class="ub-stat">24 Patienten</span>
-                  <span class="ub-stat">37 Backlog</span>
-                  <span class="ub-stat">6 Projekte</span>
+                  <span class="ub-stat">64 Backlog</span>
+                  <span class="ub-stat">5 Projekte</span>
                 </div>
               </div>
             </div>
@@ -720,19 +729,19 @@
               <span class="ub-df-cell">KITT</span>
             </div>
             <div class="ub-df-row">
-              <span class="ub-df-cell ub-df-bold">cowork-data</span>
-              <span class="ub-df-cell">Tasks, Patienten, Kalender, Collect</span>
+              <span class="ub-df-cell ub-df-bold">cowork-data (privat)</span>
+              <span class="ub-df-cell">Tasks, Patienten (verschl.), Kalender, Collect</span>
               <span class="ub-df-cell">Alle</span>
               <span class="ub-df-cell">LifeOS + Hermine</span>
             </div>
             <div class="ub-df-row">
-              <span class="ub-df-cell ub-df-bold">dispatch-memory</span>
-              <span class="ub-df-cell">Doku, State, Rules, Config</span>
+              <span class="ub-df-cell ub-df-bold">dispatch-memory (privat)</span>
+              <span class="ub-df-cell">Doku, State, Rules, DSFA</span>
               <span class="ub-df-cell">Alle</span>
               <span class="ub-df-cell">KITT + Hermine</span>
             </div>
           </div>
-          <div class="ub-principle">GET &rarr; merge &rarr; PUT mit SHA &mdash; Daten sind heilig</div>
+          <div class="ub-principle">GET &rarr; merge &rarr; PUT mit SHA &mdash; Daten sind heilig &mdash; patients.json AES-256-GCM verschluesselt</div>
         </div>
 
       </div>
