@@ -1040,7 +1040,7 @@ nav::-webkit-scrollbar { display: none; }
 }
 
 /* ── GLOBAL LAYOUT ── */
-#tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-collect {
+#tab-kanban, #tab-patienten, #tab-autonomy, #tab-backlog, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-collect, #tab-on {
   padding: 8px 16px;
   max-width: 900px;
   margin: 0 auto;
@@ -2583,3 +2583,72 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .collect-card-meta { margin-top: 6px; font-size: 11px; color: var(--text-muted); }
 .pat-blog-entry-title { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
 .pat-blog-entry-type { font-size: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--text-muted); }
+
+/* ══════════════════════════════════════════════════
+   ON TAB — Operations / Monitoring Dashboard
+   ══════════════════════════════════════════════════ */
+#tab-on { max-width: 900px; }
+#tab-on h2 {
+  font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--text);
+  letter-spacing: -0.4px;
+}
+.on-fleet-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 8px;
+}
+@media (max-width: 600px) {
+  .on-fleet-grid { grid-template-columns: 1fr; }
+}
+.on-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px;
+  box-shadow: var(--shadow-sm);
+}
+.on-card-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.on-card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.on-card-ip { font-size: 11px; font-family: monospace; color: var(--text-muted); margin-left: auto; }
+.on-card-meta { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.on-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  display: inline-block;
+}
+.on-dot--online { background: #22c55e; box-shadow: 0 0 4px rgba(34,197,94,0.4); }
+.on-dot--offline { background: #ef4444; }
+.on-dot--unknown { background: #9ca3af; }
+.on-dot--healthy { background: #22c55e; box-shadow: 0 0 4px rgba(34,197,94,0.4); }
+.on-dot--down { background: #ef4444; }
+.on-dot--ok { background: #22c55e; }
+.on-dot--error { background: #ef4444; }
+.on-dot--running { background: var(--accent); }
+.on-sessions-table {
+  width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px;
+}
+.on-sessions-table th {
+  font-size: 11px; text-transform: uppercase; color: var(--text-muted);
+  font-weight: 500; text-align: left; padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.on-sessions-table td {
+  padding: 8px; border-bottom: 1px solid var(--border); color: var(--text);
+  vertical-align: top;
+}
+.on-sessions-table tr:last-child td { border-bottom: none; }
+.on-task-truncated {
+  max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: inline-block; vertical-align: bottom;
+}
+.on-sched-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.on-sched-row:last-child { border-bottom: none; }
+.on-sched-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+.on-sched-time { font-size: 11px; color: var(--text-muted); }
+.on-section-title {
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin: 12px 0 6px 0;
+}
+.on-no-data { font-size: 13px; color: var(--text-muted); padding: 8px 0; }

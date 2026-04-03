@@ -429,6 +429,8 @@ function switchTab(id) {
 
   if (id === 'collect') renderCollect();
 
+  if (id === 'on') showONTab();
+
 }
 
 
@@ -4522,6 +4524,224 @@ document.addEventListener('visibilitychange', function() {
 // Start polling after boot
 
 setTimeout(startSyncPolling, 5000);
+
+
+// ─── ON TAB (Operations / Monitoring) ────────────────────────────────────────
+
+var _onTabInterval = null;
+
+function fmtDurationDE(startIso, endIso) {
+  try {
+    var start = new Date(startIso).getTime();
+    var end = endIso ? new Date(endIso).getTime() : Date.now();
+    var diff = Math.max(0, end - start);
+    var mins = Math.floor(diff / 60000);
+    if (mins < 60) return mins + ' Min.';
+    var hrs = Math.floor(mins / 60);
+    var rem = mins % 60;
+    return hrs + ' Std. ' + (rem > 0 ? rem + ' Min.' : '');
+  } catch(e) { return '?'; }
+}
+
+async function showONTab() {
+  var container = document.getElementById('on-container');
+  if (!container) return;
+  container.innerHTML = '<div class="empty-state">Wird geladen\u2026</div>';
+
+  var results = await Promise.all([
+    fetchFromGitHub('data/fleet-heartbeat.json'),
+    fetchFromGitHub('data/session-bus.json')
+  ]);
+
+  var hb = null;
+  var sb = null;
+  try { if (results[0] && results[0].content) hb = JSON.parse(results[0].content); } catch(e) {}
+  try { if (results[1] && results[1].content) sb = JSON.parse(results[1].content); } catch(e) {}
+
+  renderONTab(container, hb, sb);
+  startONPolling();
+}
+
+function startONPolling() {
+  if (_onTabInterval) clearInterval(_onTabInterval);
+  _onTabInterval = setInterval(async function() {
+    if (currentTab !== 'on') {
+      clearInterval(_onTabInterval);
+      _onTabInterval = null;
+      return;
+    }
+    var results = await Promise.all([
+      fetchFromGitHub('data/fleet-heartbeat.json', { conditional: true }),
+      fetchFromGitHub('data/session-bus.json', { conditional: true })
+    ]);
+    var changed = false;
+    var hb = null;
+    var sb = null;
+    if (results[0] && !results[0].notModified) {
+      try { hb = JSON.parse(results[0].content); changed = true; } catch(e) {}
+    }
+    if (results[1] && !results[1].notModified) {
+      try { sb = JSON.parse(results[1].content); changed = true; } catch(e) {}
+    }
+    if (changed) {
+      var container = document.getElementById('on-container');
+      if (container) renderONTab(container, hb, sb);
+    }
+  }, 30000);
+}
+
+function renderONTab(container, hb, sb) {
+  var html = '';
+  html += renderONFleet(hb);
+  html += renderONHermine(hb);
+  html += renderONSessionBus(sb);
+  html += renderONRag(hb);
+  html += renderONScheduled(hb);
+  container.innerHTML = html;
+}
+
+function renderONFleet(hb) {
+  var html = '<details class="sys-dropdown" open><summary class="sys-dropdown-header">Fleet</summary>';
+  html += '<div class="sys-dropdown-body">';
+  if (!hb || !hb.fleet) {
+    html += '<div class="on-no-data">Kein Heartbeat \u2014 fleet-heartbeat.json nicht gefunden</div>';
+  } else {
+    html += '<div class="on-fleet-grid">';
+    var devices = ['cloudypc', 'cloudynb', 'lightsail'];
+    for (var i = 0; i < devices.length; i++) {
+      var key = devices[i];
+      var d = hb.fleet[key];
+      if (!d) continue;
+      var dotClass = d.status === 'online' ? 'on-dot--online' : d.status === 'offline' ? 'on-dot--offline' : 'on-dot--unknown';
+      var lastSeen = d.last_seen ? fmtTimestampDE(d.last_seen) : 'Nie gesehen';
+      html += '<div class="on-card">';
+      html += '<div class="on-card-header"><span class="on-dot ' + dotClass + '"></span>';
+      html += '<span class="on-card-title">' + esc(d.name || key) + '</span>';
+      html += '<span class="on-card-ip">' + esc(d.ip || '') + '</span></div>';
+      html += '<div class="on-card-meta">Zuletzt: ' + esc(lastSeen) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  html += '</div></details>';
+  return html;
+}
+
+function renderONHermine(hb) {
+  var html = '<details class="sys-dropdown"><summary class="sys-dropdown-header">Hermine</summary>';
+  html += '<div class="sys-dropdown-body">';
+  if (!hb || !hb.hermine) {
+    html += '<div class="on-no-data">Kein Heartbeat</div>';
+  } else {
+    var h = hb.hermine;
+    var dotClass = h.last_heartbeat ? 'on-dot--online' : 'on-dot--unknown';
+    html += '<div class="on-card">';
+    html += '<div class="on-card-header"><span class="on-dot ' + dotClass + '"></span>';
+    html += '<span class="on-card-title">Hermine</span></div>';
+    html += '<div class="on-card-meta">Modell: ' + esc(h.model || 'Unbekannt') + '</div>';
+    html += '<div class="on-card-meta">Heartbeat: ' + (h.last_heartbeat ? esc(fmtTimestampDE(h.last_heartbeat)) : 'Nie') + '</div>';
+    if (h.last_action) html += '<div class="on-card-meta">Letzte Aktion: ' + esc(h.last_action) + '</div>';
+    html += '</div>';
+  }
+  html += '</div></details>';
+  return html;
+}
+
+function renderONSessionBus(sb) {
+  var html = '<details class="sys-dropdown" open><summary class="sys-dropdown-header">Session Bus</summary>';
+  html += '<div class="sys-dropdown-body">';
+  if (!sb) {
+    html += '<div class="on-no-data">session-bus.json nicht gefunden</div>';
+    html += '</div></details>';
+    return html;
+  }
+
+  // Active sessions
+  var active = sb.active_sessions || [];
+  html += '<div class="on-section-title">Aktiv (' + active.length + ')</div>';
+  if (active.length === 0) {
+    html += '<div class="on-no-data">Keine aktiven Sessions</div>';
+  } else {
+    html += '<table class="on-sessions-table"><thead><tr>';
+    html += '<th>ID</th><th>Device</th><th>Task</th><th>Dauer</th>';
+    html += '</tr></thead><tbody>';
+    for (var i = 0; i < active.length; i++) {
+      var s = active[i];
+      var task = (s.task || '').substring(0, 60);
+      html += '<tr><td><strong>' + esc(s.id || '') + '</strong></td>';
+      html += '<td>' + esc(s.device || '') + '</td>';
+      html += '<td><span class="on-task-truncated">' + esc(task) + '</span></td>';
+      html += '<td>' + fmtDurationDE(s.started_at) + '</td></tr>';
+    }
+    html += '</tbody></table>';
+  }
+
+  // Completed sessions (last 5)
+  var completed = (sb.completed_sessions || []).slice(-5).reverse();
+  html += '<div class="on-section-title">Abgeschlossen (letzte 5)</div>';
+  if (completed.length === 0) {
+    html += '<div class="on-no-data">Keine abgeschlossenen Sessions</div>';
+  } else {
+    html += '<table class="on-sessions-table"><thead><tr>';
+    html += '<th>ID</th><th>Device</th><th>Ergebnis</th><th>Dauer</th>';
+    html += '</tr></thead><tbody>';
+    for (var j = 0; j < completed.length; j++) {
+      var c = completed[j];
+      var summary = (c.result_summary || 'Kein Summary').substring(0, 80);
+      html += '<tr><td><strong>' + esc(c.id || '') + '</strong></td>';
+      html += '<td>' + esc(c.device || '') + '</td>';
+      html += '<td><span class="on-task-truncated">' + esc(summary) + '</span></td>';
+      html += '<td>' + fmtDurationDE(c.started_at, c.finished_at) + '</td></tr>';
+    }
+    html += '</tbody></table>';
+  }
+
+  if (sb.shared_context) {
+    html += '<div class="on-card-meta" style="margin-top:8px">Kontext: ' + esc(sb.shared_context) + '</div>';
+  }
+
+  html += '</div></details>';
+  return html;
+}
+
+function renderONRag(hb) {
+  var html = '<details class="sys-dropdown"><summary class="sys-dropdown-header">RAG</summary>';
+  html += '<div class="sys-dropdown-body">';
+  if (!hb || !hb.rag) {
+    html += '<div class="on-no-data">Kein Heartbeat</div>';
+  } else {
+    var r = hb.rag;
+    var dotClass = r.status === 'healthy' ? 'on-dot--healthy' : r.status === 'down' ? 'on-dot--down' : 'on-dot--unknown';
+    html += '<div class="on-card">';
+    html += '<div class="on-card-header"><span class="on-dot ' + dotClass + '"></span>';
+    html += '<span class="on-card-title">RAG Service</span></div>';
+    html += '<div class="on-card-meta">Dokumente indexiert: ' + (r.documents_indexed || 0) + '</div>';
+    html += '<div class="on-card-meta">Letzte Abfrage: ' + (r.last_query ? esc(fmtTimestampDE(r.last_query)) : 'Nie') + '</div>';
+    html += '</div>';
+  }
+  html += '</div></details>';
+  return html;
+}
+
+function renderONScheduled(hb) {
+  var html = '<details class="sys-dropdown"><summary class="sys-dropdown-header">Geplante Tasks</summary>';
+  html += '<div class="sys-dropdown-body">';
+  if (!hb || !hb.scheduled_tasks || hb.scheduled_tasks.length === 0) {
+    html += '<div class="on-no-data">Keine geplanten Tasks konfiguriert</div>';
+  } else {
+    for (var i = 0; i < hb.scheduled_tasks.length; i++) {
+      var t = hb.scheduled_tasks[i];
+      var dotClass = t.status === 'ok' ? 'on-dot--ok' : t.status === 'error' ? 'on-dot--error' : t.status === 'running' ? 'on-dot--running' : 'on-dot--unknown';
+      html += '<div class="on-sched-row">';
+      html += '<span class="on-dot ' + dotClass + '"></span>';
+      html += '<span class="on-sched-name">' + esc(t.name || t.id) + '</span>';
+      html += '<span class="on-sched-time">Letzter: ' + (t.last_run ? esc(fmtTimestampDE(t.last_run)) : '-') + '</span>';
+      html += '</div>';
+    }
+  }
+  html += '</div></details>';
+  return html;
+}
 
 
 
