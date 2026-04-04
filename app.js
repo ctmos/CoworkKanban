@@ -1999,7 +1999,19 @@ entry.deleted=false;delete entry.deletedAt;
 meta.updatedAt=new Date().toISOString();
 await saveProject(meta);}
 
+async function archiveProjectEntry(projectId,entryId){
+var meta=_localProjectsMeta[projectId]||await loadProjectMeta(projectId);if(!meta||!meta.entries)return;
+var entry=meta.entries.find(function(e){return e.id===entryId;});if(!entry)return;
+entry.archived=true;entry.archivedAt=new Date().toISOString();
+meta.updatedAt=new Date().toISOString();
+await saveProject(meta);}
 
+async function unarchiveProjectEntry(projectId,entryId){
+var meta=_localProjectsMeta[projectId]||await loadProjectMeta(projectId);if(!meta||!meta.entries)return;
+var entry=meta.entries.find(function(e){return e.id===entryId;});if(!entry)return;
+entry.archived=false;delete entry.archivedAt;
+meta.updatedAt=new Date().toISOString();
+await saveProject(meta);}
 
 async function showProjectsTab(){
 
@@ -2061,17 +2073,22 @@ async function showProjectDetail(projectId){
     var sLbl={aktiv:'Aktiv',pausiert:'Pausiert',abgeschlossen:'Abgeschlossen',archiviert:'Archiviert'};
     var cb=meta.color?' style="border-top:4px solid '+esc(meta.color)+'"':'';
 
-    var activeEntries=(meta.entries||[]).filter(function(e){return !e.deleted;});
+    var activeEntries=(meta.entries||[]).filter(function(e){return !e.deleted&&!e.archived;});
+    var archivedEntries=(meta.entries||[]).filter(function(e){return e.archived&&!e.deleted;});
     var deletedEntries=(meta.entries||[]).filter(function(e){return e.deleted;});
 
-    function renderEntryCard(e,isTrash){
+    function fmtDateDE(iso){var d=new Date(iso);var dd=String(d.getDate()).padStart(2,'0');var mm=String(d.getMonth()+1).padStart(2,'0');var yy=d.getFullYear();var hh=String(d.getHours()).padStart(2,'0');var mi=String(d.getMinutes()).padStart(2,'0');return dd+'.'+mm+'.'+yy+' '+hh+':'+mi;}
+
+    function renderEntryCard(e,mode){
       var lines=e.text.split('\n');var needsCollapse=lines.length>5;
-      var d=new Date(e.createdAt);var dateStr=d.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
-      var editedTag=e.updatedAt?'<span class="proj-entry-edited">(bearbeitet)</span>':'';
+      var displayDate=e.updatedAt||e.createdAt;
+      var dateLabel=e.updatedAt?'Bearbeitet':'Erstellt';
       var html='<div class="proj-entry-card" data-entry-id="'+esc(e.id)+'">';
-      html+='<div class="proj-entry-header"><span class="proj-entry-date">'+dateStr+' '+editedTag+'</span><div class="proj-entry-actions">';
-      if(isTrash){html+='<button class="proj-entry-btn proj-entry-restore" onclick="(async function(){await restoreProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">\u21a9</button>';}
+      html+='<div class="proj-entry-header"><span class="proj-entry-date">'+dateLabel+': '+fmtDateDE(displayDate)+'</span><div class="proj-entry-actions">';
+      if(mode==='trash'){html+='<button class="proj-entry-btn proj-entry-restore" onclick="(async function(){await restoreProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">\u21a9</button>';}
+      else if(mode==='archived'){html+='<button class="proj-entry-btn proj-entry-restore" onclick="(async function(){await unarchiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">\u21a9</button>';}
       else{html+='<button class="proj-entry-btn proj-entry-edit" onclick="startEditProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\')" title="Bearbeiten">\u270e</button>';
+      html+='<button class="proj-entry-btn proj-entry-archive" onclick="(async function(){await archiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Archiviert\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Archivieren">\ud83d\udce6</button>';
       html+='<button class="proj-entry-btn proj-entry-del" onclick="(async function(){await deleteProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'In Papierkorb verschoben\');showProjectDetail(\''+esc(projectId)+'\');})()" title="L\u00f6schen">\ud83d\uddd1</button>';}
       html+='</div></div>';
       if(needsCollapse){html+='<details class="proj-entry-collapse"><summary>'+esc(lines.slice(0,2).join(' ').substring(0,120))+(lines.slice(0,2).join(' ').length>120?'\u2026':'')+'</summary><div class="proj-entry-text">'+esc(e.text)+'</div></details>';}
@@ -2081,19 +2098,26 @@ async function showProjectDetail(projectId){
 
     var entriesHtml='';
     if(activeEntries.length===0){entriesHtml='<div style="font-size:13px;color:var(--text-muted)">Noch keine Eintr\u00e4ge.</div>';}
-    else{for(var i=0;i<activeEntries.length;i++){entriesHtml+=renderEntryCard(activeEntries[i],false);}}
+    else{for(var i=0;i<activeEntries.length;i++){entriesHtml+=renderEntryCard(activeEntries[i],'active');}}
+
+    var archiveHtml='';
+    if(archivedEntries.length>0){
+      archiveHtml='<div class="proj-entry-archive"><details><summary class="proj-entry-archive-toggle">\ud83d\udce6 Archiv ('+archivedEntries.length+')</summary><div class="proj-entry-archive-list">';
+      for(var k=0;k<archivedEntries.length;k++){archiveHtml+=renderEntryCard(archivedEntries[k],'archived');}
+      archiveHtml+='</div></details></div>';
+    }
 
     var trashHtml='';
     if(deletedEntries.length>0){
       trashHtml='<div class="proj-entry-trash"><details><summary class="proj-entry-trash-toggle">\ud83d\uddd1 Papierkorb ('+deletedEntries.length+')</summary><div class="proj-entry-trash-list">';
-      for(var j=0;j<deletedEntries.length;j++){trashHtml+=renderEntryCard(deletedEntries[j],true);}
+      for(var j=0;j<deletedEntries.length;j++){trashHtml+=renderEntryCard(deletedEntries[j],'trash');}
       trashHtml+='</div></details></div>';
     }
 
     container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span><div style="margin-left:auto;display:flex;gap:8px"><button class="proj-action-btn" onclick="archiveProject(\''+esc(projectId)+'\')" title="Archivieren" style="font-size:16px">\ud83d\udce6</button><button class="proj-action-btn proj-action-delete" onclick="deleteProject(\''+esc(projectId)+'\',\''+esc(meta.name||projectId)+'\')" title="In Papierkorb" style="font-size:16px">\ud83d\uddd1</button></div></div>'
       +'<div class="proj-section"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status</label><select class="form-select" id="pjd-status" style="width:auto"><option value="aktiv"'+(meta.status==='aktiv'?' selected':'')+'>Aktiv</option><option value="pausiert"'+(meta.status==='pausiert'?' selected':'')+'>Pausiert</option><option value="abgeschlossen"'+(meta.status==='abgeschlossen'?' selected':'')+'>Abgeschlossen</option><option value="archiviert"'+(meta.status==='archiviert'?' selected':'')+'>Archiviert</option></select></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
       +(meta.description?'<div class="proj-section"><h3>Beschreibung</h3><div class="proj-description">'+esc(meta.description)+'</div></div>':'')
-      +'<div class="proj-section"><h3>Beitr\u00e4ge</h3><div class="proj-log-form"><textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><button class="btn-primary" id="pjd-log-btn" style="flex-shrink:0">Hinzuf\u00fcgen</button></div><div id="pjd-entries-list" style="margin-top:16px">'+entriesHtml+'</div>'+trashHtml+'</div>'
+      +'<div class="proj-section"><h3>Beitr\u00e4ge</h3><div class="proj-log-form"><textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><button class="btn-primary" id="pjd-log-btn" style="flex-shrink:0">Hinzuf\u00fcgen</button></div><div id="pjd-entries-list" style="margin-top:16px">'+entriesHtml+'</div>'+archiveHtml+trashHtml+'</div>'
       +'<div class="proj-section"><h3>Verkn\u00fcpfte Karten</h3>'+(linked.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine</div>':'<div class="proj-kanban-chips">'+linked.map(function(c){return '<span class="proj-kanban-chip"><strong>'+esc(c.id)+'</strong> '+esc(c.title||'')+'</span>';}).join('')+'</div>')+'</div>';
 
     document.getElementById('pjd-save-btn').addEventListener('click',async function(){var btn=document.getElementById('pjd-save-btn');var st=document.getElementById('pjd-save-status');var nn=document.getElementById('pjd-name').value.trim();var ns=document.getElementById('pjd-status').value;if(!nn){showToast('Name darf nicht leer sein',true);return;}btn.disabled=true;st.textContent='Speichert\u2026';try{await saveProject(Object.assign({},meta,{name:nn,status:ns,updatedAt:new Date().toISOString()}));st.textContent='Gespeichert \u2713';showToast('Projekt gespeichert');setTimeout(function(){if(st)st.textContent='';},3000);}catch(e){showToast('Fehler',true);st.textContent='';}btn.disabled=false;});
