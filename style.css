@@ -1839,6 +1839,13 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .proj-entry-md em { font-style: italic; }
 .proj-entry-md br { display: block; margin: 4px 0; content: ''; }
 
+/* Drag and Drop */
+.proj-entry-drag-handle { cursor: grab; color: var(--text-muted); font-size: 14px; padding: 0 6px 0 0; opacity: 0.35; transition: opacity 0.15s; user-select: none; }
+.proj-entry-card:hover .proj-entry-drag-handle { opacity: 0.8; }
+.proj-entry-dragging { opacity: 0.5; transform: scale(0.98); border-style: dashed; border-color: var(--accent); }
+.proj-entry-drop-above { border-top: 3px solid var(--accent); }
+.proj-entry-drop-below { border-bottom: 3px solid var(--accent); }
+
 .proj-entry-trash { margin-top: 24px; }
 .proj-entry-trash-toggle { cursor: pointer; font-size: 13px; color: var(--text-muted); list-style: none; padding: 6px 0; }
 .proj-entry-trash-list { margin-top: 8px; opacity: 0.7; }
