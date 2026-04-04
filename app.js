@@ -5007,7 +5007,7 @@ function initWikiUI() {
 function loadWikiStatus() {
   var statsBar = document.getElementById('wiki-stats-bar');
   var compileStatus = document.getElementById('wiki-compile-status');
-  var token = getToken();
+  var token = getGHToken();
   if (!token) return;
   fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/wiki-status.json', {
     headers: { Authorization: 'token ' + token }
@@ -5040,7 +5040,7 @@ function loadWikiStatus() {
 }
 
 function loadWikiIndex() {
-  var token = getToken();
+  var token = getGHToken();
   if (!token) return;
   fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/wiki-index.json', {
     headers: { Authorization: 'token ' + token }
@@ -5110,7 +5110,7 @@ function triggerWikiCompile() {
   if (status) status.innerHTML += '<div style="margin-top:8px;color:var(--accent)">Kompilierung gestartet...</div>';
 
   // Push compile request via GitHub (PWA can't reach Lightsail directly without Funnel)
-  var token = getToken();
+  var token = getGHToken();
   if (!token) return;
   var req = { trigger: 'compile', requested_at: new Date().toISOString(), max_files: 10 };
   var content = btoa(JSON.stringify(req));
