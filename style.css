@@ -2684,4 +2684,29 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .rag-badge--reference { background: rgba(107,114,128,0.1); color: #6b7280; }
 .rag-badge--general { background: rgba(107,114,128,0.08); color: #9ca3af; }
 .rag-badge--memory { background: rgba(244,63,94,0.1); color: #f43f5e; }
+/* Wiki category badges */
+.rag-badge--concept { background: rgba(251,146,60,0.12); color: #ea580c; }
+.rag-badge--summary { background: rgba(59,130,246,0.1); color: #3b82f6; }
+.rag-badge--query { background: rgba(168,85,247,0.1); color: #a855f7; }
+.rag-badge--index { background: rgba(107,114,128,0.1); color: #6b7280; }
+
+/* Wiki Query UI */
+.wiki-query-section { margin-bottom: 16px; }
+.wiki-query-bar { display: flex; gap: 8px; align-items: center; }
+.wiki-query-bar .form-input { flex: 1; }
+.wiki-query-bar .btn-primary { white-space: nowrap; padding: 10px 20px; }
+#wiki-query-result {
+  margin-top: 12px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.wiki-query-header { margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.wiki-query-confidence { font-size: 12px; color: var(--text-muted); }
+.wiki-query-source {
+  margin-bottom: 10px; padding: 10px; border-radius: 8px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+}
+.wiki-query-source-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.wiki-query-score { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+.wiki-query-text { font-size: 13px; line-height: 1.5; color: var(--text); max-height: 120px; overflow-y: auto; }
+
 .rag-gdrive-form { display: flex; flex-direction: column; }

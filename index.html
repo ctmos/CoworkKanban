@@ -526,6 +526,45 @@
     <!-- RAG Stats -->
     <div id="rag-stats-bar" class="rag-stats-bar"></div>
 
+    <!-- Wiki Query UI -->
+    <div class="wiki-query-section">
+      <div class="wiki-query-bar">
+        <input type="text" class="form-input" id="wiki-query-input" placeholder="Frage ans Wissens-Wiki stellen...">
+        <button class="btn-primary" id="btn-wiki-query">Fragen</button>
+      </div>
+      <div id="wiki-query-result" style="display:none"></div>
+    </div>
+
+    <!-- Wiki Browser -->
+    <details class="sys-dropdown" id="wiki-browser-dropdown">
+      <summary class="sys-dropdown-header">Wiki</summary>
+      <div class="sys-dropdown-body">
+        <div id="wiki-stats-bar" class="rag-stats-bar" style="margin-bottom:12px"></div>
+        <div class="rag-index-toolbar">
+          <input type="text" class="form-input" id="wiki-search-input" placeholder="Wiki durchsuchen...">
+          <select class="form-input" id="wiki-category-filter" style="margin-top:8px">
+            <option value="">Alle Kategorien</option>
+            <option value="summary">Zusammenfassungen</option>
+            <option value="concept">Konzepte</option>
+            <option value="query">Queries</option>
+            <option value="index">Index</option>
+          </select>
+        </div>
+        <div id="wiki-article-count" class="rag-index-count"></div>
+        <div id="wiki-article-list"></div>
+        <div id="wiki-detail-view" style="display:none"></div>
+      </div>
+    </details>
+
+    <!-- Kompilierung -->
+    <details class="sys-dropdown" id="wiki-compile-dropdown">
+      <summary class="sys-dropdown-header">Kompilierung</summary>
+      <div class="sys-dropdown-body">
+        <div id="wiki-compile-status"></div>
+        <button class="btn-primary" id="btn-wiki-compile" style="margin-top:8px">Jetzt kompilieren</button>
+      </div>
+    </details>
+
     <!-- Index / Katalog -->
     <details class="sys-dropdown" id="rag-index-dropdown">
       <summary class="sys-dropdown-header">Index</summary>

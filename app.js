@@ -4972,6 +4972,237 @@ async function loadGDrivePending() {
 }
 
 
+// ─── WIKI BROWSER + QUERY UI (Compiler-Augmented RAG) ─────────────────────────
+
+var _wikiIndex = null;
+var _wikiSearchTimer = null;
+var _wikiQueryPending = false;
+
+// Tailscale Funnel URL for direct RAG API access
+var RAG_API_BASE = '';  // Set after Tailscale Funnel is configured
+
+function initWikiUI() {
+  if (initWikiUI._done) return;
+  initWikiUI._done = true;
+
+  var queryBtn = document.getElementById('btn-wiki-query');
+  var queryInput = document.getElementById('wiki-query-input');
+  if (queryBtn) queryBtn.addEventListener('click', submitWikiQuery);
+  if (queryInput) queryInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') submitWikiQuery();
+  });
+
+  var compileBtn = document.getElementById('btn-wiki-compile');
+  if (compileBtn) compileBtn.addEventListener('click', triggerWikiCompile);
+
+  var wikiSearch = document.getElementById('wiki-search-input');
+  var wikiFilter = document.getElementById('wiki-category-filter');
+  if (wikiSearch) wikiSearch.addEventListener('input', function() {
+    clearTimeout(_wikiSearchTimer);
+    _wikiSearchTimer = setTimeout(renderWikiArticles, 300);
+  });
+  if (wikiFilter) wikiFilter.addEventListener('change', renderWikiArticles);
+}
+
+function loadWikiStatus() {
+  var statsBar = document.getElementById('wiki-stats-bar');
+  var compileStatus = document.getElementById('wiki-compile-status');
+  var token = getToken();
+  if (!token) return;
+  fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/wiki-status.json', {
+    headers: { Authorization: 'token ' + token }
+  }).then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data || !data.content) return;
+      var status = JSON.parse(atob(data.content));
+      if (statsBar) {
+        var wikiChunks = status.wiki_chunks_in_lancedb || 0;
+        var pending = status.pending_files || 0;
+        var lastCompile = status.last_compile_at ? fmtTimestampDE(status.last_compile_at) : 'Nie';
+        var stats = status.stats || {};
+        statsBar.innerHTML =
+          '<div class="rag-stat"><strong>' + (stats.total_summaries || 0) + '</strong> Summaries</div>' +
+          '<div class="rag-stat"><strong>' + (stats.total_concepts || 0) + '</strong> Concepts</div>' +
+          '<div class="rag-stat"><strong>' + wikiChunks + '</strong> Chunks</div>' +
+          '<div class="rag-stat"><strong>' + pending + '</strong> Ausstehend</div>' +
+          '<div class="rag-stat">Kompiliert: ' + lastCompile + '</div>';
+      }
+      if (compileStatus) {
+        compileStatus.innerHTML =
+          '<div><strong>Summaries:</strong> ' + (stats.total_summaries || 0) + '</div>' +
+          '<div><strong>Concepts:</strong> ' + (stats.total_concepts || 0) + '</div>' +
+          '<div><strong>Wiki-Chunks:</strong> ' + (status.wiki_chunks_in_lancedb || 0) + '</div>' +
+          '<div><strong>Ausstehend:</strong> ' + (status.pending_files || 0) + '</div>' +
+          '<div><strong>Letzte Kompilierung:</strong> ' + (status.last_compile_at ? fmtTimestampDE(status.last_compile_at) : 'Nie') + '</div>' +
+          '<div><strong>Modell:</strong> ' + (status.compile_model || 'DeepSeek V3.2') + '</div>';
+      }
+    }).catch(function() {});
+}
+
+function loadWikiIndex() {
+  var token = getToken();
+  if (!token) return;
+  fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/wiki-index.json', {
+    headers: { Authorization: 'token ' + token }
+  }).then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data || !data.content) {
+        _wikiIndex = { articles: [] };
+        renderWikiArticles();
+        return;
+      }
+      _wikiIndex = JSON.parse(atob(data.content));
+      renderWikiArticles();
+    }).catch(function() {
+      _wikiIndex = { articles: [] };
+      renderWikiArticles();
+    });
+}
+
+function renderWikiArticles() {
+  var list = document.getElementById('wiki-article-list');
+  var countEl = document.getElementById('wiki-article-count');
+  if (!list) return;
+  if (!_wikiIndex || !_wikiIndex.articles || _wikiIndex.articles.length === 0) {
+    list.innerHTML = '<div class="on-no-data">Noch keine Wiki-Artikel kompiliert.</div>';
+    if (countEl) countEl.textContent = '0 Artikel';
+    return;
+  }
+
+  var searchVal = (document.getElementById('wiki-search-input') || {}).value || '';
+  var filterVal = (document.getElementById('wiki-category-filter') || {}).value || '';
+  var search = searchVal.toLowerCase();
+
+  var filtered = _wikiIndex.articles.filter(function(a) {
+    if (filterVal && a.category !== filterVal) return false;
+    if (search && a.path.toLowerCase().indexOf(search) < 0) return false;
+    return true;
+  });
+
+  filtered.sort(function(a, b) {
+    return (b.compiled_at || '').localeCompare(a.compiled_at || '');
+  });
+
+  if (countEl) countEl.textContent = filtered.length + ' / ' + _wikiIndex.articles.length + ' Artikel';
+
+  var html = '';
+  var limit = Math.min(filtered.length, 100);
+  for (var i = 0; i < limit; i++) {
+    var a = filtered[i];
+    var name = a.path.replace('summaries/', '').replace('concepts/', '').replace('queries/', '').replace('.md', '');
+    var catClass = 'rag-badge--' + (a.category || 'summary');
+    var domClass = 'rag-badge--' + (a.domain || 'general');
+    var date = a.compiled_at ? a.compiled_at.substring(0, 10) : '';
+    html += '<div class="rag-index-item">' +
+      '<span class="rag-index-name">' + esc(name) + '</span>' +
+      '<span class="rag-badge ' + catClass + '">' + esc(a.category || '?') + '</span>' +
+      '<span class="rag-badge ' + domClass + '">' + esc(a.domain || '') + '</span>' +
+      '<span class="rag-index-date">' + date + '</span>' +
+      '</div>';
+  }
+  list.innerHTML = html || '<div class="on-no-data">Keine Treffer.</div>';
+}
+
+function triggerWikiCompile() {
+  var btn = document.getElementById('btn-wiki-compile');
+  if (btn) btn.disabled = true;
+  var status = document.getElementById('wiki-compile-status');
+  if (status) status.innerHTML += '<div style="margin-top:8px;color:var(--accent)">Kompilierung gestartet...</div>';
+
+  // Push compile request via GitHub (PWA can't reach Lightsail directly without Funnel)
+  var token = getToken();
+  if (!token) return;
+  var req = { trigger: 'compile', requested_at: new Date().toISOString(), max_files: 10 };
+  var content = btoa(JSON.stringify(req));
+  fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/wiki-compile-request.json', {
+    method: 'PUT',
+    headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: 'wiki: compile request from PWA',
+      content: content
+    })
+  }).then(function(r) {
+    if (btn) btn.disabled = false;
+    if (r.ok && status) {
+      status.innerHTML += '<div style="color:var(--success)">Anfrage gesendet. Cron triggert Kompilierung.</div>';
+    }
+  }).catch(function() {
+    if (btn) btn.disabled = false;
+  });
+}
+
+function submitWikiQuery() {
+  var input = document.getElementById('wiki-query-input');
+  var resultDiv = document.getElementById('wiki-query-result');
+  if (!input || !resultDiv || !input.value.trim()) return;
+  if (_wikiQueryPending) return;
+
+  var query = input.value.trim();
+  _wikiQueryPending = true;
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = '<div class="on-no-data">Suche laeuft...</div>';
+
+  // Try Tailscale Funnel first, fallback to status message
+  if (RAG_API_BASE) {
+    fetch(RAG_API_BASE + '/query?q=' + encodeURIComponent(query) + '&top_k=5')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        _wikiQueryPending = false;
+        renderWikiQueryResult(data, query);
+      })
+      .catch(function() {
+        _wikiQueryPending = false;
+        resultDiv.innerHTML = '<div class="on-no-data">RAG-Service nicht erreichbar. Frage Hermine per Telegram.</div>';
+      });
+  } else {
+    _wikiQueryPending = false;
+    resultDiv.innerHTML = '<div class="on-no-data">Direkter RAG-Zugang nicht konfiguriert. Frage Hermine per Telegram: "Was weiss das RAG ueber ' + esc(query) + '?"</div>';
+  }
+}
+
+function renderWikiQueryResult(data, query) {
+  var div = document.getElementById('wiki-query-result');
+  if (!div) return;
+  var sources = data.sources || [];
+  var tier = data.source_tier || 'unknown';
+  var tierLabel = tier === 'wiki' ? 'Wiki' : tier === 'raw' ? 'Raw' : 'Hybrid';
+  var tierClass = tier === 'wiki' ? 'rag-badge--concept' : tier === 'raw' ? 'rag-badge--upload' : 'rag-badge--url';
+
+  if (sources.length === 0) {
+    div.innerHTML = '<div class="on-no-data">Keine Ergebnisse fuer "' + esc(query) + '"</div>';
+    return;
+  }
+
+  var html = '<div class="wiki-query-header">' +
+    '<strong>Ergebnisse</strong> <span class="rag-badge ' + tierClass + '">' + tierLabel + '</span>' +
+    ' <span class="wiki-query-confidence">Konfidenz: ' + ((sources[0].relevance_score || 0) * 100).toFixed(0) + '%</span>' +
+    '</div>';
+  for (var i = 0; i < sources.length; i++) {
+    var s = sources[i];
+    var meta = s.metadata || {};
+    var file = meta.source_file || meta.wiki_path || '?';
+    html += '<div class="wiki-query-source">' +
+      '<div class="wiki-query-source-header">' +
+        '<span class="rag-badge ' + (s.source_tier === 'wiki' ? 'rag-badge--concept' : 'rag-badge--upload') + '">' + (s.source_tier || tier) + '</span> ' +
+        '<strong>' + esc(file) + '</strong>' +
+        '<span class="wiki-query-score">' + ((s.relevance_score || 0) * 100).toFixed(0) + '%</span>' +
+      '</div>' +
+      '<div class="wiki-query-text">' + esc(s.text || '') + '</div>' +
+      '</div>';
+  }
+  div.innerHTML = html;
+}
+
+// Hook into showRAGTab
+var _origShowRAGTab = showRAGTab;
+showRAGTab = function() {
+  _origShowRAGTab();
+  initWikiUI();
+  loadWikiStatus();
+  loadWikiIndex();
+};
+
+
 // ─── ON TAB (Operations / Monitoring) ────────────────────────────────────────
 
 var _onTabInterval = null;
