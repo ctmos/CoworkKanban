@@ -4979,7 +4979,7 @@ var _wikiSearchTimer = null;
 var _wikiQueryPending = false;
 
 // Tailscale Funnel URL for direct RAG API access
-var RAG_API_BASE = '';  // Set after Tailscale Funnel is configured
+var RAG_API_BASE = 'https://hermine-lightsail.tail40eaf3.ts.net';
 
 function initWikiUI() {
   if (initWikiUI._done) return;
