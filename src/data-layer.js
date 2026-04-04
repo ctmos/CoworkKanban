@@ -496,8 +496,6 @@ const ghSHA = {
 
   'data/autonomy-log.json': null,
 
-  'data/backlog.json': null,
-
   'data/collect.json': null,
 
   'data/settings.json': null
@@ -1332,37 +1330,6 @@ async function saveAutonomyLogToGitHub() {
 
 
 
-// ─── AUTO SYNC — BACKLOG ──────────────────────────────────────────────────────
-
-var backlogDebounceTimer = null;
-
-function scheduleBacklogToGitHub() {
-
-  if (!_dataLoaded) return;
-
-  clearTimeout(backlogDebounceTimer);
-
-  backlogDebounceTimer = setTimeout(saveBacklogToGitHub, 10000);
-
-}
-
-async function saveBacklogToGitHub() {
-
-  try {
-
-    await safeWriteToGitHub('data/backlog.json', JSON.stringify(_appState.backlog || [], null, 2), 'sync: auto-save backlog');
-
-  } catch(e) {
-
-    console.error('[saveBacklogToGitHub]', e);
-
-    setSyncStatus('error');
-
-  }
-
-}
-
-
 
 // ─── AUTO SYNC — COLLECT ──────────────────────────────────────────────────────
 
@@ -1590,20 +1557,6 @@ async function loadFromGitHub() {
 
 
 
-    // Load backlog
-
-    var backlogRemote = await fetchFromGitHub('data/backlog.json');
-
-    if (backlogRemote) {
-
-      try { _appState.backlog = JSON.parse(backlogRemote.content); }
-
-      catch(e) { console.error('[loadFromGitHub] backlog parse:', e); }
-
-    }
-
-
-
     // Load collect
 
     var collectRemote = await fetchFromGitHub('data/collect.json');
@@ -1672,9 +1625,7 @@ async function loadFromGitHub() {
 
       { name: 'patients.json', data: _appState.patients },
 
-      { name: 'tasks.json', data: _appState.cards },
-
-      { name: 'backlog.json', data: _appState.backlog }
+      { name: 'tasks.json', data: _appState.cards }
 
     ];
 
@@ -1810,7 +1761,6 @@ const _appState = {
 
   autonomy_log: null,
 
-  backlog: null,
 
   collect: null,
 
@@ -1836,7 +1786,7 @@ const _appState = {
 
                    'cowork_cards', 'cowork_patients', 'cowork_autonomy_log',
 
-                   'cowork_backlog', 'cowork_collapsed', 'cowork_budget',
+                   'cowork_collapsed', 'cowork_budget',
 
                    'cowork_settings', 'cowork_last_sha'];
 
@@ -1861,8 +1811,6 @@ function ls(key, def) {
     cowork_patients:       function() { return _appState.patients; },
 
     cowork_autonomy_log:   function() { return _appState.autonomy_log; },
-
-    cowork_backlog:        function() { return _appState.backlog; },
 
     cowork_collect:        function() { return _appState.collect; },
 
@@ -1911,8 +1859,6 @@ function lsSet(key, val) {
     cowork_patients:       function(v) { _appState.patients = v; scheduleSavePatientsToGitHub(); },
 
     cowork_autonomy_log:   function(v) { _appState.autonomy_log = v; scheduleAutonomyLogToGitHub(); },
-
-    cowork_backlog:        function(v) { _appState.backlog = v; scheduleBacklogToGitHub(); },
 
     cowork_collect:        function(v) { _appState.collect = v; scheduleCollectToGitHub(); },
 

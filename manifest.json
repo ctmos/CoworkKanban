@@ -38,11 +38,6 @@
           "sizes": "192x192"
         }
       ]
-    },
-    {
-      "name": "Backlog",
-      "short_name": "Backlog",
-      "url": "/CoworkKanban/?tab=backlog"
     }
   ]
 }

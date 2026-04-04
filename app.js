@@ -1915,13 +1915,13 @@ document.getElementById('btn-enc-generate').addEventListener('click',function(){
 
 (function(){var k=localStorage.getItem('cowork_enc_key');if(k&&document.getElementById('enc-status')){document.getElementById('enc-status').textContent=k.length===64?'Verschl\u00fcsselung aktiv':'Kein Key gesetzt';}})();
 
-document.getElementById('btn-export').addEventListener('click',function(){var data={cards:ls('cowork_cards',{}),patients:ls('cowork_patients',[]),autonomy:ls('cowork_autonomy_log',[]),backlog:ls('cowork_backlog',[]),seqs:_appState.seqs,exportedAt:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='cowork-export-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);});
+document.getElementById('btn-export').addEventListener('click',function(){var data={cards:ls('cowork_cards',{}),patients:ls('cowork_patients',[]),autonomy:ls('cowork_autonomy_log',[]),seqs:_appState.seqs,exportedAt:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='cowork-export-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);});
 
 document.getElementById('btn-import').addEventListener('click',function(){document.getElementById('import-file').click();});
 
-document.getElementById('import-file').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var data=JSON.parse(ev.target.result);if(data.cards)lsSet('cowork_cards',data.cards);if(data.patients)lsSet('cowork_patients',data.patients);if(data.autonomy)lsSet('cowork_autonomy_log',data.autonomy);if(data.backlog)lsSet('cowork_backlog',data.backlog);showToast('Daten importiert');switchTab(currentTab);}catch(err){showToast('Fehler beim Importieren',true);}};reader.readAsText(file);e.target.value='';});
+document.getElementById('import-file').addEventListener('change',function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var data=JSON.parse(ev.target.result);if(data.cards)lsSet('cowork_cards',data.cards);if(data.patients)lsSet('cowork_patients',data.patients);if(data.autonomy)lsSet('cowork_autonomy_log',data.autonomy);showToast('Daten importiert');switchTab(currentTab);}catch(err){showToast('Fehler beim Importieren',true);}};reader.readAsText(file);e.target.value='';});
 
-document.getElementById('btn-reset').addEventListener('click',function(){confirmAction('Alle Daten l\u00f6schen?','ALLE Karten, Patienten und Logs werden gel\u00f6scht.',function(){_appState.cards={};_appState.cards_savedAt=null;_appState.patients=[];_appState.autonomy_log=null;_appState.backlog=null;_appState.collapsed={};_appState.budget=100;LANES.forEach(function(l){_appState.seqs[l.id]=0;});if(getGHToken()){scheduleSyncToGitHub();scheduleSettingsToGitHub();}showToast('Alle Daten gel\u00f6scht');switchTab('heute');});});
+document.getElementById('btn-reset').addEventListener('click',function(){confirmAction('Alle Daten l\u00f6schen?','ALLE Karten, Patienten und Logs werden gel\u00f6scht.',function(){_appState.cards={};_appState.cards_savedAt=null;_appState.patients=[];_appState.autonomy_log=null;_appState.collapsed={};_appState.budget=100;LANES.forEach(function(l){_appState.seqs[l.id]=0;});if(getGHToken()){scheduleSyncToGitHub();scheduleSettingsToGitHub();}showToast('Alle Daten gel\u00f6scht');switchTab('heute');});});
 
 
 
@@ -4519,9 +4519,12 @@ function handleRAGUpload(files) {
   if (!queueEl) return;
   queueEl.style.display = 'flex';
 
+  var contextInput = document.getElementById('rag-context-input');
+  var context = contextInput ? contextInput.value.trim() : '';
+
   for (var i = 0; i < files.length; i++) {
     var f = files[i];
-    var item = { file: f, name: f.name, size: f.size, status: 'pending' };
+    var item = { file: f, name: f.name, size: f.size, status: 'pending', context: context };
     _ragUploadQueue.push(item);
     var sizeStr = f.size < 1024 ? f.size + ' B' : (f.size / 1024).toFixed(1) + ' KB';
     var div = document.createElement('div');
@@ -4586,6 +4589,16 @@ async function processRAGQueue() {
       if (r.ok || r.status === 200 || r.status === 201) {
         item.status = 'done';
         if (statusEl) { statusEl.textContent = 'Hochgeladen'; statusEl.className = 'rag-queue-status done'; }
+        // Upload context metadata if provided
+        if (item.context) {
+          var metaContent = btoa(unescape(encodeURIComponent('Kontext: ' + item.context + '\nDatei: ' + item.name + '\nUpload: ' + new Date().toISOString())));
+          var metaPath = 'data/rag-inbox/' + item.name + '.meta.txt';
+          await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/' + metaPath, {
+            method: 'PUT',
+            headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'rag-meta: ' + item.name, content: metaContent })
+          }).catch(function() {});
+        }
       } else {
         throw new Error('HTTP ' + r.status);
       }
@@ -4597,6 +4610,8 @@ async function processRAGQueue() {
 
   _ragUploading = false;
   _ragUploadQueue = [];
+  var ctxInput = document.getElementById('rag-context-input');
+  if (ctxInput) ctxInput.value = '';
   loadRAGInbox();
   showToast('Upload abgeschlossen');
 }
