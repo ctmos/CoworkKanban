@@ -2649,3 +2649,39 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .rag-inbox-item:last-child { border-bottom: none; }
 .rag-inbox-name { flex: 1; font-weight: 500; }
 .rag-inbox-date { font-size: 11px; color: var(--text-muted); }
+
+/* RAG Progress Bar */
+.rag-progress-container { margin-top: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.rag-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; }
+.rag-progress-pct { font-weight: 600; color: var(--accent); }
+.rag-progress-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.rag-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s ease; width: 0%; }
+.rag-progress-status { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.rag-processing-indicator { padding: 10px 12px; margin-top: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--accent); animation: rag-pulse 2s ease-in-out infinite; }
+@keyframes rag-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+/* RAG Index */
+.rag-index-toolbar { margin-bottom: 10px; }
+.rag-index-count { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.rag-index-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.rag-index-item:last-child { border-bottom: none; }
+.rag-index-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.rag-index-item-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; margin-right: 8px; }
+.rag-index-item-date { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.rag-index-item-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.rag-index-item-chunks { font-size: 10px; color: var(--text-muted); }
+.rag-index-item-context { font-size: 10px; color: var(--text-muted); font-style: italic; }
+.rag-index-badge { font-size: 10px; padding: 1px 6px; border-radius: 8px; font-weight: 500; }
+.rag-badge--upload { background: rgba(59,130,246,0.1); color: #3b82f6; }
+.rag-badge--gdrive { background: rgba(34,197,94,0.1); color: #22c55e; }
+.rag-badge--url { background: rgba(168,85,247,0.1); color: #a855f7; }
+.rag-badge--whatsapp { background: rgba(34,197,94,0.15); color: #16a34a; }
+.rag-badge--collect { background: rgba(204,120,92,0.1); color: var(--accent); }
+.rag-badge--therapy { background: rgba(59,130,246,0.08); color: #2563eb; }
+.rag-badge--work { background: rgba(234,179,8,0.1); color: #ca8a04; }
+.rag-badge--finance { background: rgba(34,197,94,0.08); color: #16a34a; }
+.rag-badge--personal { background: rgba(168,85,247,0.08); color: #9333ea; }
+.rag-badge--reference { background: rgba(107,114,128,0.1); color: #6b7280; }
+.rag-badge--general { background: rgba(107,114,128,0.08); color: #9ca3af; }
+.rag-badge--memory { background: rgba(244,63,94,0.1); color: #f43f5e; }
+.rag-gdrive-form { display: flex; flex-direction: column; }

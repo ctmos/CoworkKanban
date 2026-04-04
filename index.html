@@ -508,10 +508,57 @@
         <input type="text" class="form-input" id="rag-context-input" placeholder="Kontext / Tags (z.B. Therapie, Barmelweid, KI-Recherche...)">
       </div>
       <div id="rag-upload-queue" style="display:none"></div>
+      <div id="rag-upload-progress" class="rag-progress-container" style="display:none">
+        <div class="rag-progress-header">
+          <span id="rag-progress-filename"></span>
+          <span id="rag-progress-pct" class="rag-progress-pct"></span>
+        </div>
+        <div class="rag-progress-track">
+          <div class="rag-progress-fill" id="rag-progress-fill"></div>
+        </div>
+        <div id="rag-progress-status" class="rag-progress-status"></div>
+      </div>
+      <div id="rag-processing-indicator" class="rag-processing-indicator" style="display:none">
+        Verarbeitung laeuft...
+      </div>
     </div>
 
     <!-- RAG Stats -->
     <div id="rag-stats-bar" class="rag-stats-bar"></div>
+
+    <!-- Index / Katalog -->
+    <details class="sys-dropdown" id="rag-index-dropdown">
+      <summary class="sys-dropdown-header">Index</summary>
+      <div class="sys-dropdown-body">
+        <div class="rag-index-toolbar">
+          <input type="text" class="form-input" id="rag-index-search" placeholder="Suche im Index...">
+          <select class="form-input" id="rag-index-filter" style="margin-top:8px">
+            <option value="">Alle Quellen</option>
+            <option value="upload">Upload</option>
+            <option value="gdrive">Google Drive</option>
+            <option value="url">URL</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="collect">Collect</option>
+          </select>
+        </div>
+        <div id="rag-index-count" class="rag-index-count"></div>
+        <div id="rag-index-list"></div>
+      </div>
+    </details>
+
+    <!-- Google Drive Import -->
+    <details class="sys-dropdown" id="rag-gdrive-dropdown">
+      <summary class="sys-dropdown-header">Google Drive Import</summary>
+      <div class="sys-dropdown-body">
+        <div class="rag-gdrive-form">
+          <input type="text" class="form-input" id="gdrive-input" placeholder="Google Drive URL oder Datei-ID...">
+          <input type="text" class="form-input" id="gdrive-context-input" placeholder="Kontext / Tags (optional)" style="margin-top:8px">
+          <button class="btn-primary" id="btn-gdrive-import" style="margin-top:8px">Importieren</button>
+        </div>
+        <div id="gdrive-status" class="rag-progress-status" style="margin-top:8px"></div>
+        <div id="gdrive-pending-list" style="margin-top:12px"></div>
+      </div>
+    </details>
 
     <!-- Collect Section (Dropdown) -->
     <details class="sys-dropdown" id="rag-collect-dropdown">
