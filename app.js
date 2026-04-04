@@ -2013,6 +2013,70 @@ entry.archived=false;delete entry.archivedAt;
 meta.updatedAt=new Date().toISOString();
 await saveProject(meta);}
 
+// ─── SIMPLE MARKDOWN ─────────────────────────────────────────────────────────
+
+function parseSimpleMarkdown(text){
+  if(!text)return'';
+  var lines=text.split('\n');var html='';var inUl=false;var inOl=false;
+  for(var i=0;i<lines.length;i++){
+    var raw=lines[i];var line=esc(raw);
+    // close open lists if line is not a list item
+    if(inUl&&!/^\s*- /.test(raw)){html+='</ul>';inUl=false;}
+    if(inOl&&!/^\s*\d+\.\s/.test(raw)){html+='</ol>';inOl=false;}
+    // inline formatting
+    line=line.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    line=line.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,'<em>$1</em>');
+    line=line.replace(/\[([^\]]+)\]\(((?:https?:|mailto:)[^\)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    // block formatting
+    if(/^### /.test(raw)){html+='<h3>'+line.substring(4)+'</h3>';}
+    else if(/^## /.test(raw)){html+='<h2>'+line.substring(3)+'</h2>';}
+    else if(/^# /.test(raw)){html+='<h1>'+line.substring(2)+'</h1>';}
+    else if(/^\s*- /.test(raw)){if(!inUl){html+='<ul>';inUl=true;}html+='<li>'+line.replace(/^\s*-\s/,'')+'</li>';}
+    else if(/^\s*\d+\.\s/.test(raw)){if(!inOl){html+='<ol>';inOl=true;}html+='<li>'+line.replace(/^\s*\d+\.\s/,'')+'</li>';}
+    else if(line.trim()===''){html+='<br>';}
+    else{html+='<p>'+line+'</p>';}
+  }
+  if(inUl)html+='</ul>';if(inOl)html+='</ol>';
+  return html;
+}
+
+function renderMarkdownToolbar(textareaId){
+  return '<div class="md-toolbar">'
+    +'<button type="button" class="md-toolbar-btn" onclick="insertMarkdown(\''+textareaId+'\',\'bold\')" title="Fett"><b>B</b></button>'
+    +'<button type="button" class="md-toolbar-btn" onclick="insertMarkdown(\''+textareaId+'\',\'italic\')" title="Kursiv"><i>I</i></button>'
+    +'<button type="button" class="md-toolbar-btn" onclick="insertMarkdown(\''+textareaId+'\',\'h2\')" title="Überschrift">H2</button>'
+    +'<button type="button" class="md-toolbar-btn" onclick="insertMarkdown(\''+textareaId+'\',\'h3\')" title="Unter-Überschrift">H3</button>'
+    +'<button type="button" class="md-toolbar-btn" onclick="insertMarkdown(\''+textareaId+'\',\'ul\')" title="Liste">&#8226;</button>'
+    +'<button type="button" class="md-toolbar-btn" onclick="insertMarkdown(\''+textareaId+'\',\'link\')" title="Link">&#128279;</button>'
+    +'<button type="button" class="md-toolbar-btn" onclick="toggleMarkdownPreview(\''+textareaId+'\')" title="Vorschau">&#128065;</button>'
+    +'</div>';
+}
+
+function insertMarkdown(textareaId,type){
+  var ta=document.getElementById(textareaId);if(!ta)return;
+  var s=ta.selectionStart;var e=ta.selectionEnd;var txt=ta.value;var sel=txt.substring(s,e)||'Text';
+  var before=txt.substring(0,s);var after=txt.substring(e);var insert='';var cursorOffset=0;
+  switch(type){
+    case'bold':insert='**'+sel+'**';cursorOffset=2;break;
+    case'italic':insert='*'+sel+'*';cursorOffset=1;break;
+    case'h2':insert='\n## '+sel;cursorOffset=4;break;
+    case'h3':insert='\n### '+sel;cursorOffset=5;break;
+    case'ul':insert='\n- '+sel;cursorOffset=3;break;
+    case'link':var url=prompt('URL eingeben:','https://');if(!url)return;insert='['+sel+']('+url+')';cursorOffset=1;break;
+    default:return;
+  }
+  ta.value=before+insert+after;ta.focus();
+  var newPos=s+insert.length;ta.setSelectionRange(newPos,newPos);
+}
+
+function toggleMarkdownPreview(textareaId){
+  var previewId='preview-'+textareaId;var preview=document.getElementById(previewId);
+  var ta=document.getElementById(textareaId);if(!ta||!preview)return;
+  if(preview.style.display==='none'||!preview.style.display){
+    preview.innerHTML=parseSimpleMarkdown(ta.value);preview.style.display='block';
+  }else{preview.style.display='none';}
+}
+
 async function showProjectsTab(){
 
   var container=document.getElementById('projekte-view');var token=getGHToken();
@@ -2091,8 +2155,8 @@ async function showProjectDetail(projectId){
       html+='<button class="proj-entry-btn proj-entry-archive" onclick="(async function(){await archiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Archiviert\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Archivieren">\ud83d\udce6</button>';
       html+='<button class="proj-entry-btn proj-entry-del" onclick="(async function(){await deleteProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'In Papierkorb verschoben\');showProjectDetail(\''+esc(projectId)+'\');})()" title="L\u00f6schen">\ud83d\uddd1</button>';}
       html+='</div></div>';
-      if(needsCollapse){html+='<details class="proj-entry-collapse"><summary>'+esc(lines.slice(0,2).join(' ').substring(0,120))+(lines.slice(0,2).join(' ').length>120?'\u2026':'')+'</summary><div class="proj-entry-text">'+esc(e.text)+'</div></details>';}
-      else{html+='<div class="proj-entry-text">'+esc(e.text)+'</div>';}
+      if(needsCollapse){html+='<details class="proj-entry-collapse"><summary>'+esc(lines.slice(0,2).join(' ').substring(0,120))+(lines.slice(0,2).join(' ').length>120?'\u2026':'')+'</summary><div class="proj-entry-text proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div></details>';}
+      else{html+='<div class="proj-entry-text proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div>';}
       html+='</div>';return html;
     }
 
@@ -2117,7 +2181,7 @@ async function showProjectDetail(projectId){
     container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span><div style="margin-left:auto;display:flex;gap:8px"><button class="proj-action-btn" onclick="archiveProject(\''+esc(projectId)+'\')" title="Archivieren" style="font-size:16px">\ud83d\udce6</button><button class="proj-action-btn proj-action-delete" onclick="deleteProject(\''+esc(projectId)+'\',\''+esc(meta.name||projectId)+'\')" title="In Papierkorb" style="font-size:16px">\ud83d\uddd1</button></div></div>'
       +'<div class="proj-section"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status</label><select class="form-select" id="pjd-status" style="width:auto"><option value="aktiv"'+(meta.status==='aktiv'?' selected':'')+'>Aktiv</option><option value="pausiert"'+(meta.status==='pausiert'?' selected':'')+'>Pausiert</option><option value="abgeschlossen"'+(meta.status==='abgeschlossen'?' selected':'')+'>Abgeschlossen</option><option value="archiviert"'+(meta.status==='archiviert'?' selected':'')+'>Archiviert</option></select></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
       +(meta.description?'<div class="proj-section"><h3>Beschreibung</h3><div class="proj-description">'+esc(meta.description)+'</div></div>':'')
-      +'<div class="proj-section"><h3>Beitr\u00e4ge</h3><div class="proj-log-form"><textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><button class="btn-primary" id="pjd-log-btn" style="flex-shrink:0">Hinzuf\u00fcgen</button></div><div id="pjd-entries-list" style="margin-top:16px">'+entriesHtml+'</div>'+archiveHtml+trashHtml+'</div>'
+      +'<div class="proj-section"><h3>Beitr\u00e4ge</h3><div class="proj-log-form">'+renderMarkdownToolbar('pjd-log-entry')+'<textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><div class="md-preview" id="preview-pjd-log-entry" style="display:none"></div><button class="btn-primary" id="pjd-log-btn" style="flex-shrink:0">Hinzuf\u00fcgen</button></div><div id="pjd-entries-list" style="margin-top:16px">'+entriesHtml+'</div>'+archiveHtml+trashHtml+'</div>'
       +'<div class="proj-section"><h3>Verkn\u00fcpfte Karten</h3>'+(linked.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine</div>':'<div class="proj-kanban-chips">'+linked.map(function(c){return '<span class="proj-kanban-chip"><strong>'+esc(c.id)+'</strong> '+esc(c.title||'')+'</span>';}).join('')+'</div>')+'</div>';
 
     document.getElementById('pjd-save-btn').addEventListener('click',async function(){var btn=document.getElementById('pjd-save-btn');var st=document.getElementById('pjd-save-status');var nn=document.getElementById('pjd-name').value.trim();var ns=document.getElementById('pjd-status').value;if(!nn){showToast('Name darf nicht leer sein',true);return;}btn.disabled=true;st.textContent='Speichert\u2026';try{await saveProject(Object.assign({},meta,{name:nn,status:ns,updatedAt:new Date().toISOString()}));st.textContent='Gespeichert \u2713';showToast('Projekt gespeichert');setTimeout(function(){if(st)st.textContent='';},3000);}catch(e){showToast('Fehler',true);st.textContent='';}btn.disabled=false;});
@@ -2134,7 +2198,7 @@ function startEditProjectEntry(projectId,entryId){
   var textEl=card.querySelector('.proj-entry-text');var collapseEl=card.querySelector('.proj-entry-collapse');
   var target=collapseEl||textEl;if(!target)return;
   var origText=entry.text;
-  target.outerHTML='<div class="proj-entry-edit-form"><textarea class="proj-entry-edit-input" id="edit-'+esc(entryId)+'">'+esc(origText)+'</textarea><div class="proj-entry-edit-actions"><button class="btn-primary proj-entry-save-btn" id="save-'+esc(entryId)+'">Speichern</button><button class="proj-entry-cancel-btn" id="cancel-'+esc(entryId)+'">Abbrechen</button></div></div>';
+  target.outerHTML='<div class="proj-entry-edit-form">'+renderMarkdownToolbar('edit-'+esc(entryId))+'<textarea class="proj-entry-edit-input" id="edit-'+esc(entryId)+'">'+esc(origText)+'</textarea><div class="md-preview" id="preview-edit-'+esc(entryId)+'" style="display:none"></div><div class="proj-entry-edit-actions"><button class="btn-primary proj-entry-save-btn" id="save-'+esc(entryId)+'">Speichern</button><button class="proj-entry-cancel-btn" id="cancel-'+esc(entryId)+'">Abbrechen</button></div></div>';
   var textarea=document.getElementById('edit-'+entryId);if(textarea)textarea.focus();
   document.getElementById('save-'+entryId).addEventListener('click',async function(){
     var newText=document.getElementById('edit-'+entryId).value.trim();if(!newText){showToast('Text darf nicht leer sein',true);return;}
