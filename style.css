@@ -1814,6 +1814,10 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 .proj-entry-edit-actions { display: flex; gap: 8px; margin-top: 6px; }
 .proj-entry-cancel-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--text-muted); }
 .proj-entry-cancel-btn:hover { background: var(--bg); }
+.proj-entry-archive { margin-top: 20px; }
+.proj-entry-archive-toggle { cursor: pointer; font-size: 13px; color: var(--text-muted); list-style: none; padding: 6px 0; }
+.proj-entry-archive-list { margin-top: 8px; opacity: 0.7; }
+.proj-entry-btn.proj-entry-archive:hover { color: var(--accent); border-color: var(--accent); }
 .proj-entry-trash { margin-top: 24px; }
 .proj-entry-trash-toggle { cursor: pointer; font-size: 13px; color: var(--text-muted); list-style: none; padding: 6px 0; }
 .proj-entry-trash-list { margin-top: 8px; opacity: 0.7; }
