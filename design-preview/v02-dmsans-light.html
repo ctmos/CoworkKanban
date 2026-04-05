@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V02 DM Sans -- Light</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --surface2: #f5f5f5;
+    --border: #e8e8e8;
+    --border-hover: #ddd;
+    --text: #1a1a1a;
+    --text2: #666;
+    --text3: #aaa;
+    --accent: #e5484d;
+    --accent-hover: #d13438;
+    --radius: 10px;
+    --green: #2e7d32;
+    --amber: #c47a2a;
+    --blue: #2563eb;
+    --purple: #7c3aed;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.006em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  .nav {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    gap: 2px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-brand {
+    font-weight: 700;
+    font-size: 14px;
+    margin-right: 20px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .nav-item {
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--text2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--text); background: var(--surface2); }
+
+  .nav-kbd {
+    font-size: 10px;
+    color: var(--text3);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-family: system-ui;
+  }
+
+  .nav-spacer { flex: 1; }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* PAGE */
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  /* HEADER */
+  .page-header { margin-bottom: 28px; }
+
+  .page-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .page-subtitle kbd {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: system-ui;
+    color: var(--text3);
+  }
+
+  /* SECTION */
+  .section { margin-bottom: 28px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 28px 0;
+  }
+
+  /* PROJECT GRID */
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px;
+  }
+
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .project-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+
+  .project-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .project-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .project-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-green { background: rgba(46,125,50,0.10); color: var(--green); }
+  .badge-amber { background: rgba(196,122,42,0.10); color: var(--amber); }
+  .badge-blue { background: rgba(37,99,235,0.10); color: var(--blue); }
+  .badge-yellow { background: rgba(196,122,42,0.10); color: #a16207; }
+  .badge-purple { background: rgba(124,58,237,0.10); color: var(--purple); }
+
+  .project-count {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  }
+
+  /* COMPOSER */
+  .composer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .composer-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 2px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .composer-btn {
+    width: 28px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text3);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+
+  .composer-btn:hover { color: var(--text2); background: var(--surface2); }
+
+  .composer-hint-toolbar {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  .composer-hint-toolbar kbd {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: system-ui;
+  }
+
+  .composer-area {
+    width: 100%;
+    min-height: 72px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+  }
+
+  .composer-area::placeholder { color: var(--text3); }
+  .composer-area:focus { box-shadow: inset 0 0 0 1px var(--accent); }
+
+  .composer-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .composer-hint {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .composer-hint kbd {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: system-ui;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  /* ENTRIES */
+  .entry {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .entry:last-child { border-bottom: none; }
+
+  .entry:hover {
+    background: var(--surface);
+    margin: 0 -12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border-color: transparent;
+  }
+
+  .entry:hover + .entry { border-top-color: transparent; }
+
+  .entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .entry-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .entry-date {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .entry-actions {
+    display: none;
+    gap: 4px;
+  }
+
+  .entry:hover .entry-actions { display: flex; }
+  .entry:hover .entry-date { display: none; }
+
+  .entry-action {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text3);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .entry-action:hover { color: var(--text2); background: var(--surface2); }
+
+  .entry-text {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .entry-tag {
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  /* PATIENTS */
+  .patient-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+
+  .patient-row:last-child { border-bottom: none; }
+
+  .patient-row:hover {
+    background: var(--surface);
+    margin: 0 -8px;
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  .patient-code {
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 60px;
+  }
+
+  .patient-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 6px;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  .patient-info {
+    flex: 1;
+    color: var(--text2);
+    font-size: 12px;
+  }
+
+  .patient-duration {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  }
+
+  /* BACK LINK */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text3);
+    text-decoration: none;
+    margin-top: 40px;
+    transition: color 0.15s;
+  }
+
+  .back-link:hover { color: var(--text2); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">LifeOS</div>
+  <div class="nav-item">Kanban</div>
+  <div class="nav-item">Patienten</div>
+  <div class="nav-item active">Projekte</div>
+  <div class="nav-item">Backlog</div>
+  <div class="nav-item">Settings</div>
+  <div class="nav-spacer"></div>
+  <div class="nav-right"><span class="nav-kbd">?</span> Shortcuts</div>
+</nav>
+
+<main class="page">
+  <header class="page-header">
+    <h1 class="page-title">Projekte</h1>
+    <p class="page-subtitle">4 Projekte &middot; <kbd>N</kbd> Neu &middot; <kbd>/</kbd> Suche</p>
+  </header>
+
+  <!-- PROJECT GRID -->
+  <section class="section">
+    <div class="project-grid">
+      <div class="project-card">
+        <div class="project-name">Imperial College Kurse</div>
+        <div class="project-desc">ML Specialization, Deep Learning, NLP Foundation mit Deadlines</div>
+        <div class="project-meta">
+          <span class="badge badge-green">Aktiv</span>
+          <span class="project-count">2h</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-name">Niffler Trading</div>
+        <div class="project-desc">Multi-Asset Bot, Broker-Adapter, Walk-Forward Optimierung</div>
+        <div class="project-meta">
+          <span class="badge badge-green">Aktiv</span>
+          <span class="project-count">1d</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-name">Anon Pipeline</div>
+        <div class="project-desc">PDF-Anonymisierung mit spaCy NER und CoworkOS Bridge</div>
+        <div class="project-meta">
+          <span class="badge badge-amber">Pausiert</span>
+          <span class="project-count">5d</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-name">LifeOS Dashboard</div>
+        <div class="project-desc">PWA, Glassmorphism, Kanban, Kalender-Integration</div>
+        <div class="project-meta">
+          <span class="badge badge-green">Aktiv</span>
+          <span class="project-count">3h</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- COMPOSER -->
+  <section class="section">
+    <div class="composer">
+      <div class="composer-toolbar">
+        <button class="composer-btn"><strong>B</strong></button>
+        <button class="composer-btn"><em>I</em></button>
+        <button class="composer-btn" style="font-family:'SF Mono','Cascadia Code','Consolas',monospace;font-size:11px;font-weight:500;">`</button>
+        <button class="composer-btn" style="font-size:12px;font-weight:400;">Link</button>
+        <button class="composer-btn" style="font-size:11px;">H</button>
+        <button class="composer-btn" style="font-size:14px;font-weight:400;">&bull;</button>
+        <span class="composer-hint-toolbar"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> speichern</span>
+      </div>
+      <textarea class="composer-area" placeholder="Eintrag verfassen..."></textarea>
+      <div class="composer-footer">
+        <span class="composer-hint"><kbd>Esc</kbd> abbrechen</span>
+        <button class="btn-primary">Speichern</button>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ENTRIES -->
+  <section class="section">
+    <div class="section-label">Letzte Eintraege</div>
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-title">Deployment Workflow optimiert</span>
+        <span class="entry-date">05 Apr</span>
+        <div class="entry-actions">
+          <span class="entry-action" title="Bearbeiten">&#9998;</span>
+          <span class="entry-action" title="Archivieren">&#128451;</span>
+        </div>
+      </div>
+      <div class="entry-text">push_safe.py mit SHA-Check, Groessen-Guard und automatischem Backup vor jedem Deploy integriert.</div>
+      <div class="entry-tag">LifeOS Dashboard</div>
+    </div>
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-title">RAG Service Embeddings migriert</span>
+        <span class="entry-date">04 Apr</span>
+        <div class="entry-actions">
+          <span class="entry-action" title="Bearbeiten">&#9998;</span>
+          <span class="entry-action" title="Archivieren">&#128451;</span>
+        </div>
+      </div>
+      <div class="entry-text">Qwen3 Embeddings auf LanceDB migriert. Latenz um 40% reduziert, Recall verbessert.</div>
+      <div class="entry-tag">Hermine</div>
+    </div>
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-title">Week 3 ML Assignments</span>
+        <span class="entry-date">03 Apr</span>
+        <div class="entry-actions">
+          <span class="entry-action" title="Bearbeiten">&#9998;</span>
+          <span class="entry-action" title="Archivieren">&#128451;</span>
+        </div>
+      </div>
+      <div class="entry-text">Neural Networks Fundamentals abgeschlossen. Backpropagation und Gradient Descent implementiert.</div>
+      <div class="entry-tag">Imperial College</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- PATIENTS -->
+  <section class="section">
+    <div class="section-label">Patienten</div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-001</span>
+      <span class="patient-badge badge-green">Aktiv</span>
+      <span class="patient-info">Stationaer &middot; Kognitive VT</span>
+      <span class="patient-duration">d14</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-002</span>
+      <span class="patient-badge badge-green">Aktiv</span>
+      <span class="patient-info">Stationaer &middot; Schematherapie</span>
+      <span class="patient-duration">d21</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-003</span>
+      <span class="patient-badge badge-yellow">Review</span>
+      <span class="patient-info">Ambulant &middot; EMDR</span>
+      <span class="patient-duration">w8</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-004</span>
+      <span class="patient-badge badge-green">Aktiv</span>
+      <span class="patient-info">Stationaer &middot; DBT Skills</span>
+      <span class="patient-duration">d7</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-005</span>
+      <span class="patient-badge badge-purple">Entlassung</span>
+      <span class="patient-info">Stationaer &middot; Integrative Therapie</span>
+      <span class="patient-duration">d42</span>
+    </div>
+  </section>
+
+  <a href="index.html" class="back-link">&larr; Zurueck zur Uebersicht</a>
+</main>
+
+</body>
+</html>
