@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>03 — Notion Style</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#ffffff;--surface:#ffffff;--surface2:#f7f6f3;--border:#e3e2de;--text:#37352f;--text2:#787774;--text3:#9b9a97;--accent:#2383e2;--accent-hover:#1b6ec2;--radius:3px}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;font-weight:400;-webkit-font-smoothing:antialiased}
+
+/* Nav */
+nav{background:var(--bg);border-bottom:1px solid var(--border);height:45px;display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:100}
+.brand{font-weight:600;font-size:14px;color:var(--text);margin-right:20px;letter-spacing:-0.01em}
+.nav-link{background:none;border:none;padding:6px 8px;font-size:14px;font-weight:400;color:var(--text3);cursor:pointer;font-family:inherit;border-radius:var(--radius);transition:background 0.1s}
+.nav-link:hover{background:var(--surface2);color:var(--text)}
+.nav-link.active{color:var(--text);font-weight:500;background:var(--surface2)}
+
+/* Layout */
+.page{max-width:900px;margin:0 auto;padding:32px 24px}
+.page-title{font-size:32px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
+.page-subtitle{font-size:14px;color:var(--text3);margin-bottom:32px}
+
+/* Section */
+.section{margin-bottom:32px}
+.section-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.section-title::before{content:'';display:inline-block;width:3px;height:14px;background:var(--accent);border-radius:1px}
+
+/* Project Cards */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px}
+.proj-card{background:var(--bg);padding:16px;cursor:pointer;transition:background 0.1s}
+.proj-card:hover{background:var(--surface2)}
+.proj-card h3{font-size:14px;font-weight:600;margin-bottom:4px}
+.badge{display:inline-block;font-size:12px;font-weight:500;padding:2px 8px;border-radius:var(--radius);margin-bottom:6px}
+.badge-active{background:#dbeddb;color:#2b593f}
+.badge-paused{background:#fdecc8;color:#73440c}
+.proj-card p{font-size:13px;color:var(--text2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.proj-meta{font-size:12px;color:var(--text3);margin-top:6px}
+
+/* Composer */
+.composer{border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);transition:border-color 0.15s}
+.composer:focus-within{border-color:var(--accent)}
+.composer-toolbar{display:flex;gap:2px;padding:6px 8px;border-bottom:1px solid var(--border);background:var(--surface2)}
+.toolbar-btn{background:none;border:none;border-radius:var(--radius);padding:4px 8px;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;transition:background 0.1s}
+.toolbar-btn:hover{background:rgba(55,53,47,0.08);color:var(--text)}
+.composer textarea{width:100%;border:none;background:transparent;padding:12px;font-size:14px;font-family:inherit;color:var(--text);resize:vertical;min-height:80px;outline:none;line-height:1.5}
+.composer textarea::placeholder{color:var(--text3)}
+.composer-footer{display:flex;justify-content:flex-end;padding:6px 8px 8px}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background 0.15s}
+.btn-primary:hover{background:var(--accent-hover)}
+
+/* Entry Cards */
+.entry{padding:12px 0;border-bottom:1px solid var(--border);transition:background 0.1s}
+.entry:last-child{border-bottom:none}
+.entry:hover{background:var(--surface2);margin:0 -12px;padding:12px;border-radius:var(--radius)}
+.entry-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.entry-date{font-size:12px;color:var(--text3);margin-left:auto}
+.entry-actions{display:flex;gap:4px;opacity:0;transition:opacity 0.1s}
+.entry:hover .entry-actions{opacity:1}
+.entry-btn{background:none;border:none;padding:2px 6px;font-size:12px;color:var(--text3);cursor:pointer;border-radius:var(--radius);transition:background 0.1s}
+.entry-btn:hover{background:rgba(55,53,47,0.08);color:var(--text)}
+.entry-text{font-size:14px;line-height:1.6;color:var(--text)}
+.entry-tag{font-size:12px;color:var(--accent);margin-top:4px}
+
+/* Patient Rows */
+.patient-row{display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid var(--border);transition:background 0.1s;border-radius:var(--radius)}
+.patient-row:hover{background:var(--surface2);padding:8px;margin:0 -4px}
+.patient-row:last-child{border-bottom:none}
+.patient-code{font-size:14px;font-weight:600;color:var(--text);min-width:72px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+.patient-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:var(--radius);background:#dbeddb;color:#2b593f}
+.patient-info{flex:1;font-size:13px;color:var(--text2)}
+.patient-duration{font-size:12px;color:var(--text3)}
+
+.back-link{display:inline-flex;align-items:center;gap:4px;font-size:14px;color:var(--text2);text-decoration:none;padding:4px 0;margin-bottom:16px;transition:color 0.1s}
+.back-link:hover{color:var(--text)}
+
+/* Divider */
+.divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+</style>
+</head>
+<body>
+<nav>
+  <span class="brand">LifeOS</span>
+  <button class="nav-link">Kanban</button>
+  <button class="nav-link">Patienten</button>
+  <button class="nav-link active">Projekte</button>
+  <button class="nav-link">Backlog</button>
+  <button class="nav-link">Einstellungen</button>
+</nav>
+
+<div class="page">
+  <a href="index.html" class="back-link">&larr; Alle Varianten</a>
+  <div class="page-title">Projekte</div>
+  <div class="page-subtitle">4 aktive Projekte</div>
+
+  <!-- Project Cards -->
+  <div class="section">
+    <div class="section-title">Aktive Projekte</div>
+    <div class="proj-grid">
+      <div class="proj-card">
+        <span class="badge badge-active">Aktiv</span>
+        <h3>Imperial College Kurse</h3>
+        <p>Machine Learning Specialization, Deep Learning, NLP Foundation Kurs mit Deadlines und Weekly Goals</p>
+        <div class="proj-meta">Aktualisiert vor 2h</div>
+      </div>
+      <div class="proj-card">
+        <span class="badge badge-active">Aktiv</span>
+        <h3>Niffler Trading</h3>
+        <p>Multi-Asset Trading Bot mit Broker-Adapter Pattern und Walk-Forward Optimierung</p>
+        <div class="proj-meta">Aktualisiert vor 1d</div>
+      </div>
+      <div class="proj-card">
+        <span class="badge badge-paused">Pausiert</span>
+        <h3>Anon Pipeline</h3>
+        <p>PDF-Anonymisierung mit spaCy NER, Regex Patterns und CoworkOS Bridge</p>
+        <div class="proj-meta">Aktualisiert vor 5d</div>
+      </div>
+      <div class="proj-card">
+        <span class="badge badge-active">Aktiv</span>
+        <h3>LifeOS Dashboard</h3>
+        <p>PWA mit Glassmorphism UI, Kanban Board, Kalender-Integration</p>
+        <div class="proj-meta">Aktualisiert vor 3h</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Entry Composer -->
+  <div class="section">
+    <div class="section-title">Neuer Eintrag</div>
+    <div class="composer">
+      <div class="composer-toolbar">
+        <button class="toolbar-btn"><b>B</b></button>
+        <button class="toolbar-btn"><i>I</i></button>
+        <button class="toolbar-btn">Code</button>
+        <button class="toolbar-btn">Link</button>
+        <button class="toolbar-btn"># Heading</button>
+        <button class="toolbar-btn">&bull; Liste</button>
+      </div>
+      <textarea placeholder="Schreibe etwas..."></textarea>
+      <div class="composer-footer">
+        <button class="btn-primary">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Entry Cards -->
+  <div class="section">
+    <div class="section-title">Eintraege</div>
+    <div class="entry">
+      <div class="entry-header">
+        <span style="font-weight:600;font-size:14px">Deployment Workflow optimiert</span>
+        <span class="entry-date">05. Apr 2026</span>
+        <div class="entry-actions">
+          <button class="entry-btn">Bearbeiten</button>
+          <button class="entry-btn">Archiv</button>
+        </div>
+      </div>
+      <div class="entry-text">push_safe.py um Pre-Flight Checks erweitert: JSON-Validierung, CSS-Size-Guard, Bracket-Matching. Laeuft stabil seit 3 Deploys.</div>
+      <div class="entry-tag">@LifeOS Dashboard</div>
+    </div>
+    <div class="entry">
+      <div class="entry-header">
+        <span style="font-weight:600;font-size:14px">RAG Service Embeddings migriert</span>
+        <span class="entry-date">04. Apr 2026</span>
+        <div class="entry-actions">
+          <button class="entry-btn">Bearbeiten</button>
+          <button class="entry-btn">Archiv</button>
+        </div>
+      </div>
+      <div class="entry-text">Von OpenAI Embeddings auf Qwen3 (lokal) umgestellt. LanceDB Index neu gebaut. Latenz von 800ms auf 120ms reduziert.</div>
+      <div class="entry-tag">@Hermine</div>
+    </div>
+    <div class="entry">
+      <div class="entry-header">
+        <span style="font-weight:600;font-size:14px">Week 3 ML Assignments</span>
+        <span class="entry-date">03. Apr 2026</span>
+        <div class="entry-actions">
+          <button class="entry-btn">Bearbeiten</button>
+          <button class="entry-btn">Archiv</button>
+        </div>
+      </div>
+      <div class="entry-text">Neural Networks Basics abgeschlossen. Quiz Score 92%. Gradient Descent Intuition gut verstanden, Backprop braucht Review.</div>
+      <div class="entry-tag">@Imperial College</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Patient Rows -->
+  <div class="section">
+    <div class="section-title">Patienten</div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-001</span>
+      <span class="patient-badge">Aktiv</span>
+      <span class="patient-info">Stationaer &middot; Kognitive VT</span>
+      <span class="patient-duration">Tag 14</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-002</span>
+      <span class="patient-badge">Aktiv</span>
+      <span class="patient-info">Stationaer &middot; Schematherapie</span>
+      <span class="patient-duration">Tag 21</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-003</span>
+      <span class="patient-badge" style="background:#fdecc8;color:#73440c">Review</span>
+      <span class="patient-info">Ambulant &middot; EMDR</span>
+      <span class="patient-duration">Woche 8</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-004</span>
+      <span class="patient-badge">Aktiv</span>
+      <span class="patient-info">Stationaer &middot; DBT Skills</span>
+      <span class="patient-duration">Tag 7</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PAT-005</span>
+      <span class="patient-badge" style="background:#e8deee;color:#6940a5">Entlassung</span>
+      <span class="patient-info">Stationaer &middot; Integrative Therapie</span>
+      <span class="patient-duration">Tag 42</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
