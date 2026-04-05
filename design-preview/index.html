@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeOS Design Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#f5f1ec;color:#1a1815;padding:40px 20px}
+.container{max-width:800px;margin:0 auto}
+h1{font-size:28px;font-weight:700;margin-bottom:8px;letter-spacing:-0.03em}
+p.sub{color:#6b6560;font-size:15px;margin-bottom:40px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.card{background:#fff;border:1px solid #e5e0d8;border-radius:16px;padding:24px;text-decoration:none;color:inherit;transition:all 0.2s;box-shadow:0 1px 3px rgba(26,24,21,0.05)}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(26,24,21,0.1);border-color:rgba(196,122,42,0.2)}
+.card h2{font-size:16px;font-weight:600;margin-bottom:4px;letter-spacing:-0.01em}
+.card .tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;margin-bottom:8px}
+.card p{font-size:13px;color:#8a847c;line-height:1.5}
+.tag-claude{background:#f5f1ec;color:#c47a2a}
+.tag-linear{background:#1a1a2e;color:#7170ff}
+.tag-notion{background:#f0f0f0;color:#37352f}
+.tag-stripe{background:#e8e5ff;color:#635bff}
+.tag-vercel{background:#1a1a1a;color:#fff}
+.tag-super{background:#fff0f0;color:#e5484d}
+.tag-apple{background:#f5f5f7;color:#1d1d1f}
+.tag-wise{background:#defbe6;color:#163300}
+.tag-figma{background:#fff4e5;color:#f24e1e}
+.tag-raycast{background:#2d1b69;color:#ff6363}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>LifeOS Design Variants</h1>
+<p class="sub">10 verschiedene Design-Konzepte basierend auf den fortschrittlichsten Design-Systemen. Klicke auf eine Variante um sie mit LifeOS-Elementen zu sehen.</p>
+<div class="grid">
+<a class="card" href="01-claude.html"><span class="tag tag-claude">Warm</span><h2>01 — Claude Refined</h2><p>Parchment canvas, warme Neutrals, Terracotta accent, whisper shadows, editorial feel</p></a>
+<a class="card" href="02-linear.html"><span class="tag tag-linear">Dark Precision</span><h2>02 — Linear</h2><p>Near-black canvas, Inter 510, indigo accent, semi-transparent borders, luminance stacking</p></a>
+<a class="card" href="03-notion.html"><span class="tag tag-notion">Clean</span><h2>03 — Notion</h2><p>Ultra-clean white, default-sans, minimal borders, content-first, monochrome</p></a>
+<a class="card" href="04-stripe.html"><span class="tag tag-stripe">Premium</span><h2>04 — Stripe</h2><p>Lavender accents, smooth gradients, generous spacing, premium fintech feel</p></a>
+<a class="card" href="05-vercel.html"><span class="tag tag-vercel">Monochrome</span><h2>05 — Vercel</h2><p>Pure black/white, Geist font, hard contrast, developer-focused, minimal</p></a>
+<a class="card" href="06-superhuman.html"><span class="tag tag-super">Speed</span><h2>06 — Superhuman</h2><p>Dark mode, keyboard-first, red accents, ultra-fast visual language</p></a>
+<a class="card" href="07-apple.html"><span class="tag tag-apple">Refined</span><h2>07 — Apple HIG</h2><p>SF Pro, system materials, vibrancy, gentle radii, iOS-native feel</p></a>
+<a class="card" href="08-wise.html"><span class="tag tag-wise">Fresh</span><h2>08 — Wise</h2><p>Bright green accent, high contrast, playful but professional, friendly</p></a>
+<a class="card" href="09-figma.html"><span class="tag tag-figma">Creative</span><h2>09 — Figma</h2><p>White canvas, colorful accents, rounded elements, creative tool aesthetic</p></a>
+<a class="card" href="10-raycast.html"><span class="tag tag-raycast">Command</span><h2>10 — Raycast</h2><p>Deep purple dark, glass effects, command-palette first, power-user aesthetic</p></a>
+</div>
+</div>
+</body>
+</html>
