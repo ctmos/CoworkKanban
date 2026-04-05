@@ -2246,22 +2246,30 @@ async function showProjectDetail(projectId){
       var lines=e.text.split('\n');var needsCollapse=lines.length>5;
       var displayDate=e.updatedAt||e.createdAt;
       var dateLabel=e.updatedAt?'Bearbeitet':'Erstellt';
-      var html='<div class="proj-entry-card" data-entry-id="'+esc(e.id)+'">';
-      html+='<div class="proj-entry-header">'+(mode==='active'?'<span class="proj-entry-drag-handle" title="Verschieben">&#x2630;</span>':'')+'<span class="proj-entry-date">'+dateLabel+': '+fmtDateDE(displayDate)+'</span><div class="proj-entry-actions">';
-      if(mode==='trash'){html+='<button class="proj-entry-btn proj-entry-restore" onclick="(async function(){await restoreProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">\u21a9</button>';}
-      else if(mode==='archived'){html+='<button class="proj-entry-btn proj-entry-restore" onclick="(async function(){await unarchiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">\u21a9</button>';}
-      else{html+='<button class="proj-entry-btn proj-entry-edit" onclick="startEditProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\')" title="Bearbeiten">\u270e</button>';
-      html+='<button class="proj-entry-btn proj-entry-archive" onclick="(async function(){await archiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Archiviert\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Archivieren">\ud83d\udce6</button>';
-      html+='<button class="proj-entry-btn proj-entry-del" onclick="(async function(){await deleteProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'In Papierkorb verschoben\');showProjectDetail(\''+esc(projectId)+'\');})()" title="L\u00f6schen">\ud83d\uddd1</button>';}
+      // Timeline layout for active entries, card layout for trash/archived
+      if(mode==='active'){
+        var html='<div class="tl-entry proj-entry-card" data-entry-id="'+esc(e.id)+'">';
+        html+='<div class="tl-header"><span class="tl-handle proj-entry-drag-handle" title="Verschieben">&#x2630;</span><span class="tl-date">'+dateLabel+': '+fmtDateDE(displayDate)+'</span>';
+        html+='<div class="tl-actions"><button class="tl-btn proj-entry-btn proj-entry-edit" onclick="startEditProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\')" title="Bearbeiten">\u270e</button>';
+        html+='<button class="tl-btn proj-entry-btn proj-entry-archive" onclick="(async function(){await archiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Archiviert\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Archivieren">\ud83d\udce6</button>';
+        html+='<button class="tl-btn proj-entry-btn proj-entry-del" onclick="(async function(){await deleteProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'In Papierkorb verschoben\');showProjectDetail(\''+esc(projectId)+'\');})()" title="L\u00f6schen">\ud83d\uddd1</button></div></div>';
+        if(needsCollapse){html+='<details class="proj-entry-collapse"><summary>'+esc(lines.slice(0,2).join(' ').substring(0,120))+(lines.slice(0,2).join(' ').length>120?'\u2026':'')+'</summary><div class="proj-entry-text proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div></details>';}
+        else{html+='<div class="tl-text proj-entry-text proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div>';}
+        html+='</div>';return html;
+      }
+      // Fallback for trash/archived
+      var html='<div class="proj-entry-card" data-entry-id="'+esc(e.id)+'" style="padding:10px 14px;margin-bottom:6px">';
+      html+='<div class="proj-entry-header" style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="proj-entry-date" style="font-size:11px;color:var(--text-muted)">'+dateLabel+': '+fmtDateDE(displayDate)+'</span><div class="proj-entry-actions" style="margin-left:auto;display:flex;gap:4px">';
+      if(mode==='trash'){html+='<button class="tl-btn" onclick="(async function(){await restoreProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">\u21a9</button>';}
+      else if(mode==='archived'){html+='<button class="tl-btn" onclick="(async function(){await unarchiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">\u21a9</button>';}
       html+='</div></div>';
-      if(needsCollapse){html+='<details class="proj-entry-collapse"><summary>'+esc(lines.slice(0,2).join(' ').substring(0,120))+(lines.slice(0,2).join(' ').length>120?'\u2026':'')+'</summary><div class="proj-entry-text proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div></details>';}
-      else{html+='<div class="proj-entry-text proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div>';}
+      html+='<div class="proj-entry-text proj-entry-md" style="font-size:12px;opacity:0.7">'+parseSimpleMarkdown(e.text)+'</div>';
       html+='</div>';return html;
     }
 
     var entriesHtml='';
     if(activeEntries.length===0){entriesHtml='<div style="font-size:13px;color:var(--text-muted)">Noch keine Eintr\u00e4ge.</div>';}
-    else{for(var i=0;i<activeEntries.length;i++){entriesHtml+=renderEntryCard(activeEntries[i],'active');}}
+    else{entriesHtml='<div class="timeline">';for(var i=0;i<activeEntries.length;i++){entriesHtml+=renderEntryCard(activeEntries[i],'active');}entriesHtml+='</div>';}
 
     var archiveHtml='';
     if(archivedEntries.length>0){
