@@ -1,4 +1,4 @@
-# LifeOS Design System v2.0
+# LifeOS Design System v2.1
 
 ## Visual Identity
 - **Font:** Lexend (Google Fonts) — dyslexia-friendly, wide letterforms, great readability
@@ -80,9 +80,20 @@
 - Timeline for chronological entries
 - Pill tabs, not underline tabs
 
+## Theme Architecture
+- **localStorage Key:** `lifeos-theme` (values: "dark" | "light", default: "dark")
+- **CSS Classes:** `dark-theme` OR `light-theme` on `<html>` — NEVER both
+- **Assignment Rule:** Always use `document.documentElement.className = theme + '-theme'` — NEVER classList.add/remove (caused dual-class bugs)
+- **FOUC Prevention:** Inline script in `<head>` reads localStorage and sets className before CSS renders
+- **Toggle Icon:** Sun (☀) in dark mode, Moon (☾) in light mode
+- **3 Theme Functions:** `initTheme()` (page load), `toggleTheme()` (nav button), `applyTheme(theme)` (settings buttons)
+- **SW Cache Bump:** Required on every deploy — increment `lifeos-vX.Y` in sw.js
+
 ## Don'ts
 - No warm/brown tones — cool blue-gray only
 - No heavy shadows — subtle or none
 - No font-size below 10px
 - No gradients
 - No inline styles in HTML
+- No classList.add/remove for theme switching — use className assignment
+- No duplicate localStorage keys for theme (only `lifeos-theme`)
