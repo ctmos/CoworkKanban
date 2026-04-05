@@ -2228,13 +2228,13 @@ async function showProjectsTab(){
     var sc=meta.statusColor||statusColors[meta.status]||'#22c55e';
     var circleTitle=meta.statusText?(' title="'+esc(meta.statusText)+'"'):'';
     var statusCircle='<span class="proj-status-circle" style="background:'+esc(sc)+'"'+circleTitle+'></span>';
-    activeCards+='<div class="proj-card" draggable="true" data-proj-id="'+esc(id)+'" onclick="showProjectDetail(\''+esc(id)+'\')" style="box-shadow:inset 0 0 0 2px '+esc(sc)+'">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';});
+    activeCards+='<div class="proj-card" draggable="true" data-proj-id="'+esc(id)+'" onclick="showProjectDetail(\''+esc(id)+'\')">'+'<div class="proj-card-color-bar" style="background:'+esc(sc)+'"></div>'+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';});
 
     deletedList.forEach(function(item){var id=item.id;var meta=item.meta;
     var sc=meta.statusColor||statusColors[meta.status]||'#22c55e';
     var circleTitle=meta.statusText?(' title="'+esc(meta.statusText)+'"'):'';
     var statusCircle='<span class="proj-status-circle" style="background:'+esc(sc)+'"'+circleTitle+'></span>';
-    deletedCards+='<div class="proj-card proj-card-deleted" style="box-shadow:inset 0 0 0 2px '+esc(sc)+'">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+'<button class="proj-card-restore" onclick="event.stopPropagation();restoreProject(\''+esc(id)+'\')">Wiederherstellen</button></div>';});
+    deletedCards+='<div class="proj-card proj-card-deleted">'+'<div class="proj-card-color-bar" style="background:'+esc(sc)+'"></div>'+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+'<button class="proj-card-restore" onclick="event.stopPropagation();restoreProject(\''+esc(id)+'\')">Wiederherstellen</button></div>';});
 
     var trashHtml=deletedCards?'<div class="proj-trash-section"><details><summary class="proj-trash-toggle">Papierkorb</summary><div class="proj-grid" style="margin-top:12px">'+deletedCards+'</div></details></div>':'';
     container.innerHTML=hdr+'<div class="proj-grid" id="proj-grid-active">'+activeCards+'</div>'+trashHtml;

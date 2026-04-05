@@ -1669,15 +1669,16 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 }
 .proj-card {
   background: var(--surface);
-  border: none;
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
   cursor: pointer;
-  transition: transform var(--transition);
+  transition: all var(--transition);
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-xs);
 }
-.proj-card:hover { transform: translateY(-2px); }
+.proj-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .proj-card-dragging { opacity: 0.4; }
 .proj-card-dragover { box-shadow: 0 0 0 2px var(--accent); transform: scale(1.02); }
 .proj-card-color-bar {
