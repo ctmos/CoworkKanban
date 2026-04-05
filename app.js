@@ -2339,16 +2339,16 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // ─── THEME TOGGLE ─────────────────────────────────────────────────────────────
 
 function initTheme(){
-  var saved=localStorage.getItem('lifeos-theme');
-  if(saved==='light'){document.documentElement.classList.add('light-theme');document.documentElement.classList.remove('dark-theme');}
-  else{document.documentElement.classList.add('dark-theme');document.documentElement.classList.remove('light-theme');}
+  var saved=localStorage.getItem('lifeos-theme')||'dark';
+  document.documentElement.className=saved==='light'?'light-theme':'dark-theme';
   updateThemeIcon();
 }
 
 function toggleTheme(){
-  var isLight=document.documentElement.classList.contains('light-theme');
-  if(isLight){document.documentElement.classList.remove('light-theme');document.documentElement.classList.add('dark-theme');localStorage.setItem('lifeos-theme','dark');}
-  else{document.documentElement.classList.remove('dark-theme');document.documentElement.classList.add('light-theme');localStorage.setItem('lifeos-theme','light');}
+  var isLight=document.documentElement.className==='light-theme';
+  var next=isLight?'dark':'light';
+  document.documentElement.className=next+'-theme';
+  localStorage.setItem('lifeos-theme',next);
   updateThemeIcon();
 }
 
@@ -2476,8 +2476,7 @@ function renderHeutePlaceholder(){['heute-list','woche-list','weitere-list'].for
 // ─── THEME (Settings Buttons → unified with nav toggle) ──────────────────────
 
 function applyTheme(theme){
-  if(theme==="dark"){document.documentElement.classList.add("dark-theme");document.documentElement.classList.remove("light-theme");}
-  else{document.documentElement.classList.remove("dark-theme");document.documentElement.classList.add("light-theme");}
+  document.documentElement.className=theme+'-theme';
   localStorage.setItem("lifeos-theme",theme);
   var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");
   if(bd)bd.classList.toggle("active",theme==="dark");if(bl)bl.classList.toggle("active",theme!=="dark");
