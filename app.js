@@ -2216,30 +2216,67 @@ async function showProjectsTab(){
 
     var statusColors={aktiv:'#22c55e',pausiert:'#eab308',abgeschlossen:'#22c55e',archiviert:'#555'};
 
+    // Sort by saved order
+    var savedOrder=JSON.parse(localStorage.getItem('projOrder')||'[]');
+    var activeList=[];var deletedList=[];
+    pIds.forEach(function(id,i){var meta=metas[i];if(!meta)return;if(meta.deleted){deletedList.push({id:id,meta:meta,log:logs[i]});}else{activeList.push({id:id,meta:meta,log:logs[i]});}});
+    if(savedOrder.length>0){activeList.sort(function(a,b){var ai=savedOrder.indexOf(a.id);var bi=savedOrder.indexOf(b.id);if(ai===-1)ai=9999;if(bi===-1)bi=9999;return ai-bi;});}
+
     var activeCards='';var deletedCards='';
 
-    pIds.forEach(function(id,i){var meta=metas[i];if(!meta)return;var lc=(logs[i]&&logs[i].content)||'';var fl=lc.split('\n').map(function(l){return l.trim();}).find(function(l){return l&&l!=='---'&&!l.startsWith('**[');})||'';
-
+    activeList.forEach(function(item){var id=item.id;var meta=item.meta;var lc=(item.log&&item.log.content)||'';var fl=lc.split('\n').map(function(l){return l.trim();}).find(function(l){return l&&l!=='---'&&!l.startsWith('**[');})||'';
     var sc=meta.statusColor||statusColors[meta.status]||'#22c55e';
     var circleTitle=meta.statusText?(' title="'+esc(meta.statusText)+'"'):'';
     var statusCircle='<span class="proj-status-circle" style="background:'+esc(sc)+'"'+circleTitle+'></span>';
+    activeCards+='<div class="proj-card" draggable="true" data-proj-id="'+esc(id)+'" onclick="showProjectDetail(\''+esc(id)+'\')" style="border-color:'+esc(sc)+'">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';});
 
-    if(meta.deleted){
-      var card='<div class="proj-card proj-card-deleted">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+'<button class="proj-card-restore" onclick="event.stopPropagation();restoreProject(\''+esc(id)+'\')">Wiederherstellen</button></div>';
-      deletedCards+=card;
-    }else{
-      var card='<div class="proj-card" onclick="showProjectDetail(\''+esc(id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';
-      activeCards+=card;
-    }});
+    deletedList.forEach(function(item){var id=item.id;var meta=item.meta;
+    var sc=meta.statusColor||statusColors[meta.status]||'#22c55e';
+    var circleTitle=meta.statusText?(' title="'+esc(meta.statusText)+'"'):'';
+    var statusCircle='<span class="proj-status-circle" style="background:'+esc(sc)+'"'+circleTitle+'></span>';
+    deletedCards+='<div class="proj-card proj-card-deleted" style="border-color:'+esc(sc)+'">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+'<button class="proj-card-restore" onclick="event.stopPropagation();restoreProject(\''+esc(id)+'\')">Wiederherstellen</button></div>';});
 
     var trashHtml=deletedCards?'<div class="proj-trash-section"><details><summary class="proj-trash-toggle">Papierkorb</summary><div class="proj-grid" style="margin-top:12px">'+deletedCards+'</div></details></div>':'';
-    container.innerHTML=hdr+'<div class="proj-grid">'+activeCards+'</div>'+trashHtml;
+    container.innerHTML=hdr+'<div class="proj-grid" id="proj-grid-active">'+activeCards+'</div>'+trashHtml;
+    initProjectDragDrop();
 
   }catch(e){container.innerHTML=hdr+'<div class="empty-state">Fehler: '+esc(e.message)+'</div>';}
 
 }
 
 
+
+function initProjectDragDrop(){
+  var grid=document.getElementById('proj-grid-active');if(!grid)return;
+  var dragEl=null;
+  grid.addEventListener('dragstart',function(e){
+    var card=e.target.closest('.proj-card[data-proj-id]');if(!card)return;
+    dragEl=card;card.classList.add('proj-card-dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain',card.dataset.projId);
+  });
+  grid.addEventListener('dragend',function(e){
+    if(dragEl)dragEl.classList.remove('proj-card-dragging');
+    grid.querySelectorAll('.proj-card-dragover').forEach(function(c){c.classList.remove('proj-card-dragover');});
+    dragEl=null;
+  });
+  grid.addEventListener('dragover',function(e){
+    e.preventDefault();e.dataTransfer.dropEffect='move';
+    var target=e.target.closest('.proj-card[data-proj-id]');
+    grid.querySelectorAll('.proj-card-dragover').forEach(function(c){c.classList.remove('proj-card-dragover');});
+    if(target&&target!==dragEl)target.classList.add('proj-card-dragover');
+  });
+  grid.addEventListener('drop',function(e){
+    e.preventDefault();
+    var target=e.target.closest('.proj-card[data-proj-id]');
+    if(!target||!dragEl||target===dragEl)return;
+    var cards=Array.from(grid.querySelectorAll('.proj-card[data-proj-id]'));
+    var fromIdx=cards.indexOf(dragEl);var toIdx=cards.indexOf(target);
+    if(fromIdx<toIdx){target.after(dragEl);}else{target.before(dragEl);}
+    var newOrder=Array.from(grid.querySelectorAll('.proj-card[data-proj-id]')).map(function(c){return c.dataset.projId;});
+    localStorage.setItem('projOrder',JSON.stringify(newOrder));
+  });
+}
 
 async function showProjectDetail(projectId){
   var container=document.getElementById('projekte-view');

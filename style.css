@@ -1678,7 +1678,9 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
   overflow: hidden;
   box-shadow: var(--shadow-xs);
 }
-.proj-card:hover { box-shadow: var(--shadow-md); border-color: rgba(196,122,42,0.15); transform: translateY(-2px); }
+.proj-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.proj-card-dragging { opacity: 0.4; }
+.proj-card-dragover { box-shadow: 0 0 0 2px var(--accent); transform: scale(1.02); }
 .proj-card-color-bar {
   position: absolute;
   top: 0; left: 0; right: 0;
