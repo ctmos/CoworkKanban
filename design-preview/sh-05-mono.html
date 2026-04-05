@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeOS — Monochrome</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#ffffff;color:#1a1a1a;min-height:100vh;line-height:1.55}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:#fff;border-bottom:1px solid #e5e5e5;position:sticky;top:0;z-index:100}
+.nav-brand{font-size:17px;font-weight:700;color:#1a1a1a;letter-spacing:-0.03em}
+.nav-tabs{display:flex;gap:0;height:100%}
+.nav-tab{display:flex;align-items:center;padding:0 16px;font-size:13px;font-weight:500;color:#999;text-decoration:none;border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s}
+.nav-tab:hover{color:#666}
+.nav-tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a}
+
+/* LAYOUT */
+.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}
+
+/* HEADINGS */
+h1{font-size:32px;font-weight:700;color:#1a1a1a;letter-spacing:-0.03em;line-height:0.96}
+h2{font-size:16px;font-weight:700;color:#1a1a1a;letter-spacing:-0.02em;margin-bottom:16px}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px}
+
+/* BUTTONS */
+.btn-primary{display:inline-flex;align-items:center;gap:6px;background:#1a1a1a;color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background 0.15s}
+.btn-primary:hover{background:#333}
+.btn-secondary{display:inline-flex;align-items:center;gap:6px;background:#f5f5f5;color:#1a1a1a;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background 0.15s}
+.btn-secondary:hover{background:#ebebeb}
+
+/* SECTION */
+.section{margin-bottom:48px}
+.section-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#999;margin-bottom:16px}
+
+/* PROJECT CARDS */
+.project-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:48px}
+.project-card{background:#fff;border:1px solid #e5e5e5;border-radius:16px;padding:20px;transition:border-color 0.15s}
+.project-card:hover{border-color:#ccc}
+.project-name{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:8px}
+.project-badge{display:inline-block;font-size:11px;font-weight:600;color:#444;background:#f0f0f0;padding:3px 10px;border-radius:6px}
+
+/* COMPOSER */
+.composer{background:#fff;border:1px solid #e5e5e5;border-radius:16px;padding:20px;margin-bottom:48px}
+.composer-toolbar{display:flex;gap:4px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e5e5e5}
+.toolbar-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid transparent;border-radius:6px;font-size:12px;font-weight:600;color:#666;cursor:pointer;font-family:inherit;transition:all 0.12s}
+.toolbar-btn:hover{background:#f5f5f5;color:#1a1a1a}
+.composer-textarea{width:100%;min-height:80px;border:none;outline:none;resize:vertical;font-family:inherit;font-size:14px;color:#444;line-height:1.55}
+.composer-textarea::placeholder{color:#ccc}
+.composer-footer{display:flex;justify-content:flex-end;margin-top:12px}
+
+/* ENTRY CARDS */
+.entry-card{border-top:1px solid #e5e5e5;padding:20px 0;position:relative;transition:background 0.12s}
+.entry-card:hover{background:#fafafa}
+.entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.entry-date{font-size:12px;color:#999;font-weight:400}
+.entry-body{font-size:14px;color:#444;line-height:1.55}
+.entry-body strong{font-weight:600;color:#1a1a1a}
+.entry-actions{display:none;gap:8px}
+.entry-card:hover .entry-actions{display:flex}
+.entry-action{font-size:11px;color:#999;cursor:pointer;transition:color 0.12s}
+.entry-action:hover{color:#1a1a1a}
+.drag-handle{color:#ccc;cursor:grab;font-size:14px;margin-right:12px;user-select:none}
+
+/* PATIENT ROWS */
+.patient-list{display:flex;flex-direction:column;gap:0}
+.patient-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid #e5e5e5}
+.patient-row:last-child{border-bottom:1px solid #e5e5e5}
+.patient-code{font-size:14px;font-weight:600;color:#1a1a1a;font-variant-numeric:tabular-nums}
+.patient-duration{font-size:12px;font-weight:500;color:#444;background:#f0f0f0;padding:3px 10px;border-radius:6px}
+
+/* BACK LINK */
+.back-link{display:inline-flex;align-items:center;gap:6px;color:#999;text-decoration:none;font-size:13px;font-weight:500;padding:20px 0;transition:color 0.15s}
+.back-link:hover{color:#1a1a1a}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">LifeOS</div>
+  <div class="nav-tabs">
+    <a class="nav-tab" href="#">Kanban</a>
+    <a class="nav-tab" href="#">Patienten</a>
+    <a class="nav-tab active" href="#">Projekte</a>
+    <a class="nav-tab" href="#">ImperialKI</a>
+    <a class="nav-tab" href="#">RAG</a>
+    <a class="nav-tab" href="#">System</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>Projekte</h1>
+    <button class="btn-primary">+ Neues Projekt</button>
+  </div>
+
+  <!-- Project Cards -->
+  <div class="project-grid">
+    <div class="project-card">
+      <div class="project-name">BMW Family Services</div>
+      <span class="project-badge">Aktiv</span>
+    </div>
+    <div class="project-card">
+      <div class="project-name">Build Backlog</div>
+      <span class="project-badge">Aktiv</span>
+    </div>
+    <div class="project-card">
+      <div class="project-name">Hermine Tiktok</div>
+      <span class="project-badge">Pausiert</span>
+    </div>
+    <div class="project-card">
+      <div class="project-name">IMPERIAL KI</div>
+      <span class="project-badge">Aktiv</span>
+    </div>
+  </div>
+
+  <!-- Composer -->
+  <div class="section">
+    <h2>Neuer Eintrag</h2>
+    <div class="composer">
+      <div class="composer-toolbar">
+        <button class="toolbar-btn"><b>B</b></button>
+        <button class="toolbar-btn"><i>I</i></button>
+        <button class="toolbar-btn">H2</button>
+        <button class="toolbar-btn">H3</button>
+        <button class="toolbar-btn">&bull;</button>
+        <button class="toolbar-btn">&infin;</button>
+        <button class="toolbar-btn">&#9655;</button>
+      </div>
+      <textarea class="composer-textarea" placeholder="Neuer Eintrag..."></textarea>
+      <div class="composer-footer">
+        <button class="btn-primary">Hinzufuegen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Entries -->
+  <div class="section">
+    <h2>Eintraege</h2>
+
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="drag-handle">&#x2630;</span>
+        <span style="flex:1"></span>
+        <span class="entry-date">Bearbeitet: 05.04.2026 00:23</span>
+        <div class="entry-actions">
+          <span class="entry-action">Bearbeiten</span>
+          <span class="entry-action">Loeschen</span>
+        </div>
+      </div>
+      <div class="entry-body">Modul 1 freigeschaltet.</div>
+    </div>
+
+    <div class="entry-card">
+      <div class="entry-header">
+        <span class="drag-handle">&#x2630;</span>
+        <span style="flex:1"></span>
+        <span class="entry-date">Erstellt: 01.04.2026 20:33</span>
+        <div class="entry-actions">
+          <span class="entry-action">Bearbeiten</span>
+          <span class="entry-action">Loeschen</span>
+        </div>
+      </div>
+      <div class="entry-body"><strong>Pre-Requisites erledigt:</strong></div>
+    </div>
+  </div>
+
+  <!-- Patients -->
+  <div class="section">
+    <h2>Patienten</h2>
+    <div class="patient-list">
+      <div class="patient-row">
+        <span class="patient-code">BOG0226</span>
+        <span class="patient-duration">1M3W</span>
+      </div>
+      <div class="patient-row">
+        <span class="patient-code">FLU0126</span>
+        <span class="patient-duration">3M0W</span>
+      </div>
+      <div class="patient-row">
+        <span class="patient-code">GEO0326</span>
+        <span class="patient-duration">0W5T</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Link -->
+  <a class="back-link" href="superhuman-index.html">&larr; Zurueck zur Uebersicht</a>
+
+</div>
+</body>
+</html>
