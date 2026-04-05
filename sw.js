@@ -1,5 +1,5 @@
 // LifeOS Service Worker v4.7
-const CACHE_NAME = 'lifeos-v6.7';
+const CACHE_NAME = 'lifeos-v6.8';
 const isCustomDomain = self.location.hostname === 'lifeos.moser.ai';
 const BASE = isCustomDomain ? '/' : '/CoworkKanban/';
 const APP_SHELL = [
@@ -55,7 +55,7 @@ self.addEventListener('fetch', event => {
   }
 
   // App shell: Network-first (always get latest, fallback to cache if offline)
-  if (url.pathname.startsWith('/CoworkKanban/')) {
+  if (url.hostname === self.location.hostname) {
     event.respondWith(
       fetch(event.request).then(response => {
         if (response.ok) {

@@ -3952,7 +3952,25 @@ if ('serviceWorker' in navigator) {
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 
-initPinScreen();
+// Skip PIN screen if session is still valid (hard reload)
+if (sessionStorage.getItem('cowork_pin_set') === 'true') {
+  var savedPin = sessionStorage.getItem('cowork_pin_val');
+  if (savedPin) {
+    // Restore token from vault or localStorage
+    unlockSecureVault(savedPin).then(function(ok) {
+      if (!ok && !_appState.gh_token) {
+        var saved = localStorage.getItem('cowork_gh_token');
+        if (saved) _appState.gh_token = saved;
+      }
+      unlockApp();
+    });
+  } else {
+    // PIN val lost but session flag set — fallback to login
+    initPinScreen();
+  }
+} else {
+  initPinScreen();
+}
 
 
 
