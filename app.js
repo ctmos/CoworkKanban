@@ -1985,6 +1985,22 @@ entry.text=newText;entry.updatedAt=new Date().toISOString();
 meta.updatedAt=new Date().toISOString();
 await saveProject(meta);}
 
+async function deleteProject(projectId,projectName){
+confirmAction('Projekt in Papierkorb?','\"'+projectName+'\" kann im Papierkorb wiederhergestellt werden.',async function(){
+var meta=_localProjectsMeta[projectId]||await loadProjectMeta(projectId);if(!meta)return;
+meta.deleted=true;meta.deletedAt=new Date().toISOString();meta.updatedAt=new Date().toISOString();
+await saveProject(meta);showToast('In Papierkorb verschoben');showProjectsTab();});}
+
+async function restoreProject(projectId){
+var meta=_localProjectsMeta[projectId]||await loadProjectMeta(projectId);if(!meta)return;
+meta.deleted=false;delete meta.deletedAt;meta.updatedAt=new Date().toISOString();
+await saveProject(meta);showToast('Wiederhergestellt');showProjectsTab();}
+
+async function archiveProject(projectId){
+var meta=_localProjectsMeta[projectId]||await loadProjectMeta(projectId);if(!meta)return;
+meta.status='archiviert';meta.updatedAt=new Date().toISOString();
+await saveProject(meta);showToast('Archiviert');showProjectsTab();}
+
 async function deleteProjectEntry(projectId,entryId){
 var meta=_localProjectsMeta[projectId]||await loadProjectMeta(projectId);if(!meta||!meta.entries)return;
 var entry=meta.entries.find(function(e){return e.id===entryId;});if(!entry)return;
@@ -2198,18 +2214,25 @@ async function showProjectsTab(){
 
     var logs=await Promise.all(pIds.map(function(id){return loadProjectLog(id);}));
 
-    var sCls={aktiv:'proj-status-aktiv',pausiert:'proj-status-pausiert',abgeschlossen:'proj-status-abgeschlossen',archiviert:'proj-status-archiviert'};
+    var statusColors={aktiv:'#22c55e',pausiert:'#eab308',abgeschlossen:'#22c55e',archiviert:'#555'};
 
-    var sLbl={aktiv:'Aktiv',pausiert:'Pausiert',abgeschlossen:'Abgeschlossen',archiviert:'Archiviert'};
-
-    var activeCards='';var archivedCards='';
+    var activeCards='';var deletedCards='';
 
     pIds.forEach(function(id,i){var meta=metas[i];if(!meta)return;var lc=(logs[i]&&logs[i].content)||'';var fl=lc.split('\n').map(function(l){return l.trim();}).find(function(l){return l&&l!=='---'&&!l.startsWith('**[');})||'';
 
-    var card='<div class="proj-card'+(meta.status==='archiviert'?' proj-card-archived':'')+'" onclick="showProjectDetail(\''+esc(id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name">'+esc(meta.name||id)+'</div><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';
-    if(meta.status==='archiviert'){archivedCards+=card;}else{activeCards+=card;}});
+    var sc=meta.statusColor||statusColors[meta.status]||'#22c55e';
+    var circleTitle=meta.statusText?(' title="'+esc(meta.statusText)+'"'):'';
+    var statusCircle='<span class="proj-status-circle" style="background:'+esc(sc)+'"'+circleTitle+'></span>';
 
-    var trashHtml=archivedCards?'<div class="proj-trash-section"><button class="done-archive-toggle" onclick="var el=this.nextElementSibling;el.style.display=el.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'span\').textContent=el.style.display===\'none\'?\'\u25be\':\'\u25b4\'">Papierkorb <span>\u25be</span></button><div class="proj-grid" style="display:none">'+archivedCards+'</div></div>':'';
+    if(meta.deleted){
+      var card='<div class="proj-card proj-card-deleted">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+'<button class="proj-card-restore" onclick="event.stopPropagation();restoreProject(\''+esc(id)+'\')">Wiederherstellen</button></div>';
+      deletedCards+=card;
+    }else{
+      var card='<div class="proj-card" onclick="showProjectDetail(\''+esc(id)+'\')">'+(meta.color?'<div class="proj-card-color-bar" style="background:'+esc(meta.color)+'"></div>':'')+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';
+      activeCards+=card;
+    }});
+
+    var trashHtml=deletedCards?'<div class="proj-trash-section"><details><summary class="proj-trash-toggle">Papierkorb</summary><div class="proj-grid" style="margin-top:12px">'+deletedCards+'</div></details></div>':'';
     container.innerHTML=hdr+'<div class="proj-grid">'+activeCards+'</div>'+trashHtml;
 
   }catch(e){container.innerHTML=hdr+'<div class="empty-state">Fehler: '+esc(e.message)+'</div>';}
@@ -2232,8 +2255,7 @@ async function showProjectDetail(projectId){
     }
 
     var cards=getCards();var linked=(meta.kanbanCards||[]).map(function(id){return cards[id];}).filter(Boolean);
-    var sCls={aktiv:'proj-status-aktiv',pausiert:'proj-status-pausiert',abgeschlossen:'proj-status-abgeschlossen',archiviert:'proj-status-archiviert'};
-    var sLbl={aktiv:'Aktiv',pausiert:'Pausiert',abgeschlossen:'Abgeschlossen',archiviert:'Archiviert'};
+    var defaultStatusColors={aktiv:'#22c55e',pausiert:'#eab308',abgeschlossen:'#22c55e',archiviert:'#555'};
     var cb=meta.color?' style="border-top:4px solid '+esc(meta.color)+'"':'';
 
     var activeEntries=(meta.entries||[]).filter(function(e){return !e.deleted&&!e.archived;});
@@ -2285,13 +2307,15 @@ async function showProjectDetail(projectId){
       trashHtml+='</div></details></div>';
     }
 
-    container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><span class="proj-status-badge '+(sCls[meta.status]||'proj-status-aktiv')+'">'+(sLbl[meta.status]||esc(meta.status))+'</span><div style="margin-left:auto;display:flex;gap:8px"><button class="proj-action-btn" onclick="archiveProject(\''+esc(projectId)+'\')" title="Archivieren" style="font-size:16px">\ud83d\udce6</button><button class="proj-action-btn proj-action-delete" onclick="deleteProject(\''+esc(projectId)+'\',\''+esc(meta.name||projectId)+'\')" title="In Papierkorb" style="font-size:16px">\ud83d\uddd1</button></div></div>'
-      +'<div class="proj-section section-info"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status</label><select class="form-select" id="pjd-status" style="width:auto"><option value="aktiv"'+(meta.status==='aktiv'?' selected':'')+'>Aktiv</option><option value="pausiert"'+(meta.status==='pausiert'?' selected':'')+'>Pausiert</option><option value="abgeschlossen"'+(meta.status==='abgeschlossen'?' selected':'')+'>Abgeschlossen</option><option value="archiviert"'+(meta.status==='archiviert'?' selected':'')+'>Archiviert</option></select></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
+    var detailSc=meta.statusColor||defaultStatusColors[meta.status]||'#22c55e';
+    var detailCircleTitle=meta.statusText?(' title="'+esc(meta.statusText)+'"'):'';
+    container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-status-circle proj-status-circle-lg" style="background:'+esc(detailSc)+'"'+detailCircleTitle+'></span><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><div style="margin-left:auto;display:flex;gap:8px"><button class="proj-action-btn" onclick="deleteProject(\''+esc(projectId)+'\',\''+esc(meta.name||projectId)+'\')" title="In Papierkorb" style="font-size:16px">\ud83d\uddd1</button></div></div>'
+      +'<div class="proj-section section-info"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-end"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status-Farbe</label><div class="proj-sc-picker" id="pjd-sc-picker"><span class="proj-sc-opt'+(detailSc==='#22c55e'?' selected':'')+'" data-color="#22c55e" style="background:#22c55e" onclick="pickProjSc(this)"></span><span class="proj-sc-opt'+(detailSc==='#eab308'?' selected':'')+'" data-color="#eab308" style="background:#eab308" onclick="pickProjSc(this)"></span><span class="proj-sc-opt'+(detailSc==='#ef4444'?' selected':'')+'" data-color="#ef4444" style="background:#ef4444" onclick="pickProjSc(this)"></span><span class="proj-sc-opt'+(detailSc==='#555'?' selected':'')+'" data-color="#555" style="background:#555" onclick="pickProjSc(this)"></span></div></div><div><label class="form-label">Status-Text (Hover)</label><input type="text" class="form-input" id="pjd-status-text" value="'+esc(meta.statusText||'')+'" placeholder="z.B. Aktiv, Pausiert\u2026" style="width:auto;min-width:140px"></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
       +(meta.description?'<div class="proj-section"><h3>Beschreibung</h3><div class="proj-description">'+esc(meta.description)+'</div></div>':'')
       +'<div class="proj-section section-entries"><h3>Beitr\u00e4ge</h3><div class="proj-log-form">'+renderMarkdownToolbar('pjd-log-entry')+'<textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><div class="md-preview" id="preview-pjd-log-entry" style="display:none"></div><button class="btn-primary" id="pjd-log-btn">Hinzuf\u00fcgen</button></div><div id="pjd-entries-list" style="margin-top:16px">'+entriesHtml+'</div>'+archiveHtml+trashHtml+'</div>'
       +'<div class="proj-section section-links"><h3>Verkn\u00fcpfte Karten</h3>'+(linked.length===0?'<div style="font-size:13px;color:var(--text-muted)">Keine</div>':'<div class="proj-kanban-chips">'+linked.map(function(c){return '<span class="proj-kanban-chip"><strong>'+esc(c.id)+'</strong> '+esc(c.title||'')+'</span>';}).join('')+'</div>')+'</div>';
 
-    document.getElementById('pjd-save-btn').addEventListener('click',async function(){var btn=document.getElementById('pjd-save-btn');var st=document.getElementById('pjd-save-status');var nn=document.getElementById('pjd-name').value.trim();var ns=document.getElementById('pjd-status').value;if(!nn){showToast('Name darf nicht leer sein',true);return;}btn.disabled=true;st.textContent='Speichert\u2026';try{await saveProject(Object.assign({},meta,{name:nn,status:ns,updatedAt:new Date().toISOString()}));st.textContent='Gespeichert \u2713';showToast('Projekt gespeichert');setTimeout(function(){if(st)st.textContent='';},3000);}catch(e){showToast('Fehler',true);st.textContent='';}btn.disabled=false;});
+    document.getElementById('pjd-save-btn').addEventListener('click',async function(){var btn=document.getElementById('pjd-save-btn');var st=document.getElementById('pjd-save-status');var nn=document.getElementById('pjd-name').value.trim();if(!nn){showToast('Name darf nicht leer sein',true);return;}var scEl=document.querySelector('.proj-sc-opt.selected');var nsc=scEl?scEl.dataset.color:'#22c55e';var nst=document.getElementById('pjd-status-text').value.trim();btn.disabled=true;st.textContent='Speichert\u2026';try{await saveProject(Object.assign({},meta,{name:nn,statusColor:nsc,statusText:nst||'',updatedAt:new Date().toISOString()}));st.textContent='Gespeichert \u2713';showToast('Projekt gespeichert');setTimeout(function(){if(st)st.textContent='';},3000);}catch(e){showToast('Fehler',true);st.textContent='';}btn.disabled=false;});
 
     document.getElementById('pjd-log-btn').addEventListener('click',async function(){var btn=document.getElementById('pjd-log-btn');var text=document.getElementById('pjd-log-entry').value.trim();if(!text){document.getElementById('pjd-log-entry').focus();return;}btn.disabled=true;btn.textContent='Speichert\u2026';try{await addProjectEntry(projectId,text);document.getElementById('pjd-log-entry').value='';showToast('Eintrag hinzugef\u00fcgt');showProjectDetail(projectId);}catch(e){showToast('Fehler',true);}btn.disabled=false;btn.textContent='Hinzuf\u00fcgen';});
 
@@ -2318,15 +2342,17 @@ function startEditProjectEntry(projectId,entryId){
 
 
 
-function openCreateProjectModal(){document.getElementById('pjm-name').value='';document.getElementById('pjm-desc').value='';document.getElementById('pjm-status').value='aktiv';document.querySelectorAll('.proj-color-swatch').forEach(function(s,i){s.classList.toggle('selected',i===0);});var errEl=document.getElementById('pjm-error');if(errEl){errEl.textContent='';errEl.style.display='none';}document.getElementById('proj-modal-overlay').classList.add('open');setTimeout(function(){document.getElementById('pjm-name').focus();},50);}
+function openCreateProjectModal(){document.getElementById('pjm-name').value='';document.getElementById('pjm-desc').value='';document.getElementById('pjm-status-text').value='';document.querySelectorAll('#pjm-sc-picker .proj-sc-opt').forEach(function(s,i){s.classList.toggle('selected',i===0);});document.querySelectorAll('.proj-color-swatch').forEach(function(s,i){s.classList.toggle('selected',i===0);});var errEl=document.getElementById('pjm-error');if(errEl){errEl.textContent='';errEl.style.display='none';}document.getElementById('proj-modal-overlay').classList.add('open');setTimeout(function(){document.getElementById('pjm-name').focus();},50);}
 
 function selectProjColor(el){document.querySelectorAll('.proj-color-swatch').forEach(function(s){s.classList.remove('selected');});el.classList.add('selected');}
+
+function pickProjSc(el){el.parentElement.querySelectorAll('.proj-sc-opt').forEach(function(s){s.classList.remove('selected');});el.classList.add('selected');}
 
 document.getElementById('pjm-cancel').addEventListener('click',function(){document.getElementById('proj-modal-overlay').classList.remove('open');});
 
 document.getElementById('proj-modal-overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)document.getElementById('proj-modal-overlay').classList.remove('open');});
 
-document.getElementById('pjm-save').addEventListener('click',async function(){var name=document.getElementById('pjm-name').value.trim();if(!name){document.getElementById('pjm-name').focus();return;}var token=getGHToken();if(!token){showToast('Bitte Token eintragen',true);return;}var desc=document.getElementById('pjm-desc').value.trim();var status=document.getElementById('pjm-status').value;var colorEl=document.querySelector('.proj-color-swatch.selected');var color=colorEl?colorEl.dataset.color:'#cc785c';var slug=name.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');var id=slug+'-'+Date.now().toString(36);var meta={id:id,name:name,description:desc,status:status,color:color,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),kanbanCards:[]};var btn=document.getElementById('pjm-save');btn.disabled=true;btn.textContent='Erstellt\u2026';try{await saveProject(meta);document.getElementById('proj-modal-overlay').classList.remove('open');showToast('Projekt erstellt');showProjectsTab();}catch(e){var errEl=document.getElementById('pjm-error');if(errEl){errEl.textContent='Fehler: '+e.message;errEl.style.display='block';}showToast('Fehler: '+e.message,true);}btn.disabled=false;btn.textContent='Erstellen';});
+document.getElementById('pjm-save').addEventListener('click',async function(){var name=document.getElementById('pjm-name').value.trim();if(!name){document.getElementById('pjm-name').focus();return;}var token=getGHToken();if(!token){showToast('Bitte Token eintragen',true);return;}var desc=document.getElementById('pjm-desc').value.trim();var scEl=document.querySelector('#pjm-sc-picker .proj-sc-opt.selected');var statusColor=scEl?scEl.dataset.color:'#22c55e';var statusText=document.getElementById('pjm-status-text').value.trim();var colorEl=document.querySelector('.proj-color-swatch.selected');var color=colorEl?colorEl.dataset.color:'#cc785c';var slug=name.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');var id=slug+'-'+Date.now().toString(36);var meta={id:id,name:name,description:desc,status:'aktiv',statusColor:statusColor,statusText:statusText||'',color:color,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),kanbanCards:[]};var btn=document.getElementById('pjm-save');btn.disabled=true;btn.textContent='Erstellt\u2026';try{await saveProject(meta);document.getElementById('proj-modal-overlay').classList.remove('open');showToast('Projekt erstellt');showProjectsTab();}catch(e){var errEl=document.getElementById('pjm-error');if(errEl){errEl.textContent='Fehler: '+e.message;errEl.style.display='block';}showToast('Fehler: '+e.message,true);}btn.disabled=false;btn.textContent='Erstellen';});
 
 
 
