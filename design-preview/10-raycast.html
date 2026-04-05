@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeOS — Raycast Style</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#15121f;color:rgba(255,255,255,0.9);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* Nav */
+nav{background:rgba(21,18,31,0.8);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 28px;display:flex;align-items:center;height:52px;gap:24px;position:sticky;top:0;z-index:100}
+nav .brand{font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.01em}
+nav .tabs{display:flex;gap:2px;margin-left:auto}
+nav .tabs a{font-size:13px;font-weight:500;color:rgba(255,255,255,0.35);text-decoration:none;padding:7px 14px;border-radius:10px;transition:all 0.2s}
+nav .tabs a:hover{color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.04)}
+nav .tabs a.active{color:#ff6363;background:rgba(255,99,99,0.1)}
+
+.container{max-width:900px;margin:0 auto;padding:28px 24px}
+
+/* Back Link */
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#ff6363;text-decoration:none;margin-bottom:24px;transition:opacity 0.2s}
+.back:hover{opacity:0.7}
+.back svg{width:13px;height:13px}
+
+/* Section Headers */
+h2.section{font-size:13px;font-weight:600;color:rgba(255,255,255,0.4);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.08em}
+
+/* Search Bar */
+.search-bar{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:10px;margin-bottom:32px;transition:all 0.2s}
+.search-bar:focus-within{border-color:rgba(255,99,99,0.3);box-shadow:0 0 20px rgba(255,99,99,0.06)}
+.search-bar svg{width:16px;height:16px;color:rgba(255,255,255,0.3)}
+.search-bar input{flex:1;background:none;border:none;color:rgba(255,255,255,0.9);font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:500;outline:none}
+.search-bar input::placeholder{color:rgba(255,255,255,0.25)}
+.search-bar kbd{font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.06);border-radius:5px;padding:2px 6px;font-family:'Inter',system-ui,sans-serif}
+
+/* Project Cards */
+.project-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:40px}
+.project-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;transition:all 0.25s;cursor:pointer}
+.project-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);box-shadow:0 4px 24px rgba(100,60,180,0.08)}
+.project-card h3{font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);margin-bottom:4px}
+.project-card .meta{font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:10px}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:10px}
+.badge-aktiv{background:rgba(255,99,99,0.12);color:#ff6363}
+.badge-pausiert{background:rgba(255,200,60,0.12);color:#ffc83c}
+
+/* Entry Composer */
+.composer{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;margin-bottom:40px}
+.composer-toolbar{display:flex;gap:4px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.composer-toolbar button{font-size:13px;font-weight:500;color:rgba(255,255,255,0.4);background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:5px 10px;cursor:pointer;transition:all 0.15s}
+.composer-toolbar button:hover{color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.12)}
+.composer textarea{width:100%;height:110px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:500;color:rgba(255,255,255,0.9);resize:vertical;outline:none;transition:border-color 0.2s}
+.composer textarea::placeholder{color:rgba(255,255,255,0.2)}
+.composer textarea:focus{border-color:rgba(255,99,99,0.4);box-shadow:0 0 16px rgba(255,99,99,0.06)}
+.composer-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.btn-primary{background:linear-gradient(135deg,#ff6363,#ff4040);color:#fff;border:none;border-radius:12px;padding:10px 24px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 12px rgba(255,99,99,0.2)}
+.btn-primary:hover{box-shadow:0 4px 20px rgba(255,99,99,0.35);transform:translateY(-1px)}
+
+/* Entry Cards */
+.entries{display:flex;flex-direction:column;gap:8px;margin-bottom:40px}
+.entry-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px 20px;display:flex;align-items:flex-start;gap:10px;transition:all 0.2s;position:relative}
+.entry-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);box-shadow:0 4px 24px rgba(100,60,180,0.08)}
+.drag-handle{color:rgba(255,255,255,0.15);cursor:grab;font-size:15px;user-select:none}
+.entry-body{flex:1;min-width:0}
+.entry-body p{font-size:14px;font-weight:500;color:rgba(255,255,255,0.85);line-height:1.5}
+.entry-date{font-size:12px;color:rgba(255,255,255,0.3);white-space:nowrap;margin-left:auto;padding-top:2px;font-variant-numeric:tabular-nums}
+.entry-actions{display:flex;gap:4px;position:absolute;right:14px;bottom:10px;opacity:0;transition:opacity 0.2s}
+.entry-card:hover .entry-actions{opacity:1}
+.entry-actions button{font-size:11px;font-weight:500;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.06);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;transition:all 0.15s}
+.entry-actions button:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.1)}
+.entry-actions button.delete:hover{color:#ff6363;background:rgba(255,99,99,0.12)}
+
+/* Patient Rows */
+.patient-table{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;overflow:hidden}
+.patient-row{display:flex;align-items:center;padding:14px 20px;gap:16px;border-bottom:1px solid rgba(255,255,255,0.04);transition:all 0.15s}
+.patient-row:last-child{border-bottom:none}
+.patient-row:hover{background:rgba(255,255,255,0.02)}
+.patient-code{font-size:13px;font-weight:600;font-family:'SF Mono',ui-monospace,monospace;color:#ff6363;min-width:85px}
+.patient-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:10px;background:rgba(80,200,120,0.12);color:#50c878}
+.patient-info{flex:1;font-size:13px;color:rgba(255,255,255,0.35)}
+.patient-duration{font-size:13px;color:rgba(255,255,255,0.4);font-variant-numeric:tabular-nums}
+
+@media(max-width:640px){
+  .project-grid{grid-template-columns:1fr}
+  nav{padding:0 16px;gap:14px}
+  .container{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">LifeOS</div>
+  <div class="tabs">
+    <a href="#" class="active">Start</a>
+    <a href="#">Kanban</a>
+    <a href="#">Patienten</a>
+    <a href="#">Projekte</a>
+    <a href="#">Backlog</a>
+    <a href="#">Einstellungen</a>
+  </div>
+</nav>
+
+<div class="container">
+  <a href="index.html" class="back">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 12L6 8l4-4"/></svg>
+    Alle Designs
+  </a>
+
+  <!-- Search Bar (Raycast signature) -->
+  <div class="search-bar">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="5"/><path d="M10 10l4.5 4.5"/></svg>
+    <input type="text" placeholder="Suche in LifeOS...">
+    <kbd>Ctrl K</kbd>
+  </div>
+
+  <!-- Project Cards -->
+  <h2 class="section">Projekte</h2>
+  <div class="project-grid">
+    <div class="project-card">
+      <h3>BMW Family Services</h3>
+      <p class="meta">Beratung &amp; Coaching</p>
+      <span class="badge badge-aktiv">Aktiv</span>
+    </div>
+    <div class="project-card">
+      <h3>Build Backlog</h3>
+      <p class="meta">Technische Schulden abbauen</p>
+      <span class="badge badge-aktiv">Aktiv</span>
+    </div>
+    <div class="project-card">
+      <h3>Hermine Tiktok</h3>
+      <p class="meta">Content Pipeline</p>
+      <span class="badge badge-pausiert">Pausiert</span>
+    </div>
+    <div class="project-card">
+      <h3>IMPERIAL KI</h3>
+      <p class="meta">Weiterbildung &amp; Zertifizierung</p>
+      <span class="badge badge-aktiv">Aktiv</span>
+    </div>
+  </div>
+
+  <!-- Entry Composer -->
+  <h2 class="section">Neuer Eintrag</h2>
+  <div class="composer">
+    <div class="composer-toolbar">
+      <button><strong>B</strong></button>
+      <button><em>I</em></button>
+      <button>H2</button>
+      <button>H3</button>
+      <button>&bull; Liste</button>
+      <button>Link</button>
+      <button>Vorschau</button>
+    </div>
+    <textarea placeholder="Was steht an?"></textarea>
+    <div class="composer-actions">
+      <button class="btn-primary">Eintrag erstellen</button>
+    </div>
+  </div>
+
+  <!-- Entry Cards -->
+  <h2 class="section">Eintraege</h2>
+  <div class="entries">
+    <div class="entry-card">
+      <span class="drag-handle">&#9776;</span>
+      <div class="entry-body">
+        <p>RAG Service auf Lightsail deployen und Health-Check verifizieren</p>
+      </div>
+      <span class="entry-date">05.04.2026</span>
+      <div class="entry-actions">
+        <button>Bearbeiten</button>
+        <button>Archiv</button>
+        <button class="delete">Loeschen</button>
+      </div>
+    </div>
+    <div class="entry-card">
+      <span class="drag-handle">&#9776;</span>
+      <div class="entry-body">
+        <p>Niffler Backtest-Ergebnisse reviewen und Parameter anpassen</p>
+      </div>
+      <span class="entry-date">04.04.2026</span>
+      <div class="entry-actions">
+        <button>Bearbeiten</button>
+        <button>Archiv</button>
+        <button class="delete">Loeschen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Rows -->
+  <h2 class="section">Patienten</h2>
+  <div class="patient-table">
+    <div class="patient-row">
+      <span class="patient-code">BOG0226</span>
+      <span class="patient-badge">Aktiv</span>
+      <span class="patient-info">Erstgespraech abgeschlossen, Therapieplan erstellt</span>
+      <span class="patient-duration">6 Wochen</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">FLU0126</span>
+      <span class="patient-badge">Aktiv</span>
+      <span class="patient-info">Sitzung 12 von 24, guter Fortschritt</span>
+      <span class="patient-duration">14 Wochen</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">GEO0326</span>
+      <span class="patient-badge">Aktiv</span>
+      <span class="patient-info">Diagnostik-Phase, Assessment geplant</span>
+      <span class="patient-duration">2 Wochen</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
