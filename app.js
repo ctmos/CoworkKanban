@@ -2473,17 +2473,23 @@ function renderHeutePlaceholder(){['heute-list','woche-list','weitere-list'].for
 
 
 
-// ─── THEME ────────────────────────────────────────────────────────────────────
+// ─── THEME (Settings Buttons → unified with nav toggle) ──────────────────────
 
-function applyTheme(theme){if(theme==="dark"){document.documentElement.classList.add("dark-theme");document.documentElement.classList.remove("light-theme");}else{document.documentElement.classList.remove("dark-theme");document.documentElement.classList.add("light-theme");}localStorage.setItem("cowork_theme",theme);var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");if(bd)bd.classList.toggle("active",theme==="dark");if(bl)bl.classList.toggle("active",theme!=="dark");if(typeof _mermaidLoaded!=='undefined'&&_mermaidLoaded){var dd=document.getElementById('uebersicht-dropdown');if(dd&&dd.open)initUebersichtMermaid();}}
+function applyTheme(theme){
+  if(theme==="dark"){document.documentElement.classList.add("dark-theme");document.documentElement.classList.remove("light-theme");}
+  else{document.documentElement.classList.remove("dark-theme");document.documentElement.classList.add("light-theme");}
+  localStorage.setItem("lifeos-theme",theme);
+  var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");
+  if(bd)bd.classList.toggle("active",theme==="dark");if(bl)bl.classList.toggle("active",theme!=="dark");
+  updateThemeIcon();
+  if(typeof _mermaidLoaded!=='undefined'&&_mermaidLoaded){var dd=document.getElementById('uebersicht-dropdown');if(dd&&dd.open)initUebersichtMermaid();}
+}
 
-(function(){var t=localStorage.getItem("cowork_theme")||"light";if(t==="dark")document.documentElement.classList.add("dark-theme");else document.documentElement.classList.add("light-theme");})();
+(function(){var t=localStorage.getItem("lifeos-theme")||"dark";var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");if(bd)bd.classList.toggle("active",t==="dark");if(bl)bl.classList.toggle("active",t!=="dark");})();
 
 document.getElementById("btn-theme-dark").addEventListener("click",function(){applyTheme("dark");});
 
 document.getElementById("btn-theme-light").addEventListener("click",function(){applyTheme("light");});
-
-(function(){var t=localStorage.getItem("cowork_theme")||"light";var bd=document.getElementById("btn-theme-dark");var bl=document.getElementById("btn-theme-light");if(bd)bd.classList.toggle("active",t==="dark");if(bl)bl.classList.toggle("active",t!=="dark");})();
 
 
 
