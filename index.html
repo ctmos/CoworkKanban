@@ -110,7 +110,7 @@
 
 
 
-(function(){var t=localStorage.getItem("lifeos-theme")||"dark";if(t==="light"){document.documentElement.classList.add("light-theme");}else{document.documentElement.classList.add("dark-theme");}}());
+(function(){var t=localStorage.getItem("lifeos-theme")||"dark";document.documentElement.className=t==="light"?"light-theme":"dark-theme";}());
 
 
 
