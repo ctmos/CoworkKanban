@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeOS — Apple HIG Style</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.47;-webkit-font-smoothing:antialiased}
+
+/* Nav */
+nav{position:sticky;top:0;z-index:100;background:rgba(245,245,247,0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,0.08);padding:0 32px;display:flex;align-items:center;height:52px;gap:32px}
+nav .brand{font-size:17px;font-weight:700;letter-spacing:-0.03em;color:#1d1d1f}
+nav .tabs{display:flex;gap:4px;margin-left:auto}
+nav .tabs a{font-size:13px;font-weight:500;color:#86868b;text-decoration:none;padding:8px 14px;border-radius:20px;transition:all 0.2s}
+nav .tabs a:hover{color:#1d1d1f;background:rgba(0,0,0,0.04)}
+nav .tabs a.active{color:#007aff;background:rgba(0,122,255,0.08)}
+
+.container{max-width:960px;margin:0 auto;padding:32px}
+
+/* Back Link */
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#007aff;text-decoration:none;margin-bottom:24px;transition:opacity 0.2s}
+.back:hover{opacity:0.7}
+.back svg{width:14px;height:14px}
+
+/* Section Headers */
+h2.section{font-size:22px;font-weight:700;letter-spacing:-0.03em;color:#1d1d1f;margin-bottom:16px}
+
+/* Project Cards */
+.project-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:48px}
+.project-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.3s ease;cursor:pointer}
+.project-card:hover{transform:scale(1.01);box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+.project-card h3{font-size:15px;font-weight:600;letter-spacing:-0.01em;margin-bottom:6px}
+.project-card .meta{font-size:13px;color:#86868b;margin-bottom:10px}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.badge-aktiv{background:rgba(0,122,255,0.1);color:#007aff}
+.badge-pausiert{background:rgba(255,149,0,0.1);color:#ff9500}
+
+/* Entry Composer */
+.composer{background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);margin-bottom:48px}
+.composer-toolbar{display:flex;gap:6px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,0.06)}
+.composer-toolbar button{font-size:13px;font-weight:600;color:#86868b;background:none;border:1px solid rgba(0,0,0,0.08);border-radius:8px;padding:6px 12px;cursor:pointer;transition:all 0.2s}
+.composer-toolbar button:hover{color:#1d1d1f;background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.15)}
+.composer textarea{width:100%;height:120px;border:1px solid rgba(0,0,0,0.08);border-radius:10px;padding:14px;font-family:inherit;font-size:15px;color:#1d1d1f;resize:vertical;outline:none;transition:border-color 0.2s}
+.composer textarea::placeholder{color:#c7c7cc}
+.composer textarea:focus{border-color:#007aff;box-shadow:0 0 0 3px rgba(0,122,255,0.12)}
+.composer-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.btn-primary{background:#007aff;color:#fff;border:none;border-radius:20px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-primary:hover{background:#0066d6;transform:scale(1.02)}
+
+/* Entry Cards */
+.entries{display:flex;flex-direction:column;gap:12px;margin-bottom:48px}
+.entry-card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:flex-start;gap:12px;transition:all 0.2s;position:relative}
+.entry-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+.drag-handle{color:#c7c7cc;cursor:grab;font-size:16px;padding-top:2px;user-select:none}
+.entry-body{flex:1;min-width:0}
+.entry-body p{font-size:15px;color:#1d1d1f;line-height:1.5;margin-bottom:4px}
+.entry-date{font-size:12px;color:#86868b;white-space:nowrap;margin-left:auto;padding-top:2px}
+.entry-actions{display:flex;gap:4px;position:absolute;right:16px;bottom:12px;opacity:0;transition:opacity 0.2s}
+.entry-card:hover .entry-actions{opacity:1}
+.entry-actions button{font-size:12px;color:#86868b;background:rgba(0,0,0,0.03);border:none;border-radius:8px;padding:4px 10px;cursor:pointer;transition:all 0.15s}
+.entry-actions button:hover{color:#1d1d1f;background:rgba(0,0,0,0.06)}
+.entry-actions button.delete:hover{color:#ff3b30;background:rgba(255,59,48,0.08)}
+
+/* Patient Rows */
+.patient-table{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);overflow:hidden}
+.patient-row{display:flex;align-items:center;padding:16px 24px;gap:16px;border-bottom:1px solid rgba(0,0,0,0.04);transition:background 0.15s}
+.patient-row:last-child{border-bottom:none}
+.patient-row:hover{background:rgba(0,122,255,0.02)}
+.patient-code{font-size:14px;font-weight:600;font-family:'SF Mono',SFMono-Regular,ui-monospace,monospace;color:#007aff;min-width:80px}
+.patient-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(52,199,89,0.1);color:#34c759}
+.patient-info{flex:1;font-size:14px;color:#86868b}
+.patient-duration{font-size:13px;color:#86868b;font-variant-numeric:tabular-nums}
+
+@media(max-width:640px){
+  .project-grid{grid-template-columns:1fr}
+  nav{padding:0 16px;gap:16px}
+  .container{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">LifeOS</div>
+  <div class="tabs">
+    <a href="#" class="active">Start</a>
+    <a href="#">Kanban</a>
+    <a href="#">Patienten</a>
+    <a href="#">Projekte</a>
+    <a href="#">Backlog</a>
+    <a href="#">Einstellungen</a>
+  </div>
+</nav>
+
+<div class="container">
+  <a href="index.html" class="back">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 12L6 8l4-4"/></svg>
+    Alle Designs
+  </a>
+
+  <!-- Project Cards -->
+  <h2 class="section">Projekte</h2>
+  <div class="project-grid">
+    <div class="project-card">
+      <h3>BMW Family Services</h3>
+      <p class="meta">Beratung &amp; Coaching</p>
+      <span class="badge badge-aktiv">Aktiv</span>
+    </div>
+    <div class="project-card">
+      <h3>Build Backlog</h3>
+      <p class="meta">Technische Schulden abbauen</p>
+      <span class="badge badge-aktiv">Aktiv</span>
+    </div>
+    <div class="project-card">
+      <h3>Hermine Tiktok</h3>
+      <p class="meta">Content Pipeline</p>
+      <span class="badge badge-pausiert">Pausiert</span>
+    </div>
+    <div class="project-card">
+      <h3>IMPERIAL KI</h3>
+      <p class="meta">Weiterbildung &amp; Zertifizierung</p>
+      <span class="badge badge-aktiv">Aktiv</span>
+    </div>
+  </div>
+
+  <!-- Entry Composer -->
+  <h2 class="section">Neuer Eintrag</h2>
+  <div class="composer">
+    <div class="composer-toolbar">
+      <button><strong>B</strong></button>
+      <button><em>I</em></button>
+      <button>H2</button>
+      <button>H3</button>
+      <button>&bull; Liste</button>
+      <button>Link</button>
+      <button>Vorschau</button>
+    </div>
+    <textarea placeholder="Was steht an?"></textarea>
+    <div class="composer-actions">
+      <button class="btn-primary">Eintrag erstellen</button>
+    </div>
+  </div>
+
+  <!-- Entry Cards -->
+  <h2 class="section">Eintraege</h2>
+  <div class="entries">
+    <div class="entry-card">
+      <span class="drag-handle">&#9776;</span>
+      <div class="entry-body">
+        <p>RAG Service auf Lightsail deployen und Health-Check verifizieren</p>
+      </div>
+      <span class="entry-date">05.04.2026</span>
+      <div class="entry-actions">
+        <button>Bearbeiten</button>
+        <button>Archiv</button>
+        <button class="delete">Loeschen</button>
+      </div>
+    </div>
+    <div class="entry-card">
+      <span class="drag-handle">&#9776;</span>
+      <div class="entry-body">
+        <p>Niffler Backtest-Ergebnisse reviewen und Parameter anpassen</p>
+      </div>
+      <span class="entry-date">04.04.2026</span>
+      <div class="entry-actions">
+        <button>Bearbeiten</button>
+        <button>Archiv</button>
+        <button class="delete">Loeschen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Rows -->
+  <h2 class="section">Patienten</h2>
+  <div class="patient-table">
+    <div class="patient-row">
+      <span class="patient-code">BOG0226</span>
+      <span class="patient-badge">Aktiv</span>
+      <span class="patient-info">Erstgespraech abgeschlossen, Therapieplan erstellt</span>
+      <span class="patient-duration">6 Wochen</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">FLU0126</span>
+      <span class="patient-badge">Aktiv</span>
+      <span class="patient-info">Sitzung 12 von 24, guter Fortschritt</span>
+      <span class="patient-duration">14 Wochen</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">GEO0326</span>
+      <span class="patient-badge">Aktiv</span>
+      <span class="patient-info">Diagnostik-Phase, Assessment geplant</span>
+      <span class="patient-duration">2 Wochen</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
