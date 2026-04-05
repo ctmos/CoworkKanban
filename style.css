@@ -2448,6 +2448,10 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
   max-height: 100%;
   overflow-y: auto;
 }
+#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar { height: 6px; }
+#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar-track { background: transparent; }
+#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 @media (max-width: 768px) {
   .kanban-toolbar { display: none; }
 }

@@ -787,6 +787,9 @@ function toggleKanbanView(){var g=document.getElementById('kanban-grid');var t=d
 
 (function(){if(localStorage.getItem('kanban_view')==='board'){var g=document.getElementById('kanban-grid');var t=document.getElementById('tab-kanban');if(g)g.classList.add('kanban-board');if(t)t.classList.add('board-active');var b=document.getElementById('kanban-view-toggle');if(b)b.textContent='Grid-Ansicht';}})();
 
+// Horizontal wheel scroll for kanban board view
+document.getElementById('kanban-grid').addEventListener('wheel',function(e){if(!this.classList.contains('kanban-board'))return;if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){e.preventDefault();this.scrollLeft+=e.deltaY;}},{passive:false});
+
 
 
 function renderKanban() {
