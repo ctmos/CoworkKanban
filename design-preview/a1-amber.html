@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A1 Amber -- Dark</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1a1a;
+    --surface: #1e1e1e;
+    --surface2: #252525;
+    --border: #333333;
+    --border-hover: #404040;
+    --text: #e8e8e8;
+    --text2: #a0a0a0;
+    --text3: #666;
+    --accent: #c47a2a;
+    --accent-hover: #d4892e;
+    --radius: 10px;
+    --green: #46a758;
+    --amber: #f5a623;
+    --blue: #3e8ed0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Lexend', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  .nav {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    gap: 2px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-brand {
+    font-weight: 700;
+    font-size: 14px;
+    margin-right: 20px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .nav-item {
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--text2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--text); background: var(--surface2); }
+
+  .nav-kbd {
+    font-size: 10px;
+    color: var(--text3);
+    background: rgba(255,255,255,0.06);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-family: system-ui;
+  }
+
+  .nav-spacer { flex: 1; }
+
+  /* PAGE */
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  /* HEADER */
+  .page-header { margin-bottom: 28px; }
+
+  .page-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .page-subtitle span { color: var(--text3); }
+
+  /* SECTION */
+  .section { margin-bottom: 28px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+
+  /* PROJECT GRID */
+  .project-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .project-card:hover {
+    border-color: var(--border-hover);
+    background: var(--surface2);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  }
+
+  .project-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .project-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-green { background: rgba(70,167,88,0.15); color: var(--green); }
+  .badge-amber { background: rgba(245,166,35,0.15); color: var(--amber); }
+  .badge-blue { background: rgba(62,142,208,0.15); color: var(--blue); }
+
+  .project-count {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* COMPOSER */
+  .composer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .composer-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 2px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .composer-btn {
+    width: 28px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text3);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    border: none;
+    background: none;
+    font-family: 'Lexend', system-ui, sans-serif;
+  }
+
+  .composer-btn:hover { color: var(--text2); background: var(--surface2); }
+
+  .composer-area {
+    width: 100%;
+    min-height: 72px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'Lexend', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+  }
+
+  .composer-area::placeholder { color: var(--text3); }
+  .composer-area:focus { box-shadow: inset 0 0 0 1px var(--accent); }
+
+  .composer-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .composer-hint {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .composer-hint kbd {
+    background: rgba(255,255,255,0.06);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: system-ui;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  /* ENTRIES */
+  .entry {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .entry:last-child { border-bottom: none; }
+
+  .entry:hover {
+    background: rgba(255,255,255,0.03);
+    margin: 0 -12px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    border-color: transparent;
+  }
+
+  .entry:hover + .entry { border-top-color: transparent; }
+
+  .entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .entry-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .entry-date {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .entry-actions {
+    display: none;
+    gap: 4px;
+  }
+
+  .entry:hover .entry-actions { display: flex; }
+  .entry:hover .entry-date { display: none; }
+
+  .entry-action {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text3);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .entry-action:hover { color: var(--text2); background: var(--surface2); }
+
+  .entry-text {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+
+  .entry-tag {
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  /* PATIENTS */
+  .patient-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+
+  .patient-row:last-child { border-bottom: none; }
+
+  .patient-row:hover {
+    background: rgba(255,255,255,0.03);
+    margin: 0 -8px;
+    padding: 8px;
+    border-radius: var(--radius);
+  }
+
+  .patient-code {
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 60px;
+  }
+
+  .patient-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 6px;
+    min-width: 36px;
+    text-align: center;
+  }
+
+  .patient-info {
+    flex: 1;
+    color: var(--text2);
+    font-size: 12px;
+  }
+
+  .patient-duration {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  }
+
+  /* BACK LINK */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text3);
+    text-decoration: none;
+    margin-top: 40px;
+    transition: color 0.15s;
+  }
+
+  .back-link:hover { color: var(--text2); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">LifeOS</div>
+  <div class="nav-item">Kanban <span class="nav-kbd">1</span></div>
+  <div class="nav-item">Patienten <span class="nav-kbd">2</span></div>
+  <div class="nav-item active">Projekte <span class="nav-kbd">3</span></div>
+  <div class="nav-item">ImperialKI <span class="nav-kbd">4</span></div>
+  <div class="nav-item">RAG <span class="nav-kbd">5</span></div>
+  <div class="nav-item">System <span class="nav-kbd">6</span></div>
+  <div class="nav-spacer"></div>
+  <div class="nav-item"><span class="nav-kbd">?</span></div>
+</nav>
+
+<main class="page">
+  <header class="page-header">
+    <h1 class="page-title">Projekte</h1>
+    <p class="page-subtitle">4 Projekte &middot; 1 Neu &middot; <span>/ Suche</span></p>
+  </header>
+
+  <section class="section">
+    <div class="section-label">Aktive Projekte</div>
+    <div class="project-grid">
+      <div class="project-card">
+        <div class="project-name">BMW Family Services</div>
+        <div class="project-meta">
+          <span class="badge badge-green">Aktiv</span>
+          <span class="project-count">12 Eintraege</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-name">Build Backlog</div>
+        <div class="project-meta">
+          <span class="badge badge-green">Aktiv</span>
+          <span class="project-count">8 Eintraege</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-name">Hermine Tiktok</div>
+        <div class="project-meta">
+          <span class="badge badge-amber">Pausiert</span>
+          <span class="project-count">3 Eintraege</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-name">IMPERIAL KI</div>
+        <div class="project-meta">
+          <span class="badge badge-blue">Aktiv</span>
+          <span class="project-count">24 Eintraege</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Neuer Eintrag</div>
+    <div class="composer">
+      <div class="composer-toolbar">
+        <button class="composer-btn"><strong>B</strong></button>
+        <button class="composer-btn"><em>I</em></button>
+        <button class="composer-btn" style="font-size:11px;">H2</button>
+        <button class="composer-btn" style="font-size:11px;">H3</button>
+        <button class="composer-btn" style="font-size:14px;font-weight:400;">&bull;</button>
+        <button class="composer-btn" style="font-size:13px;font-weight:400;">&#9741;</button>
+      </div>
+      <textarea class="composer-area" placeholder="Schreibe einen Eintrag..."></textarea>
+      <div class="composer-footer">
+        <span class="composer-hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> speichern &middot; <kbd>Esc</kbd> abbrechen</span>
+        <button class="btn-primary">Speichern</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Letzte Eintraege</div>
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-title">RAG Service auf Lightsail deployed</span>
+        <span class="entry-date">vor 2h</span>
+        <div class="entry-actions">
+          <span class="entry-action">&#9998;</span>
+          <span class="entry-action">&#128279;</span>
+          <span class="entry-action">&hellip;</span>
+        </div>
+      </div>
+      <div class="entry-text">LanceDB + Qwen3 Embeddings laufen stabil. PM2 managed den Prozess. Erste Testqueries erfolgreich.</div>
+      <div class="entry-tag">Build Backlog</div>
+    </div>
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-title">Imperial KI Woche 3 Review</span>
+        <span class="entry-date">gestern</span>
+        <div class="entry-actions">
+          <span class="entry-action">&#9998;</span>
+          <span class="entry-action">&#128279;</span>
+          <span class="entry-action">&hellip;</span>
+        </div>
+      </div>
+      <div class="entry-text">Module 3 abgeschlossen, Quiz bestanden. Week 4 startet Montag mit Neural Networks Fundamentals.</div>
+      <div class="entry-tag">Imperial KI</div>
+    </div>
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-title">BMW Bericht Q1 fertig</span>
+        <span class="entry-date">03.04.</span>
+        <div class="entry-actions">
+          <span class="entry-action">&#9998;</span>
+          <span class="entry-action">&#128279;</span>
+          <span class="entry-action">&hellip;</span>
+        </div>
+      </div>
+      <div class="entry-text">Quartalsreport abgeschlossen und an Projektleitung geschickt. Naechster Meilenstein: Zwischenevaluation Mai.</div>
+      <div class="entry-tag">BMW Family Services</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Patienten</div>
+    <div class="patient-row">
+      <span class="patient-code">PA-042</span>
+      <span class="patient-badge badge-green">Aktiv</span>
+      <span class="patient-info">Stationaer &middot; Einzeltherapie Di/Do</span>
+      <span class="patient-duration">14d</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PA-038</span>
+      <span class="patient-badge badge-green">Aktiv</span>
+      <span class="patient-info">Stationaer &middot; Gruppe Mo/Mi/Fr</span>
+      <span class="patient-duration">21d</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PA-051</span>
+      <span class="patient-badge badge-blue">Neu</span>
+      <span class="patient-info">Aufnahme 07.04. &middot; Vorbericht liegt vor</span>
+      <span class="patient-duration">0d</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PA-029</span>
+      <span class="patient-badge badge-amber">Pause</span>
+      <span class="patient-info">Belastungserprobung seit 01.04.</span>
+      <span class="patient-duration">38d</span>
+    </div>
+    <div class="patient-row">
+      <span class="patient-code">PA-045</span>
+      <span class="patient-badge badge-green">Aktiv</span>
+      <span class="patient-info">Stationaer &middot; Einzeltherapie Mo/Mi</span>
+      <span class="patient-duration">7d</span>
+    </div>
+  </section>
+
+  <a href="index.html" class="back-link">&larr; Zurueck zur Uebersicht</a>
+</main>
+
+</body>
+</html>
