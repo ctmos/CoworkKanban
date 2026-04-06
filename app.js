@@ -1909,7 +1909,33 @@ document.getElementById('btn-gh-save').addEventListener('click',async function()
 
 document.getElementById('btn-budget-save').addEventListener('click',function(){var v=parseInt(document.getElementById('budget-input').value)||100;lsSet('cowork_budget',v);showToast('\u2705 Budget gespeichert');if(currentTab==='heute')renderHeute();});
 
-document.getElementById('btn-pin-change').addEventListener('click',async function(){var val=document.getElementById('new-pin-input').value.trim();if(val.length<4||val.length>6||!/^\d+$/.test(val)){showToast('PIN muss 4\u20136 Ziffern sein',true);return;}var newHash=hashPin(val);_appState.pin_hash=newHash;sessionStorage.setItem('cowork_pin_set','true');document.getElementById('new-pin-input').value='';try{await safeWriteToGitHub('settings/pin.json',JSON.stringify({pin_hash:newHash},null,2),'sync: update PIN');showToast('\u2705 PIN ge\u00e4ndert & synchronisiert');}catch(e){showToast('\u274c PIN-Sync fehlgeschlagen',true);}});
+document.getElementById('btn-pin-change').addEventListener('click',async function(){var val=document.getElementById('new-pin-input').value.trim();if(val.length<4||val.length>6||!/^\d+$/.test(val)){showToast('PIN muss 4\u20136 Ziffern sein',true);return;}
+// Re-encrypt patients with new PIN-derived key before changing PIN
+try{
+  var oldKey=_encKey;
+  var newKey=await deriveKeyFromPin(val,'lifeos-patient-enc');
+  // Load current patients (already decrypted in _appState)
+  var patients=_appState.patients;
+  if(Array.isArray(patients)&&patients.length>0){
+    // Switch to new key and save
+    _encKey=newKey;
+    await savePatientsToGitHub();
+    console.log('[PIN-change] Patienten mit neuem Key re-encrypted');
+  }else{
+    _encKey=newKey;
+  }
+  // Now update PIN hash and session
+  var newHash=hashPin(val);_appState.pin_hash=newHash;
+  sessionStorage.setItem('cowork_pin_set','true');
+  sessionStorage.setItem('cowork_pin_val',val);
+  var pin=val;if(pin)await storeSecureVault(pin);
+  document.getElementById('new-pin-input').value='';
+  await safeWriteToGitHub('settings/pin.json',JSON.stringify({pin_hash:newHash},null,2),'sync: update PIN');
+  showToast('\u2705 PIN ge\u00e4ndert & Patienten re-encrypted');
+}catch(e){
+  console.error('[PIN-change]',e);
+  showToast('\u274c PIN-\u00c4nderung fehlgeschlagen: '+e.message,true);
+}});
 
 // Encryption key buttons disabled — key is now auto-derived from PIN (PBKDF2)
 if(document.getElementById('btn-enc-save'))document.getElementById('btn-enc-save').addEventListener('click',function(){showToast('Key wird automatisch aus PIN abgeleitet');});
