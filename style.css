@@ -3122,6 +3122,9 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
 .finn-table .finn-model { font-weight: 600; color: var(--text); }
 .finn-table .finn-price { font-weight: 700; font-size: 13px; }
 .finn-table .finn-savings { color: var(--green); font-weight: 600; }
+.finn-table-full td, .finn-table-full th { font-size: 11px; padding: 6px 5px; white-space: nowrap; }
+.finn-table-full .finn-model { white-space: normal; min-width: 140px; }
+.finn-note { font-size: 11px; color: var(--text-muted); margin: 6px 0 8px; line-height: 1.5; }
 
 .finn-badge {
   display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 6px;
