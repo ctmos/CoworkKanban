@@ -435,7 +435,6 @@ function switchTab(id) {
 
   if (id === 'on') showONTab();
 
-  if (id === 'supps') showSuppsTab();
 
   if (id === 'money') renderMoneyTab();
 
@@ -2112,7 +2111,7 @@ function initEntryDragDrop(projectId){
   cards.forEach(function(card){
     card.setAttribute('draggable','true');
     card.addEventListener('dragstart',function(ev){
-      if(ev.target.closest('.proj-entry-btn,.proj-entry-edit-form,.md-toolbar-btn'))return ev.preventDefault();
+      if(!ev.target.closest('.proj-entry-drag-handle'))return ev.preventDefault();
       _draggedId=card.dataset.entryId;
       card.classList.add('proj-entry-dragging');
       ev.dataTransfer.effectAllowed='move';
@@ -2303,39 +2302,57 @@ async function showProjectDetail(projectId){
     var cb=meta.color?' style="border-top:4px solid '+esc(meta.color)+'"':'';
 
     var activeEntries=(meta.entries||[]).filter(function(e){return !e.deleted&&!e.archived;});
+    activeEntries.sort(function(a,b){return new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt);});
     var archivedEntries=(meta.entries||[]).filter(function(e){return e.archived&&!e.deleted;});
     var deletedEntries=(meta.entries||[]).filter(function(e){return e.deleted;});
 
     function fmtDateDE(iso){var d=new Date(iso);var dd=String(d.getDate()).padStart(2,'0');var mm=String(d.getMonth()+1).padStart(2,'0');var yy=d.getFullYear();var hh=String(d.getHours()).padStart(2,'0');var mi=String(d.getMinutes()).padStart(2,'0');return dd+'.'+mm+'.'+yy+' '+hh+':'+mi;}
 
+    var _svgEdit='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
+    var _svgArchive='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>';
+    var _svgTrash='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
+    var _svgRestore='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
+
     function renderEntryCard(e,mode){
-      var lines=e.text.split('\n');var needsCollapse=lines.length>5;
+      var lines=e.text.split('\n').filter(function(l){return l.trim();});
+      var title=lines[0]||'(Kein Titel)';
+      title=title.replace(/^#+\s*/,'').replace(/^\*\*(.*)\*\*$/,'$1');
+      var previewLines=lines.slice(1,6).join('\n');
       var displayDate=e.updatedAt||e.createdAt;
       var dateLabel=e.updatedAt?'Bearbeitet':'Erstellt';
-      // Timeline layout for active entries, card layout for trash/archived
+
       if(mode==='active'){
-        var html='<div class="tl-entry proj-entry-card" data-entry-id="'+esc(e.id)+'">';
-        html+='<div class="tl-header"><span class="tl-handle proj-entry-drag-handle" title="Verschieben">&#x2630;</span><span class="tl-date">'+dateLabel+': '+fmtDateDE(displayDate)+'</span>';
-        html+='<div class="tl-actions"><button class="tl-btn proj-entry-btn proj-entry-edit" onclick="startEditProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\')" title="Bearbeiten">\u270e</button>';
-        html+='<button class="tl-btn proj-entry-btn proj-entry-archive" onclick="(async function(){await archiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Archiviert\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Archivieren">\ud83d\udce6</button>';
-        html+='<button class="tl-btn proj-entry-btn proj-entry-del" onclick="(async function(){await deleteProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'In Papierkorb verschoben\');showProjectDetail(\''+esc(projectId)+'\');})()" title="L\u00f6schen">\ud83d\uddd1</button></div></div>';
-        if(needsCollapse){html+='<details class="proj-entry-collapse"><summary>'+esc(lines.slice(0,2).join(' ').substring(0,120))+(lines.slice(0,2).join(' ').length>120?'\u2026':'')+'</summary><div class="proj-entry-text proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div></details>';}
-        else{html+='<div class="tl-text proj-entry-text proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div>';}
-        html+='</div>';return html;
+        var html='<div class="proj-entry-card" data-entry-id="'+esc(e.id)+'" data-expanded="false">';
+        html+='<span class="proj-entry-drag-handle" title="Verschieben">&#x2630;</span>';
+        html+='<div class="proj-entry-body">';
+        html+='<div class="proj-entry-top" onclick="toggleEntryExpand(this.closest(\'.proj-entry-card\'))">';
+        html+='<span class="proj-entry-title">'+esc(title)+'</span>';
+        html+='<span class="proj-entry-date">'+dateLabel+': '+fmtDateDE(displayDate)+'</span></div>';
+        if(previewLines){html+='<div class="proj-entry-preview" onclick="toggleEntryExpand(this.closest(\'.proj-entry-card\'))">'+esc(previewLines)+'</div>';}
+        html+='<div class="proj-entry-full proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div>';
+        html+='<div class="proj-entry-actions">';
+        html+='<button class="proj-entry-btn proj-entry-edit" onclick="event.stopPropagation();startEditProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\')" title="Bearbeiten">'+_svgEdit+' Bearbeiten</button>';
+        html+='<button class="proj-entry-btn proj-entry-archive" onclick="event.stopPropagation();(async function(){await archiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Archiviert\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Archivieren">'+_svgArchive+' Archivieren</button>';
+        html+='<button class="proj-entry-btn proj-entry-del" onclick="event.stopPropagation();(async function(){await deleteProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'In Papierkorb verschoben\');showProjectDetail(\''+esc(projectId)+'\');})()" title="L\u00f6schen">'+_svgTrash+' L\u00f6schen</button>';
+        html+='</div></div></div>';
+        return html;
       }
       // Fallback for trash/archived
-      var html='<div class="proj-entry-card" data-entry-id="'+esc(e.id)+'" style="padding:10px 14px;margin-bottom:6px">';
-      html+='<div class="proj-entry-header" style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="proj-entry-date" style="font-size:11px;color:var(--text-muted)">'+dateLabel+': '+fmtDateDE(displayDate)+'</span><div class="proj-entry-actions" style="margin-left:auto;display:flex;gap:4px">';
-      if(mode==='trash'){html+='<button class="tl-btn" onclick="(async function(){await restoreProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">\u21a9</button>';}
-      else if(mode==='archived'){html+='<button class="tl-btn" onclick="(async function(){await unarchiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">\u21a9</button>';}
-      html+='</div></div>';
-      html+='<div class="proj-entry-text proj-entry-md" style="font-size:12px;opacity:0.7">'+parseSimpleMarkdown(e.text)+'</div>';
-      html+='</div>';return html;
+      var html='<div class="proj-entry-card" data-entry-id="'+esc(e.id)+'" style="padding:10px 14px;margin-bottom:6px;cursor:default">';
+      html+='<div class="proj-entry-body">';
+      html+='<div class="proj-entry-top"><span class="proj-entry-title" style="font-size:13px">'+esc(title)+'</span>';
+      html+='<span class="proj-entry-date">'+dateLabel+': '+fmtDateDE(displayDate)+'</span></div>';
+      html+='<div class="proj-entry-text proj-entry-md" style="font-size:12px;opacity:0.7;margin-top:4px">'+parseSimpleMarkdown(e.text)+'</div>';
+      html+='<div style="display:flex;gap:6px;margin-top:8px">';
+      if(mode==='trash'){html+='<button class="proj-entry-btn proj-entry-restore" onclick="(async function(){await restoreProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">'+_svgRestore+' Wiederherstellen</button>';}
+      else if(mode==='archived'){html+='<button class="proj-entry-btn proj-entry-restore" onclick="(async function(){await unarchiveProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\');showToast(\'Wiederhergestellt\');showProjectDetail(\''+esc(projectId)+'\');})()" title="Wiederherstellen">'+_svgRestore+' Wiederherstellen</button>';}
+      html+='</div></div></div>';
+      return html;
     }
 
     var entriesHtml='';
     if(activeEntries.length===0){entriesHtml='<div style="font-size:13px;color:var(--text-muted)">Noch keine Eintr\u00e4ge.</div>';}
-    else{entriesHtml='<div class="timeline">';for(var i=0;i<activeEntries.length;i++){entriesHtml+=renderEntryCard(activeEntries[i],'active');}entriesHtml+='</div>';}
+    else{entriesHtml='<div class="proj-entries-list">';for(var i=0;i<activeEntries.length;i++){entriesHtml+=renderEntryCard(activeEntries[i],'active');}entriesHtml+='</div>';}
 
     var archiveHtml='';
     if(archivedEntries.length>0){
@@ -2368,12 +2385,23 @@ async function showProjectDetail(projectId){
   }catch(e){container.innerHTML='<div class="empty-state">Fehler: '+esc(e.message)+'</div>';}
 }
 
+function toggleEntryExpand(card){
+  if(!card)return;
+  var expanded=card.getAttribute('data-expanded')==='true';
+  card.setAttribute('data-expanded',expanded?'false':'true');
+}
+
 function startEditProjectEntry(projectId,entryId){
   var card=document.querySelector('.proj-entry-card[data-entry-id="'+entryId+'"]');if(!card)return;
   var meta=_localProjectsMeta[projectId];if(!meta||!meta.entries)return;
   var entry=meta.entries.find(function(e){return e.id===entryId;});if(!entry)return;
-  var textEl=card.querySelector('.proj-entry-text');var collapseEl=card.querySelector('.proj-entry-collapse');
-  var target=collapseEl||textEl;if(!target)return;
+  card.setAttribute('data-expanded','true');
+  var fullEl=card.querySelector('.proj-entry-full');
+  var previewEl=card.querySelector('.proj-entry-preview');
+  var actionsEl=card.querySelector('.proj-entry-actions');
+  var target=fullEl||previewEl;if(!target)return;
+  if(previewEl)previewEl.style.display='none';
+  if(actionsEl)actionsEl.style.display='none';
   var origText=entry.text;
   target.outerHTML='<div class="proj-entry-edit-form">'+renderMarkdownToolbar('edit-'+esc(entryId))+'<textarea class="proj-entry-edit-input" id="edit-'+esc(entryId)+'">'+esc(origText)+'</textarea><div class="md-preview" id="preview-edit-'+esc(entryId)+'" style="display:none"></div><div class="proj-entry-edit-actions"><button class="btn-primary proj-entry-save-btn" id="save-'+esc(entryId)+'">Speichern</button><button class="proj-entry-cancel-btn" id="cancel-'+esc(entryId)+'">Abbrechen</button></div></div>';
   var textarea=document.getElementById('edit-'+entryId);if(textarea)textarea.focus();
@@ -5735,139 +5763,6 @@ function renderONScheduled(hb) {
   }
   html += '</div></details>';
   return html;
-}
-
-
-// ─── SUPPS TAB ─────────────────────────────────────────────────────────────────
-
-function showSuppsTab() {
-  var c = document.getElementById('supps-container');
-  if (!c) return;
-
-  var today = new Date();
-  var dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-  var dayOfWeek = today.getDay();
-  var todayStr = dayNames[dayOfWeek] + ', ' + today.getDate() + '.' + (today.getMonth()+1) + '.' + today.getFullYear();
-
-  // Bor cycle: 2 weeks ON, 1 week OFF. Start date: 2026-04-07 (Monday)
-  var borStart = new Date(2026, 3, 7);
-  var diffDays = Math.floor((today - borStart) / 86400000);
-  var cycleDay = ((diffDays % 21) + 21) % 21;
-  var borOn = cycleDay < 14;
-  var borLabel = borOn ? 'ON (Tag ' + (cycleDay+1) + '/14)' : 'OFF (Tag ' + (cycleDay-13) + '/7)';
-  var borClass = borOn ? 'supps-cycle-on' : 'supps-cycle-off';
-
-  var html = '';
-
-  // Header
-  html += '<div class="supps-header">';
-  html += '<div class="supps-date">' + todayStr + '</div>';
-  html += '<div class="supps-cycle ' + borClass + '">Bor-Zyklus: ' + borLabel + '</div>';
-  html += '</div>';
-
-  // MORGENS — VOR TRAINING
-  html += '<div class="supps-block">';
-  html += '<div class="supps-block-title">04:50 — Vor Training (mit Wasser, leerer Magen)</div>';
-  html += suppsRow('Elvanse', 1, '1 Kapsel (50mg)', 'Medikation', 'med');
-  html += suppsRow('L-Theanin', 1, '1 Kapsel (200mg)', 'Glaettet Elvanse-Kurve', 'supp');
-  html += suppsRow('Kreatin', 5, '5 Kapseln \u00e0 1g (ESN Ultrapure)', 'Muskel-Saettigung, taeglich', 'supp');
-  html += '<div class="supps-block-hint">= 7 Stueck mit 500ml Wasser</div>';
-  html += '</div>';
-
-  // FRUEHSTUECK
-  html += '<div class="supps-block">';
-  html += '<div class="supps-block-title">06:30 — Fruehstueck (mit Fett!)</div>';
-  html += suppsRow('Loratadin', 1, '1 Tablette (10mg)', 'NACH dem Training', 'med');
-  html += suppsRow('Vitamin D3+K2', 1, '1 Kapsel (125\u00b5g/5000 IE D3 + 100\u00b5g K2)', 'Jeden 2. Tag (Mo/Mi/Fr/So)', 'supp');
-  html += suppsRow('Zink', 1, '1 Kapsel (25mg Bisglycinat)', 'Jeden 2. Tag (Di/Do/Sa) — Kupfer-Schutz', 'supp');
-  if (borOn) {
-    html += suppsRow('Bor', 2, '2 Tabletten \u00e0 3mg', 'SHBG senken (FAI war 28,1)', 'cycle-on');
-  } else {
-    html += suppsRow('Bor', 0, 'PAUSE — kein Bor diese Woche', 'Zyklus-Pause verhindert Gewoehnung', 'cycle-off');
-  }
-  html += suppsRow('Tongkat Ali', 1, '1 Tablet (100mg, 10% Eurycomanone, Nootropics Depot)', 'T-Produktion via LH', 'supp-t');
-  html += '<div class="supps-block-hint">= ' + (borOn ? '6' : '4') + ' Stueck zum Essen (Fett noetig fuer D3)</div>';
-  html += '</div>';
-
-  // ABENDS
-  html += '<div class="supps-block">';
-  html += '<div class="supps-block-title">20:00 — Abends (zum/nach Abendessen)</div>';
-  html += suppsRow('Omega-3', 4, '4 Weichkapseln (WeightWorld, je 330mg EPA + 220mg DHA)', 'HDL verbessern, Neuroprotektiv', 'supp');
-  html += suppsRow('Magnesium', 3, '3 Kapseln \u00e0 100mg Bisglycinat', 'Elvanse-Toleranz, Schlaf, Muskeln', 'supp');
-  html += suppsRow('Glycin', 3, '3 Kapseln \u00e0 1000mg', 'Schlaf (3g = studierte Dosis), Kollagen', 'supp');
-  html += '<div class="supps-block-hint">= 10 Stueck zum Abendessen</div>';
-  html += '</div>';
-
-  // TOTAL
-  var total = 7 + (borOn ? 6 : 4) + 10;
-  html += '<div class="supps-total">Total heute: ' + total + ' Stueck</div>';
-
-  // PILLENDOSE - VORSORTIERUNG
-  html += '<div class="supps-block">';
-  html += '<div class="supps-block-title">Pillendose Vorsortierung (Sonntags)</div>';
-  html += '<table class="supps-prep-table"><thead><tr>';
-  html += '<th>Fach</th><th>Inhalt</th><th>Stueck</th>';
-  html += '</tr></thead><tbody>';
-  html += '<tr><td>Morgen</td><td>1 Elvanse + 1 L-Theanin + 5 Kreatin</td><td>7</td></tr>';
-  html += '<tr><td>Mittag</td><td>1 Loratadin + 1 D3+K2 + 1 Zink + ' + (borOn ? '2 Bor + ' : '') + '1 Tongkat Ali</td><td>' + (borOn ? '6' : '4') + '</td></tr>';
-  html += '<tr><td>Abend</td><td>4 Omega-3 + 3 Magnesium + 3 Glycin</td><td>10</td></tr>';
-  html += '</tbody></table>';
-  html += '</div>';
-
-  // ZYKLUSPLAN
-  html += '<div class="supps-block supps-info">';
-  html += '<div class="supps-block-title">Bor-Zyklusplan</div>';
-  html += '<div class="supps-info-text">2 Wochen ON (2x 3mg Tabs = 6mg/Tag) \u2192 1 Woche OFF \u2192 repeat</div>';
-  html += '<div class="supps-info-text">Start: 07.04.2026 | D3 jeden 2. Tag (Mo/Mi/Fr/So) | Zink jeden 2. Tag (Di/Do/Sa)</div>';
-  html += '</div>';
-
-  // PRAEPARATE
-  html += '<div class="supps-block supps-info">';
-  html += '<div class="supps-block-title">Meine Praeparate</div>';
-  html += '<table class="supps-prep-table"><thead><tr>';
-  html += '<th>Supplement</th><th>Praeparat</th><th>Pro Stueck</th>';
-  html += '</tr></thead><tbody>';
-  html += '<tr><td>Kreatin</td><td>ESN Ultrapure Monohydrat Kapseln</td><td>1000mg</td></tr>';
-  html += '<tr><td>Glycin</td><td>Vegane Kapseln hochdosiert (400 St.)</td><td>1000mg</td></tr>';
-  html += '<tr><td>Bor</td><td>Borax 3mg Tabletten</td><td>3mg</td></tr>';
-  html += '<tr><td>L-Theanin</td><td>200mg Kapseln</td><td>200mg</td></tr>';
-  html += '<tr><td>Zink</td><td>Bisglycinat 25mg Kapseln</td><td>25mg</td></tr>';
-  html += '<tr><td>Magnesium</td><td>Bisglycinat 100mg Kapseln</td><td>100mg</td></tr>';
-  html += '<tr><td>Omega-3</td><td>WeightWorld 2000mg Fisch\u00f6l Weichkapseln</td><td>330mg EPA + 220mg DHA</td></tr>';
-  html += '<tr><td>D3+K2</td><td>5000 IE D3 + 100\u00b5g K2 Kombi-Kapsel</td><td>5000 IE + 100\u00b5g</td></tr>';
-  html += '<tr><td>Tongkat Ali</td><td>Nootropics Depot 10% Eurycomanone Tablets</td><td>100mg (10mg Eurycomanone)</td></tr>';
-  html += '</tbody></table>';
-  html += '</div>';
-
-  // ZIELE
-  html += '<div class="supps-block supps-info">';
-  html += '<div class="supps-block-title">Ziele &amp; Kontroll-Labor (Juli 2026)</div>';
-  html += '<table class="supps-prep-table"><thead><tr>';
-  html += '<th>Marker</th><th>Baseline 28.01.26</th><th>Ziel</th>';
-  html += '</tr></thead><tbody>';
-  html += '<tr><td>Testosteron</td><td>3,65 \u00b5g/l</td><td>&gt;5,5 \u00b5g/l</td></tr>';
-  html += '<tr><td>FAI</td><td>28,1</td><td>&gt;35 (Ref 35-93)</td></tr>';
-  html += '<tr><td>SHBG</td><td>45,1 nmol/l</td><td>&lt;40 nmol/l</td></tr>';
-  html += '<tr><td>Vitamin D</td><td>34,5 \u00b5g/l</td><td>&gt;50 \u00b5g/l</td></tr>';
-  html += '</tbody></table>';
-  html += '</div>';
-
-  c.innerHTML = html;
-}
-
-function suppsRow(name, count, detail, note, type) {
-  var cls = 'supps-row';
-  if (type === 'med') cls += ' supps-row--med';
-  if (type === 'cycle-on') cls += ' supps-row--cycle-on';
-  if (type === 'cycle-off') cls += ' supps-row--cycle-off';
-  if (type === 'supp-t') cls += ' supps-row--testo';
-  var h = '<div class="' + cls + '">';
-  h += '<span class="supps-name">' + name + '</span>';
-  h += '<span class="supps-count">' + (count > 0 ? count + 'x' : '') + '</span>';
-  h += '<span class="supps-detail">' + detail + '</span>';
-  h += '<span class="supps-note">' + note + '</span>';
-  h += '</div>';
-  return h;
 }
 
 
