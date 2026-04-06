@@ -5763,67 +5763,97 @@ function showSuppsTab() {
   html += '<div class="supps-cycle ' + borClass + '">Bor-Zyklus: ' + borLabel + '</div>';
   html += '</div>';
 
-  // MORGENS
+  // MORGENS — VOR TRAINING
   html += '<div class="supps-block">';
-  html += '<div class="supps-block-title">04:50 — Vor Training</div>';
-  html += suppsRow('Elvanse', '50mg', 1, 'Medikation. Leerer Magen', 'med');
-  html += suppsRow('L-Theanin', '200mg', 1, 'Synergistisch mit Elvanse', 'supp');
-  html += suppsRow('Kreatin', '5g', 5, 'Taegliche Saettigung', 'supp');
+  html += '<div class="supps-block-title">04:50 — Vor Training (mit Wasser, leerer Magen)</div>';
+  html += suppsRow('Elvanse', 1, '1 Kapsel (50mg)', 'Medikation', 'med');
+  html += suppsRow('L-Theanin', 1, '1 Kapsel (200mg)', 'Glaettet Elvanse-Kurve', 'supp');
+  html += suppsRow('Kreatin', 5, '5 Kapseln \u00e0 1g (ESN Ultrapure)', 'Muskel-Saettigung, taeglich', 'supp');
+  html += '<div class="supps-block-hint">= 7 Stueck mit 500ml Wasser</div>';
   html += '</div>';
 
   // FRUEHSTUECK
   html += '<div class="supps-block">';
-  html += '<div class="supps-block-title">06:30 — Fruehstueck (mit Fett)</div>';
-  html += suppsRow('Loratadin', '10mg', 1, 'NACH Training nehmen', 'med');
-  html += suppsRow('Vitamin D3+K2', '5000 IE', 1, 'Taeglich! D war 34,5 — Ziel 50+', 'supp');
-  html += suppsRow('Zink', '25mg', 1, 'T-Synthese, getrennt von Mg', 'supp');
+  html += '<div class="supps-block-title">06:30 — Fruehstueck (mit Fett!)</div>';
+  html += suppsRow('Loratadin', 1, '1 Tablette (10mg)', 'NACH dem Training', 'med');
+  html += suppsRow('Vitamin D3+K2', 1, '1 Kapsel (5000 IE D3 + 100\u00b5g K2)', 'Taeglich! Vit D war 34,5 \u2192 Ziel 50+', 'supp');
+  html += suppsRow('Zink', 1, '1 Kapsel (25mg Bisglycinat)', 'T-Synthese, getrennt von Mg', 'supp');
   if (borOn) {
-    html += suppsRow('Bor', '6mg', 2, 'SHBG-Senkung (FAI war 28,1)', 'cycle-on');
+    html += suppsRow('Bor', 2, '2 Tabletten \u00e0 3mg', 'SHBG senken (FAI war 28,1)', 'cycle-on');
   } else {
-    html += suppsRow('Bor', 'PAUSE', 0, 'Zyklus-Pause — kein Bor diese Woche', 'cycle-off');
+    html += suppsRow('Bor', 0, 'PAUSE — kein Bor diese Woche', 'Zyklus-Pause verhindert Gewoehnung', 'cycle-off');
   }
-  html += suppsRow('Tongkat Ali', '200mg', 1, 'LH-Steigerung — T-Produktion', 'supp-t');
+  html += suppsRow('Tongkat Ali', 1, '1 Kapsel (200mg, 2% Eurycomanone)', 'T-Produktion via LH', 'supp-t');
+  html += '<div class="supps-block-hint">= ' + (borOn ? '6' : '4') + ' Stueck zum Essen (Fett noetig fuer D3)</div>';
   html += '</div>';
 
   // ABENDS
   html += '<div class="supps-block">';
-  html += '<div class="supps-block-title">20:00 — Abends</div>';
-  html += suppsRow('Omega-3', '2200mg EPA+DHA', 4, 'HDL, Entzuendung, Neuroprotektiv', 'supp');
-  html += suppsRow('Magnesium', '300mg', 3, 'Elvanse-Toleranz, Schlaf, Muskeln', 'supp');
-  html += suppsRow('Glycin', '3000mg', 3, 'Schlafqualitaet, Kollagen, Glutathion', 'supp');
+  html += '<div class="supps-block-title">20:00 — Abends (zum/nach Abendessen)</div>';
+  html += suppsRow('Omega-3', 4, '4 Weichkapseln (WeightWorld, je 330mg EPA + 220mg DHA)', 'HDL verbessern, Neuroprotektiv', 'supp');
+  html += suppsRow('Magnesium', 3, '3 Kapseln \u00e0 100mg Bisglycinat', 'Elvanse-Toleranz, Schlaf, Muskeln', 'supp');
+  html += suppsRow('Glycin', 3, '3 Kapseln \u00e0 1000mg', 'Schlaf (3g = studierte Dosis), Kollagen', 'supp');
+  html += '<div class="supps-block-hint">= 10 Stueck zum Abendessen</div>';
   html += '</div>';
 
   // TOTAL
-  var total = 1+1+5 + 1+1+1+(borOn?2:0)+1 + 4+3+3;
+  var total = 7 + (borOn ? 6 : 4) + 10;
   html += '<div class="supps-total">Total heute: ' + total + ' Stueck</div>';
+
+  // PILLENDOSE - VORSORTIERUNG
+  html += '<div class="supps-block">';
+  html += '<div class="supps-block-title">Pillendose Vorsortierung (Sonntags)</div>';
+  html += '<table class="supps-prep-table"><thead><tr>';
+  html += '<th>Fach</th><th>Inhalt</th><th>Stueck</th>';
+  html += '</tr></thead><tbody>';
+  html += '<tr><td>Morgen</td><td>1 Elvanse + 1 L-Theanin + 5 Kreatin</td><td>7</td></tr>';
+  html += '<tr><td>Mittag</td><td>1 Loratadin + 1 D3+K2 + 1 Zink + ' + (borOn ? '2 Bor + ' : '') + '1 Tongkat Ali</td><td>' + (borOn ? '6' : '4') + '</td></tr>';
+  html += '<tr><td>Abend</td><td>4 Omega-3 + 3 Magnesium + 3 Glycin</td><td>10</td></tr>';
+  html += '</tbody></table>';
+  html += '</div>';
 
   // ZYKLUSPLAN
   html += '<div class="supps-block supps-info">';
   html += '<div class="supps-block-title">Bor-Zyklusplan</div>';
-  html += '<div class="supps-info-text">2 Wochen ON (6mg/Tag) → 1 Woche OFF → repeat</div>';
-  html += '<div class="supps-info-text">Start: 07.04.2026 | Kein anderes Supplement braucht Cycling</div>';
+  html += '<div class="supps-info-text">2 Wochen ON (2x 3mg Tabs = 6mg/Tag) \u2192 1 Woche OFF \u2192 repeat</div>';
+  html += '<div class="supps-info-text">Start: 07.04.2026 | Alle anderen Supps taeglich durchgehend</div>';
+  html += '</div>';
+
+  // PRAEPARATE
+  html += '<div class="supps-block supps-info">';
+  html += '<div class="supps-block-title">Meine Praeparate</div>';
+  html += '<table class="supps-prep-table"><thead><tr>';
+  html += '<th>Supplement</th><th>Praeparat</th><th>Pro Stueck</th>';
+  html += '</tr></thead><tbody>';
+  html += '<tr><td>Kreatin</td><td>ESN Ultrapure Monohydrat Kapseln</td><td>1000mg</td></tr>';
+  html += '<tr><td>Glycin</td><td>Vegane Kapseln hochdosiert (400 St.)</td><td>1000mg</td></tr>';
+  html += '<tr><td>Bor</td><td>Borax 3mg Tabletten</td><td>3mg</td></tr>';
+  html += '<tr><td>L-Theanin</td><td>200mg Kapseln</td><td>200mg</td></tr>';
+  html += '<tr><td>Zink</td><td>Bisglycinat 25mg Kapseln</td><td>25mg</td></tr>';
+  html += '<tr><td>Magnesium</td><td>Bisglycinat 100mg Kapseln</td><td>100mg</td></tr>';
+  html += '<tr><td>Omega-3</td><td>WeightWorld 2000mg Fisch\u00f6l Weichkapseln</td><td>330mg EPA + 220mg DHA</td></tr>';
+  html += '<tr><td>D3+K2</td><td>5000 IE D3 + 100\u00b5g K2 Kombi-Kapsel</td><td>5000 IE + 100\u00b5g</td></tr>';
+  html += '<tr><td>Tongkat Ali</td><td>Nootropics Depot 2% Eurycomanone</td><td>200mg</td></tr>';
+  html += '</tbody></table>';
   html += '</div>';
 
   // ZIELE
   html += '<div class="supps-block supps-info">';
-  html += '<div class="supps-block-title">Ziele &amp; Kontroll-Labor</div>';
-  html += '<div class="supps-info-text">Testosteron: 3,65 µg/l → Ziel: obere Haelfte (>5,5)</div>';
-  html += '<div class="supps-info-text">FAI: 28,1 → Ziel: >35 (Referenz 35-93)</div>';
-  html += '<div class="supps-info-text">SHBG: 45,1 → Ziel: <40 nmol/l</div>';
-  html += '<div class="supps-info-text">Vitamin D: 34,5 µg/l → Ziel: 50+</div>';
-  html += '<div class="supps-info-text">Kontroll-Labor: Juli 2026 bei Dr. Matcau</div>';
-  html += '</div>';
-
-  // KAUFEN
-  html += '<div class="supps-block supps-info">';
-  html += '<div class="supps-block-title">Noch kaufen</div>';
-  html += '<div class="supps-info-text">Tongkat Ali 200mg (Nootropics Depot, 2% Eurycomanone) — amazon.de oder nootropicsdepot.com</div>';
+  html += '<div class="supps-block-title">Ziele &amp; Kontroll-Labor (Juli 2026)</div>';
+  html += '<table class="supps-prep-table"><thead><tr>';
+  html += '<th>Marker</th><th>Baseline 28.01.26</th><th>Ziel</th>';
+  html += '</tr></thead><tbody>';
+  html += '<tr><td>Testosteron</td><td>3,65 \u00b5g/l</td><td>&gt;5,5 \u00b5g/l</td></tr>';
+  html += '<tr><td>FAI</td><td>28,1</td><td>&gt;35 (Ref 35-93)</td></tr>';
+  html += '<tr><td>SHBG</td><td>45,1 nmol/l</td><td>&lt;40 nmol/l</td></tr>';
+  html += '<tr><td>Vitamin D</td><td>34,5 \u00b5g/l</td><td>&gt;50 \u00b5g/l</td></tr>';
+  html += '</tbody></table>';
   html += '</div>';
 
   c.innerHTML = html;
 }
 
-function suppsRow(name, dose, count, note, type) {
+function suppsRow(name, count, detail, note, type) {
   var cls = 'supps-row';
   if (type === 'med') cls += ' supps-row--med';
   if (type === 'cycle-on') cls += ' supps-row--cycle-on';
@@ -5831,8 +5861,8 @@ function suppsRow(name, dose, count, note, type) {
   if (type === 'supp-t') cls += ' supps-row--testo';
   var h = '<div class="' + cls + '">';
   h += '<span class="supps-name">' + name + '</span>';
-  h += '<span class="supps-dose">' + dose + '</span>';
-  h += '<span class="supps-count">' + (count > 0 ? count + 'x' : '—') + '</span>';
+  h += '<span class="supps-count">' + (count > 0 ? count + 'x' : '') + '</span>';
+  h += '<span class="supps-detail">' + detail + '</span>';
   h += '<span class="supps-note">' + note + '</span>';
   h += '</div>';
   return h;
