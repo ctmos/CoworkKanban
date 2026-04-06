@@ -226,6 +226,7 @@
 
     <button class="tab-btn" data-tab="on">ON</button>
     <button class="tab-btn" data-tab="supps">Supps</button>
+    <button class="tab-btn" data-tab="finn">FINN</button>
 
     <button class="theme-toggle" id="theme-toggle" title="Theme wechseln">&#9790;</button>
   </nav>
@@ -498,6 +499,202 @@
   <div id="tab-supps" class="tab-content">
     <h2>Supplements</h2>
     <div id="supps-container"></div>
+  </div>
+
+  <!-- FINN TAB -->
+  <div id="tab-finn" class="tab-content">
+    <h2>FINN Auto-Abo Vergleich</h2>
+
+    <!-- Aktuelle Situation -->
+    <div class="finn-hero">
+      <h3>Aktuelle Situation (06.04.2026)</h3>
+      <div class="finn-hero-grid">
+        <div class="finn-hero-item"><div class="fh-label">Aktuelles Auto</div><div class="fh-value">Toyota C-HR (Hybrid)</div></div>
+        <div class="finn-hero-item"><div class="fh-label">Monatsrate</div><div class="fh-value">547 EUR</div></div>
+        <div class="finn-hero-item"><div class="fh-label">Vertragsende</div><div class="fh-value fh-warn">09.05.2026 (33 Tage)</div></div>
+        <div class="finn-hero-item"><div class="fh-label">km-Stand</div><div class="fh-value fh-warn">20.290 / 18.000 km</div></div>
+        <div class="finn-hero-item"><div class="fh-label">Geschaetzte Nachzahlung</div><div class="fh-value fh-warn">~700-1.040 EUR</div></div>
+        <div class="finn-hero-item"><div class="fh-label">FINN Gutschein</div><div class="fh-value fh-ok">1.000 EUR</div></div>
+        <div class="finn-hero-item"><div class="fh-label">FINN Punkte</div><div class="fh-value fh-ok">20.547 (Platinum)</div></div>
+        <div class="finn-hero-item"><div class="fh-label">Budget (max. Rate)</div><div class="fh-value">547 EUR/Mon.</div></div>
+      </div>
+    </div>
+
+    <!-- Top 8 Autos -->
+    <div class="finn-section">
+      <h3>Top 8 Folgefahrzeuge (Elektro / PHEV / Hybrid)</h3>
+      <div style="overflow-x:auto">
+      <table class="finn-table">
+        <thead><tr>
+          <th>#</th><th>Auto</th><th>Antrieb</th><th>PS</th><th>AWD</th><th>Sound</th><th>ACC</th>
+          <th>Rate</th><th>Effektiv*</th><th>Reichweite</th><th>Uebergabe</th><th>Link</th>
+        </tr></thead>
+        <tbody>
+          <tr class="finn-row-highlight"><td class="finn-rank">1</td>
+            <td class="finn-model">Hyundai Tucson PHEV Trend AWD</td>
+            <td><span class="finn-badge finn-badge-phev">PHEV</span></td>
+            <td>288</td>
+            <td><span class="finn-badge finn-badge-awd">AWD</span></td>
+            <td>Standard</td><td>Ja</td>
+            <td class="finn-price">399 EUR</td><td class="finn-savings">441 EUR</td>
+            <td>~50 km E</td><td>16.-30.04.</td>
+            <td><a class="finn-link" href="https://www.finn.com/de-DE/models/hyundai/tucson" target="_blank">FINN</a></td>
+          </tr>
+          <tr><td class="finn-rank">2</td>
+            <td class="finn-model">Hyundai Tucson PHEV 4WD Prime</td>
+            <td><span class="finn-badge finn-badge-phev">PHEV</span></td>
+            <td>252</td>
+            <td><span class="finn-badge finn-badge-awd">AWD</span></td>
+            <td><span class="finn-badge finn-badge-bose">Bose?</span></td><td>Ja</td>
+            <td class="finn-price">429 EUR</td><td class="finn-savings">471 EUR</td>
+            <td>~50 km E</td><td>09.-16.04.</td>
+            <td><a class="finn-link" href="https://www.finn.com/de-DE/models/hyundai/tucson" target="_blank">FINN</a></td>
+          </tr>
+          <tr><td class="finn-rank">3</td>
+            <td class="finn-model">Kia Sportage PHEV AWD</td>
+            <td><span class="finn-badge finn-badge-phev">PHEV</span></td>
+            <td>252</td>
+            <td><span class="finn-badge finn-badge-awd">AWD</span></td>
+            <td><span class="finn-badge finn-badge-hk">Harman Kardon</span></td><td>Ja</td>
+            <td class="finn-price">449 EUR</td><td class="finn-savings">491 EUR</td>
+            <td>~60 km E</td><td>27.04.-25.05.</td>
+            <td><a class="finn-link" href="https://www.finn.com/de-DE/models/kia/sportage" target="_blank">FINN</a></td>
+          </tr>
+          <tr><td class="finn-rank">4</td>
+            <td class="finn-model">Skoda Elroq 85x Sportline AWD</td>
+            <td><span class="finn-badge finn-badge-elektro">Elektro</span></td>
+            <td>286</td>
+            <td><span class="finn-badge finn-badge-awd">AWD</span></td>
+            <td><span class="finn-badge finn-badge-canton">Canton</span></td><td>Ja</td>
+            <td class="finn-price">469 EUR</td><td>511 EUR</td>
+            <td>523 km</td><td>15.-29.04.</td>
+            <td><a class="finn-link" href="https://www.finn.com/de-DE/models/skoda/elroq" target="_blank">FINN</a></td>
+          </tr>
+          <tr class="finn-row-highlight"><td class="finn-rank">5</td>
+            <td class="finn-model">Hyundai IONIQ 5 AWD Techniq</td>
+            <td><span class="finn-badge finn-badge-elektro">Elektro</span></td>
+            <td>325</td>
+            <td><span class="finn-badge finn-badge-awd">AWD</span></td>
+            <td><span class="finn-badge finn-badge-bose">BOSE</span></td><td>Ja</td>
+            <td class="finn-price">509 EUR</td><td>551 EUR</td>
+            <td>546 km</td><td>13.-20.04.</td>
+            <td><a class="finn-link" href="https://www.finn.com/de-DE/models/hyundai/ioniq-5" target="_blank">FINN</a></td>
+          </tr>
+          <tr><td class="finn-rank">6</td>
+            <td class="finn-model">MG HS PHEV Comfort</td>
+            <td><span class="finn-badge finn-badge-phev">PHEV</span></td>
+            <td>339</td>
+            <td><span class="finn-badge finn-badge-fwd">FWD</span></td>
+            <td>Standard</td><td>Ja</td>
+            <td class="finn-price">349 EUR</td><td class="finn-savings">391 EUR</td>
+            <td>PHEV</td><td>13.-20.04.</td>
+            <td><a class="finn-link" href="https://www.finn.com/de-DE/models/mg/hs" target="_blank">FINN</a></td>
+          </tr>
+          <tr><td class="finn-rank">7</td>
+            <td class="finn-model">MG S5 64kWh Luxury</td>
+            <td><span class="finn-badge finn-badge-elektro">Elektro</span></td>
+            <td>231</td>
+            <td><span class="finn-badge finn-badge-fwd">FWD</span></td>
+            <td>Standard</td><td>Ja</td>
+            <td class="finn-price">339 EUR</td><td class="finn-savings">381 EUR</td>
+            <td>400 km</td><td>13.-20.04.</td>
+            <td><a class="finn-link" href="https://www.finn.com/de-DE/models/mg/s5" target="_blank">FINN</a></td>
+          </tr>
+          <tr><td class="finn-rank">8</td>
+            <td class="finn-model">Skoda Elroq 85 (Heck)</td>
+            <td><span class="finn-badge finn-badge-elektro">Elektro</span></td>
+            <td>286</td>
+            <td><span class="finn-badge finn-badge-fwd">FWD</span></td>
+            <td><span class="finn-badge finn-badge-canton">Canton</span></td><td>Ja</td>
+            <td class="finn-price">419 EUR</td><td class="finn-savings">461 EUR</td>
+            <td>571 km</td><td>07.-21.04.</td>
+            <td><a class="finn-link" href="https://www.finn.com/de-DE/models/skoda/elroq" target="_blank">FINN</a></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:6px">*Effektiv = Rate + (1.500 Bereitstellung - 1.000 Gutschein) / 12 Mon. = Rate + 42 EUR. Nicht bei FINN: BMW, BYD, VW, Volvo, Cupra, Ford.</p>
+    </div>
+
+    <!-- Kosten-Szenarien -->
+    <div class="finn-section">
+      <h3>12-Monats-Kosten nach Geopolitik-Szenario (Grok-Analyse)</h3>
+      <div class="finn-scenarios">
+
+        <div class="finn-scenario finn-scenario-best">
+          <h4>Best Case: Deeskalation</h4>
+          <div class="finn-sc-prob">25-35% Wahrscheinlichkeit | Benzin 1,70 EUR/l</div>
+          <table class="finn-sc-table">
+            <thead><tr><th>Auto</th><th>Total/Jahr</th><th>Ersparnis</th></tr></thead>
+            <tbody>
+              <tr><td>Toyota C-HR (jetzt)</td><td class="finn-sc-total">8.471 EUR</td><td>-</td></tr>
+              <tr><td>Tucson Trend AWD</td><td class="finn-sc-total">6.745 EUR</td><td class="finn-sc-save">-1.726</td></tr>
+              <tr><td>Tucson Prime AWD</td><td>7.105 EUR</td><td class="finn-sc-save">-1.366</td></tr>
+              <tr><td>Kia Sportage AWD</td><td>7.345 EUR</td><td class="finn-sc-save">-1.126</td></tr>
+              <tr><td>Elroq 85x AWD</td><td>7.168 EUR</td><td class="finn-sc-save">-1.303</td></tr>
+              <tr><td>IONIQ 5 AWD</td><td>7.648 EUR</td><td class="finn-sc-save">-823</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="finn-scenario finn-scenario-base">
+          <h4>Base Case: Spannungen halten an</h4>
+          <div class="finn-sc-prob">40-50% Wahrscheinlichkeit | Benzin 2,25 EUR/l</div>
+          <table class="finn-sc-table">
+            <thead><tr><th>Auto</th><th>Total/Jahr</th><th>Ersparnis</th></tr></thead>
+            <tbody>
+              <tr><td>Toyota C-HR (jetzt)</td><td class="finn-sc-total">9.089 EUR</td><td>-</td></tr>
+              <tr><td>Tucson Trend AWD</td><td class="finn-sc-total">7.015 EUR</td><td class="finn-sc-save">-2.074</td></tr>
+              <tr><td>Tucson Prime AWD</td><td>7.375 EUR</td><td class="finn-sc-save">-1.714</td></tr>
+              <tr><td>Kia Sportage AWD</td><td>7.615 EUR</td><td class="finn-sc-save">-1.474</td></tr>
+              <tr><td>Elroq 85x AWD</td><td>7.168 EUR</td><td class="finn-sc-save">-1.921</td></tr>
+              <tr><td>IONIQ 5 AWD</td><td>7.648 EUR</td><td class="finn-sc-save">-1.441</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="finn-scenario finn-scenario-worst">
+          <h4>Worst Case: Hormuz-Eskalation</h4>
+          <div class="finn-sc-prob">20-30% Wahrscheinlichkeit | Benzin 3,15 EUR/l</div>
+          <table class="finn-sc-table">
+            <thead><tr><th>Auto</th><th>Total/Jahr</th><th>Ersparnis</th></tr></thead>
+            <tbody>
+              <tr><td>Toyota C-HR (jetzt)</td><td class="finn-sc-total">10.098 EUR</td><td>-</td></tr>
+              <tr><td>Tucson Trend AWD</td><td class="finn-sc-total">7.456 EUR</td><td class="finn-sc-save">-2.642</td></tr>
+              <tr><td>Tucson Prime AWD</td><td>7.816 EUR</td><td class="finn-sc-save">-2.282</td></tr>
+              <tr><td>Kia Sportage AWD</td><td>8.056 EUR</td><td class="finn-sc-save">-2.042</td></tr>
+              <tr><td>Elroq 85x AWD</td><td>7.168 EUR</td><td class="finn-sc-save">-2.930</td></tr>
+              <tr><td>IONIQ 5 AWD</td><td>7.648 EUR</td><td class="finn-sc-save">-2.450</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+      <p style="font-size:11px;color:var(--text-muted)">Elektro-Kosten sind szenariounabhaengig (Strom stabil 0,30 EUR/kWh). PHEV: 60% elektrisch, 40% Benzin. Basis: 1.700 km/Monat.</p>
+    </div>
+
+    <!-- KITT Empfehlung -->
+    <div class="finn-reco">
+      <h3>KITTs Empfehlung an Christian</h3>
+      <p>Basierend auf: Psychologe an der Klinik Barmelweid (Jura, Schnee im Winter), ~1.700 km/Monat Pendler, braucht Zuverlaessigkeit und Einfachheit, schaetzt guten Sound, will Oelpreis-Absicherung.</p>
+      <div class="finn-reco-highlight">
+        <strong>Erste Wahl: Hyundai Tucson PHEV Trend AWD (399 EUR/Mon.)</strong><br>
+        288 PS, Allrad, ACC, Vorteilspreis auf km-Pakete. Effektiv 441 EUR mit Gutschein = 106 EUR unter Budget. PHEV heisst: elektrisch pendeln (Barmelweid ~50 km?), Benzin fuer Langstrecke. In JEDEM Grok-Szenario das guenstigste AWD-Auto. Kein Bose, aber das sparst du dir lieber und investierst die 360 EUR/Jahr Differenz zum Prime in die km-Nachzahlung.
+      </div>
+      <div class="finn-reco-highlight">
+        <strong>Wenn Bose + Elektro Pflicht: Hyundai IONIQ 5 AWD Techniq (509 EUR/Mon.)</strong><br>
+        325 PS, Allrad, Bose, ACC, 546 km Reichweite. Rate (509) ist 38 EUR UNTER deinem jetzigen Abo (547). Kostet in allen drei Szenarien gleich viel = maximale Planungssicherheit. Sofortiges Drehmoment bei Schnee, Vorklimatisierung beim Laden. Einziges Auto auf FINN mit ALLEN Features: Bose + AWD + ACC + Elektro.
+      </div>
+      <div class="finn-reco-highlight">
+        <strong>Geheimtipp: Skoda Elroq 85x Sportline AWD (469 EUR/Mon.)</strong><br>
+        286 PS Elektro, AWD, 523 km, Canton-Sound, AHK. VW-Konzern Qualitaet. Ab Base Case guenstiger als alle PHEVs. Sportline-Design ist schick.
+      </div>
+      <p style="margin-top:12px"><strong>Sofort handeln:</strong> Jeder Tag mit dem Toyota kostet ~15 EUR Mehrkilometer. Tucson Prime AWD ist ab 09.04. verfuegbar (3 Tage!). Gutschein einloesen bei Abo-Buchung.</p>
+      <p><strong>Gutschein-Code:</strong></p>
+      <div class="finn-gutschein">FINNloyalty.40769051.1000.11427</div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Gueltig bis 06.04.2028 | 1.000 EUR auf Bereitstellungskosten</p>
+    </div>
+
   </div>
 
   <!-- RAG TAB -->

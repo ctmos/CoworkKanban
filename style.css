@@ -3061,3 +3061,110 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
   .supps-row { grid-template-columns: 100px 80px 35px 1fr; gap: 4px; font-size: 12px; }
   .supps-header { flex-direction: column; gap: 8px; }
 }
+
+/* ═══════════════════════════════════════════════════ FINN TAB */
+.finn-hero {
+  background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px;
+}
+.finn-hero h3 { font-size: 14px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
+.finn-hero-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;
+}
+.finn-hero-item { font-size: 12px; }
+.finn-hero-item .fh-label { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+.finn-hero-item .fh-value { color: var(--text); font-weight: 600; font-size: 14px; }
+.finn-hero-item .fh-value.fh-warn { color: #ef4444; }
+.finn-hero-item .fh-value.fh-ok { color: var(--green); }
+
+.finn-section { margin-bottom: 22px; }
+.finn-section h3 {
+  font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-secondary); margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+
+.finn-table {
+  width: 100%; border-collapse: collapse; font-size: 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+}
+.finn-table th {
+  background: var(--bg); padding: 7px 8px; text-align: left; font-weight: 600;
+  font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.finn-table td {
+  padding: 8px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text);
+}
+.finn-table tr:last-child td { border-bottom: none; }
+.finn-table tr:hover td { background: var(--accent-light); }
+.finn-table tr.finn-row-highlight td { background: rgba(70,167,88,0.08); }
+.finn-table .finn-rank { font-weight: 700; color: var(--text-muted); font-size: 11px; text-align: center; }
+.finn-table .finn-model { font-weight: 600; color: var(--text); }
+.finn-table .finn-price { font-weight: 700; font-size: 13px; }
+.finn-table .finn-savings { color: var(--green); font-weight: 600; }
+
+.finn-badge {
+  display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 6px;
+  border-radius: 8px; white-space: nowrap;
+}
+.finn-badge-awd { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.finn-badge-fwd { background: rgba(75,85,99,0.12); color: #6b7280; }
+.finn-badge-elektro { background: rgba(34,197,94,0.12); color: #22c55e; }
+.finn-badge-phev { background: rgba(168,85,247,0.12); color: #a855f7; }
+.finn-badge-hybrid { background: rgba(234,179,8,0.12); color: #ca8a04; }
+.finn-badge-bose { background: rgba(229,72,77,0.12); color: var(--accent); }
+.finn-badge-hk { background: rgba(249,115,22,0.12); color: #f97316; }
+.finn-badge-canton { background: rgba(20,184,166,0.12); color: #14b8a6; }
+
+.finn-scenarios {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 18px;
+}
+.finn-scenario {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px;
+}
+.finn-scenario h4 { font-size: 12px; font-weight: 700; margin: 0 0 4px; }
+.finn-scenario .finn-sc-prob { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+.finn-scenario-best { border-left: 3px solid var(--green); }
+.finn-scenario-best h4 { color: var(--green); }
+.finn-scenario-base { border-left: 3px solid #f59e0b; }
+.finn-scenario-base h4 { color: #f59e0b; }
+.finn-scenario-worst { border-left: 3px solid #ef4444; }
+.finn-scenario-worst h4 { color: #ef4444; }
+.finn-sc-table {
+  width: 100%; font-size: 11px; border-collapse: collapse;
+}
+.finn-sc-table th { font-size: 10px; color: var(--text-muted); text-align: left; padding: 3px 4px; font-weight: 600; border-bottom: 1px solid var(--border); }
+.finn-sc-table td { padding: 3px 4px; color: var(--text); border-bottom: 1px solid var(--border); }
+.finn-sc-table tr:last-child td { border-bottom: none; }
+.finn-sc-table .finn-sc-total { font-weight: 700; }
+.finn-sc-table .finn-sc-save { color: var(--green); font-weight: 600; }
+
+.finn-reco {
+  background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--blue);
+  border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px;
+}
+.finn-reco h3 { font-size: 14px; font-weight: 700; color: var(--blue); margin: 0 0 12px; border: none; padding: 0; text-transform: none; letter-spacing: 0; }
+.finn-reco p { font-size: 13px; color: var(--text); line-height: 1.6; margin: 0 0 8px; }
+.finn-reco strong { color: var(--text); }
+.finn-reco .finn-reco-highlight {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px 14px; margin: 10px 0; font-size: 13px;
+}
+
+.finn-link {
+  color: var(--blue); text-decoration: none; font-size: 11px; font-weight: 500;
+}
+.finn-link:hover { text-decoration: underline; }
+
+.finn-gutschein {
+  background: var(--surface); border: 1px solid var(--green); border-radius: var(--radius-sm);
+  padding: 10px 14px; display: inline-block; font-family: monospace; font-size: 13px;
+  color: var(--green); font-weight: 600; letter-spacing: 0.02em;
+}
+
+@media (max-width: 700px) {
+  .finn-table { font-size: 11px; }
+  .finn-table th, .finn-table td { padding: 5px 4px; }
+  .finn-hero-grid { grid-template-columns: 1fr 1fr; }
+  .finn-scenarios { grid-template-columns: 1fr; }
+}
