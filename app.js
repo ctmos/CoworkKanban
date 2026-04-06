@@ -435,6 +435,8 @@ function switchTab(id) {
 
   if (id === 'on') showONTab();
 
+  if (id === 'supps') showSuppsTab();
+
 }
 
 
@@ -5734,6 +5736,107 @@ function renderONScheduled(hb) {
 }
 
 
+// ─── SUPPS TAB ─────────────────────────────────────────────────────────────────
+
+function showSuppsTab() {
+  var c = document.getElementById('supps-container');
+  if (!c) return;
+
+  var today = new Date();
+  var dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  var dayOfWeek = today.getDay();
+  var todayStr = dayNames[dayOfWeek] + ', ' + today.getDate() + '.' + (today.getMonth()+1) + '.' + today.getFullYear();
+
+  // Bor cycle: 2 weeks ON, 1 week OFF. Start date: 2026-04-07 (Monday)
+  var borStart = new Date(2026, 3, 7);
+  var diffDays = Math.floor((today - borStart) / 86400000);
+  var cycleDay = ((diffDays % 21) + 21) % 21;
+  var borOn = cycleDay < 14;
+  var borLabel = borOn ? 'ON (Tag ' + (cycleDay+1) + '/14)' : 'OFF (Tag ' + (cycleDay-13) + '/7)';
+  var borClass = borOn ? 'supps-cycle-on' : 'supps-cycle-off';
+
+  var html = '';
+
+  // Header
+  html += '<div class="supps-header">';
+  html += '<div class="supps-date">' + todayStr + '</div>';
+  html += '<div class="supps-cycle ' + borClass + '">Bor-Zyklus: ' + borLabel + '</div>';
+  html += '</div>';
+
+  // MORGENS
+  html += '<div class="supps-block">';
+  html += '<div class="supps-block-title">04:50 — Vor Training</div>';
+  html += suppsRow('Elvanse', '50mg', 1, 'Medikation. Leerer Magen', 'med');
+  html += suppsRow('L-Theanin', '200mg', 1, 'Synergistisch mit Elvanse', 'supp');
+  html += suppsRow('Kreatin', '5g', 5, 'Taegliche Saettigung', 'supp');
+  html += '</div>';
+
+  // FRUEHSTUECK
+  html += '<div class="supps-block">';
+  html += '<div class="supps-block-title">06:30 — Fruehstueck (mit Fett)</div>';
+  html += suppsRow('Loratadin', '10mg', 1, 'NACH Training nehmen', 'med');
+  html += suppsRow('Vitamin D3+K2', '5000 IE', 1, 'Taeglich! D war 34,5 — Ziel 50+', 'supp');
+  html += suppsRow('Zink', '25mg', 1, 'T-Synthese, getrennt von Mg', 'supp');
+  if (borOn) {
+    html += suppsRow('Bor', '6mg', 2, 'SHBG-Senkung (FAI war 28,1)', 'cycle-on');
+  } else {
+    html += suppsRow('Bor', 'PAUSE', 0, 'Zyklus-Pause — kein Bor diese Woche', 'cycle-off');
+  }
+  html += suppsRow('Tongkat Ali', '200mg', 1, 'LH-Steigerung — T-Produktion', 'supp-t');
+  html += '</div>';
+
+  // ABENDS
+  html += '<div class="supps-block">';
+  html += '<div class="supps-block-title">20:00 — Abends</div>';
+  html += suppsRow('Omega-3', '2200mg EPA+DHA', 4, 'HDL, Entzuendung, Neuroprotektiv', 'supp');
+  html += suppsRow('Magnesium', '300mg', 3, 'Elvanse-Toleranz, Schlaf, Muskeln', 'supp');
+  html += suppsRow('Glycin', '3000mg', 3, 'Schlafqualitaet, Kollagen, Glutathion', 'supp');
+  html += '</div>';
+
+  // TOTAL
+  var total = 1+1+5 + 1+1+1+(borOn?2:0)+1 + 4+3+3;
+  html += '<div class="supps-total">Total heute: ' + total + ' Stueck</div>';
+
+  // ZYKLUSPLAN
+  html += '<div class="supps-block supps-info">';
+  html += '<div class="supps-block-title">Bor-Zyklusplan</div>';
+  html += '<div class="supps-info-text">2 Wochen ON (6mg/Tag) → 1 Woche OFF → repeat</div>';
+  html += '<div class="supps-info-text">Start: 07.04.2026 | Kein anderes Supplement braucht Cycling</div>';
+  html += '</div>';
+
+  // ZIELE
+  html += '<div class="supps-block supps-info">';
+  html += '<div class="supps-block-title">Ziele &amp; Kontroll-Labor</div>';
+  html += '<div class="supps-info-text">Testosteron: 3,65 µg/l → Ziel: obere Haelfte (>5,5)</div>';
+  html += '<div class="supps-info-text">FAI: 28,1 → Ziel: >35 (Referenz 35-93)</div>';
+  html += '<div class="supps-info-text">SHBG: 45,1 → Ziel: <40 nmol/l</div>';
+  html += '<div class="supps-info-text">Vitamin D: 34,5 µg/l → Ziel: 50+</div>';
+  html += '<div class="supps-info-text">Kontroll-Labor: Juli 2026 bei Dr. Matcau</div>';
+  html += '</div>';
+
+  // KAUFEN
+  html += '<div class="supps-block supps-info">';
+  html += '<div class="supps-block-title">Noch kaufen</div>';
+  html += '<div class="supps-info-text">Tongkat Ali 200mg (Nootropics Depot, 2% Eurycomanone) — amazon.de oder nootropicsdepot.com</div>';
+  html += '</div>';
+
+  c.innerHTML = html;
+}
+
+function suppsRow(name, dose, count, note, type) {
+  var cls = 'supps-row';
+  if (type === 'med') cls += ' supps-row--med';
+  if (type === 'cycle-on') cls += ' supps-row--cycle-on';
+  if (type === 'cycle-off') cls += ' supps-row--cycle-off';
+  if (type === 'supp-t') cls += ' supps-row--testo';
+  var h = '<div class="' + cls + '">';
+  h += '<span class="supps-name">' + name + '</span>';
+  h += '<span class="supps-dose">' + dose + '</span>';
+  h += '<span class="supps-count">' + (count > 0 ? count + 'x' : '—') + '</span>';
+  h += '<span class="supps-note">' + note + '</span>';
+  h += '</div>';
+  return h;
+}
 
 
 
