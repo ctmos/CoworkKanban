@@ -5776,8 +5776,8 @@ function showSuppsTab() {
   html += '<div class="supps-block">';
   html += '<div class="supps-block-title">06:30 — Fruehstueck (mit Fett!)</div>';
   html += suppsRow('Loratadin', 1, '1 Tablette (10mg)', 'NACH dem Training', 'med');
-  html += suppsRow('Vitamin D3+K2', 1, '1 Kapsel (125\u00b5g/5000 IE D3 + 100\u00b5g K2)', 'Aufsaettigung taeglich bis Juli, danach jeden 2. Tag', 'supp');
-  html += suppsRow('Zink', 1, '1 Kapsel (25mg Bisglycinat)', 'NUR Mo-Fr (5x/Wo) — Kupfer-Schutz', 'supp');
+  html += suppsRow('Vitamin D3+K2', 1, '1 Kapsel (125\u00b5g/5000 IE D3 + 100\u00b5g K2)', 'Jeden 2. Tag (Mo/Mi/Fr/So)', 'supp');
+  html += suppsRow('Zink', 1, '1 Kapsel (25mg Bisglycinat)', 'Jeden 2. Tag (Di/Do/Sa) — Kupfer-Schutz', 'supp');
   if (borOn) {
     html += suppsRow('Bor', 2, '2 Tabletten \u00e0 3mg', 'SHBG senken (FAI war 28,1)', 'cycle-on');
   } else {
@@ -5816,7 +5816,7 @@ function showSuppsTab() {
   html += '<div class="supps-block supps-info">';
   html += '<div class="supps-block-title">Bor-Zyklusplan</div>';
   html += '<div class="supps-info-text">2 Wochen ON (2x 3mg Tabs = 6mg/Tag) \u2192 1 Woche OFF \u2192 repeat</div>';
-  html += '<div class="supps-info-text">Start: 07.04.2026 | Zink nur Mo-Fr | D3 taeglich bis Juli, danach jeden 2. Tag</div>';
+  html += '<div class="supps-info-text">Start: 07.04.2026 | D3 jeden 2. Tag (Mo/Mi/Fr/So) | Zink jeden 2. Tag (Di/Do/Sa)</div>';
   html += '</div>';
 
   // PRAEPARATE
