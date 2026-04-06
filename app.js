@@ -437,6 +437,8 @@ function switchTab(id) {
 
   if (id === 'supps') showSuppsTab();
 
+  if (id === 'money') renderMoneyTab();
+
 }
 
 
@@ -5868,5 +5870,195 @@ function suppsRow(name, count, detail, note, type) {
   return h;
 }
 
+
+// ─── $$$ FINANZEN TAB ──────────────────────────────────────────────────────────
+
+function renderMoneyTab() {
+  var c = document.getElementById('money-container');
+  if (!c) return;
+
+  var h = '';
+
+  // --- KONTOST&Auml;NDE ---
+  h += '<div class="money-section">';
+  h += '<h3>Kontost\u00e4nde (Stand 02.04.2026)</h3>';
+  h += '<div class="money-grid">';
+  h += moneyCard('Hauptkonto', '6.944 EUR', 'Sparkasse Hochrhein');
+  h += moneyCard('Tagesgeld', '8.600 EUR', 'davon ~5.600 gebunden (PSP + Elisa)');
+  h += moneyCard('Schweizer CHF', '196 CHF', 'Lohnkonto Klinik Barmelweid');
+  h += moneyCard('Frei verf\u00fcgbar', '~10.000 EUR', 'Puffer');
+  h += '</div></div>';
+
+  // --- EINKOMMEN ---
+  h += '<div class="money-section">';
+  h += '<h3>Einkommen</h3>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
+  h += mRow('Lohn Christian (80%)', '5.709 CHF/Mon', 'Netto, nach Quellensteuer');
+  h += mRow('Aufstockung 90% (Apr-Jul 2026)', '+~600 CHF/Mon', 'Tempor\u00e4r');
+  h += mRow('13. Monatslohn', '~5.700 CHF', '2x j\u00e4hrlich (Jul + Dez)');
+  h += mRow('Kinderzulage', '450 CHF/Mon', 'Im Lohn enthalten');
+  h += mRow('Hannah Klinik', '? CHF/Mon', 'Daten ausstehend');
+  h += mRow('Hannah Hebamme', '? EUR/Mon', 'Teilselbstst\u00e4ndig, Daten ausstehend');
+  h += mRow('HanseMerkur Erstattungen', '~390 EUR/Mon', 'Katheter, Elvanse (durchlaufend)');
+  h += '</table></div>';
+
+  // --- FIXKOSTEN ---
+  h += '<div class="money-section">';
+  h += '<h3>Fixkosten (monatlich)</h3>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Posten</th><th>EUR/Mon</th><th>Status</th></tr>';
+  h += mRow('Hannah (Haushalt)', '3.070', 'Miete, Kinder, Lebensmittel, Steuersparen');
+  h += mRow('HanseMerkur PKV (3 Pers.)', '820', 'Christian + 2 Kinder');
+  h += mRow('FINN Auto-Abo (Toyota C-HR)', '547', 'Via Klarna, ENDET Mai 2026');
+  h += mRow('Telekom Mobilfunk (2 Handys)', '90', 'Inkl. Handy-Raten');
+  h += mRow('Vodafone Kabel-Internet', '44', '');
+  h += mRow('Sparkasse Kontogeb\u00fchren', '12', '');
+  h += mRow('Steuer-Vorauszahlung', '1.378', '4.134/Quartal — Aufteilung mit Hannah kl\u00e4ren');
+  h += '<tr class="money-subtotal"><td>Summe Fixkosten</td><td>5.961</td><td></td></tr>';
+  h += '</table></div>';
+
+  // --- ABOS & SUBSCRIPTIONS ---
+  h += '<div class="money-section">';
+  h += '<h3>Abos &amp; Subscriptions</h3>';
+
+  // AI & Tech
+  h += '<h4>KI &amp; Tech</h4>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Service</th><th>EUR/Mon</th><th>Status</th></tr>';
+  h += mRowStatus('Claude.ai Max 20', '180', 'keep', 'Runterstufen geplant');
+  h += mRowStatus('AWS (Lightsail + Bedrock)', '50', 'keep', 'Server + API');
+  h += mRowStatus('Google Cloud', '25', 'check', 'Brauchen wir das neben AWS?');
+  h += mRowStatus('OpenAI / ChatGPT', '23', 'cut', 'Claude reicht');
+  h += mRowStatus('Google One 2TB', '22', 'keep', 'Cloud-Speicher');
+  h += mRowStatus('OpenRouter', '20', 'keep', 'Hermine LLM');
+  h += mRowStatus('Replit Core', '20', 'cut', 'Noch aktiv?');
+  h += mRowStatus('xAI / Grok', '19', 'cut', 'Hermine nutzt DeepSeek');
+  h += mRowStatus('Wispr Flow Pro', '15', 'cut', 'Sprachsteuerung aktiv?');
+  h += mRowStatus('Anthropic API', '10', 'keep', 'Hermine');
+  h += mRowStatus('Notion', '5', 'keep', 'LifeOS');
+  h += '<tr class="money-subtotal"><td>Summe KI &amp; Tech</td><td>389</td><td>K\u00fcndigbar: ~77/Mon</td></tr>';
+  h += '</table>';
+
+  // Hosting
+  h += '<h4>Hosting</h4>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Service</th><th>EUR/Mon</th><th>Status</th></tr>';
+  h += mRowStatus('Variomedia (moser.ai)', '37', 'check', '222/Halbjahr — g\u00fcnstigerer Anbieter?');
+  h += mRowStatus('Strato', '0?', 'check', 'Gek\u00fcndigt Nov 2024 — pr\u00fcfen');
+  h += '</table>';
+
+  // Entertainment
+  h += '<h4>Entertainment</h4>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Service</th><th>EUR/Mon</th><th>Status</th></tr>';
+  h += mRowStatus('Spotify', '22', 'keep', 'Musik');
+  h += mRowStatus('Amazon Prime', '9', 'keep', 'Versand + Video');
+  h += mRowStatus('Audible', '0?', 'check', 'Vermutlich inaktiv seit Jan 2025');
+  h += '</table>';
+
+  // Telekom/Versicherung (already in Fixkosten)
+  h += '</div>';
+
+  // --- VARIABLE AUSGABEN ---
+  h += '<div class="money-section">';
+  h += '<h3>Variable Ausgaben (Durchschnitt/Monat)</h3>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Kategorie</th><th>Aktuell</th><th>Budget-Ziel</th></tr>';
+  h += mRowBudget('Amazon', '510', '150', 'Hartes Limit. 24h-Regel.');
+  h += mRowBudget('Kleidung (Best Secret etc.)', '465', '100', 'App l\u00f6schen. 1x/Monat max.');
+  h += mRowBudget('Swiss Bankers Prepaid (CH)', '280', '250', 'Mittagessen etc. in CH');
+  h += mRowBudget('Lebensmittel', '175', '175', '');
+  h += mRowBudget('Essen gehen', '165', '100', 'Chinatown, McDonalds etc.');
+  h += mRowBudget('Bargeld', '107', '80', 'Geldautomat Kadelburg');
+  h += mRowBudget('Tanken', '80', '80', 'Shell, Esso');
+  h += mRowBudget('Gesundheit (nach Erstattung)', '75', '75', 'Zuzahlungen');
+  h += '<tr class="money-subtotal"><td>Summe variabel</td><td>1.857</td><td>1.010</td></tr>';
+  h += '</table></div>';
+
+  // --- TEMPORAERE KOSTEN ---
+  h += '<div class="money-section">';
+  h += '<h3>Tempor\u00e4re Kosten (enden bald)</h3>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Posten</th><th>EUR/Mon</th><th>Endet</th></tr>';
+  h += mRow('PSP Weiterbildung', '~560', '2026 (genaues Datum kl\u00e4ren)');
+  h += mRow('FINN Auto-Abo', '547', 'Mai 2026');
+  h += mRow('Claude Max 20 (wenn runtergestuft)', '~90-160', 'Wenn bereit');
+  h += mRow('K\u00fcndigbare KI-Abos', '~77', 'Sofort m\u00f6glich');
+  h += '<tr class="money-subtotal"><td>M\u00f6gliche Entlastung</td><td>~1.274-1.344</td><td></td></tr>';
+  h += '</table></div>';
+
+  // --- STEUERN ---
+  h += '<div class="money-section">';
+  h += '<h3>Steuern 2026</h3>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
+  h += mRow('Einkommensteuer Vorauszahlung', '4.035/Quartal', '10. M\u00e4rz / Juni / Sep / Dez');
+  h += mRow('Kirchensteuer (Hannah)', '99/Quartal', 'Evangelisch');
+  h += mRow('Solidarit\u00e4tszuschlag', '0', '');
+  h += mRow('Gesamt pro Quartal', '4.134', '');
+  h += mRow('Gesamt pro Jahr', '16.536', '');
+  h += mRow('CH-Quellensteuer (Christian)', '~320/Mon', 'Wird direkt vom Lohn abgezogen');
+  h += '</table>';
+  h += '<p style="color:var(--text-muted);font-size:13px">Steuerberater: Vereinigte Lohnsteuerhilfe e.V. (Diana Gatti, Grafenhausen)</p>';
+  h += '</div>';
+
+  // --- LOHN-DETAILS ---
+  h += '<div class="money-section">';
+  h += '<h3>Lohnabrechnung Christian (Jan 2026)</h3>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Position</th><th>CHF</th></tr>';
+  h += mRow2('Monatslohn (80%)', '6.658,40');
+  h += mRow2('Kinderzulage 2x', '+450,00');
+  h += mRow2('BRUTTO', '7.108,40');
+  h += mRow2('Abz\u00fcge (AHV, ALV, Unfall, KTG, PK)', '-999,25');
+  h += mRow2('NETTO', '6.109,15');
+  h += mRow2('Quellensteuer 4,5%', '-319,90');
+  h += mRow2('Parkplatz', '-80,00');
+  h += '<tr class="money-subtotal"><td>Auszahlung</td><td>5.709,25</td></tr>';
+  h += '</table>';
+  h += '<p style="color:var(--text-muted);font-size:13px">Ab April 2026: 90% Pensum (7.490,70 brutto) bis Juli, dann zur\u00fcck auf 80%</p>';
+  h += '</div>';
+
+  // --- OFFENE PUNKTE ---
+  h += '<div class="money-section">';
+  h += '<h3>Offene Punkte</h3>';
+  h += '<ul style="list-style:none;padding:0">';
+  h += '<li>&#9744; Hannahs Einkommen (Klinik + Hebamme)</li>';
+  h += '<li>&#9744; Miete / Nebenkosten</li>';
+  h += '<li>&#9744; Steuer-Aufteilung (wer zahlt was)</li>';
+  h += '<li>&#9744; Kita/Kinder-Kosten</li>';
+  h += '<li>&#9744; PSP Ende-Datum</li>';
+  h += '<li>&#9744; FINN-Entscheidung (Mai 2026)</li>';
+  h += '<li>&#9744; Abo-Durchgang (k\u00fcndigen/behalten)</li>';
+  h += '<li>&#9744; Best Secret App l\u00f6schen</li>';
+  h += '<li>&#9744; Amazon Budget einrichten</li>';
+  h += '</ul></div>';
+
+  c.innerHTML = h;
+}
+
+function moneyCard(title, value, sub) {
+  return '<div class="money-card"><div class="money-card-value">' + esc(value) + '</div><div class="money-card-title">' + esc(title) + '</div><div class="money-card-sub">' + esc(sub) + '</div></div>';
+}
+
+function mRow(a, b, c) {
+  return '<tr><td>' + esc(a) + '</td><td>' + esc(b) + '</td><td>' + esc(c) + '</td></tr>';
+}
+
+function mRow2(a, b) {
+  return '<tr><td>' + esc(a) + '</td><td>' + esc(b) + '</td></tr>';
+}
+
+function mRowStatus(name, amount, status, note) {
+  var cls = status === 'keep' ? 'money-keep' : status === 'cut' ? 'money-cut' : 'money-check';
+  var icon = status === 'keep' ? '&#9989;' : status === 'cut' ? '&#10060;' : '&#10067;';
+  return '<tr class="' + cls + '"><td>' + icon + ' ' + esc(name) + '</td><td>' + esc(amount) + '</td><td>' + esc(note) + '</td></tr>';
+}
+
+function mRowBudget(name, current, target, note) {
+  var cls = parseInt(current) > parseInt(target) ? 'money-over' : '';
+  return '<tr class="' + cls + '"><td>' + esc(name) + '</td><td>' + esc(current) + '</td><td><strong>' + esc(target) + '</strong> ' + esc(note) + '</td></tr>';
+}
 
 
