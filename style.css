@@ -3191,3 +3191,87 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
   .finn-hero-grid { grid-template-columns: 1fr 1fr; }
   .finn-scenarios { grid-template-columns: 1fr; }
 }
+
+/* ─── $$$ FINANZEN TAB ───────────────────────────────────────────────────── */
+
+.money-section {
+  margin-bottom: 24px;
+  background: var(--surface1);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.money-section h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: var(--text);
+}
+.money-section h4 {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.money-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+.money-card {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+.money-card-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+.money-card-title {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.money-card-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.money-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.money-table th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 12px;
+}
+.money-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.money-table tr.money-subtotal td {
+  font-weight: 700;
+  border-top: 2px solid var(--border);
+  padding-top: 8px;
+}
+.money-keep td:first-child { color: var(--green, #4ade80); }
+.money-cut td:first-child { color: var(--red, #ef4444); }
+.money-check td:first-child { color: var(--yellow, #facc15); }
+.money-over td:nth-child(2) { color: var(--red, #ef4444); font-weight: 600; }
+
+.money-section ul li {
+  padding: 4px 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+@media (max-width: 600px) {
+  .money-grid { grid-template-columns: 1fr 1fr; }
+  .money-table { font-size: 12px; }
+  .money-table th, .money-table td { padding: 4px 5px; }
+}
