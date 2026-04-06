@@ -5776,14 +5776,14 @@ function showSuppsTab() {
   html += '<div class="supps-block">';
   html += '<div class="supps-block-title">06:30 — Fruehstueck (mit Fett!)</div>';
   html += suppsRow('Loratadin', 1, '1 Tablette (10mg)', 'NACH dem Training', 'med');
-  html += suppsRow('Vitamin D3+K2', 1, '1 Kapsel (5000 IE D3 + 100\u00b5g K2)', 'Taeglich! Vit D war 34,5 \u2192 Ziel 50+', 'supp');
-  html += suppsRow('Zink', 1, '1 Kapsel (25mg Bisglycinat)', 'T-Synthese, getrennt von Mg', 'supp');
+  html += suppsRow('Vitamin D3+K2', 1, '1 Kapsel (125\u00b5g/5000 IE D3 + 100\u00b5g K2)', 'Aufsaettigung taeglich bis Juli, danach jeden 2. Tag', 'supp');
+  html += suppsRow('Zink', 1, '1 Kapsel (25mg Bisglycinat)', 'NUR Mo-Fr (5x/Wo) — Kupfer-Schutz', 'supp');
   if (borOn) {
     html += suppsRow('Bor', 2, '2 Tabletten \u00e0 3mg', 'SHBG senken (FAI war 28,1)', 'cycle-on');
   } else {
     html += suppsRow('Bor', 0, 'PAUSE — kein Bor diese Woche', 'Zyklus-Pause verhindert Gewoehnung', 'cycle-off');
   }
-  html += suppsRow('Tongkat Ali', 1, '1 Kapsel (200mg, 2% Eurycomanone)', 'T-Produktion via LH', 'supp-t');
+  html += suppsRow('Tongkat Ali', 1, '1 Tablet (100mg, 10% Eurycomanone, Nootropics Depot)', 'T-Produktion via LH', 'supp-t');
   html += '<div class="supps-block-hint">= ' + (borOn ? '6' : '4') + ' Stueck zum Essen (Fett noetig fuer D3)</div>';
   html += '</div>';
 
@@ -5816,7 +5816,7 @@ function showSuppsTab() {
   html += '<div class="supps-block supps-info">';
   html += '<div class="supps-block-title">Bor-Zyklusplan</div>';
   html += '<div class="supps-info-text">2 Wochen ON (2x 3mg Tabs = 6mg/Tag) \u2192 1 Woche OFF \u2192 repeat</div>';
-  html += '<div class="supps-info-text">Start: 07.04.2026 | Alle anderen Supps taeglich durchgehend</div>';
+  html += '<div class="supps-info-text">Start: 07.04.2026 | Zink nur Mo-Fr | D3 taeglich bis Juli, danach jeden 2. Tag</div>';
   html += '</div>';
 
   // PRAEPARATE
@@ -5833,7 +5833,7 @@ function showSuppsTab() {
   html += '<tr><td>Magnesium</td><td>Bisglycinat 100mg Kapseln</td><td>100mg</td></tr>';
   html += '<tr><td>Omega-3</td><td>WeightWorld 2000mg Fisch\u00f6l Weichkapseln</td><td>330mg EPA + 220mg DHA</td></tr>';
   html += '<tr><td>D3+K2</td><td>5000 IE D3 + 100\u00b5g K2 Kombi-Kapsel</td><td>5000 IE + 100\u00b5g</td></tr>';
-  html += '<tr><td>Tongkat Ali</td><td>Nootropics Depot 2% Eurycomanone</td><td>200mg</td></tr>';
+  html += '<tr><td>Tongkat Ali</td><td>Nootropics Depot 10% Eurycomanone Tablets</td><td>100mg (10mg Eurycomanone)</td></tr>';
   html += '</tbody></table>';
   html += '</div>';
 
