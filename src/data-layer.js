@@ -1144,7 +1144,9 @@ async function savePatientsToGitHub() {
 
       var pJson = JSON.stringify(_appState.patients, null, 2);
 
-      await safeWriteToGitHub('data/patients.json', pJson, 'sync: auto-save patients');
+      var pContent = await encryptJSON(pJson);
+
+      await safeWriteToGitHub('data/patients.json', pContent, 'sync: auto-save patients');
 
     } catch(e) {
 
@@ -1176,7 +1178,9 @@ async function pullMergePushPatients() {
 
     try {
 
-      var remotePatients = JSON.parse(remote.content) || [];
+      var decContent = await decryptJSON(remote.content);
+
+      var remotePatients = JSON.parse(decContent) || [];
 
       var localPatients = _appState.patients || [];
 
@@ -1521,7 +1525,7 @@ async function loadFromGitHub() {
 
 
 
-    // Load patients (plain JSON — no encryption)
+    // Load patients (PIN-derived AES-256-GCM encryption)
 
     var patientsRemote = await fetchFromGitHub('data/patients.json');
 
@@ -1529,7 +1533,9 @@ async function loadFromGitHub() {
 
       try {
 
-        _appState.patients = JSON.parse(patientsRemote.content) || [];
+        var pContent = await decryptJSON(patientsRemote.content);
+
+        _appState.patients = JSON.parse(pContent) || [];
 
       } catch(e) { console.error('[loadFromGitHub] patients parse:', e); }
 

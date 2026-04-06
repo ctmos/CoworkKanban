@@ -2,15 +2,7 @@
 
 var _encKey = null;
 
-async function importEncKey(hexKey) {
-  var bytes = new Uint8Array(hexKey.match(/.{2}/g).map(function(b) { return parseInt(b, 16); }));
-  return crypto.subtle.importKey('raw', bytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
-}
-
-function generateEncKeyHex() {
-  var bytes = crypto.getRandomValues(new Uint8Array(32));
-  return Array.from(bytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-}
+// importEncKey/generateEncKeyHex removed — key is now derived from PIN via PBKDF2
 
 function bytesToBase64(bytes) {
   var bin = '', len = bytes.length, chunk = 8192;
@@ -48,12 +40,7 @@ async function decryptJSON(content) {
   }
 }
 
-(function() {
-  var savedKey = localStorage.getItem('cowork_enc_key');
-  if (savedKey && savedKey.length === 64) {
-    importEncKey(savedKey).then(function(k) { _encKey = k; });
-  }
-})();
+// _encKey is now derived from PIN at login — no localStorage dependency
 
 // ─── SECURE TOKEN STORAGE (PIN-encrypted) ───────────────────────────────────
 
@@ -86,8 +73,7 @@ async function decryptWithPin(encryptedJson, pin) {
 
 async function storeSecureVault(pin) {
   var vault = JSON.stringify({
-    gh_token: _appState.gh_token || localStorage.getItem('cowork_gh_token') || '',
-    enc_key: localStorage.getItem('cowork_enc_key') || ''
+    gh_token: _appState.gh_token || localStorage.getItem('cowork_gh_token') || ''
   });
   var encrypted = await encryptWithPin(vault, pin);
   localStorage.setItem('cowork_vault', encrypted);
@@ -101,7 +87,7 @@ async function unlockSecureVault(pin) {
   try {
     var v = JSON.parse(vault);
     if (v.gh_token) { _appState.gh_token = v.gh_token; }
-    if (v.enc_key && v.enc_key.length === 64) { _encKey = await importEncKey(v.enc_key); }
+    // enc_key no longer in vault — derived from PIN via PBKDF2
     return true;
   } catch(e) { return false; }
 }
@@ -164,7 +150,11 @@ function showPinUnlockUI(stored) {
 
       sessionStorage.setItem('cowork_pin_val', p);
 
-      unlockSecureVault(p).then(function(ok) {
+      // Derive patient encryption key from PIN (deterministic — same PIN = same key)
+      deriveKeyFromPin(p, 'lifeos-patient-enc').then(function(k) {
+        _encKey = k;
+        return unlockSecureVault(p);
+      }).then(function(ok) {
         if (!ok && !_appState.gh_token) {
           var saved = localStorage.getItem('cowork_gh_token');
           if (saved) _appState.gh_token = saved;
@@ -1911,7 +1901,7 @@ function updateALBadge(){var badge=document.getElementById('al-badge');if(!badge
 
 // ─── EINSTELLUNGEN ────────────────────────────────────────────────────────────
 
-function initSettings(){var settings=ls('cowork_settings',{});var token=settings.gh_token||ls('cowork_gh_token','')||localStorage.getItem('cowork_gh_token')||'';document.getElementById('gh-token-input').value=token;if(!_appState.gh_token&&token){_appState.gh_token=token;}document.getElementById('budget-input').value=settings.budget||ls('cowork_budget',100);var ek=localStorage.getItem('cowork_enc_key');document.getElementById('enc-status').textContent=(ek&&ek.length===64)?'Verschl\u00fcsselung aktiv':'Kein Key gesetzt \u2014 Patientendaten unverschl\u00fcsselt';}
+function initSettings(){var settings=ls('cowork_settings',{});var token=settings.gh_token||ls('cowork_gh_token','')||localStorage.getItem('cowork_gh_token')||'';document.getElementById('gh-token-input').value=token;if(!_appState.gh_token&&token){_appState.gh_token=token;}document.getElementById('budget-input').value=settings.budget||ls('cowork_budget',100);document.getElementById('enc-status').textContent=_encKey?'PIN-Verschl\u00fcsselung aktiv (PBKDF2)':'Kein Key \u2014 Patientendaten unverschl\u00fcsselt';}
 
 (function(){var saved=localStorage.getItem('cowork_gh_token');if(saved&&!_appState.gh_token){_appState.gh_token=saved;}})();
 
@@ -1921,11 +1911,9 @@ document.getElementById('btn-budget-save').addEventListener('click',function(){v
 
 document.getElementById('btn-pin-change').addEventListener('click',async function(){var val=document.getElementById('new-pin-input').value.trim();if(val.length<4||val.length>6||!/^\d+$/.test(val)){showToast('PIN muss 4\u20136 Ziffern sein',true);return;}var newHash=hashPin(val);_appState.pin_hash=newHash;sessionStorage.setItem('cowork_pin_set','true');document.getElementById('new-pin-input').value='';try{await safeWriteToGitHub('settings/pin.json',JSON.stringify({pin_hash:newHash},null,2),'sync: update PIN');showToast('\u2705 PIN ge\u00e4ndert & synchronisiert');}catch(e){showToast('\u274c PIN-Sync fehlgeschlagen',true);}});
 
-document.getElementById('btn-enc-save').addEventListener('click',async function(){var hex=document.getElementById('enc-key-input').value.trim();if(!/^[0-9a-fA-F]{64}$/.test(hex)){showToast('Key muss 64 Hex-Zeichen sein',true);return;}localStorage.setItem('cowork_enc_key',hex);_encKey=await importEncKey(hex);var pin=sessionStorage.getItem('cowork_pin_val');if(pin)await storeSecureVault(pin);document.getElementById('enc-key-input').value='';document.getElementById('enc-status').textContent='Verschl\u00fcsselung aktiv';showToast('\u2705 Key gespeichert & verschl\u00fcsselt');});
-
-document.getElementById('btn-enc-generate').addEventListener('click',function(){var hex=generateEncKeyHex();document.getElementById('enc-key-input').value=hex;document.getElementById('enc-key-input').type='text';document.getElementById('enc-status').textContent='Key generiert \u2014 JETZT KOPIEREN und sicher aufbewahren, dann Speichern klicken';});
-
-(function(){var k=localStorage.getItem('cowork_enc_key');if(k&&document.getElementById('enc-status')){document.getElementById('enc-status').textContent=k.length===64?'Verschl\u00fcsselung aktiv':'Kein Key gesetzt';}})();
+// Encryption key buttons disabled — key is now auto-derived from PIN (PBKDF2)
+if(document.getElementById('btn-enc-save'))document.getElementById('btn-enc-save').addEventListener('click',function(){showToast('Key wird automatisch aus PIN abgeleitet');});
+if(document.getElementById('btn-enc-generate'))document.getElementById('btn-enc-generate').addEventListener('click',function(){showToast('Key wird automatisch aus PIN abgeleitet');});
 
 document.getElementById('btn-export').addEventListener('click',function(){var data={cards:ls('cowork_cards',{}),patients:ls('cowork_patients',[]),autonomy:ls('cowork_autonomy_log',[]),seqs:_appState.seqs,exportedAt:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='cowork-export-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);});
 
@@ -3991,8 +3979,11 @@ if ('serviceWorker' in navigator) {
 if (sessionStorage.getItem('cowork_pin_set') === 'true') {
   var savedPin = sessionStorage.getItem('cowork_pin_val');
   if (savedPin) {
-    // Restore token from vault or localStorage
-    unlockSecureVault(savedPin).then(function(ok) {
+    // Derive patient encryption key from PIN, then restore token
+    deriveKeyFromPin(savedPin, 'lifeos-patient-enc').then(function(k) {
+      _encKey = k;
+      return unlockSecureVault(savedPin);
+    }).then(function(ok) {
       if (!ok && !_appState.gh_token) {
         var saved = localStorage.getItem('cowork_gh_token');
         if (saved) _appState.gh_token = saved;
