@@ -502,9 +502,7 @@ async function loadCalendarEvents() {
 
     var d = await r.json();
 
-    var _b64c = d.content.replace(/\n/g,'');
-
-    window._calEvents = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(_b64c), function(c){return c.charCodeAt(0);})));
+    window._calEvents = JSON.parse(decodeBase64Utf8(d.content));
 
   } catch(e) { console.warn('calendar load failed', e); }
 
@@ -2813,8 +2811,7 @@ async function fetchUsageData() {
     });
     if (!res.ok) return;
     var data = await res.json();
-    var decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
-    var usage = JSON.parse(decoded);
+    var usage = JSON.parse(decodeBase64Utf8(data.content));
     renderUsageWidget(usage);
   } catch(e) {
     console.warn('[usage] fetch failed', e);
@@ -3110,8 +3107,7 @@ async function showImperialKITab() {
       { headers: { Authorization: 'token ' + token } });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var d = await r.json();
-    var _b64ik = d.content.replace(/\n/g,'');
-    _ikCache = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(_b64ik), function(c){return c.charCodeAt(0);})));
+    _ikCache = JSON.parse(decodeBase64Utf8(d.content));
     _ikCache = migrateIKData(_ikCache);
   } catch(e) {
     container.innerHTML = '<div class="empty-state">Fehler: ' + esc(e.message) + '</div>';
@@ -3579,9 +3575,7 @@ async function showSystemTab() {
 
     var d = await r.json();
 
-    var _b64sl = d.content.replace(/\n/g,'');
-
-    _systemLogCache = JSON.parse(new TextDecoder('utf-8').decode(Uint8Array.from(atob(_b64sl), function(c){return c.charCodeAt(0);})));
+    _systemLogCache = JSON.parse(decodeBase64Utf8(d.content));
 
   } catch(e) {
 
@@ -4812,11 +4806,7 @@ async function checkForRemoteChanges() {
 
           var pd = await pr.json();
 
-          var _b64p = pd.content.replace(/\n/g, '');
-
-          var _bytesP = Uint8Array.from(atob(_b64p), function(c) { return c.charCodeAt(0); });
-
-          var rawText = new TextDecoder('utf-8').decode(_bytesP);
+          var rawText = decodeBase64Utf8(pd.content);
 
           var decText = await decryptJSON(rawText);
 
@@ -5085,7 +5075,7 @@ async function processRAGQueue() {
         var partNames = [];
         for (var p = 0; p < parts.length; p++) {
           updateRAGProgress(item.name, p + 1, totalParts + 1, 'Teil ' + (p + 1) + ' / ' + totalParts);
-          var partB64 = btoa(unescape(encodeURIComponent(parts[p].text)));
+          var partB64 = encodeUtf8Base64(parts[p].text);
           var partPath = 'data/rag-inbox/' + parts[p].name;
           var pr = await uploadSingleToGitHub(token, partPath, partB64, 'rag-part: ' + parts[p].name);
           if (!pr.ok && pr.status !== 200 && pr.status !== 201) throw new Error('Part upload failed: HTTP ' + pr.status);
@@ -5100,7 +5090,7 @@ async function processRAGQueue() {
           parts: partNames, context: item.context || '',
           uploaded_at: new Date().toISOString()
         });
-        var manifestB64 = btoa(unescape(encodeURIComponent(manifest)));
+        var manifestB64 = encodeUtf8Base64(manifest);
         var manifestPath = 'data/rag-inbox/' + baseName + '.manifest.json';
         await uploadSingleToGitHub(token, manifestPath, manifestB64, 'rag-manifest: ' + baseName);
         uploadedNames.push(baseName + '.manifest.json');
@@ -5127,7 +5117,7 @@ async function processRAGQueue() {
           if (statusEl) { statusEl.textContent = 'Hochgeladen'; statusEl.className = 'rag-queue-status done'; }
           uploadedNames.push(item.name);
           if (item.context) {
-            var metaContent = btoa(unescape(encodeURIComponent('Kontext: ' + item.context + '\nDatei: ' + item.name + '\nUpload: ' + new Date().toISOString())));
+            var metaContent = encodeUtf8Base64('Kontext: ' + item.context + '\nDatei: ' + item.name + '\nUpload: ' + new Date().toISOString());
             await uploadSingleToGitHub(token, path + '.meta.txt', metaContent, 'rag-meta: ' + item.name).catch(function() {});
           }
         } else {
@@ -5344,7 +5334,7 @@ async function submitGDriveImport() {
     file_id: fileId, context: context,
     requested_at: new Date().toISOString(), status: 'pending'
   });
-  var b64 = btoa(unescape(encodeURIComponent(request)));
+  var b64 = encodeUtf8Base64(request);
   var path = 'data/rag-gdrive-requests/' + fileId.substring(0, 16) + '.json';
 
   try {
@@ -5421,7 +5411,7 @@ function loadWikiStatus() {
   }).then(function(r) { return r.ok ? r.json() : null; })
     .then(function(data) {
       if (!data || !data.content) return;
-      var status = JSON.parse(atob(data.content));
+      var status = JSON.parse(decodeBase64Utf8(data.content));
       if (statsBar) {
         var wikiChunks = status.wiki_chunks_in_lancedb || 0;
         var pending = status.pending_files || 0;
@@ -5458,7 +5448,7 @@ function loadWikiIndex() {
         renderWikiArticles();
         return;
       }
-      _wikiIndex = JSON.parse(atob(data.content));
+      _wikiIndex = JSON.parse(decodeBase64Utf8(data.content));
       renderWikiArticles();
     }).catch(function() {
       _wikiIndex = { articles: [] };
@@ -5520,7 +5510,7 @@ function triggerWikiCompile() {
   var token = getGHToken();
   if (!token) return;
   var req = { trigger: 'compile', requested_at: new Date().toISOString(), max_files: 10 };
-  var content = btoa(JSON.stringify(req));
+  var content = encodeUtf8Base64(JSON.stringify(req));
   fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/wiki-compile-request.json', {
     method: 'PUT',
     headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },

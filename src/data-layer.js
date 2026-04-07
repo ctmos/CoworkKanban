@@ -20,6 +20,24 @@ function verifyPin(input) {
 
 
 
+// ─── UTF-8 BASE64 HELPERS ───────────────────────────────────────────────────
+// IMMER diese Funktionen fuer GitHub API base64 content nutzen.
+// Nie direkt atob()/btoa() auf Strings mit Nicht-ASCII-Zeichen anwenden.
+
+function decodeBase64Utf8(b64) {
+  var binary = atob(b64.replace(/\n/g, ''));
+  var bytes = new Uint8Array(binary.length);
+  for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
+function encodeUtf8Base64(str) {
+  var bytes = new TextEncoder().encode(str);
+  var binary = '';
+  bytes.forEach(function(b) { binary += String.fromCharCode(b); });
+  return btoa(binary);
+}
+
 // ─── GITHUB HELPERS ──────────────────────────────────────────────────────────
 
 const GH_TOKEN = '';
@@ -558,13 +576,9 @@ async function fetchFromGitHub(path, options) {
 
     var d = await r.json();
 
-    var _b64 = d.content.replace(/\n/g, '');
-
-    var _bytes = Uint8Array.from(atob(_b64), function(c) { return c.charCodeAt(0); });
-
     if (ghSHA.hasOwnProperty(path)) ghSHA[path] = d.sha;
 
-    return { content: new TextDecoder('utf-8').decode(_bytes), sha: d.sha };
+    return { content: decodeBase64Utf8(d.content), sha: d.sha };
 
   } catch(e) {
 
@@ -652,13 +666,7 @@ async function writeBackupToGitHub(path, content) {
 
   if (!token) throw new Error('No token for backup');
 
-  var bytes = new TextEncoder().encode(content);
-
-  var binary = '';
-
-  bytes.forEach(function(b) { binary += String.fromCharCode(b); });
-
-  var encoded = btoa(binary);
+  var encoded = encodeUtf8Base64(content);
 
   var res = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/contents/' + path, {
 
@@ -778,13 +786,13 @@ async function safeWriteToGitHub(path, content, message, maxRetries) {
 
       // Step 2: Encode content (proper UTF-8)
 
-      var bytes = new TextEncoder().encode(content);
+      var contentSize = new TextEncoder().encode(content).length;
 
       // Step 2b: SizeGuard — block if new content < 85% of remote (data loss protection)
 
-      if (remoteSize > 500 && bytes.length < remoteSize * 0.85) {
+      if (remoteSize > 500 && contentSize < remoteSize * 0.85) {
 
-        var sgMsg = '[SizeGuard] BLOCKED: ' + path + ' new size ' + bytes.length + ' < 85% of remote ' + remoteSize + '. Possible data loss.';
+        var sgMsg = '[SizeGuard] BLOCKED: ' + path + ' new size ' + contentSize + ' < 85% of remote ' + remoteSize + '. Possible data loss.';
 
         console.error(sgMsg);
 
@@ -792,11 +800,7 @@ async function safeWriteToGitHub(path, content, message, maxRetries) {
 
       }
 
-      var binary = '';
-
-      bytes.forEach(function(b) { binary += String.fromCharCode(b); });
-
-      var encoded = btoa(binary);
+      var encoded = encodeUtf8Base64(content);
 
 
 
