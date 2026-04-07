@@ -5837,34 +5837,74 @@ function renderMoneyTab() {
   h += moneyCard('Frei verf\u00fcgbar', '~10.000 EUR', 'Puffer');
   h += '</div></div>';
 
-  // --- EINKOMMEN ---
+  // --- EINKOMMEN HAUSHALT ---
   h += '<div class="money-section">';
-  h += '<h3>Einkommen</h3>';
+  h += '<h3>Einkommen Haushalt</h3>';
+  h += '<h4>Christian</h4>';
   h += '<table class="money-table">';
   h += '<tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
-  h += mRow('Lohn Christian (80%)', '5.709 CHF/Mon', 'Netto, nach Quellensteuer');
-  h += mRow('Aufstockung 90% (Apr-Jul 2026)', '+~600 CHF/Mon', 'Tempor\u00e4r');
-  h += mRow('13. Monatslohn', '~5.700 CHF', '2x j\u00e4hrlich (Jul + Dez)');
-  h += mRow('Kinderzulage', '450 CHF/Mon', 'Im Lohn enthalten');
-  h += mRow('Hannah Klinik', '? CHF/Mon', 'Daten ausstehend');
-  h += mRow('Hannah Hebamme', '? EUR/Mon', 'Teilselbstst\u00e4ndig, Daten ausstehend');
-  h += mRow('HanseMerkur Erstattungen', '~390 EUR/Mon', 'Katheter, Elvanse (durchlaufend)');
+  h += mRow('Lohn Klinik (80%)', '5.709 CHF/Mon', 'Netto nach Quellensteuer, = ~5.300 EUR');
+  h += mRow('Aufstockung 90% (Apr-Jul 26)', '+~600 CHF/Mon', 'Tempor\u00e4r, endet August');
+  h += mRow('13. Monatslohn', '~5.700 CHF', 'Aufgeteilt Jul (~3.200) + Dez (~5.800)');
+  h += mRow('HanseMerkur Erstattungen', '~390 EUR/Mon', 'Katheter + Elvanse (durchlaufend)');
+  h += '</table>';
+  h += '<h4>Hannah</h4>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
+  h += mRow('Lohn Klinik (Grenzg\u00e4nger)', '2.400-2.800 CHF/Mon', 'Netto VOR KK + Steuer');
+  h += mRow('13. Monatslohn', 'Dezember', 'Komplett im Dezember');
+  h += mRow('Hebamme (selbstst\u00e4ndig)', '~400 EUR/Mon', 'Brutto, starke Schwankungen, keine USt');
+  h += '</table>';
+  h += '<p style="color:var(--text-muted);font-size:12px">Noch offen: Hannahs Pensum, KK-Beitrag, Auto-Kosten</p>';
+  h += '</div>';
+
+  // --- WAS CHRISTIANS 3.070 ABDECKEN ---
+  h += '<div class="money-section">';
+  h += '<h3>Christians 3.070 EUR an Hannah — Aufschl\u00fcsselung</h3>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Posten</th><th>EUR</th><th>Info</th></tr>';
+  h += mRow('Steuer-Vorauszahlung (sparen)', '1.350', 'Hannah zahlt 4.134/Quartal davon');
+  h += mRow('Miete (kalt)', '1.300', 'Kaltmiete 1.340, 40 EUR Differenz von Hannah');
+  h += mRow('Strom', '221', 'Separater Anbieter');
+  h += mRow('Kindergarten Sophie', '111', '');
+  h += mRow('Gesamttopf (Rest)', '88', 'F\u00fcr was es braucht');
+  h += '<tr class="money-subtotal"><td>Summe</td><td>3.070</td><td></td></tr>';
   h += '</table></div>';
 
-  // --- FIXKOSTEN ---
+  // --- WOHNEN & KINDER (Hannah zahlt) ---
   h += '<div class="money-section">';
-  h += '<h3>Fixkosten (monatlich)</h3>';
+  h += '<h3>Wohnen &amp; Kinder (zahlt Hannah)</h3>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Posten</th><th>EUR/Mon</th><th>Info</th></tr>';
+  h += mRow('Miete kalt (Differenz)', '40', 'Kaltmiete 1.340 - 1.300 von Christian');
+  h += mRow('Gas/Heizung', '217', 'Separater Anbieter');
+  h += mRow('M\u00fcll', '26', '310 EUR/Jahr');
+  h += mRow('Reiten Annabell', '100', '');
+  h += mRow('Klettern Sophie', '37', '');
+  h += mRow('Verlaessl. Grundschule', '35', '');
+  h += mRow('Turnen Annabell', '30', '');
+  h += mRow('Sparen Kinder (2x25)', '50', 'Annabell + Sophie');
+  h += mRow('Wocheneinkauf, Drogerie, Kleidung', '?', 'Von Hannahs eigenem Geld');
+  h += mRow('Hannahs Krankenkasse', '?', 'Noch offen');
+  h += mRow('Hannahs Auto', '?', 'Noch offen');
+  h += '<tr class="money-subtotal"><td>Summe bekannt</td><td>535+</td><td>+ KK + Auto + Einkauf</td></tr>';
+  h += '</table></div>';
+
+  // --- CHRISTIANS FIXKOSTEN ---
+  h += '<div class="money-section">';
+  h += '<h3>Christians Fixkosten (monatlich)</h3>';
   h += '<table class="money-table">';
   h += '<tr><th>Posten</th><th>EUR/Mon</th><th>Status</th></tr>';
-  h += mRow('Hannah (Haushalt)', '3.070', 'Miete, Kinder, Lebensmittel, Steuersparen');
+  h += mRow('Hannah (inkl. Steuer+Miete+Strom)', '3.070', 'Fix, zweckgebunden');
   h += mRow('HanseMerkur PKV (3 Pers.)', '820', 'Christian + 2 Kinder');
-  h += mRow('FINN Auto-Abo (Skoda Elroq 85x)', '608', 'Via Klarna, ab Mai 2026, 12 Mon.');
+  h += mRow('FINN Auto-Abo', '547', 'Via Klarna, endet Mai 2026');
   h += mRow('Telekom Mobilfunk (2 Handys)', '90', 'Inkl. Handy-Raten');
   h += mRow('Vodafone Kabel-Internet', '44', '');
   h += mRow('Sparkasse Kontogeb\u00fchren', '12', '');
-  h += mRow('Steuer-Vorauszahlung', '1.378', '4.134/Quartal — Aufteilung mit Hannah kl\u00e4ren');
-  h += '<tr class="money-subtotal"><td>Summe Fixkosten</td><td>6.022</td><td></td></tr>';
-  h += '</table></div>';
+  h += '<tr class="money-subtotal"><td>Summe Fixkosten</td><td>4.583</td><td></td></tr>';
+  h += '</table>';
+  h += '<p style="font-size:13px;color:var(--text-muted)">Einnahme ~5.300 - Fix 4.583 = <strong>~717 EUR frei</strong> f\u00fcr Abos, Essen, Tanken, Amazon, Kleidung</p>';
+  h += '</div>';
 
   // --- ABOS & SUBSCRIPTIONS ---
   h += '<div class="money-section">';
@@ -5968,19 +6008,59 @@ function renderMoneyTab() {
   h += '<p style="color:var(--text-muted);font-size:13px">Ab April 2026: 90% Pensum (7.490,70 brutto) bis Juli, dann zur\u00fcck auf 80%</p>';
   h += '</div>';
 
+  // --- STRATEGIE ---
+  h += '<div class="money-section">';
+  h += '<h3>Strategie: Stabilisierung in 3 Phasen</h3>';
+
+  h += '<h4>Phase 1: Sofort (April 2026)</h4>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Aktion</th><th>Ersparnis/Mon</th><th>Aufwand</th></tr>';
+  h += mRow('KI-Abos k\u00fcndigen (OpenAI, xAI, Replit, Wispr)', '+77', '4x k\u00fcndigen');
+  h += mRow('Claude Max 20 \u2192 Pro', '+160', '1 Klick');
+  h += mRow('Best Secret App l\u00f6schen', '+300-500', 'App deinstallieren');
+  h += mRow('Amazon Budget 150 EUR/Mon', '+350', '24h-Regel einf\u00fchren');
+  h += '<tr class="money-subtotal"><td>Phase 1 Total</td><td>+887-1.087</td><td></td></tr>';
+  h += '</table>';
+
+  h += '<h4>Phase 2: Mai-Juli 2026</h4>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Aktion</th><th>Ersparnis/Mon</th><th>Info</th></tr>';
+  h += mRow('FINN endet Mai \u2192 Entscheidung treffen', '+547', 'Ohne Auto? G\u00fcnstigeres Auto?');
+  h += mRow('90% Pensum (Apr-Jul)', '+500-600', 'Tempor\u00e4r mehr Lohn');
+  h += mRow('PSP endet 2026', '+560', 'Genaues Datum kl\u00e4ren');
+  h += '<tr class="money-subtotal"><td>Phase 2 Total</td><td>+1.607-1.707</td><td></td></tr>';
+  h += '</table>';
+
+  h += '<h4>Phase 3: Ab August 2026</h4>';
+  h += '<table class="money-table">';
+  h += '<tr><th>Ziel</th><th>Betrag</th><th>Info</th></tr>';
+  h += mRow('Zur\u00fcck auf 80% Pensum', '-600', 'F\u00e4llt weg');
+  h += mRow('Aber: PSP + FINN weg', '+1.107', 'Dauerhaft');
+  h += mRow('Netto-Verbesserung', '+507', 'Gegenueber heute');
+  h += mRow('Notgroschen-Ziel', '15.000 EUR', '3 Monatsausgaben als Puffer');
+  h += mRow('Variomedia \u2192 g\u00fcnstigerer Anbieter', '+30', 'Domain-Transfer');
+  h += mRow('Google Cloud konsolidieren', '+25', 'Wenn m\u00f6glich');
+  h += '</table>';
+  h += '</div>';
+
   // --- OFFENE PUNKTE ---
   h += '<div class="money-section">';
   h += '<h3>Offene Punkte</h3>';
   h += '<ul style="list-style:none;padding:0">';
-  h += '<li>&#9744; Hannahs Einkommen (Klinik + Hebamme)</li>';
-  h += '<li>&#9744; Miete / Nebenkosten</li>';
-  h += '<li>&#9744; Steuer-Aufteilung (wer zahlt was)</li>';
-  h += '<li>&#9744; Kita/Kinder-Kosten</li>';
-  h += '<li>&#9744; PSP Ende-Datum</li>';
-  h += '<li>&#9744; FINN-Entscheidung (Mai 2026)</li>';
-  h += '<li>&#9744; Abo-Durchgang (k\u00fcndigen/behalten)</li>';
+  h += '<li>&#9745; Hannahs Einkommen \u2014 2.400-2.800 CHF + Hebamme ~400</li>';
+  h += '<li>&#9745; Miete \u2014 1.340 kalt + 221 Strom + 217 Gas + 26 M\u00fcll = 1.804/Mon</li>';
+  h += '<li>&#9745; Steuer-Aufteilung \u2014 1.350/Mon von Christians 3.070, Rest von Hannah</li>';
+  h += '<li>&#9745; Kinder-Kosten \u2014 KiGa 111 + Reiten 100 + Klettern 37 + Turnen 30 + Grundschule 35 + Sparen 50</li>';
+  h += '<li>&#9744; Hannahs Pensum (Klinik) \u2014 noch offen</li>';
+  h += '<li>&#9744; Hannahs Krankenkasse \u2014 Betrag noch offen</li>';
+  h += '<li>&#9744; Hannahs Auto-Kosten \u2014 noch offen</li>';
+  h += '<li>&#9744; PSP Ende-Datum \u2014 2026, aber wann genau?</li>';
+  h += '<li>&#9744; FINN-Entscheidung \u2014 Mai 2026</li>';
+  h += '<li>&#9744; Abo-Durchgang mit Christian \u2014 22 Abos durchgehen</li>';
   h += '<li>&#9744; Best Secret App l\u00f6schen</li>';
-  h += '<li>&#9744; Amazon Budget einrichten</li>';
+  h += '<li>&#9744; Amazon Budget 150 EUR einrichten</li>';
+  h += '<li>&#9744; Neuer Steuerberater f\u00fcr Hebamme (Diana Gatti kann das nicht)</li>';
+  h += '<li>&#9744; Lohnsteuerhilfe-Kosten: 350 EUR/Jahr</li>';
   h += '</ul></div>';
 
   c.innerHTML = h;
