@@ -2338,10 +2338,10 @@ async function showProjectDetail(projectId){
         var html='<div class="proj-entry-card" data-entry-id="'+esc(e.id)+'" data-expanded="false">';
         html+='<span class="proj-entry-drag-handle" title="Verschieben">&#x2630;</span>';
         html+='<div class="proj-entry-body">';
-        html+='<div class="proj-entry-top" onclick="toggleEntryExpand(this.closest(\'.proj-entry-card\'))">';
+        html+='<div class="proj-entry-top" onclick="toggleProjectEntryExpand(this.closest(\'.proj-entry-card\'))">';
         html+='<span class="proj-entry-title">'+esc(title)+'</span>';
         html+='<span class="proj-entry-date">'+dateLabel+': '+fmtDateDE(displayDate)+'</span></div>';
-        if(previewLines){html+='<div class="proj-entry-preview" onclick="toggleEntryExpand(this.closest(\'.proj-entry-card\'))">'+esc(previewLines)+'</div>';}
+        if(previewLines){html+='<div class="proj-entry-preview" onclick="toggleProjectEntryExpand(this.closest(\'.proj-entry-card\'))">'+esc(previewLines)+'</div>';}
         html+='<div class="proj-entry-full proj-entry-md">'+parseSimpleMarkdown(e.text)+'</div>';
         html+='<div class="proj-entry-actions">';
         html+='<button class="proj-entry-btn proj-entry-edit" onclick="event.stopPropagation();startEditProjectEntry(\''+esc(projectId)+'\',\''+esc(e.id)+'\')" title="Bearbeiten">'+_svgEdit+' Bearbeiten</button>';
@@ -2398,7 +2398,7 @@ async function showProjectDetail(projectId){
   }catch(e){container.innerHTML='<div class="empty-state">Fehler: '+esc(e.message)+'</div>';}
 }
 
-function toggleEntryExpand(card){
+function toggleProjectEntryExpand(card){
   if(!card)return;
   var expanded=card.getAttribute('data-expanded')==='true';
   card.setAttribute('data-expanded',expanded?'false':'true');
