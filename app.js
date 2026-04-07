@@ -1334,6 +1334,7 @@ function showPatientDetail(patId) {
     austrittsplanung: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14"/><path d="M2 20h20"/><path d="M14 12v.01"/></svg>'
   };
 
+  html += '<details class="pat-status-dropdown"><summary class="pat-status-dropdown-header">Statusuebersicht</summary>';
   html += '<div class="pat-planung-list">';
 
   // 4 Ampel-Kategorien — gleiches Layout wie Austrittsplanung
@@ -1402,7 +1403,7 @@ function showPatientDetail(patId) {
     + '<div class="pat-ap-field pat-ap-field-wide"><label>Kommentar</label><input type="text" class="pat-ap-kommentar" id="br-kommentar" value="'+esc(brData.kommentar||'')+'" placeholder="z.B. Bericht fertig, zur Kontrolle..." onchange="setBerichtStatus(\'kommentar\',this.value)"></div>'
     + '</div></div></div>';
 
-  html += '</div>';
+  html += '</div></details>';
 
   // --- VORBERICHTE SUMMARY BOXES ---
   var vbSummary = generateVorberichtSummary(pat);

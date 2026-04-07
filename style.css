@@ -2685,8 +2685,16 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
 .pat-ampel-icon { display: inline-flex; align-items: center; line-height: 0; }
 .pat-ampel-icon svg { display: block; width: 19px; height: 19px; }
 
-/* ── Planung List (Detail — alle 5 Kategorien einheitlich) ── */
-.pat-planung-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+/* ── Status-Dropdown (Patienten-Detail) ── */
+.pat-status-dropdown { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px; box-shadow:var(--shadow); }
+.pat-status-dropdown-header { display:flex; align-items:center; gap:8px; padding:12px 16px; font-size:14px; font-weight:600; color:var(--text); cursor:pointer; list-style:none; user-select:none; }
+.pat-status-dropdown-header::-webkit-details-marker { display:none; }
+.pat-status-dropdown-header::before { content:''; display:inline-block; width:6px; height:6px; border-right:2px solid var(--text-muted); border-bottom:2px solid var(--text-muted); transform:rotate(-45deg); transition:transform 0.2s; flex-shrink:0; }
+.pat-status-dropdown[open] > .pat-status-dropdown-header::before { transform:rotate(45deg); }
+.pat-status-dropdown[open] > .pat-status-dropdown-header { border-bottom:1px solid var(--border); }
+
+/* ── Planung List (Detail — alle 6 Kategorien einheitlich) ── */
+.pat-planung-list { display: flex; flex-direction: column; gap: 10px; padding:12px 16px; margin-bottom:0; }
 .pat-planung-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 .pat-planung-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
 .pat-planung-icon { display: inline-flex; align-items: center; line-height: 0; flex-shrink: 0; }
