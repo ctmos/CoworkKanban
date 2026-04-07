@@ -2883,6 +2883,7 @@ function renderUsageWidget(u) {
   el.innerHTML =
     '<div class="usage-header">' +
       '<span class="usage-header-title">Claude Usage</span>' +
+      '<span class="usage-header-ts">' + updatedStr + '</span>' +
       '<span class="usage-header-plan">' + (u.plan || '').toUpperCase() + '</span>' +
     '</div>' +
 
@@ -2917,9 +2918,7 @@ function renderUsageWidget(u) {
 
     extraHtml +
 
-    buildPacingChart(allPct, u.weekly && u.weekly.allModels && u.weekly.allModels.resetsInMin) +
-
-    '<div class="usage-updated-ts">Stand: ' + updatedStr + '</div>';
+    buildPacingChart(allPct, u.weekly && u.weekly.allModels && u.weekly.allModels.resetsInMin);
 
   el.style.display = 'block';
 }
@@ -2927,11 +2926,12 @@ function renderUsageWidget(u) {
 function buildPacingChart(weeklyPct, resetsInMin) {
   var days = ['Mo','Di','Mi','Do','Fr','Sa','So'];
   var now = new Date();
-  var jsDay = now.getDay(); // 0=So,1=Mo...6=Sa
-  var todayIdx = jsDay === 0 ? 6 : jsDay - 1; // 0=Mo...6=So
-  var dailyBudget = 100 / 7; // ~14.28%
+  var jsDay = now.getDay();
+  var todayIdx = jsDay === 0 ? 6 : jsDay - 1;
+  var dailyBudget = 100 / 7;
   var remaining = weeklyPct;
   var barsHtml = '';
+  var overallColor = weeklyPct < 60 ? 'green' : weeklyPct < 85 ? 'yellow' : 'red';
 
   for (var i = 0; i < 7; i++) {
     var dayPct = 0;
@@ -2942,40 +2942,27 @@ function buildPacingChart(weeklyPct, resetsInMin) {
       dayPct = Math.round((remaining / dailyBudget) * 100);
       remaining = 0;
     }
-    var color = 'empty';
-    if (dayPct > 0) {
-      if (i < todayIdx) color = 'green';
-      else if (i === todayIdx) color = dayPct > 80 ? 'red' : dayPct > 50 ? 'yellow' : 'green';
-      else color = 'red'; // future days consumed = over pace
-    }
+    var fillClass = dayPct > 0 ? overallColor : 'empty';
     var todayClass = i === todayIdx ? ' today' : '';
     barsHtml +=
       '<div class="usage-pacing-day' + todayClass + '">' +
         '<div class="usage-pacing-bar">' +
-          '<div class="usage-pacing-bar-fill ' + color + '" style="height:' + dayPct + '%"></div>' +
+          '<div class="usage-pacing-bar-fill ' + fillClass + '" style="height:' + dayPct + '%"></div>' +
         '</div>' +
         '<span class="usage-pacing-label">' + days[i] + '</span>' +
       '</div>';
   }
 
-  // Pacing: ideal = (todayIdx + partOfDay) * 14.28
-  var hourFraction = (now.getHours() + now.getMinutes() / 60) / 24;
-  var idealPct = Math.round((todayIdx + hourFraction) * dailyBudget);
-  var diff = weeklyPct - idealPct;
-  var statusClass, statusText;
-  if (diff <= -5) { statusClass = 'ahead'; statusText = 'Unter Pace (' + Math.abs(diff) + '% Polster)'; }
-  else if (diff <= 5) { statusClass = 'on-track'; statusText = 'Im Plan'; }
-  else { statusClass = 'over'; statusText = 'Ueber Pace (+' + diff + '%)'; }
-
-  var resetStr = '';
-  if (resetsInMin && resetsInMin > 0) resetStr = 'Reset in ' + fmtMinutes(resetsInMin);
+  var usedDays = Math.floor(weeklyPct / dailyBudget);
+  var partialDay = Math.round(weeklyPct % dailyBudget / dailyBudget * 100);
+  var remainPct = 100 - weeklyPct;
+  var summaryText = weeklyPct + '% verbraucht \u00b7 ' + remainPct + '% uebrig';
 
   return '<div class="usage-pacing">' +
-    '<div class="usage-section-title">Wochen-Pacing</div>' +
+    '<div class="usage-section-title">Wochen-Kontingent</div>' +
     '<div class="usage-pacing-bars">' + barsHtml + '</div>' +
     '<div class="usage-pacing-summary">' +
-      '<span class="usage-pacing-status ' + statusClass + '">' + statusText + '</span>' +
-      '<span>' + resetStr + '</span>' +
+      '<span class="usage-pacing-status ' + overallColor + '">' + summaryText + '</span>' +
     '</div>' +
   '</div>';
 }
@@ -5698,7 +5685,7 @@ function renderONTab(container, hb, sb) {
 }
 
 function renderONFleet(hb) {
-  var html = '<details class="sys-dropdown" open><summary class="sys-dropdown-header">Fleet</summary>';
+  var html = '<details class="sys-dropdown"><summary class="sys-dropdown-header">Fleet</summary>';
   html += '<div class="sys-dropdown-body">';
   if (!hb || !hb.fleet) {
     html += '<div class="on-no-data">Kein Heartbeat \u2014 fleet-heartbeat.json nicht gefunden</div>';
@@ -5745,7 +5732,7 @@ function renderONHermine(hb) {
 }
 
 function renderONSessionBus(sb) {
-  var html = '<details class="sys-dropdown" open><summary class="sys-dropdown-header">Session Bus</summary>';
+  var html = '<details class="sys-dropdown"><summary class="sys-dropdown-header">Session Bus</summary>';
   html += '<div class="sys-dropdown-body">';
   if (!sb) {
     html += '<div class="on-no-data">session-bus.json nicht gefunden</div>';

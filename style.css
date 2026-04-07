@@ -2795,8 +2795,9 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
 
 /* ── USAGE WIDGET ── */
 #usage-widget { display:none; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin:0 0 12px 0; }
-.usage-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+.usage-header { display:flex; align-items:center; gap:8px; margin-bottom:2px; }
 .usage-header-title { font-size:13px; font-weight:600; color:var(--text); }
+.usage-header-ts { font-size:10px; font-weight:400; color:var(--text-muted); opacity:0.6; margin-right:auto; }
 .usage-header-plan { font-size:10px; font-weight:700; color:var(--accent); background:rgba(var(--accent-rgb,200,120,50),0.12); padding:2px 8px; border-radius:4px; letter-spacing:0.5px; }
 .usage-header-updated { font-size:10px; color:var(--text-muted); margin-bottom:10px; }
 .usage-section-title { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin:12px 0 6px; }
@@ -2830,9 +2831,9 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
 .usage-pacing-day.today .usage-pacing-bar { box-shadow:0 0 0 1.5px var(--accent); }
 .usage-pacing-summary { display:flex; justify-content:space-between; align-items:baseline; margin-top:6px; font-size:10px; color:var(--text-muted); }
 .usage-pacing-status { font-weight:600; }
-.usage-pacing-status.ahead { color:#22c55e; }
-.usage-pacing-status.on-track { color:#eab308; }
-.usage-pacing-status.over { color:#ef4444; }
+.usage-pacing-status.green { color:#22c55e; }
+.usage-pacing-status.yellow { color:#eab308; }
+.usage-pacing-status.red { color:#ef4444; }
 
 /* ── SCRAPER PROGRESS ── */
 #scraper-progress-box { display:none; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin:0 0 12px 0; }
