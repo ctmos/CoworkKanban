@@ -2917,9 +2917,67 @@ function renderUsageWidget(u) {
 
     extraHtml +
 
+    buildPacingChart(allPct, u.weekly && u.weekly.allModels && u.weekly.allModels.resetsInMin) +
+
     '<div class="usage-updated-ts">Stand: ' + updatedStr + '</div>';
 
   el.style.display = 'block';
+}
+
+function buildPacingChart(weeklyPct, resetsInMin) {
+  var days = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+  var now = new Date();
+  var jsDay = now.getDay(); // 0=So,1=Mo...6=Sa
+  var todayIdx = jsDay === 0 ? 6 : jsDay - 1; // 0=Mo...6=So
+  var dailyBudget = 100 / 7; // ~14.28%
+  var remaining = weeklyPct;
+  var barsHtml = '';
+
+  for (var i = 0; i < 7; i++) {
+    var dayPct = 0;
+    if (remaining >= dailyBudget) {
+      dayPct = 100;
+      remaining -= dailyBudget;
+    } else if (remaining > 0) {
+      dayPct = Math.round((remaining / dailyBudget) * 100);
+      remaining = 0;
+    }
+    var color = 'empty';
+    if (dayPct > 0) {
+      if (i < todayIdx) color = 'green';
+      else if (i === todayIdx) color = dayPct > 80 ? 'red' : dayPct > 50 ? 'yellow' : 'green';
+      else color = 'red'; // future days consumed = over pace
+    }
+    var todayClass = i === todayIdx ? ' today' : '';
+    barsHtml +=
+      '<div class="usage-pacing-day' + todayClass + '">' +
+        '<div class="usage-pacing-bar">' +
+          '<div class="usage-pacing-bar-fill ' + color + '" style="height:' + dayPct + '%"></div>' +
+        '</div>' +
+        '<span class="usage-pacing-label">' + days[i] + '</span>' +
+      '</div>';
+  }
+
+  // Pacing: ideal = (todayIdx + partOfDay) * 14.28
+  var hourFraction = (now.getHours() + now.getMinutes() / 60) / 24;
+  var idealPct = Math.round((todayIdx + hourFraction) * dailyBudget);
+  var diff = weeklyPct - idealPct;
+  var statusClass, statusText;
+  if (diff <= -5) { statusClass = 'ahead'; statusText = 'Unter Pace (' + Math.abs(diff) + '% Polster)'; }
+  else if (diff <= 5) { statusClass = 'on-track'; statusText = 'Im Plan'; }
+  else { statusClass = 'over'; statusText = 'Ueber Pace (+' + diff + '%)'; }
+
+  var resetStr = '';
+  if (resetsInMin && resetsInMin > 0) resetStr = 'Reset in ' + fmtMinutes(resetsInMin);
+
+  return '<div class="usage-pacing">' +
+    '<div class="usage-section-title">Wochen-Pacing</div>' +
+    '<div class="usage-pacing-bars">' + barsHtml + '</div>' +
+    '<div class="usage-pacing-summary">' +
+      '<span class="usage-pacing-status ' + statusClass + '">' + statusText + '</span>' +
+      '<span>' + resetStr + '</span>' +
+    '</div>' +
+  '</div>';
 }
 
 
@@ -5822,12 +5880,12 @@ function renderMoneyTab() {
   h += '<tr><th>Posten</th><th>EUR/Mon</th><th>Status</th></tr>';
   h += mRow('Hannah (Haushalt)', '3.070', 'Miete, Kinder, Lebensmittel, Steuersparen');
   h += mRow('HanseMerkur PKV (3 Pers.)', '820', 'Christian + 2 Kinder');
-  h += mRow('FINN Auto-Abo (Toyota C-HR)', '547', 'Via Klarna, ENDET Mai 2026');
+  h += mRow('FINN Auto-Abo (Skoda Elroq 85x)', '608', 'Via Klarna, ab Mai 2026, 12 Mon.');
   h += mRow('Telekom Mobilfunk (2 Handys)', '90', 'Inkl. Handy-Raten');
   h += mRow('Vodafone Kabel-Internet', '44', '');
   h += mRow('Sparkasse Kontogeb\u00fchren', '12', '');
   h += mRow('Steuer-Vorauszahlung', '1.378', '4.134/Quartal — Aufteilung mit Hannah kl\u00e4ren');
-  h += '<tr class="money-subtotal"><td>Summe Fixkosten</td><td>5.961</td><td></td></tr>';
+  h += '<tr class="money-subtotal"><td>Summe Fixkosten</td><td>6.022</td><td></td></tr>';
   h += '</table></div>';
 
   // --- ABOS & SUBSCRIPTIONS ---
@@ -5894,10 +5952,10 @@ function renderMoneyTab() {
   h += '<table class="money-table">';
   h += '<tr><th>Posten</th><th>EUR/Mon</th><th>Endet</th></tr>';
   h += mRow('PSP Weiterbildung', '~560', '2026 (genaues Datum kl\u00e4ren)');
-  h += mRow('FINN Auto-Abo', '547', 'Mai 2026');
+  h += mRow('FINN Auto-Abo (Elroq)', '608', 'Mai 2027');
   h += mRow('Claude Max 20 (wenn runtergestuft)', '~90-160', 'Wenn bereit');
   h += mRow('K\u00fcndigbare KI-Abos', '~77', 'Sofort m\u00f6glich');
-  h += '<tr class="money-subtotal"><td>M\u00f6gliche Entlastung</td><td>~1.274-1.344</td><td></td></tr>';
+  h += '<tr class="money-subtotal"><td>M\u00f6gliche Entlastung</td><td>~1.335-1.405</td><td></td></tr>';
   h += '</table></div>';
 
   // --- STEUERN ---
