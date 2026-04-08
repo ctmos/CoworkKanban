@@ -198,7 +198,7 @@
 
 
 
-    <span class="brand" onclick="switchTab('heute')" style="cursor:pointer">LifeOS</span>
+    <span class="brand" onclick="switchTab('kanban')" style="cursor:pointer">LifeOS</span>
 
 
 
@@ -240,7 +240,7 @@
 
 
 
-  <div id="tab-heute" class="tab-content active">
+  <div id="tab-heute" class="tab-content">
 
 
 
@@ -402,13 +402,15 @@
 
 
 
-  <div id="tab-kanban" class="tab-content">
+  <div id="tab-kanban" class="tab-content active">
 
     <div class="kanban-toolbar">
 
       <button id="kanban-view-toggle" class="btn-secondary" onclick="toggleKanbanView()">Board-Ansicht</button>
 
     </div>
+
+    <div id="hannah-summary"></div>
 
     <div class="kanban-grid" id="kanban-grid"></div>
 

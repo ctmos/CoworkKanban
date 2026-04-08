@@ -393,7 +393,7 @@ function nextCardId(laneId) {
 
 // ─── TABS ─────────────────────────────────────────────────────────────────────
 
-var currentTab = 'heute';
+var currentTab = 'kanban';
 
 
 
@@ -409,7 +409,7 @@ function switchTab(id) {
 
   if (id === 'heute')     renderHeute();
 
-  if (id === 'kanban')    renderKanban();
+  if (id === 'kanban')    { renderHannahSummary(); renderKanban(); }
 
   if (id === 'patienten') renderPatients();
 
@@ -505,6 +505,72 @@ async function loadCalendarEvents() {
     window._calEvents = JSON.parse(decodeBase64Utf8(d.content));
 
   } catch(e) { console.warn('calendar load failed', e); }
+
+}
+
+
+
+// ─── HANNAH SUMMARY ──────────────────────────────────────────────────────────
+
+async function loadHannahSummary() {
+
+  var token = getGHToken();
+
+  if (!token) return;
+
+  try {
+
+    var r = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/hannah_summary.json',
+
+      { headers: { Authorization: 'token ' + token } });
+
+    if (!r.ok) return;
+
+    var d = await r.json();
+
+    window._hannahSummary = JSON.parse(decodeBase64Utf8(d.content));
+
+    renderHannahSummary();
+
+  } catch(e) { console.warn('hannah summary load failed', e); }
+
+}
+
+
+
+function renderHannahSummary() {
+
+  var el = document.getElementById('hannah-summary');
+
+  if (!el) return;
+
+  var s = window._hannahSummary;
+
+  if (!s || !s.today || !s.week) { el.innerHTML = ''; return; }
+
+  var genAt = '';
+
+  if (s.generatedAt) {
+
+    try {
+
+      genAt = new Date(s.generatedAt).toLocaleString('de-CH', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+    } catch(e) {}
+
+  }
+
+  var html = '<div class="hannah-grid">';
+
+  html += '<div class="hannah-box"><div class="hannah-box-header"><span class="hannah-label">Hannah heute</span><span class="hannah-count">' + (s.today.count||0) + ' Termine</span></div><div class="hannah-text">' + esc(s.today.text||'') + '</div></div>';
+
+  html += '<div class="hannah-box"><div class="hannah-box-header"><span class="hannah-label">Hannah diese Woche</span><span class="hannah-count">' + (s.week.count||0) + ' Termine</span></div><div class="hannah-text">' + esc(s.week.text||'') + '</div></div>';
+
+  html += '</div>';
+
+  if (genAt) html += '<div class="hannah-footer">Aktualisiert: ' + genAt + '</div>';
+
+  el.innerHTML = html;
 
 }
 
@@ -2568,9 +2634,11 @@ async function initApp() {
 
   loadCalendarEvents().catch(function(e) { console.warn('cal fail', e); });
 
+  loadHannahSummary().catch(function(e) { console.warn('hannah fail', e); });
+
   var hashTab = location.hash.replace('#', '');
 
-  switchTab(hashTab && document.getElementById('tab-' + hashTab) ? hashTab : 'heute');
+  switchTab(hashTab && document.getElementById('tab-' + hashTab) ? hashTab : 'kanban');
 
   setTimeout(startProcessStatusPolling, 2000);
 
@@ -4183,6 +4251,16 @@ setInterval(function() {
       if (currentTab === 'heute') renderHeute();
 
       console.log('[CAL] Auto-refreshed');
+
+    }).catch(function() {});
+
+  }
+
+  if (navigator.onLine && typeof loadHannahSummary === 'function') {
+
+    loadHannahSummary().then(function() {
+
+      if (currentTab === 'kanban') renderHannahSummary();
 
     }).catch(function() {});
 
