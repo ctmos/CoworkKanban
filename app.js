@@ -1005,7 +1005,7 @@ function renderPatients(filter) {
 
   var q = filter || (document.getElementById('pat-search') ? document.getElementById('pat-search').value.trim().toLowerCase() : '');
 
-  if (q) patients = patients.filter(function(p){ return p.code.toLowerCase().includes(q) || (p.entries||[]).some(function(e){ return (e.title||'').toLowerCase().includes(q)||(e.content||'').toLowerCase().includes(q); }); });
+  if (q) patients = patients.filter(function(p){ return p.code.toLowerCase().includes(q) || (p.entries||[]).some(function(e){ return (e.title||'').toLowerCase().includes(q)||(e.content||e.text||'').toLowerCase().includes(q); }); });
 
 
 
@@ -1224,7 +1224,7 @@ function getVorberichte(pat) {
 function generateVorberichtSummary(pat) {
   var vbs = getVorberichte(pat);
   if (vbs.length === 0) return null;
-  var allText = vbs.map(function(v){ return (v.title?v.title+': ':'')+v.content; }).join('\n\n');
+  var allText = vbs.map(function(v){ return (v.title?v.title+': ':'')+(v.content||v.text||''); }).join('\n\n');
   var sentences = allText.replace(/\n+/g,' ').split(/(?<=[.!?])\s+/).filter(function(s){ return s.trim().length > 10; });
   if (sentences.length === 0) return allText.substring(0,500);
   var summary = sentences.slice(0,6).join(' ');
@@ -1234,7 +1234,7 @@ function generateVorberichtSummary(pat) {
 function generateErstkontaktVorbereitung(pat) {
   var vbs = getVorberichte(pat);
   if (vbs.length === 0) return null;
-  var allText = vbs.map(function(v){ return (v.title?v.title+': ':'')+v.content; }).join('\n\n');
+  var allText = vbs.map(function(v){ return (v.title?v.title+': ':'')+(v.content||v.text||''); }).join('\n\n');
   var sections = [];
   var diagMatch = allText.match(/diagnos[en]*[:\s]+([^\n.]{5,120})/i);
   sections.push('Diagnosen: ' + (diagMatch ? diagMatch[1].trim() : 'Aus Vorberichten entnehmen'));
@@ -1443,7 +1443,7 @@ function showPatientDetail(patId) {
 
 
 
-  var entries = (pat.entries||[]).slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
+  var entries = (pat.entries||[]).slice().sort(function(a,b){ return new Date(b.date||b.ts||0)-new Date(a.date||a.ts||0); });
 
   if (entries.length === 0) {
 
@@ -1453,10 +1453,14 @@ function showPatientDetail(patId) {
 
     entries.forEach(function(e){
 
-      var d = new Date(e.date);
+      var rawDate = e.date || e.ts || null;
+      var d = rawDate ? new Date(rawDate) : null;
+      var validDate = d && !isNaN(d.getTime());
 
       var curType = e.type||'notiz';
-      var dateStr = d.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
+      var dateStr = validDate
+        ? d.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})
+        : '';
 
       html += '<div class="pat-entry-card type-'+esc(curType)+'">'
 
@@ -1473,7 +1477,7 @@ function showPatientDetail(patId) {
 
         + '<div class="pat-entry-title">'+esc(e.title||'')+'</div>'
 
-        + (function(){ var t=e.content||''; var ls=t.split('\n'); var lo=ls.length>5||t.length>400; var ex=_entryExpanded[e.id]; return '<div class="pat-entry-content'+(lo&&!ex?' collapsed':'')+'">' + esc(t) + '</div>' + (lo ? '<button class="pat-entry-expand" onclick="toggleEntryExpand(\x27'+esc(e.id)+'\x27)">'+(ex?'Weniger':'Mehr anzeigen...')+'</button>' : ''); }())
+        + (function(){ var t=e.content||e.text||''; var ls=t.split('\n'); var lo=ls.length>5||t.length>400; var ex=_entryExpanded[e.id]; return '<div class="pat-entry-content'+(lo&&!ex?' collapsed':'')+'">' + esc(t) + '</div>' + (lo ? '<button class="pat-entry-expand" onclick="toggleEntryExpand(\x27'+esc(e.id)+'\x27)">'+(ex?'Weniger':'Mehr anzeigen...')+'</button>' : ''); }())
 
         + '<div class="pat-entry-actions">'
 
@@ -1650,7 +1654,7 @@ function openEntryModal(entryId) {
 
   document.getElementById('pe-title').value = (entry && entry.title) || '';
 
-  document.getElementById('pe-content').value = (entry && entry.content) || '';
+  document.getElementById('pe-content').value = (entry && (entry.content || entry.text)) || '';
 
   document.getElementById('pe-delete').style.display = entry ? '' : 'none';
 
@@ -1694,7 +1698,7 @@ document.getElementById('pe-save').addEventListener('click', function(){
 
     if (eIdx !== -1) {
 
-      patients[idx].entries[eIdx] = Object.assign({}, patients[idx].entries[eIdx], { title:title, content:content, type:type });
+      patients[idx].entries[eIdx] = Object.assign({}, patients[idx].entries[eIdx], { title:title, content:content, text:content, type:type });
 
     }
 
