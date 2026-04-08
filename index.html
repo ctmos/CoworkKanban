@@ -195,38 +195,14 @@
 
 
   <nav>
-
-
-
-    <span class="brand" onclick="switchTab('kanban')" style="cursor:pointer">LifeOS</span>
-
-
-
-    <button class="tab-btn" data-tab="kanban">Kanban</button>
-
-
-
-    <button class="tab-btn" data-tab="patienten">Patienten</button>
-
-
-
-    <button class="tab-btn" data-tab="projekte">Projekte</button>
-
-
-
-    <button class="tab-btn" data-tab="imperialki">ImperialKI</button>
-
-
-
-    <button class="tab-btn" data-tab="rag">RAG</button>
-
-
-
-    <button class="tab-btn" data-tab="system">System</button>
-
-    <button class="tab-btn" data-tab="on">ON</button>
-    <button class="tab-btn" data-tab="money">$$$</button>
-
+    <div class="nav-center">
+      <button class="tab-btn" data-tab="kanban">Kanban</button>
+      <button class="tab-btn" data-tab="kba">KBA</button>
+      <button class="tab-btn" data-tab="projekte">Projekte</button>
+      <button class="tab-btn" data-tab="life">Life</button>
+      <button class="tab-btn" data-tab="imperialki">ImperialKI</button>
+      <button class="tab-btn" data-tab="system">System<span class="nav-alert" id="nav-system-alert" hidden aria-label="Problem">&#9889;</span></button>
+    </div>
     <button class="theme-toggle" id="theme-toggle" title="Theme wechseln">&#9790;</button>
   </nav>
 
@@ -422,11 +398,16 @@
 
 
 
-  <!-- PATIENTEN TAB -->
+  <!-- KBA TAB (Kategorie fuer Klinik/Patienten) -->
 
-  <div id="tab-patienten" class="tab-content">
+  <div id="tab-kba" class="tab-content">
 
-    <div id="pat-view"></div>
+    <details class="sys-dropdown" id="kba-patienten-dropdown" open>
+      <summary class="sys-dropdown-header">Patienten<span class="sys-alert" hidden aria-label="Problem">&#9889;</span></summary>
+      <div class="sys-dropdown-body">
+        <div id="pat-view"></div>
+      </div>
+    </details>
 
   </div>
 
@@ -486,16 +467,14 @@
 
   </div>
 
-  <!-- ON TAB -->
-  <div id="tab-on" class="tab-content">
-    <h2>ON</h2>
-    <div id="on-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
-  </div>
-
-  <!-- $$$ FINANZEN TAB -->
-  <div id="tab-money" class="tab-content">
-    <h2>$$$</h2>
-    <div id="money-container"></div>
+  <!-- LIFE TAB (Kategorie fuer Persoenliches) -->
+  <div id="tab-life" class="tab-content">
+    <details class="sys-dropdown" id="life-money-dropdown" open>
+      <summary class="sys-dropdown-header">$$$<span class="sys-alert" hidden aria-label="Problem">&#9889;</span></summary>
+      <div class="sys-dropdown-body">
+        <div id="money-container"></div>
+      </div>
+    </details>
   </div>
 
   <!-- FINN TAB REMOVED 2026-04-06 -->
@@ -759,142 +738,151 @@
 
   </div>
 
-  <!-- RAG TAB -->
-  <div id="tab-rag" class="tab-content">
-    <h2>RAG</h2>
-
-    <!-- Upload Section -->
-    <div class="rag-upload-section">
-      <div class="rag-upload-zone" id="rag-drop-zone">
-        <div class="rag-upload-icon">+</div>
-        <div class="rag-upload-text">Dateien hierher ziehen oder klicken</div>
-        <div class="rag-upload-hint">PDF, TXT, MD, JSON, DOCX, Bilder</div>
-        <input type="file" id="rag-file-input" multiple accept=".pdf,.txt,.md,.json,.docx,.png,.jpg,.jpeg,.gif,.webp" style="display:none">
-      </div>
-      <div class="rag-context-bar">
-        <input type="text" class="form-input" id="rag-context-input" placeholder="Kontext / Tags (z.B. Therapie, Barmelweid, KI-Recherche...)">
-      </div>
-      <div id="rag-upload-queue" style="display:none"></div>
-      <div id="rag-upload-progress" class="rag-progress-container" style="display:none">
-        <div class="rag-progress-header">
-          <span id="rag-progress-filename"></span>
-          <span id="rag-progress-pct" class="rag-progress-pct"></span>
-        </div>
-        <div class="rag-progress-track">
-          <div class="rag-progress-fill" id="rag-progress-fill"></div>
-        </div>
-        <div id="rag-progress-status" class="rag-progress-status"></div>
-      </div>
-      <div id="rag-processing-indicator" class="rag-processing-indicator" style="display:none">
-        Verarbeitung laeuft...
-      </div>
-    </div>
-
-    <!-- RAG Stats -->
-    <div id="rag-stats-bar" class="rag-stats-bar"></div>
-
-    <!-- Wiki Query UI -->
-    <div class="wiki-query-section">
-      <div class="wiki-query-bar">
-        <input type="text" class="form-input" id="wiki-query-input" placeholder="Frage ans Wissens-Wiki stellen...">
-        <button class="btn-primary" id="btn-wiki-query">Fragen</button>
-      </div>
-      <div id="wiki-query-result" style="display:none"></div>
-    </div>
-
-    <!-- Wiki Browser -->
-    <details class="sys-dropdown" id="wiki-browser-dropdown">
-      <summary class="sys-dropdown-header">Wiki</summary>
-      <div class="sys-dropdown-body">
-        <div id="wiki-stats-bar" class="rag-stats-bar" style="margin-bottom:12px"></div>
-        <div class="rag-index-toolbar">
-          <input type="text" class="form-input" id="wiki-search-input" placeholder="Wiki durchsuchen...">
-          <select class="form-input" id="wiki-category-filter" style="margin-top:8px">
-            <option value="">Alle Kategorien</option>
-            <option value="summary">Zusammenfassungen</option>
-            <option value="concept">Konzepte</option>
-            <option value="query">Queries</option>
-            <option value="index">Index</option>
-          </select>
-        </div>
-        <div id="wiki-article-count" class="rag-index-count"></div>
-        <div id="wiki-article-list"></div>
-        <div id="wiki-detail-view" style="display:none"></div>
-      </div>
-    </details>
-
-    <!-- Kompilierung -->
-    <details class="sys-dropdown" id="wiki-compile-dropdown">
-      <summary class="sys-dropdown-header">Kompilierung</summary>
-      <div class="sys-dropdown-body">
-        <div id="wiki-compile-status"></div>
-        <button class="btn-primary" id="btn-wiki-compile" style="margin-top:8px">Jetzt kompilieren</button>
-      </div>
-    </details>
-
-    <!-- Index / Katalog -->
-    <details class="sys-dropdown" id="rag-index-dropdown">
-      <summary class="sys-dropdown-header">Index</summary>
-      <div class="sys-dropdown-body">
-        <div class="rag-index-toolbar">
-          <input type="text" class="form-input" id="rag-index-search" placeholder="Suche im Index...">
-          <select class="form-input" id="rag-index-filter" style="margin-top:8px">
-            <option value="">Alle Quellen</option>
-            <option value="upload">Upload</option>
-            <option value="gdrive">Google Drive</option>
-            <option value="url">URL</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="collect">Collect</option>
-          </select>
-        </div>
-        <div id="rag-index-count" class="rag-index-count"></div>
-        <div id="rag-index-list"></div>
-      </div>
-    </details>
-
-    <!-- Google Drive Import -->
-    <details class="sys-dropdown" id="rag-gdrive-dropdown">
-      <summary class="sys-dropdown-header">Google Drive Import</summary>
-      <div class="sys-dropdown-body">
-        <div class="rag-gdrive-form">
-          <input type="text" class="form-input" id="gdrive-input" placeholder="Google Drive URL oder Datei-ID...">
-          <input type="text" class="form-input" id="gdrive-context-input" placeholder="Kontext / Tags (optional)" style="margin-top:8px">
-          <button class="btn-primary" id="btn-gdrive-import" style="margin-top:8px">Importieren</button>
-        </div>
-        <div id="gdrive-status" class="rag-progress-status" style="margin-top:8px"></div>
-        <div id="gdrive-pending-list" style="margin-top:12px"></div>
-      </div>
-    </details>
-
-    <!-- Collect Section (Dropdown) -->
-    <details class="sys-dropdown" id="rag-collect-dropdown">
-      <summary class="sys-dropdown-header">Collect</summary>
-      <div class="sys-dropdown-body">
-        <div class="collect-header" style="margin-bottom:8px">
-          <span></span>
-          <button class="btn-primary" id="btn-collect-add">+ Link</button>
-        </div>
-        <div id="collect-toc"></div>
-        <div id="collect-list"></div>
-      </div>
-    </details>
-
-    <!-- Inbox (uploaded files pending ingestion) -->
-    <details class="sys-dropdown" id="rag-inbox-dropdown">
-      <summary class="sys-dropdown-header">Inbox</summary>
-      <div class="sys-dropdown-body">
-        <div id="rag-inbox-list"><div class="on-no-data">Wird geladen...</div></div>
-      </div>
-    </details>
-  </div>
-
-
-
   <div id="tab-system" class="tab-content">
 
     <div id="usage-widget"></div>
 
     <div id="scraper-progress-box"></div>
+
+    <!-- RAG (frueher eigener Tab, jetzt Dropdown in System) -->
+    <details class="sys-dropdown sys-dropdown-parent" id="system-rag-dropdown">
+      <summary class="sys-dropdown-header">RAG<span class="sys-alert" hidden aria-label="Problem">&#9889;</span></summary>
+      <div class="sys-dropdown-body">
+
+        <!-- Upload Section -->
+        <div class="rag-upload-section">
+          <div class="rag-upload-zone" id="rag-drop-zone">
+            <div class="rag-upload-icon">+</div>
+            <div class="rag-upload-text">Dateien hierher ziehen oder klicken</div>
+            <div class="rag-upload-hint">PDF, TXT, MD, JSON, DOCX, Bilder</div>
+            <input type="file" id="rag-file-input" multiple accept=".pdf,.txt,.md,.json,.docx,.png,.jpg,.jpeg,.gif,.webp" style="display:none">
+          </div>
+          <div class="rag-context-bar">
+            <input type="text" class="form-input" id="rag-context-input" placeholder="Kontext / Tags (z.B. Therapie, Barmelweid, KI-Recherche...)">
+          </div>
+          <div id="rag-upload-queue" style="display:none"></div>
+          <div id="rag-upload-progress" class="rag-progress-container" style="display:none">
+            <div class="rag-progress-header">
+              <span id="rag-progress-filename"></span>
+              <span id="rag-progress-pct" class="rag-progress-pct"></span>
+            </div>
+            <div class="rag-progress-track">
+              <div class="rag-progress-fill" id="rag-progress-fill"></div>
+            </div>
+            <div id="rag-progress-status" class="rag-progress-status"></div>
+          </div>
+          <div id="rag-processing-indicator" class="rag-processing-indicator" style="display:none">
+            Verarbeitung laeuft...
+          </div>
+        </div>
+
+        <!-- RAG Stats -->
+        <div id="rag-stats-bar" class="rag-stats-bar"></div>
+
+        <!-- Wiki Query UI -->
+        <div class="wiki-query-section">
+          <div class="wiki-query-bar">
+            <input type="text" class="form-input" id="wiki-query-input" placeholder="Frage ans Wissens-Wiki stellen...">
+            <button class="btn-primary" id="btn-wiki-query">Fragen</button>
+          </div>
+          <div id="wiki-query-result" style="display:none"></div>
+        </div>
+
+        <!-- Wiki Browser -->
+        <details class="sys-dropdown sys-dropdown-nested" id="wiki-browser-dropdown">
+          <summary class="sys-dropdown-header">Wiki</summary>
+          <div class="sys-dropdown-body">
+            <div id="wiki-stats-bar" class="rag-stats-bar" style="margin-bottom:12px"></div>
+            <div class="rag-index-toolbar">
+              <input type="text" class="form-input" id="wiki-search-input" placeholder="Wiki durchsuchen...">
+              <select class="form-input" id="wiki-category-filter" style="margin-top:8px">
+                <option value="">Alle Kategorien</option>
+                <option value="summary">Zusammenfassungen</option>
+                <option value="concept">Konzepte</option>
+                <option value="query">Queries</option>
+                <option value="index">Index</option>
+              </select>
+            </div>
+            <div id="wiki-article-count" class="rag-index-count"></div>
+            <div id="wiki-article-list"></div>
+            <div id="wiki-detail-view" style="display:none"></div>
+          </div>
+        </details>
+
+        <!-- Kompilierung -->
+        <details class="sys-dropdown sys-dropdown-nested" id="wiki-compile-dropdown">
+          <summary class="sys-dropdown-header">Kompilierung</summary>
+          <div class="sys-dropdown-body">
+            <div id="wiki-compile-status"></div>
+            <button class="btn-primary" id="btn-wiki-compile" style="margin-top:8px">Jetzt kompilieren</button>
+          </div>
+        </details>
+
+        <!-- Index / Katalog -->
+        <details class="sys-dropdown sys-dropdown-nested" id="rag-index-dropdown">
+          <summary class="sys-dropdown-header">Index</summary>
+          <div class="sys-dropdown-body">
+            <div class="rag-index-toolbar">
+              <input type="text" class="form-input" id="rag-index-search" placeholder="Suche im Index...">
+              <select class="form-input" id="rag-index-filter" style="margin-top:8px">
+                <option value="">Alle Quellen</option>
+                <option value="upload">Upload</option>
+                <option value="gdrive">Google Drive</option>
+                <option value="url">URL</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="collect">Collect</option>
+              </select>
+            </div>
+            <div id="rag-index-count" class="rag-index-count"></div>
+            <div id="rag-index-list"></div>
+          </div>
+        </details>
+
+        <!-- Google Drive Import -->
+        <details class="sys-dropdown sys-dropdown-nested" id="rag-gdrive-dropdown">
+          <summary class="sys-dropdown-header">Google Drive Import</summary>
+          <div class="sys-dropdown-body">
+            <div class="rag-gdrive-form">
+              <input type="text" class="form-input" id="gdrive-input" placeholder="Google Drive URL oder Datei-ID...">
+              <input type="text" class="form-input" id="gdrive-context-input" placeholder="Kontext / Tags (optional)" style="margin-top:8px">
+              <button class="btn-primary" id="btn-gdrive-import" style="margin-top:8px">Importieren</button>
+            </div>
+            <div id="gdrive-status" class="rag-progress-status" style="margin-top:8px"></div>
+            <div id="gdrive-pending-list" style="margin-top:12px"></div>
+          </div>
+        </details>
+
+        <!-- Collect Section (Dropdown) -->
+        <details class="sys-dropdown sys-dropdown-nested" id="rag-collect-dropdown">
+          <summary class="sys-dropdown-header">Collect</summary>
+          <div class="sys-dropdown-body">
+            <div class="collect-header" style="margin-bottom:8px">
+              <span></span>
+              <button class="btn-primary" id="btn-collect-add">+ Link</button>
+            </div>
+            <div id="collect-toc"></div>
+            <div id="collect-list"></div>
+          </div>
+        </details>
+
+        <!-- Inbox (uploaded files pending ingestion) -->
+        <details class="sys-dropdown sys-dropdown-nested" id="rag-inbox-dropdown">
+          <summary class="sys-dropdown-header">Inbox</summary>
+          <div class="sys-dropdown-body">
+            <div id="rag-inbox-list"><div class="on-no-data">Wird geladen...</div></div>
+          </div>
+        </details>
+
+      </div>
+    </details>
+
+    <!-- ON / Autonomie (frueher eigener Tab, jetzt Dropdown in System) -->
+    <details class="sys-dropdown" id="system-on-dropdown">
+      <summary class="sys-dropdown-header">ON<span class="sys-alert" hidden aria-label="Problem">&#9889;</span></summary>
+      <div class="sys-dropdown-body">
+        <div id="on-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
+      </div>
+    </details>
 
     <!-- System-Uebersicht -->
     <details class="sys-dropdown" id="uebersicht-dropdown">
@@ -1832,8 +1820,8 @@
 
 
 
-<script src="src/data-layer.js"></script>
-<script src="app.js"></script>
+<script src="src/data-layer.js?v=6.37"></script>
+<script src="app.js?v=6.37"></script>
 
 </body>
 

@@ -395,9 +395,22 @@ function nextCardId(laneId) {
 
 var currentTab = 'kanban';
 
+// Hash-Aliases fuer alte URLs (backward compat nach Navbar-Umstrukturierung 08.04.2026)
+var TAB_ALIAS = {
+  'patienten': 'kba',
+  'money':     'life',
+  'rag':       'system',
+  'on':        'system'
+};
 
+function resolveTab(id) {
+  if (TAB_ALIAS[id]) return TAB_ALIAS[id];
+  return id;
+}
 
 function switchTab(id) {
+
+  id = resolveTab(id);
 
   currentTab = id;
 
@@ -407,28 +420,42 @@ function switchTab(id) {
 
   document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.toggle('active', c.id === 'tab-' + id); });
 
-  if (id === 'heute')     renderHeute();
-
-  if (id === 'kanban')    { renderHannahSummary(); renderKanban(); }
-
-  if (id === 'patienten') renderPatients();
-
-  if (id === 'autonomy')  renderAL();
-
-  if (id === 'projekte')  showProjectsTab();
-
-  if (id === 'system')    { showSystemTab(); initSettings(); }
-
+  if (id === 'heute')      renderHeute();
+  if (id === 'kanban')     { renderHannahSummary(); renderKanban(); }
+  if (id === 'kba')        renderPatients();
+  if (id === 'projekte')   showProjectsTab();
+  if (id === 'life')       renderMoneyTab();
   if (id === 'imperialki') showImperialKITab();
-
-  if (id === 'rag') showRAGTab();
-
-  if (id === 'on') showONTab();
-
-
-  if (id === 'money') renderMoneyTab();
+  if (id === 'system')     {
+    showSystemTab();
+    try { showRAGTab(); } catch (e) { console.warn('showRAGTab failed:', e); setSystemAlert('system-rag-dropdown', true); }
+    try { showONTab(); }  catch (e) { console.warn('showONTab failed:',  e); setSystemAlert('system-on-dropdown',  true); }
+    initSettings();
+    updateSystemAlerts();
+  }
 
 }
+
+// ─── System Alert API ────────────────────────────────────────
+// Setzt das rote Blitz-Icon im Dropdown-Header + aktualisiert Navbar-Alert
+function setSystemAlert(dropdownId, hasProblem) {
+  var el = document.getElementById(dropdownId);
+  if (!el) return;
+  el.classList.toggle('has-alert', !!hasProblem);
+  var alertIcon = el.querySelector(':scope > summary > .sys-alert');
+  if (alertIcon) alertIcon.hidden = !hasProblem;
+  updateSystemAlerts();
+}
+window.setSystemAlert = setSystemAlert;
+
+function updateSystemAlerts() {
+  var sysTab = document.getElementById('tab-system');
+  if (!sysTab) return;
+  var hasAny = sysTab.querySelector('.sys-dropdown.has-alert') !== null;
+  var navAlert = document.getElementById('nav-system-alert');
+  if (navAlert) navAlert.hidden = !hasAny;
+}
+window.updateSystemAlerts = updateSystemAlerts;
 
 
 
@@ -2692,7 +2719,7 @@ async function initApp() {
 
   loadHannahSummary().catch(function(e) { console.warn('hannah fail', e); });
 
-  var hashTab = location.hash.replace('#', '');
+  var hashTab = resolveTab(location.hash.replace('#', ''));
 
   switchTab(hashTab && document.getElementById('tab-' + hashTab) ? hashTab : 'kanban');
 
@@ -2702,7 +2729,7 @@ async function initApp() {
 
 window.addEventListener('hashchange', function() {
 
-  var h = location.hash.replace('#', '');
+  var h = resolveTab(location.hash.replace('#', ''));
 
   if (h && h !== currentTab && document.getElementById('tab-' + h)) switchTab(h);
 
@@ -4965,7 +4992,7 @@ async function checkForRemoteChanges() {
 
       if (currentTab === 'kanban') renderKanban();
 
-      if (currentTab === 'patienten') renderPatients();
+      if (currentTab === 'kba') renderPatients();
 
       if (currentTab === 'autonomy') renderAL();
 
@@ -5778,7 +5805,8 @@ async function showONTab() {
 function startONPolling() {
   if (_onTabInterval) clearInterval(_onTabInterval);
   _onTabInterval = setInterval(async function() {
-    if (currentTab !== 'on') {
+    // ON ist jetzt ein Dropdown im System-Tab; Polling nur weiter wenn System aktiv
+    if (currentTab !== 'system') {
       clearInterval(_onTabInterval);
       _onTabInterval = null;
       return;

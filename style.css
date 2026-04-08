@@ -215,23 +215,39 @@ nav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 0 20px;
-  justify-content: center;
   display: flex; align-items: center;
   height: 52px;
   position: sticky; top: 0; z-index: 100;
   gap: 4px;
+}
+
+/* Center-Container: zentriert die Tab-Items ab Tablet-Groesse */
+.nav-center {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 auto;
+  justify-content: flex-start;
   overflow-x: auto;
   scrollbar-width: none;
 }
-nav::-webkit-scrollbar { display: none; }
+.nav-center::-webkit-scrollbar { display: none; }
 
-.brand {
-  font-weight: 700; font-size: 15px;
-  color: var(--text);
-  margin-right: 16px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  letter-spacing: -0.02em;
+/* Ab Tablet: Tab-Items zentrieren und Theme-Toggle absolut rechts */
+@media (min-width: 768px) {
+  nav { position: sticky; justify-content: center; }
+  .nav-center {
+    flex: 0 1 auto;
+    justify-content: center;
+    overflow-x: visible;
+  }
+  .theme-toggle {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 0;
+  }
 }
 
 .tab-btn {
@@ -247,10 +263,54 @@ nav::-webkit-scrollbar { display: none; }
   border-radius: var(--radius-sm);
   transition: color var(--transition), background var(--transition);
   position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 .tab-btn:hover { color: var(--text-secondary); background: var(--surface2); }
 .tab-btn.active { color: #fff; background: var(--accent); font-weight: 600; }
 .tab-btn.active:hover { background: var(--accent-dark); }
+
+/* Rotes Blitz-Icon in der Navbar (System bei Problem) */
+.nav-alert {
+  display: inline-block;
+  margin-left: 6px;
+  color: #ef4444;
+  font-size: 14px;
+  line-height: 1;
+  animation: nav-alert-pulse 1.6s ease-in-out infinite;
+}
+.nav-alert[hidden] { display: none; }
+.tab-btn.active .nav-alert { color: #fff; }
+@keyframes nav-alert-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.92); }
+}
+
+/* Rotes Blitz-Icon im Dropdown-Header (System-Dropdowns bei Problem) */
+.sys-alert {
+  display: inline-block;
+  margin-left: 8px;
+  color: #ef4444;
+  font-size: 14px;
+  line-height: 1;
+  animation: nav-alert-pulse 1.6s ease-in-out infinite;
+}
+.sys-alert[hidden] { display: none; }
+.sys-dropdown.has-alert > .sys-dropdown-header {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 1px rgba(239,68,68,0.25);
+}
+
+/* Nested sys-dropdowns (innerhalb RAG) — kleiner, eingerueckt */
+.sys-dropdown-nested { margin-bottom: 10px; }
+.sys-dropdown-nested > .sys-dropdown-header {
+  padding: 10px 14px;
+  font-size: 13px;
+  background: var(--surface2);
+}
+.sys-dropdown-nested > .sys-dropdown-body {
+  padding: 12px;
+}
 
 .theme-toggle {
   background: none; border: 1px solid var(--border);
@@ -2246,10 +2306,14 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
   .status-grid { grid-template-columns: 1fr !important; }
 }
 @media (max-width: 768px) {
-  nav { height: auto; flex-wrap: wrap; padding: 4px 8px; }
-  .brand { margin-right: 8px; }
-  .tab-btn { padding: 0 10px; height: 36px; font-size: 12px; }
+  nav { height: 48px; padding: 4px 6px; gap: 2px; }
+  .nav-center { gap: 2px; }
+  .tab-btn { padding: 0 8px; height: 36px; font-size: 12px; }
+  .theme-toggle { padding: 4px 6px; font-size: 14px; flex-shrink: 0; }
   .modal { padding: 16px; }
+}
+@media (max-width: 420px) {
+  .tab-btn { padding: 0 6px; height: 34px; font-size: 11px; }
 }
 
 /* ─── BURGER MENU (Mobile) ─────────────────────────────── */
