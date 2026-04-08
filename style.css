@@ -2485,6 +2485,28 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  cursor: pointer;
+  user-select: none;
+  gap: 8px;
+}
+.hannah-box.collapsed .hannah-box-header {
+  margin-bottom: 0;
+}
+.hannah-box.collapsed .hannah-text {
+  display: none;
+}
+.hannah-chevron {
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: transform var(--transition);
+  display: inline-block;
+  margin-left: 4px;
+}
+.hannah-box.collapsed .hannah-chevron {
+  transform: rotate(-90deg);
+}
+.hannah-box-header:hover .hannah-chevron {
+  color: #f9a8d4;
 }
 .hannah-label {
   font-size: 11px;

@@ -538,6 +538,32 @@ async function loadHannahSummary() {
 
 
 
+function getHannahCollapsed() {
+
+  try { return JSON.parse(localStorage.getItem('lifeos_hannah_collapsed') || '{}'); } catch(e) { return {}; }
+
+}
+
+
+
+function toggleHannahBox(which) {
+
+  var box = document.querySelector('.hannah-box[data-hannah="' + which + '"]');
+
+  if (!box) return;
+
+  box.classList.toggle('collapsed');
+
+  var state = getHannahCollapsed();
+
+  state[which] = box.classList.contains('collapsed');
+
+  try { localStorage.setItem('lifeos_hannah_collapsed', JSON.stringify(state)); } catch(e) {}
+
+}
+
+
+
 function renderHannahSummary() {
 
   var el = document.getElementById('hannah-summary');
@@ -560,13 +586,43 @@ function renderHannahSummary() {
 
   }
 
-  var html = '<div class="hannah-grid">';
+  // Default: beide collapsed, wenn noch nie gesetzt
 
-  html += '<div class="hannah-box"><div class="hannah-box-header"><span class="hannah-label">Hannah heute</span><span class="hannah-count">' + (s.today.count||0) + ' Termine</span></div><div class="hannah-text">' + esc(s.today.text||'') + '</div></div>';
+  var state = getHannahCollapsed();
 
-  html += '<div class="hannah-box"><div class="hannah-box-header"><span class="hannah-label">Hannah diese Woche</span><span class="hannah-count">' + (s.week.count||0) + ' Termine</span></div><div class="hannah-text">' + esc(s.week.text||'') + '</div></div>';
+  if (state.today === undefined) state.today = true;
 
-  html += '</div>';
+  if (state.week  === undefined) state.week  = true;
+
+  function box(which, label, data) {
+
+    var cls = 'hannah-box' + (state[which] ? ' collapsed' : '');
+
+    return '<div class="' + cls + '" data-hannah="' + which + '">'
+
+      + '<div class="hannah-box-header" onclick="toggleHannahBox(\'' + which + '\')">'
+
+      + '<span class="hannah-label">' + label + '</span>'
+
+      + '<span class="hannah-count">' + (data.count||0) + ' Termine</span>'
+
+      + '<span class="hannah-chevron">\u25be</span>'
+
+      + '</div>'
+
+      + '<div class="hannah-text">' + esc(data.text||'') + '</div>'
+
+      + '</div>';
+
+  }
+
+  var html = '<div class="hannah-grid">'
+
+    + box('today', 'Hannah heute',       s.today)
+
+    + box('week',  'Hannah diese Woche', s.week)
+
+    + '</div>';
 
   if (genAt) html += '<div class="hannah-footer">Aktualisiert: ' + genAt + '</div>';
 
