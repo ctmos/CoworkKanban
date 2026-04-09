@@ -2633,8 +2633,9 @@ html.dark-theme .hannah-label { color: #f9a8d4; }
 }
 .hannah-text {
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--text);
+  white-space: pre-line;
 }
 .hannah-footer {
   font-size: 10px;
