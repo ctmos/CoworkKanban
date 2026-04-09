@@ -3135,16 +3135,55 @@ function renderUsageWidget(u) {
 
     extraHtml +
 
-    buildPacingChart(allPct, u.weekly && u.weekly.allModels && u.weekly.allModels.resetsInMin);
+    buildPacingChart(allPct, u.weekly && u.weekly.allModels && u.weekly.allModels.resetsLabel);
 
   el.style.display = 'block';
 }
 
-function buildPacingChart(weeklyPct, resetsInMin) {
-  var days = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+// Parst Reset-Labels wie "Mon 7:00 PM" zum naechsten Reset-Datum
+function parseResetLabel(label) {
+  if (!label) return null;
+  var m = /^(Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(String(label).trim());
+  if (!m) return null;
+  var dayMap = {sun:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6};
+  var targetDay = dayMap[m[1].toLowerCase()];
+  var hour = parseInt(m[2], 10);
+  var min = parseInt(m[3], 10);
+  var ampm = m[4].toUpperCase();
+  if (ampm === 'PM' && hour < 12) hour += 12;
+  if (ampm === 'AM' && hour === 12) hour = 0;
   var now = new Date();
-  var jsDay = now.getDay();
-  var todayIdx = jsDay === 0 ? 6 : jsDay - 1;
+  var result = new Date(now);
+  result.setHours(hour, min, 0, 0);
+  var daysUntil = (targetDay - now.getDay() + 7) % 7;
+  if (daysUntil === 0 && result.getTime() <= now.getTime()) daysUntil = 7;
+  result.setDate(result.getDate() + daysUntil);
+  return result;
+}
+
+function buildPacingChart(weeklyPct, resetsLabel) {
+  var dayLabels = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  var now = new Date();
+  var days, todayIdx;
+  var nextReset = parseResetLabel(resetsLabel);
+  if (nextReset) {
+    // Billing-Woche basiert auf echtem Reset-Zeitpunkt, nicht Kalenderwoche
+    var lastReset = new Date(nextReset.getTime() - 7 * 24 * 60 * 60 * 1000);
+    days = [];
+    for (var d = 0; d < 7; d++) {
+      var boxDate = new Date(lastReset.getTime() + d * 24 * 60 * 60 * 1000);
+      days.push(dayLabels[boxDate.getDay()]);
+    }
+    var msSinceReset = now.getTime() - lastReset.getTime();
+    todayIdx = Math.floor(msSinceReset / (24 * 60 * 60 * 1000));
+    if (todayIdx < 0) todayIdx = 0;
+    if (todayIdx > 6) todayIdx = 6;
+  } else {
+    // Fallback: Kalender-basiert (nur wenn kein resetsLabel vorhanden)
+    days = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+    var jsDay = now.getDay();
+    todayIdx = jsDay === 0 ? 6 : jsDay - 1;
+  }
   var dailyBudget = 100 / 7;
   var remaining = weeklyPct;
   var barsHtml = '';
