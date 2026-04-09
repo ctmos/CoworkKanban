@@ -575,15 +575,26 @@ function getHannahCollapsed() {
 
 function toggleHannahBox(which) {
 
-  var box = document.querySelector('.hannah-box[data-hannah="' + which + '"]');
+  // Sync-Behavior: beide Boxen immer im selben Zustand
+  var allBoxes = document.querySelectorAll('.hannah-box');
 
-  if (!box) return;
+  if (!allBoxes.length) return;
 
-  box.classList.toggle('collapsed');
+  // Zielzustand aus der geklickten Box ableiten (toggle)
+  var target = document.querySelector('.hannah-box[data-hannah="' + which + '"]');
 
-  var state = getHannahCollapsed();
+  if (!target) return;
 
-  state[which] = box.classList.contains('collapsed');
+  var shouldCollapse = !target.classList.contains('collapsed');
+
+  allBoxes.forEach(function(b) {
+
+    if (shouldCollapse) b.classList.add('collapsed');
+    else b.classList.remove('collapsed');
+
+  });
+
+  var state = { today: shouldCollapse, week: shouldCollapse };
 
   try { localStorage.setItem('lifeos_hannah_collapsed', JSON.stringify(state)); } catch(e) {}
 
@@ -614,12 +625,14 @@ function renderHannahSummary() {
   }
 
   // Default: beide collapsed, wenn noch nie gesetzt
+  // Sync-Behavior: beide Boxen immer im selben Zustand (nutze 'today' als Source of Truth)
 
   var state = getHannahCollapsed();
 
   if (state.today === undefined) state.today = true;
 
-  if (state.week  === undefined) state.week  = true;
+  // week folgt immer today (Sync-Behavior)
+  state.week = state.today;
 
   function box(which, label, data) {
 
