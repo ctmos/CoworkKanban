@@ -785,6 +785,21 @@ nav {
 
 .lane-body.collapsed { display: none; }
 
+/* ── COLLAPSED LANE STYLING: dunkles Grau + weisse Schrift ── */
+.lane.lane-collapsed { background: #374151; border-color: #1f2937; }
+.lane.lane-collapsed .lane-header { background: #374151; border-bottom-color: #1f2937; }
+.lane.lane-collapsed .lane-title { color: #ffffff; }
+.lane.lane-collapsed .lane-count { color: rgba(255,255,255,0.75); font-weight: 600; }
+.lane.lane-collapsed .lane-collapse { color: rgba(255,255,255,0.9); }
+.lane.lane-collapsed .lane-collapse:hover { background: rgba(255,255,255,0.12); }
+.lane.lane-collapsed .btn-add-card { color: rgba(255,255,255,0.8); }
+.lane.lane-collapsed .btn-add-card:hover { background: rgba(255,255,255,0.12); color: #ffffff; }
+/* Collapsed + has cards: helle Akzent-Punkt daneben */
+.lane.lane-collapsed.lane-has-cards .lane-count { background: #22c55e; color: #ffffff; padding: 1px 8px; border-radius: 10px; font-size: 11px; }
+.lane.lane-collapsed:not(.lane-has-cards) .lane-count { color: rgba(255,255,255,0.4); }
+:root.dark-theme .lane.lane-collapsed { background: #1f2937; border-color: #0f172a; }
+:root.dark-theme .lane.lane-collapsed .lane-header { background: #1f2937; border-bottom-color: #0f172a; }
+
 .lane-footer {
 
   padding: 6px 8px;
