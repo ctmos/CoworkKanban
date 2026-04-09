@@ -910,9 +910,12 @@ function renderCardItem(card, laneColor) {
 
   var isHE=card.todayFlag||card.lane==='HE';
 
-  var bgStyle=laneColor?'background:rgba('+hexToRgb(laneColor)+',0.08);':'';
+  // Card-Hintergrund: nur Status-Farbe mit Transparenz (Feature v6.43)
+  var statusColors={offen:'156,163,175',blockiert:'239,68,68','in-arbeit':'245,158,11',erledigt:'34,197,94'};
+  var stRgb=statusColors[card.status]||statusColors.offen;
+  var bgStyle='background:rgba('+stRgb+',0.12);';
 
-  return '<div class="card-item" draggable="true" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+  return '<div class="card-item card-status-'+esc(card.status||'offen')+'" draggable="true" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
 
 }
 
