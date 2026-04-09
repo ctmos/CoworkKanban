@@ -1716,9 +1716,9 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
 }
 .proj-header h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
 .proj-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .proj-card {
   background: var(--surface);
@@ -1751,6 +1751,32 @@ a.ik-coach-task-name:hover { color: var(--accent); border-bottom-color: var(--ac
   font-weight: 600;
   color: var(--text);
   letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.proj-card-last {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.proj-card-status-row {
+  display: flex;
+  margin-top: 10px;
+}
+.proj-card-status-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+  line-height: 1.4;
 }
 .proj-status-circle {
   display: inline-block;

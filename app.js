@@ -2439,11 +2439,33 @@ async function showProjectsTab(){
 
     var activeCards='';var deletedCards='';
 
+    function fmtProjDateShort(iso){ if(!iso)return ''; try{ var d=new Date(iso); if(isNaN(d))return ''; var dd=String(d.getDate()).padStart(2,'0'); var mm=String(d.getMonth()+1).padStart(2,'0'); var yy=String(d.getFullYear()).slice(-2); return dd+'.'+mm+'.'+yy; }catch(e){return '';} }
+
     activeList.forEach(function(item){var id=item.id;var meta=item.meta;var lc=(item.log&&item.log.content)||'';var fl=lc.split('\n').map(function(l){return l.trim();}).find(function(l){return l&&l!=='---'&&!l.startsWith('**[');})||'';
     var sc=meta.statusColor||statusColors[meta.status]||'#22c55e';
     var circleTitle=meta.statusText?(' title="'+esc(meta.statusText)+'"'):'';
     var statusCircle='<span class="proj-status-circle" style="background:'+esc(sc)+'"'+circleTitle+'></span>';
-    activeCards+='<div class="proj-card" draggable="true" data-proj-id="'+esc(id)+'" onclick="showProjectDetail(\''+esc(id)+'\')">'+'<div class="proj-card-color-bar" style="background:'+esc(sc)+'"></div>'+'<div class="proj-card-name-row">'+statusCircle+'<span class="proj-card-name">'+esc(meta.name||id)+'</span></div>'+(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')+(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')+'</div>';});
+    // Letztes Aenderungsdatum: max(meta.updatedAt, newest entry updatedAt/createdAt)
+    var lastModified = meta.updatedAt || meta.createdAt || '';
+    if (meta.entries && meta.entries.length) {
+      meta.entries.forEach(function(e){
+        var ed = e.updatedAt || e.createdAt;
+        if (ed && ed > lastModified) lastModified = ed;
+      });
+    }
+    var lastFmt = fmtProjDateShort(lastModified);
+    var statusText = esc(meta.statusText || meta.status || 'aktiv');
+    activeCards+='<div class="proj-card" draggable="true" data-proj-id="'+esc(id)+'" onclick="showProjectDetail(\''+esc(id)+'\')">'
+      +'<div class="proj-card-color-bar" style="background:'+esc(sc)+'"></div>'
+      +'<div class="proj-card-name-row">'
+        +statusCircle
+        +'<span class="proj-card-name">'+esc(meta.name||id)+'</span>'
+        +(lastFmt?'<span class="proj-card-last">'+lastFmt+'</span>':'')
+      +'</div>'
+      +(meta.description?'<div class="proj-card-desc">'+esc(meta.description)+'</div>':'')
+      +(fl?'<div class="proj-card-log">'+esc(fl)+'</div>':'')
+      +'<div class="proj-card-status-row"><span class="proj-card-status-chip" style="background:rgba('+hexToRgb(sc)+',0.14);border-color:'+esc(sc)+';color:'+esc(sc)+'">'+statusText+'</span></div>'
+    +'</div>';});
 
     deletedList.forEach(function(item){var id=item.id;var meta=item.meta;
     var sc=meta.statusColor||statusColors[meta.status]||'#22c55e';
