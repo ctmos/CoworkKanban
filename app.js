@@ -965,11 +965,7 @@ function renderKanban() {
 
     var dh=done.length>0?'<button class="done-archive-toggle" onclick="event.stopPropagation();toggleDoneArchive(\''+lane.id+'\')">Erledigt ('+done.length+') '+(doneExp?'\u25b4':'\u25be')+'</button>'+(doneExp?'<div class="done-archive-list">'+done.map(function(c){return renderCardItem(c,lane.color);}).join('')+'</div>':''):'';
 
-    var vh='';
-
-    if(lane.isBA){vh='<div class="vorlagen-wrap" onclick="event.stopPropagation()"><button class="btn-vorlagen" onclick="toggleVorlagen(\''+lane.id+'\')">Vorlagen \u25be</button><div class="vorlagen-dropdown" id="vd-'+lane.id+'">'+BA_TPLS.map(function(t){return '<button class="vorlagen-item" onclick="addVorlage(\''+lane.id+'\',\''+t.replace(/'/g,"\\'")+'\');closeVorlagen(\''+lane.id+'\')">'+t+'</button>';}).join('')+'</div></div>';}
-
-    return '<div class="lane" id="lane-'+lane.id+'"><div class="lane-header" onclick="toggleCollapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,\''+lane.id+'\')">+ Karte</button>'+vh+'<button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'" id="lb-'+lane.id+'">'+ch+dh+'</div></div>';
+    return '<div class="lane" id="lane-'+lane.id+'"><div class="lane-header" onclick="toggleCollapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,\''+lane.id+'\')">+ Karte</button><button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'" id="lb-'+lane.id+'">'+ch+dh+'</div></div>';
 
   }).join('');
 
@@ -1030,14 +1026,6 @@ function renderKanban() {
 
 
 function toggleCollapse(laneId) { _appState.collapsed[laneId]=!_appState.collapsed[laneId]; lsSet('cowork_collapsed',_appState.collapsed); renderKanban(); }
-
-function toggleVorlagen(laneId) { var dd=document.getElementById('vd-'+laneId); if(dd) dd.classList.toggle('open'); }
-
-function closeVorlagen(laneId) { var dd=document.getElementById('vd-'+laneId); if(dd) dd.classList.remove('open'); }
-
-function addVorlage(laneId,title) { var cards=getCards(); var id=nextCardId(laneId); cards[id]={id:id,lane:laneId,title:title,status:'offen',deadline:'',desc:'',archived:false,order:Date.now()}; saveCards(cards); renderKanban(); }
-
-document.addEventListener('click',function(e){if(!e.target.closest('.vorlagen-wrap')){document.querySelectorAll('.vorlagen-dropdown.open').forEach(function(d){d.classList.remove('open');});}});
 
 
 
@@ -4722,10 +4710,6 @@ document.addEventListener('keydown', function(e) {
     closeCardModal();
 
     closePatModal();
-
-    var vorlagen = document.getElementById('vorlagen-overlay');
-
-    if (vorlagen && vorlagen.classList.contains('open')) closeVorlagen();
 
   }
 
