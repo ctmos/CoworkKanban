@@ -1768,6 +1768,8 @@ const _appState = {
 
   collapsed: {},
 
+  laneOrder: [],
+
   budget: 100,
 
   gh_token: '',

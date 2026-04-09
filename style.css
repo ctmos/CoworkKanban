@@ -794,6 +794,13 @@ nav {
 .lane.lane-collapsed .lane-collapse:hover { background: rgba(255,255,255,0.12); }
 .lane.lane-collapsed .btn-add-card { color: rgba(255,255,255,0.8); }
 .lane.lane-collapsed .btn-add-card:hover { background: rgba(255,255,255,0.12); color: #ffffff; }
+/* Lane Drag Handle */
+.lane-drag-handle { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 22px; cursor: grab; color: var(--text-muted); font-size: 13px; letter-spacing: -2px; user-select: none; margin-right: 4px; border-radius: 3px; }
+.lane-drag-handle:hover { background: var(--border); color: var(--text); }
+.lane-drag-handle:active { cursor: grabbing; }
+.lane.lane-collapsed .lane-drag-handle { color: rgba(255,255,255,0.75); }
+.lane.lane-collapsed .lane-drag-handle:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.lane.lane-dragging { opacity: 0.5; }
 /* Collapsed + has cards: helle Akzent-Punkt daneben */
 .lane.lane-collapsed.lane-has-cards .lane-count { background: #22c55e; color: #ffffff; padding: 1px 8px; border-radius: 10px; font-size: 11px; }
 .lane.lane-collapsed:not(.lane-has-cards) .lane-count { color: rgba(255,255,255,0.4); }

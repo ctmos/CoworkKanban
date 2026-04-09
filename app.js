@@ -948,13 +948,38 @@ document.getElementById('kanban-grid').addEventListener('wheel',function(e){if(!
 
 
 
+function getLaneOrder() {
+  try {
+    var stored = JSON.parse(localStorage.getItem('lifeos_lane_order') || 'null');
+    if (stored && Array.isArray(stored)) return stored;
+  } catch(e) {}
+  return null;
+}
+
+function saveLaneOrder(order) {
+  try { localStorage.setItem('lifeos_lane_order', JSON.stringify(order)); } catch(e) {}
+  _appState.laneOrder = order;
+}
+
+function getOrderedLanes() {
+  var order = getLaneOrder();
+  if (!order || !order.length) return LANES.slice();
+  var byId = {};
+  LANES.forEach(function(l) { byId[l.id] = l; });
+  var ordered = [];
+  order.forEach(function(id) { if (byId[id]) { ordered.push(byId[id]); delete byId[id]; } });
+  // Append any new lanes not yet in order (e.g., after adding a new lane)
+  LANES.forEach(function(l) { if (byId[l.id]) ordered.push(l); });
+  return ordered;
+}
+
 function renderKanban() {
 
   var cards=getCards(); var grid=document.getElementById('kanban-grid'); var collapsed=_appState.collapsed;
 
   var todayISO=new Date().toISOString().split('T')[0];
 
-  grid.innerHTML = LANES.map(function(lane) {
+  grid.innerHTML = getOrderedLanes().map(function(lane) {
 
     var all=Object.values(cards).filter(function(c){return !c.archived&&(lane.isHeute?(c.todayFlag||c.deadline===todayISO||c.lane==='HE'):c.lane===lane.id);});
 
@@ -970,7 +995,7 @@ function renderKanban() {
 
     var hasCards=active.length>0;
 
-    return '<div class="lane'+(isCol?' lane-collapsed':'')+(hasCards?' lane-has-cards':'')+'" id="lane-'+lane.id+'"><div class="lane-header" onclick="toggleCollapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,\''+lane.id+'\')">+ Karte</button><button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'" id="lb-'+lane.id+'">'+ch+dh+'</div></div>';
+    return '<div class="lane'+(isCol?' lane-collapsed':'')+(hasCards?' lane-has-cards':'')+'" id="lane-'+lane.id+'" data-lane="'+lane.id+'"><div class="lane-header" onclick="toggleCollapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-drag-handle" draggable="true" onclick="event.stopPropagation()" title="Lane verschieben">\u22ee\u22ee</span><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openCardModal(null,\''+lane.id+'\')">+ Karte</button><button class="lane-collapse" onclick="event.stopPropagation();toggleCollapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'" id="lb-'+lane.id+'">'+ch+dh+'</div></div>';
 
   }).join('');
 
@@ -4938,6 +4963,18 @@ setInterval(function() {
 
   document.addEventListener('dragstart', function(e) {
 
+    // Lane-Drag via drag-handle
+    var handle = e.target.closest('.lane-drag-handle');
+    if (handle) {
+      var hLane = handle.closest('.lane');
+      if (!hLane) return;
+      var laneId = hLane.dataset.lane || hLane.id.replace('lane-','');
+      e.dataTransfer.setData('text/plain', 'lane:' + laneId);
+      e.dataTransfer.effectAllowed = 'move';
+      hLane.classList.add('lane-dragging');
+      return;
+    }
+
     var card = e.target.closest('.card-item');
 
     if (!card) return;
@@ -4974,7 +5011,7 @@ setInterval(function() {
 
     document.querySelectorAll('.lane').forEach(function(l) {
 
-      l.classList.remove('drop-target-hint', 'drag-over');
+      l.classList.remove('drop-target-hint', 'drag-over', 'lane-dragging', 'lane-drop-before', 'lane-drop-after');
 
     });
 
@@ -5018,13 +5055,36 @@ setInterval(function() {
 
     if (!lane) return;
 
-    lane.classList.remove('drag-over');
+    lane.classList.remove('drag-over', 'lane-drop-before', 'lane-drop-after');
 
-    document.querySelectorAll('.drop-target-hint').forEach(function(l) { l.classList.remove('drop-target-hint'); });
+    document.querySelectorAll('.drop-target-hint,.lane-dragging,.lane-drop-before,.lane-drop-after').forEach(function(l) { l.classList.remove('drop-target-hint','lane-dragging','lane-drop-before','lane-drop-after'); });
 
 
 
-    var cardId = e.dataTransfer.getData('text/plain');
+    var raw = e.dataTransfer.getData('text/plain');
+
+    // LANE REORDER
+    if (raw && raw.indexOf('lane:') === 0) {
+      var sourceLaneId = raw.slice(5);
+      var targetLaneId = lane.dataset.lane || lane.id.replace('lane-','');
+      if (sourceLaneId === targetLaneId) return;
+      var order = getLaneOrder() || LANES.map(function(l) { return l.id; });
+      // Remove source from current position
+      order = order.filter(function(id) { return id !== sourceLaneId; });
+      // Determine insertion index based on cursor position relative to target lane
+      var laneRect = lane.getBoundingClientRect();
+      var midY = laneRect.top + laneRect.height / 2;
+      var targetIdx = order.indexOf(targetLaneId);
+      if (targetIdx === -1) targetIdx = order.length;
+      if (e.clientY >= midY) targetIdx += 1;
+      order.splice(targetIdx, 0, sourceLaneId);
+      saveLaneOrder(order);
+      showToast('Lane ' + sourceLaneId + ' verschoben');
+      renderKanban();
+      return;
+    }
+
+    var cardId = raw;
 
     var targetLane = lane.dataset.lane || (lane.id ? lane.id.replace('lane-','') : null);
 
