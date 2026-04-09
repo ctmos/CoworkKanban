@@ -1338,7 +1338,19 @@ function renderPatients(filter) {
       var diffDays = Math.floor((new Date() - aufDt) / 86400000);
       if (diffDays >= 0) { var m = Math.floor(diffDays / 30); var remDays = diffDays % 30; var w = Math.floor(remDays / 7); var d = remDays % 7; dauerBadge = '<span class="pat-dauer-badge">' + (m > 0 ? m + 'M ' : '') + w + 'W ' + d + 'T</span>'; }
     }
-    return '<div class="patient-row'+(p.status==='archiviert'?' pat-archived':'')+'" onclick="showPatientDetail(\''+esc(p.id)+'\')"><span class="pat-code" style="font-weight:600;min-width:80px">'+esc(p.code)+'</span>'+austrittBadge+'<span class="pat-ampel-icons">'+ampelIcons+'</span><span class="pat-info" style="flex:1;font-size:12px;color:var(--text-muted)">'+entryInfo+'</span>'+dauerBadge+berichtBadge+'<span class="pat-status-badge pat-status-'+(p.status||'aktiv')+'">'+(p.status||'aktiv')+'</span></div>';
+    return '<div class="patient-row'+(p.status==='archiviert'?' pat-archived':'')+'" onclick="showPatientDetail(\''+esc(p.id)+'\')">'
+      + '<div class="pat-row-top">'
+        + '<span class="pat-code">'+esc(p.code)+'</span>'
+        + '<div class="pat-row-ampel">'+ampelIcons+'</div>'
+        + '<span class="pat-status-badge pat-status-'+(p.status||'aktiv')+'">'+(p.status||'aktiv')+'</span>'
+      + '</div>'
+      + (entryInfo ? '<div class="pat-row-info">'+entryInfo+'</div>' : '')
+      + '<div class="pat-row-bottom">'
+        + (austrittBadge || '')
+        + (dauerBadge || '')
+        + berichtBadge
+      + '</div>'
+    + '</div>';
 
   }
 

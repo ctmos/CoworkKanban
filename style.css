@@ -1058,14 +1058,43 @@ nav {
 .patient-row {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xs);
-  padding: 14px 16px;
+  padding: 12px 14px;
   margin-bottom: 10px;
-  display: flex; align-items: center; gap: 12px;
-  transition: all var(--transition);
+  display: flex; flex-direction: column; gap: 8px;
+  cursor: pointer;
+  transition: box-shadow var(--transition), border-color var(--transition), transform var(--transition);
 }
-.patient-row:hover { box-shadow: var(--shadow-sm); border-color: rgba(196,122,42,0.12); }
+.patient-row:hover { box-shadow: var(--shadow-md); border-color: rgba(196,122,42,0.25); border-left-color: var(--accent); transform: translateY(-1px); }
+.patient-row.pat-archived { opacity: 0.55; border-left-color: var(--border); }
+
+.pat-row-top { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pat-row-top .pat-code { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); flex-shrink: 0; }
+.pat-row-ampel { display: flex; gap: 4px; align-items: center; margin-left: 2px; }
+.pat-row-top .pat-status-badge { margin-left: auto; flex-shrink: 0; }
+
+.pat-row-info { font-size: 13px; color: var(--text-muted); line-height: 1.4; padding-left: 2px; }
+
+.pat-row-bottom { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.pat-row-bottom:empty { display: none; }
+
+/* Mobile Layout */
+@media (max-width: 600px) {
+  .patient-row { padding: 11px 12px; gap: 6px; }
+  .pat-row-top { gap: 8px; flex-wrap: wrap; }
+  .pat-row-top .pat-code { font-size: 14px; }
+  .pat-row-ampel { flex-wrap: nowrap; }
+  .pat-row-ampel .pat-ampel-icon svg { width: 16px !important; height: 16px !important; }
+  .pat-row-info { font-size: 12px; }
+  .pat-row-bottom { gap: 5px; }
+  .pat-row-bottom .pat-austritt-badge,
+  .pat-row-bottom .pat-dauer-badge,
+  .pat-row-bottom .pat-bericht-badge { font-size: 10px; padding: 2px 6px; }
+}
+:root.dark-theme .patient-row { border-left-color: var(--accent); }
+:root.dark-theme .patient-row:hover { border-color: rgba(196,122,42,0.4); }
 
 /* ── GLOBAL LAYOUT ── */
 #tab-kanban, #tab-patienten, #tab-autonomy, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-rag, #tab-on {
