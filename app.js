@@ -915,7 +915,7 @@ function renderCardItem(card, laneColor) {
   var stRgb=statusColors[card.status]||statusColors.offen;
   var bgStyle='background:rgba('+stRgb+',0.12);';
 
-  return '<div class="card-item card-status-'+esc(card.status||'offen')+'" draggable="true" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+  return '<div class="card-item card-status-'+esc(card.status||'offen')+'" draggable="true" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><span class="card-drag-handle" title="Karte sortieren">\u22ee\u22ee</span><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
 
 }
 

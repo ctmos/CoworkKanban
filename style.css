@@ -610,14 +610,35 @@ nav {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-xs);
-  padding: 12px 32px 12px 14px;
+  padding: 12px 32px 12px 10px;
   margin-bottom: 8px;
   cursor: pointer;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 8px;
   transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
 }
 .card-item:hover { box-shadow: var(--shadow); transform: translateY(-1px); border-color: rgba(196,122,42,0.15); }
-.card-item.expanded { padding: 12px 14px; margin-bottom: 6px; }
+.card-item.expanded { padding: 12px 32px 12px 10px; margin-bottom: 6px; }
+
+/* Card Drag Handle (analog zu lane-drag-handle) */
+.card-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 20px;
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: -2px;
+  user-select: none;
+  flex-shrink: 0;
+  border-radius: 3px;
+  opacity: 0.45;
+  transition: opacity var(--transition), background var(--transition), color var(--transition);
+}
+.card-item:hover .card-drag-handle { opacity: 0.85; }
+.card-drag-handle:hover { background: var(--border); color: var(--text); opacity: 1; }
+.card-drag-handle:active { cursor: grabbing; }
 
 .card-prefix {
 
