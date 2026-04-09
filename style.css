@@ -1097,10 +1097,25 @@ nav {
 :root.dark-theme .patient-row:hover { border-color: rgba(196,122,42,0.4); }
 
 /* ── GLOBAL LAYOUT ── */
-#tab-kanban, #tab-patienten, #tab-autonomy, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-rag, #tab-on {
+#tab-kanban, #tab-patienten, #tab-autonomy, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-rag, #tab-on, #tab-kba, #tab-life {
   padding: 20px 24px;
   max-width: 940px;
   margin: 0 auto;
+}
+
+/* ── KBA + LIFE Dropdown Polish ── */
+#tab-kba .sys-dropdown, #tab-life .sys-dropdown { margin-bottom: 12px; box-shadow: var(--shadow-xs); border-radius: var(--radius-lg); overflow: hidden; }
+#tab-kba .sys-dropdown-header, #tab-life .sys-dropdown-header { padding: 14px 18px; font-size: 14px; font-weight: 600; letter-spacing: 0.01em; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); transition: background var(--transition), border-color var(--transition); }
+#tab-kba .sys-dropdown-header:hover, #tab-life .sys-dropdown-header:hover { background: var(--bg); border-color: rgba(196,122,42,0.2); }
+#tab-kba .sys-dropdown[open] > .sys-dropdown-header, #tab-life .sys-dropdown[open] > .sys-dropdown-header { border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 1px solid var(--border); }
+#tab-kba .sys-dropdown-body, #tab-life .sys-dropdown-body { padding: 16px 18px; border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg); background: var(--surface); }
+#tab-life .sys-dropdown-header { color: var(--accent); }
+:root.dark-theme #tab-life .sys-dropdown-header { color: var(--accent); }
+
+@media (max-width: 600px) {
+  #tab-kba, #tab-life { padding: 14px 12px; }
+  #tab-kba .sys-dropdown-header, #tab-life .sys-dropdown-header { padding: 12px 14px; font-size: 13px; }
+  #tab-kba .sys-dropdown-body, #tab-life .sys-dropdown-body { padding: 12px 14px; }
 }
 .tab-content > *:first-child { margin-top: 0 !important; }
 
