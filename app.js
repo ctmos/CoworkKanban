@@ -5036,10 +5036,48 @@ setInterval(function() {
 
     var card = cards[cardId];
 
-    if (!card || card.lane === targetLane) return;
+    if (!card) return;
 
+    // Determine insertion index: find target card under cursor (if any)
+    var overCard = e.target.closest('.card-item');
+    var insertBeforeId = null;
+    if (overCard && overCard.dataset.id && overCard.dataset.id !== cardId) {
+      var rect = overCard.getBoundingClientRect();
+      var midY = rect.top + rect.height / 2;
+      if (e.clientY < midY) {
+        insertBeforeId = overCard.dataset.id;
+      } else {
+        // Insert after overCard: find next sibling card
+        var next = overCard.nextElementSibling;
+        while (next && !next.classList.contains('card-item')) next = next.nextElementSibling;
+        insertBeforeId = next ? next.dataset.id : null;
+      }
+    }
 
+    // Same-lane reorder
+    if (card.lane === targetLane) {
+      var laneCards = Object.values(cards)
+        .filter(function(c) { return !c.archived && c.lane === targetLane && c.status !== 'erledigt'; })
+        .sort(function(a,b) { return (a.order||0) - (b.order||0) || a.id.localeCompare(b.id); });
+      // Remove dragged card from list
+      laneCards = laneCards.filter(function(c) { return c.id !== cardId; });
+      // Find insertion index
+      var idx = laneCards.length;
+      if (insertBeforeId) {
+        var foundIdx = laneCards.findIndex(function(c) { return c.id === insertBeforeId; });
+        if (foundIdx !== -1) idx = foundIdx;
+      }
+      laneCards.splice(idx, 0, card);
+      // Reassign order values
+      laneCards.forEach(function(c, i) { cards[c.id].order = (i + 1) * 1000; });
+      saveCards(cards);
+      showToast(cardId + ' neu sortiert');
+      renderKanban();
+      if (currentTab === 'heute') renderHeute();
+      return;
+    }
 
+    // Cross-lane move
     var oldLane = card.lane;
 
     var oldId = card.id;
@@ -5060,8 +5098,6 @@ setInterval(function() {
 
     card.lane = targetLane;
 
-    card.order = Date.now();
-
     // Clear todayFlag when moving OUT of today-group lanes
 
     var todayGroup = ['HE','HB','HD','JZ'];
@@ -5075,6 +5111,20 @@ setInterval(function() {
     }
 
     cards[newId] = card;
+
+    // Reorder target lane with insertion point
+    var tLaneCards = Object.values(cards)
+      .filter(function(c) { return !c.archived && c.lane === targetLane && c.status !== 'erledigt'; })
+      .sort(function(a,b) { return (a.order||0) - (b.order||0) || a.id.localeCompare(b.id); });
+    // Remove the moved card from its position (it's currently at the end with old order)
+    tLaneCards = tLaneCards.filter(function(c) { return c.id !== newId; });
+    var insIdx = tLaneCards.length;
+    if (insertBeforeId) {
+      var fi = tLaneCards.findIndex(function(c) { return c.id === insertBeforeId; });
+      if (fi !== -1) insIdx = fi;
+    }
+    tLaneCards.splice(insIdx, 0, cards[newId]);
+    tLaneCards.forEach(function(c, i) { cards[c.id].order = (i + 1) * 1000; });
 
 
 
