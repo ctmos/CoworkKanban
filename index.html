@@ -1388,7 +1388,57 @@
 
     </div>
 
+    <details class="cm-details" id="cm-substrate-details">
+      <summary class="form-label" style="cursor:pointer;user-select:none;margin-bottom:8px">Mehr Details</summary>
 
+      <div class="cm-substrate-grid">
+        <div class="form-group">
+          <label class="form-label">Zustaendig</label>
+          <select class="form-input" id="cm-assignee">
+            <option value="">(niemand)</option>
+            <option value="christian">Christian</option>
+            <option value="hermine">Hermine</option>
+            <option value="kitt">KITT</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quelle</label>
+          <select class="form-input" id="cm-source">
+            <option value="manual">Manuell</option>
+            <option value="gmail">Gmail</option>
+            <option value="telegram">Telegram</option>
+            <option value="hermine">Hermine</option>
+            <option value="kitt">KITT</option>
+            <option value="calendar">Kalender</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Patient</label>
+          <select class="form-input" id="cm-linked-patient">
+            <option value="">(keiner)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Projekt</label>
+          <select class="form-input" id="cm-linked-project">
+            <option value="">(keins)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tags</label>
+        <input type="text" class="form-input" id="cm-tags" placeholder="Kommagetrennt, z.B. vorbericht, dringend">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Kontext</label>
+        <textarea class="form-textarea" id="cm-context" rows="2" placeholder="Hintergrund, Notizen..."></textarea>
+      </div>
+    </details>
 
     <div class="modal-footer">
 

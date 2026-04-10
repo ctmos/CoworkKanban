@@ -1033,6 +1033,11 @@ nav {
 
 .status-option label { font-size: 13px; cursor: pointer; }
 
+.cm-details { margin-bottom: 8px; }
+.cm-details summary { color: var(--accent); font-size: 12px; }
+.cm-substrate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+@media (max-width: 500px) { .cm-substrate-grid { grid-template-columns: 1fr; } }
+
 .modal-footer {
 
   display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;

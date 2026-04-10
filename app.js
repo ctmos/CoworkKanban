@@ -1085,6 +1085,34 @@ function openCardModal(cardId,laneId) {
 
   document.querySelectorAll('[name=cm-status]').forEach(function(r){r.checked=r.value===status;});
 
+  // Substrate v2 fields
+  document.getElementById('cm-assignee').value=(card&&card.assignee)||'';
+  document.getElementById('cm-source').value=(card&&card.source)||'manual';
+  document.getElementById('cm-tags').value=(card&&card.tags)?card.tags.join(', '):'';
+  document.getElementById('cm-context').value=(card&&card.context)||'';
+
+  // Populate patient dropdown
+  var patSel=document.getElementById('cm-linked-patient');
+  patSel.innerHTML='<option value="">(keiner)</option>';
+  (getPatients()||[]).filter(function(p){return p.status!=='archiviert';}).forEach(function(p){
+    var opt=document.createElement('option'); opt.value=p.code||p.id; opt.textContent=p.code||p.id;
+    if(card&&card.linkedPatient===(p.code||p.id)) opt.selected=true;
+    patSel.appendChild(opt);
+  });
+
+  // Populate project dropdown
+  var projSel=document.getElementById('cm-linked-project');
+  projSel.innerHTML='<option value="">(keins)</option>';
+  (_appState.projects||[]).filter(function(p){return p.status!=='archiviert'&&!p.deleted;}).forEach(function(p){
+    var opt=document.createElement('option'); opt.value=p.id; opt.textContent=p.title||p.name||p.id;
+    if(card&&card.linkedProject===p.id) opt.selected=true;
+    projSel.appendChild(opt);
+  });
+
+  // Collapse details for new cards, open if card has substrate data
+  var det=document.getElementById('cm-substrate-details');
+  det.open=!isNew&&(card.assignee||card.linkedPatient||card.linkedProject||(card.tags&&card.tags.length)||card.context);
+
   document.getElementById('cm-delete').style.display=isNew?'none':'';
 
   document.getElementById('cm-heute').style.display=(card&&card.lane!=='HE')?'':'none';
@@ -1105,13 +1133,22 @@ document.getElementById('cm-save').addEventListener('click',function() {
 
   var desc=document.getElementById('cm-desc').value.trim(); var se=document.querySelector('[name=cm-status]:checked'); var status=se?se.value:'offen';
 
+  // Substrate v2 fields
+  var assignee=document.getElementById('cm-assignee').value||null;
+  var source=document.getElementById('cm-source').value||'manual';
+  var tagsRaw=document.getElementById('cm-tags').value.trim();
+  var tags=tagsRaw?tagsRaw.split(',').map(function(t){return t.trim();}).filter(Boolean):[];
+  var context=document.getElementById('cm-context').value.trim();
+  var linkedPatient=document.getElementById('cm-linked-patient').value||null;
+  var linkedProject=document.getElementById('cm-linked-project').value||null;
+
   if(!title){document.getElementById('cm-title').focus();return;}
 
   var cards=getCards();
 
-  if(cmCardId){Object.assign(cards[cmCardId],{title:title,deadline:deadline,desc:desc,status:status,updatedAt:new Date().toISOString(),updatedBy:'lifeos'});if(!cards[cmCardId].createdAt)cards[cmCardId].createdAt=new Date().toISOString();}
+  if(cmCardId){Object.assign(cards[cmCardId],{title:title,deadline:deadline,desc:desc,status:status,assignee:assignee,source:source,tags:tags,context:context,linkedPatient:linkedPatient,linkedProject:linkedProject,updatedAt:new Date().toISOString(),updatedBy:'lifeos'});if(!cards[cmCardId].createdAt)cards[cmCardId].createdAt=new Date().toISOString();}
 
-  else{var id=nextCardId(cmLaneId);var now=new Date().toISOString();cards[id]={id:id,lane:cmLaneId,title:title,deadline:deadline,desc:desc,status:status,archived:false,order:Date.now(),createdAt:now,updatedAt:now,updatedBy:'lifeos'};}
+  else{var id=nextCardId(cmLaneId);var now=new Date().toISOString();cards[id]={id:id,lane:cmLaneId,title:title,deadline:deadline,desc:desc,status:status,archived:false,order:Date.now(),createdAt:now,updatedAt:now,updatedBy:'lifeos',assignee:assignee,source:source,tags:tags,context:context,linkedPatient:linkedPatient,linkedProject:linkedProject,dependsOn:[],recurrence:null,notes:[]};}
 
   saveCards(cards); syncPACardsToPatients(); savePatientsToGitHub(); closeCardModal(); if(currentTab==='heute')renderHeute(); if(currentTab==='kanban')renderKanban();
 
