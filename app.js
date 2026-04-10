@@ -6640,243 +6640,155 @@ function renderMoneyTab() {
   var c = document.getElementById('money-container');
   if (!c) return;
 
+  var f = _appState.finances;
+  if (!f) { c.innerHTML = '<p style="color:var(--text-muted);padding:20px">Finanzdaten werden geladen...</p>'; return; }
+
   var h = '';
 
-  // --- KONTOST&Auml;NDE ---
+  // --- KONTOSTÄNDE ---
   h += '<div class="money-section">';
-  h += '<h3>Kontost\u00e4nde (Stand 02.04.2026)</h3>';
+  h += '<h3>Kontost\u00e4nde (Stand ' + esc(f.accountsDate || '') + ')</h3>';
   h += '<div class="money-grid">';
-  h += moneyCard('Hauptkonto', '6.944 EUR', 'Sparkasse Hochrhein');
-  h += moneyCard('Tagesgeld', '8.600 EUR', 'davon ~5.600 gebunden (PSP + Elisa)');
-  h += moneyCard('Schweizer CHF', '196 CHF', 'Lohnkonto Klinik Barmelweid');
-  h += moneyCard('Frei verf\u00fcgbar', '~10.000 EUR', 'Puffer');
+  (f.accounts || []).forEach(function(a) {
+    var val = (typeof a.balance === 'number' ? a.balance.toLocaleString('de-DE') : String(a.balance)) + ' ' + (a.currency || 'EUR');
+    h += moneyCard(a.name, val, a.note || a.bank || '');
+  });
   h += '</div></div>';
 
   // --- EINKOMMEN HAUSHALT ---
   h += '<div class="money-section">';
   h += '<h3>Einkommen Haushalt</h3>';
-  h += '<h4>Christian</h4>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
-  h += mRow('Lohn Klinik (80%)', '5.709 CHF/Mon', 'Netto nach Quellensteuer, = ~5.300 EUR');
-  h += mRow('Aufstockung 90% (Apr-Jul 26)', '+~600 CHF/Mon', 'Tempor\u00e4r, endet August');
-  h += mRow('13. Monatslohn', '~5.700 CHF', 'Aufgeteilt Jul (~3.200) + Dez (~5.800)');
-  h += mRow('HanseMerkur Erstattungen', '~390 EUR/Mon', 'Katheter + Elvanse (durchlaufend)');
-  h += '</table>';
-  h += '<h4>Hannah</h4>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
-  h += mRow('Lohn Klinik (Grenzg\u00e4nger)', '2.400-2.800 CHF/Mon', 'Netto VOR KK + Steuer');
-  h += mRow('13. Monatslohn', 'Dezember', 'Komplett im Dezember');
-  h += mRow('Hebamme (selbstst\u00e4ndig)', '~400 EUR/Mon', 'Brutto, starke Schwankungen, keine USt');
-  h += '</table>';
-  h += '<p style="color:var(--text-muted);font-size:12px">Noch offen: Hannahs Pensum, KK-Beitrag, Auto-Kosten</p>';
+  if (f.income) {
+    h += '<h4>Christian</h4>';
+    h += '<table class="money-table"><tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
+    (f.income.christian || []).forEach(function(i) { h += mRow(i.source, i.amount, i.note || ''); });
+    h += '</table>';
+    h += '<h4>Hannah</h4>';
+    h += '<table class="money-table"><tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
+    (f.income.hannah || []).forEach(function(i) { h += mRow(i.source, i.amount, i.note || ''); });
+    h += '</table>';
+    if (f.income.incomeNote) h += '<p style="color:var(--text-muted);font-size:12px">' + esc(f.income.incomeNote) + '</p>';
+  }
   h += '</div>';
 
-  // --- WAS CHRISTIANS 3.070 ABDECKEN ---
-  h += '<div class="money-section">';
-  h += '<h3>Christians 3.070 EUR an Hannah — Aufschl\u00fcsselung</h3>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Posten</th><th>EUR</th><th>Info</th></tr>';
-  h += mRow('Steuer-Vorauszahlung (sparen)', '1.350', 'Hannah zahlt 4.134/Quartal davon');
-  h += mRow('Miete (kalt)', '1.300', 'Kaltmiete 1.340, 40 EUR Differenz von Hannah');
-  h += mRow('Strom', '221', 'Separater Anbieter');
-  h += mRow('Kindergarten Sophie', '111', '');
-  h += mRow('Gesamttopf (Rest)', '88', 'F\u00fcr was es braucht');
-  h += '<tr class="money-subtotal"><td>Summe</td><td>3.070</td><td></td></tr>';
-  h += '</table></div>';
+  // --- TRANSFER HANNAH ---
+  if (f.transferHannah) {
+    h += '<div class="money-section">';
+    h += '<h3>Christians ' + f.transferHannah.total + ' EUR an Hannah \u2014 Aufschl\u00fcsselung</h3>';
+    h += '<table class="money-table"><tr><th>Posten</th><th>EUR</th><th>Info</th></tr>';
+    (f.transferHannah.items || []).forEach(function(i) { h += mRow(i.name, String(i.amount), i.note || ''); });
+    h += '<tr class="money-subtotal"><td>Summe</td><td>' + f.transferHannah.total + '</td><td></td></tr>';
+    h += '</table></div>';
+  }
 
-  // --- WOHNEN & KINDER (Hannah zahlt) ---
-  h += '<div class="money-section">';
-  h += '<h3>Wohnen &amp; Kinder (zahlt Hannah)</h3>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Posten</th><th>EUR/Mon</th><th>Info</th></tr>';
-  h += mRow('Miete kalt (Differenz)', '40', 'Kaltmiete 1.340 - 1.300 von Christian');
-  h += mRow('Gas/Heizung', '217', 'Separater Anbieter');
-  h += mRow('M\u00fcll', '26', '310 EUR/Jahr');
-  h += mRow('Reiten Annabell', '100', '');
-  h += mRow('Klettern Sophie', '37', '');
-  h += mRow('Verlaessl. Grundschule', '35', '');
-  h += mRow('Turnen Annabell', '30', '');
-  h += mRow('Sparen Kinder (2x25)', '50', 'Annabell + Sophie');
-  h += mRow('Wocheneinkauf, Drogerie, Kleidung', '?', 'Von Hannahs eigenem Geld');
-  h += mRow('Hannahs Krankenkasse', '?', 'Noch offen');
-  h += mRow('Hannahs Auto', '?', 'Noch offen');
-  h += '<tr class="money-subtotal"><td>Summe bekannt</td><td>535+</td><td>+ KK + Auto + Einkauf</td></tr>';
-  h += '</table></div>';
+  // --- WOHNEN & KINDER ---
+  if (f.wohnenKinder) {
+    h += '<div class="money-section">';
+    h += '<h3>Wohnen &amp; Kinder (' + esc(f.wohnenKinder.note || '') + ')</h3>';
+    h += '<table class="money-table"><tr><th>Posten</th><th>EUR/Mon</th><th>Info</th></tr>';
+    (f.wohnenKinder.items || []).forEach(function(i) { h += mRow(i.name, String(i.amount), i.note || ''); });
+    h += '<tr class="money-subtotal"><td>Summe bekannt</td><td>' + esc(f.wohnenKinder.subtotal || '') + '</td><td>' + esc(f.wohnenKinder.subtotalNote || '') + '</td></tr>';
+    h += '</table></div>';
+  }
 
-  // --- CHRISTIANS FIXKOSTEN ---
-  h += '<div class="money-section">';
-  h += '<h3>Christians Fixkosten (monatlich)</h3>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Posten</th><th>EUR/Mon</th><th>Status</th></tr>';
-  h += mRow('Hannah (inkl. Steuer+Miete+Strom)', '3.070', 'Fix, zweckgebunden');
-  h += mRow('HanseMerkur PKV (3 Pers.)', '820', 'Christian + 2 Kinder');
-  h += mRow('FINN Auto-Abo', '547', 'Via Klarna, endet Mai 2026');
-  h += mRow('Telekom Mobilfunk (2 Handys)', '90', 'Inkl. Handy-Raten');
-  h += mRow('Vodafone Kabel-Internet', '44', '');
-  h += mRow('Sparkasse Kontogeb\u00fchren', '12', '');
-  h += '<tr class="money-subtotal"><td>Summe Fixkosten</td><td>4.583</td><td></td></tr>';
-  h += '</table>';
-  h += '<p style="font-size:13px;color:var(--text-muted)">Einnahme ~5.300 - Fix 4.583 = <strong>~717 EUR frei</strong> f\u00fcr Abos, Essen, Tanken, Amazon, Kleidung</p>';
-  h += '</div>';
+  // --- FIXKOSTEN ---
+  if (f.fixkosten) {
+    h += '<div class="money-section">';
+    h += '<h3>Christians Fixkosten (monatlich)</h3>';
+    h += '<table class="money-table"><tr><th>Posten</th><th>EUR/Mon</th><th>Status</th></tr>';
+    (f.fixkosten.items || []).forEach(function(i) { h += mRow(i.name, String(i.amount), i.note || ''); });
+    h += '<tr class="money-subtotal"><td>Summe Fixkosten</td><td>' + (f.fixkosten.subtotal || '') + '</td><td></td></tr>';
+    h += '</table>';
+    if (f.fixkosten.freeNote) h += '<p style="font-size:13px;color:var(--text-muted)">' + esc(f.fixkosten.freeNote) + '</p>';
+    h += '</div>';
+  }
 
   // --- ABOS & SUBSCRIPTIONS ---
-  h += '<div class="money-section">';
-  h += '<h3>Abos &amp; Subscriptions</h3>';
-
-  // AI & Tech
-  h += '<h4>KI &amp; Tech</h4>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Service</th><th>EUR/Mon</th><th>Status</th></tr>';
-  h += mRowStatus('Claude.ai Max 20', '180', 'keep', 'Runterstufen geplant');
-  h += mRowStatus('AWS (Lightsail + Bedrock)', '50', 'keep', 'Server + API');
-  h += mRowStatus('Google Cloud', '25', 'check', 'Brauchen wir das neben AWS?');
-  h += mRowStatus('OpenAI / ChatGPT', '23', 'cut', 'Claude reicht');
-  h += mRowStatus('Google One 2TB', '22', 'keep', 'Cloud-Speicher');
-  h += mRowStatus('OpenRouter', '20', 'keep', 'Hermine LLM');
-  h += mRowStatus('Replit Core', '20', 'cut', 'Noch aktiv?');
-  h += mRowStatus('xAI / Grok', '19', 'cut', 'Hermine nutzt DeepSeek');
-  h += mRowStatus('Wispr Flow Pro', '15', 'cut', 'Sprachsteuerung aktiv?');
-  h += mRowStatus('Anthropic API', '10', 'keep', 'Hermine');
-  h += mRowStatus('Notion', '5', 'keep', 'LifeOS');
-  h += '<tr class="money-subtotal"><td>Summe KI &amp; Tech</td><td>389</td><td>K\u00fcndigbar: ~77/Mon</td></tr>';
-  h += '</table>';
-
-  // Hosting
-  h += '<h4>Hosting</h4>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Service</th><th>EUR/Mon</th><th>Status</th></tr>';
-  h += mRowStatus('Variomedia (moser.ai)', '37', 'check', '222/Halbjahr — g\u00fcnstigerer Anbieter?');
-  h += mRowStatus('Strato', '0?', 'check', 'Gek\u00fcndigt Nov 2024 — pr\u00fcfen');
-  h += '</table>';
-
-  // Entertainment
-  h += '<h4>Entertainment</h4>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Service</th><th>EUR/Mon</th><th>Status</th></tr>';
-  h += mRowStatus('Spotify', '22', 'keep', 'Musik');
-  h += mRowStatus('Amazon Prime', '9', 'keep', 'Versand + Video');
-  h += mRowStatus('Audible', '0?', 'check', 'Vermutlich inaktiv seit Jan 2025');
-  h += '</table>';
-
-  // Telekom/Versicherung (already in Fixkosten)
-  h += '</div>';
+  if (f.subscriptions) {
+    h += '<div class="money-section">';
+    h += '<h3>Abos &amp; Subscriptions</h3>';
+    var cats = {ki_tech: 'KI &amp; Tech', hosting: 'Hosting', entertainment: 'Entertainment'};
+    Object.keys(cats).forEach(function(cat) {
+      var items = f.subscriptions.filter(function(s) { return s.category === cat; });
+      if (items.length === 0) return;
+      h += '<h4>' + cats[cat] + '</h4>';
+      h += '<table class="money-table"><tr><th>Service</th><th>EUR/Mon</th><th>Status</th></tr>';
+      items.forEach(function(s) { h += mRowStatus(s.name, String(s.amount || '0?'), s.status || 'check', s.note || ''); });
+      var sub = (f.subscriptionSubtotals || {})[cat];
+      if (sub && sub.total) h += '<tr class="money-subtotal"><td>Summe ' + cats[cat] + '</td><td>' + sub.total + '</td><td>K\u00fcndigbar: ~' + (sub.cancelable || 0) + '/Mon</td></tr>';
+      h += '</table>';
+    });
+    h += '</div>';
+  }
 
   // --- VARIABLE AUSGABEN ---
-  h += '<div class="money-section">';
-  h += '<h3>Variable Ausgaben (Durchschnitt/Monat)</h3>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Kategorie</th><th>Aktuell</th><th>Budget-Ziel</th></tr>';
-  h += mRowBudget('Amazon', '510', '150', 'Hartes Limit. 24h-Regel.');
-  h += mRowBudget('Kleidung (Best Secret etc.)', '465', '100', 'App l\u00f6schen. 1x/Monat max.');
-  h += mRowBudget('Swiss Bankers Prepaid (CH)', '280', '250', 'Mittagessen etc. in CH');
-  h += mRowBudget('Lebensmittel', '175', '175', '');
-  h += mRowBudget('Essen gehen', '165', '100', 'Chinatown, McDonalds etc.');
-  h += mRowBudget('Bargeld', '107', '80', 'Geldautomat Kadelburg');
-  h += mRowBudget('Tanken', '80', '80', 'Shell, Esso');
-  h += mRowBudget('Gesundheit (nach Erstattung)', '75', '75', 'Zuzahlungen');
-  h += '<tr class="money-subtotal"><td>Summe variabel</td><td>1.857</td><td>1.010</td></tr>';
-  h += '</table></div>';
+  if (f.variable) {
+    h += '<div class="money-section">';
+    h += '<h3>Variable Ausgaben (Durchschnitt/Monat)</h3>';
+    h += '<table class="money-table"><tr><th>Kategorie</th><th>Aktuell</th><th>Budget-Ziel</th></tr>';
+    f.variable.forEach(function(v) { h += mRowBudget(v.category, String(v.actual), String(v.budget), v.note || ''); });
+    if (f.variableSubtotal) h += '<tr class="money-subtotal"><td>Summe variabel</td><td>' + f.variableSubtotal.actual + '</td><td>' + f.variableSubtotal.budget + '</td></tr>';
+    h += '</table></div>';
+  }
 
-  // --- TEMPORAERE KOSTEN ---
-  h += '<div class="money-section">';
-  h += '<h3>Tempor\u00e4re Kosten (enden bald)</h3>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Posten</th><th>EUR/Mon</th><th>Endet</th></tr>';
-  h += mRow('PSP Weiterbildung', '~560', '2026 (genaues Datum kl\u00e4ren)');
-  h += mRow('FINN Auto-Abo (Elroq)', '608', 'Mai 2027');
-  h += mRow('Claude Max 20 (wenn runtergestuft)', '~90-160', 'Wenn bereit');
-  h += mRow('K\u00fcndigbare KI-Abos', '~77', 'Sofort m\u00f6glich');
-  h += '<tr class="money-subtotal"><td>M\u00f6gliche Entlastung</td><td>~1.335-1.405</td><td></td></tr>';
-  h += '</table></div>';
+  // --- TEMPORÄRE KOSTEN ---
+  if (f.temporaer) {
+    h += '<div class="money-section">';
+    h += '<h3>Tempor\u00e4re Kosten (enden bald)</h3>';
+    h += '<table class="money-table"><tr><th>Posten</th><th>EUR/Mon</th><th>Endet</th></tr>';
+    f.temporaer.forEach(function(t) { h += mRow(t.name, String(t.amount), t.endsAt || ''); });
+    if (f.temporaerSubtotal) h += '<tr class="money-subtotal"><td>M\u00f6gliche Entlastung</td><td>' + esc(f.temporaerSubtotal) + '</td><td></td></tr>';
+    h += '</table></div>';
+  }
 
   // --- STEUERN ---
-  h += '<div class="money-section">';
-  h += '<h3>Steuern 2026</h3>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
-  h += mRow('Einkommensteuer Vorauszahlung', '4.035/Quartal', '10. M\u00e4rz / Juni / Sep / Dez');
-  h += mRow('Kirchensteuer (Hannah)', '99/Quartal', 'Evangelisch');
-  h += mRow('Solidarit\u00e4tszuschlag', '0', '');
-  h += mRow('Gesamt pro Quartal', '4.134', '');
-  h += mRow('Gesamt pro Jahr', '16.536', '');
-  h += mRow('CH-Quellensteuer (Christian)', '~320/Mon', 'Wird direkt vom Lohn abgezogen');
-  h += '</table>';
-  h += '<p style="color:var(--text-muted);font-size:13px">Steuerberater: Vereinigte Lohnsteuerhilfe e.V. (Diana Gatti, Grafenhausen)</p>';
-  h += '</div>';
+  if (f.taxes) {
+    h += '<div class="money-section">';
+    h += '<h3>Steuern 2026</h3>';
+    h += '<table class="money-table"><tr><th>Posten</th><th>Betrag</th><th>Info</th></tr>';
+    (f.taxes.items || []).forEach(function(t) { h += mRow(t.name, String(t.amount), t.note || ''); });
+    h += '</table>';
+    if (f.taxes.advisor) h += '<p style="color:var(--text-muted);font-size:13px">Steuerberater: ' + esc(f.taxes.advisor) + '</p>';
+    h += '</div>';
+  }
 
   // --- LOHN-DETAILS ---
-  h += '<div class="money-section">';
-  h += '<h3>Lohnabrechnung Christian (Jan 2026)</h3>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Position</th><th>CHF</th></tr>';
-  h += mRow2('Monatslohn (80%)', '6.658,40');
-  h += mRow2('Kinderzulage 2x', '+450,00');
-  h += mRow2('BRUTTO', '7.108,40');
-  h += mRow2('Abz\u00fcge (AHV, ALV, Unfall, KTG, PK)', '-999,25');
-  h += mRow2('NETTO', '6.109,15');
-  h += mRow2('Quellensteuer 4,5%', '-319,90');
-  h += mRow2('Parkplatz', '-80,00');
-  h += '<tr class="money-subtotal"><td>Auszahlung</td><td>5.709,25</td></tr>';
-  h += '</table>';
-  h += '<p style="color:var(--text-muted);font-size:13px">Ab April 2026: 90% Pensum (7.490,70 brutto) bis Juli, dann zur\u00fcck auf 80%</p>';
-  h += '</div>';
+  if (f.lohn) {
+    h += '<div class="money-section">';
+    h += '<h3>Lohnabrechnung Christian (' + esc(f.lohn.month || '') + ')</h3>';
+    h += '<table class="money-table"><tr><th>Position</th><th>CHF</th></tr>';
+    (f.lohn.items || []).forEach(function(l) { h += mRow2(l.position, l.amount); });
+    h += '<tr class="money-subtotal"><td>Auszahlung</td><td>' + esc(f.lohn.payout || '') + '</td></tr>';
+    h += '</table>';
+    if (f.lohn.note) h += '<p style="color:var(--text-muted);font-size:13px">' + esc(f.lohn.note) + '</p>';
+    h += '</div>';
+  }
 
   // --- STRATEGIE ---
-  h += '<div class="money-section">';
-  h += '<h3>Strategie: Stabilisierung in 3 Phasen</h3>';
-
-  h += '<h4>Phase 1: Sofort (April 2026)</h4>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Aktion</th><th>Ersparnis/Mon</th><th>Aufwand</th></tr>';
-  h += mRow('KI-Abos k\u00fcndigen (OpenAI, xAI, Replit, Wispr)', '+77', '4x k\u00fcndigen');
-  h += mRow('Claude Max 20 \u2192 Pro', '+160', '1 Klick');
-  h += mRow('Best Secret App l\u00f6schen', '+300-500', 'App deinstallieren');
-  h += mRow('Amazon Budget 150 EUR/Mon', '+350', '24h-Regel einf\u00fchren');
-  h += '<tr class="money-subtotal"><td>Phase 1 Total</td><td>+887-1.087</td><td></td></tr>';
-  h += '</table>';
-
-  h += '<h4>Phase 2: Mai-Juli 2026</h4>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Aktion</th><th>Ersparnis/Mon</th><th>Info</th></tr>';
-  h += mRow('FINN endet Mai \u2192 Entscheidung treffen', '+547', 'Ohne Auto? G\u00fcnstigeres Auto?');
-  h += mRow('90% Pensum (Apr-Jul)', '+500-600', 'Tempor\u00e4r mehr Lohn');
-  h += mRow('PSP endet 2026', '+560', 'Genaues Datum kl\u00e4ren');
-  h += '<tr class="money-subtotal"><td>Phase 2 Total</td><td>+1.607-1.707</td><td></td></tr>';
-  h += '</table>';
-
-  h += '<h4>Phase 3: Ab August 2026</h4>';
-  h += '<table class="money-table">';
-  h += '<tr><th>Ziel</th><th>Betrag</th><th>Info</th></tr>';
-  h += mRow('Zur\u00fcck auf 80% Pensum', '-600', 'F\u00e4llt weg');
-  h += mRow('Aber: PSP + FINN weg', '+1.107', 'Dauerhaft');
-  h += mRow('Netto-Verbesserung', '+507', 'Gegenueber heute');
-  h += mRow('Notgroschen-Ziel', '15.000 EUR', '3 Monatsausgaben als Puffer');
-  h += mRow('Variomedia \u2192 g\u00fcnstigerer Anbieter', '+30', 'Domain-Transfer');
-  h += mRow('Google Cloud konsolidieren', '+25', 'Wenn m\u00f6glich');
-  h += '</table>';
-  h += '</div>';
+  if (f.strategy && f.strategy.phases) {
+    h += '<div class="money-section">';
+    h += '<h3>Strategie: Stabilisierung in 3 Phasen</h3>';
+    f.strategy.phases.forEach(function(p) {
+      h += '<h4>' + esc(p.title) + '</h4>';
+      h += '<table class="money-table"><tr><th>Aktion</th><th>Ersparnis/Mon</th><th>Aufwand</th></tr>';
+      (p.items || []).forEach(function(i) { h += mRow(i.action, i.savings, i.effort || ''); });
+      if (p.subtotal) h += '<tr class="money-subtotal"><td>' + esc(p.title.split(':')[0] || 'Phase') + ' Total</td><td>' + esc(p.subtotal) + '</td><td></td></tr>';
+      h += '</table>';
+    });
+    h += '</div>';
+  }
 
   // --- OFFENE PUNKTE ---
-  h += '<div class="money-section">';
-  h += '<h3>Offene Punkte</h3>';
-  h += '<ul style="list-style:none;padding:0">';
-  h += '<li>&#9745; Hannahs Einkommen \u2014 2.400-2.800 CHF + Hebamme ~400</li>';
-  h += '<li>&#9745; Miete \u2014 1.340 kalt + 221 Strom + 217 Gas + 26 M\u00fcll = 1.804/Mon</li>';
-  h += '<li>&#9745; Steuer-Aufteilung \u2014 1.350/Mon von Christians 3.070, Rest von Hannah</li>';
-  h += '<li>&#9745; Kinder-Kosten \u2014 KiGa 111 + Reiten 100 + Klettern 37 + Turnen 30 + Grundschule 35 + Sparen 50</li>';
-  h += '<li>&#9744; Hannahs Pensum (Klinik) \u2014 noch offen</li>';
-  h += '<li>&#9744; Hannahs Krankenkasse \u2014 Betrag noch offen</li>';
-  h += '<li>&#9744; Hannahs Auto-Kosten \u2014 noch offen</li>';
-  h += '<li>&#9744; PSP Ende-Datum \u2014 2026, aber wann genau?</li>';
-  h += '<li>&#9744; FINN-Entscheidung \u2014 Mai 2026</li>';
-  h += '<li>&#9744; Abo-Durchgang mit Christian \u2014 22 Abos durchgehen</li>';
-  h += '<li>&#9744; Best Secret App l\u00f6schen</li>';
-  h += '<li>&#9744; Amazon Budget 150 EUR einrichten</li>';
-  h += '<li>&#9744; Neuer Steuerberater f\u00fcr Hebamme (Diana Gatti kann das nicht)</li>';
-  h += '<li>&#9744; Lohnsteuerhilfe-Kosten: 350 EUR/Jahr</li>';
-  h += '</ul></div>';
+  if (f.openItems) {
+    h += '<div class="money-section">';
+    h += '<h3>Offene Punkte</h3>';
+    h += '<ul style="list-style:none;padding:0">';
+    f.openItems.forEach(function(item) {
+      var icon = item.done ? '&#9745;' : '&#9744;';
+      h += '<li>' + icon + ' ' + esc(item.text) + '</li>';
+    });
+    h += '</ul></div>';
+  }
 
   c.innerHTML = h;
 }

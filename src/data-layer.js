@@ -1669,6 +1669,13 @@ async function loadFromGitHub() {
     // Substrate v2: Migrate projects
     if (_appState.projects) migrateProjectsV2(_appState.projects);
 
+    // Load finances (Substrate v2)
+    var financesRemote = await fetchFromGitHub('data/finances.json');
+    if (financesRemote) {
+      try { _appState.finances = JSON.parse(financesRemote.content); }
+      catch(e) { console.error('[loadFromGitHub] finances parse:', e); }
+    }
+
     // Load settings
 
     var settingsRemote = await fetchFromGitHub('data/settings.json');
@@ -1839,6 +1846,8 @@ const _appState = {
 
 
   collect: null,
+
+  finances: null,
 
   projects: [],
 
