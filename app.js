@@ -1077,19 +1077,44 @@ function toggleCollapse(laneId) { _appState.collapsed[laneId]=!_appState.collaps
 
 // ─── STATUS BOARD (Kanban by Status) ────────────────────────────────────────
 
-var _sbFilters = { offen: false, blockiert: false, 'in-arbeit': false, erledigt: false };
-var _sbDeadline = null;
+var _sbFilters = { offen: false, blockiert: false, 'in-arbeit': false, erledigt: false, heute: false, '7tage': false };
 
-function toggleSBFilter(status) {
-  _sbFilters[status] = !_sbFilters[status];
-  document.querySelector('[data-sbstatus="'+status+'"]').classList.toggle('active', _sbFilters[status]);
+function toggleSBFilter(key) {
+  _sbFilters[key] = !_sbFilters[key];
+  var el = document.querySelector('[data-sbstatus="'+key+'"]');
+  if (el) el.classList.toggle('active', _sbFilters[key]);
   renderStatusBoard();
 }
 
-function toggleSBDeadline(dl) {
-  _sbDeadline = _sbDeadline === dl ? null : dl;
-  document.querySelectorAll('.sb-dl').forEach(function(b) { b.classList.toggle('active', b.dataset.sbdeadline === _sbDeadline); });
-  renderStatusBoard();
+function renderSBColumn(title, color, items, todayISO) {
+  var html = '<div class="sb-column">';
+  html += '<div class="sb-column-header" style="border-bottom:3px solid '+color+'">';
+  html += '<span class="sb-column-title">'+title+'</span>';
+  html += '<span class="sb-column-count">'+items.length+'</span>';
+  html += '</div><div class="sb-column-body">';
+  if (items.length === 0) {
+    html += '<div class="sb-empty-col">Keine Items</div>';
+  } else {
+    items.forEach(function(c) {
+      var laneObj = LANES.find(function(l) { return l.id === c.lane; });
+      var laneColor = laneObj ? laneObj.color : '#666';
+      var dlBadge = c.deadline ? '<span class="sb-card-dl">\uD83D\uDCC5 '+fmtDateShort(c.deadline)+'</span>' : '';
+      var isOverdue = c.deadline && c.deadline < todayISO && c.status !== 'erledigt';
+      var statusDot = {offen:'#9ca3af',blockiert:'#ef4444','in-arbeit':'#f59e0b',erledigt:'#22c55e'}[c.status] || '#9ca3af';
+
+      html += '<div class="sb-card'+(isOverdue?' sb-overdue':'')+'" data-id="'+esc(c.id)+'">';
+      html += '<div class="sb-card-top">';
+      html += '<span class="sb-card-lane" style="background:'+laneColor+'">'+esc(c.lane)+'</span>';
+      html += '<span class="sb-card-id">'+esc(c.id)+'</span>';
+      html += '<span class="sb-card-status-dot" style="background:'+statusDot+'"></span>';
+      html += '</div>';
+      html += '<div class="sb-card-title">'+esc(c.title || '(kein Titel)')+'</div>';
+      if (dlBadge) html += '<div class="sb-card-bottom">'+dlBadge+'</div>';
+      html += '</div>';
+    });
+  }
+  html += '</div></div>';
+  return html;
 }
 
 function renderStatusBoard() {
@@ -1097,61 +1122,39 @@ function renderStatusBoard() {
   if (!grid) return;
   var cards = getCards();
   var todayISO = new Date().toISOString().split('T')[0];
+  var d7 = new Date(); d7.setDate(d7.getDate() + 7);
+  var weekISO = d7.toISOString().split('T')[0];
 
   var anyActive = Object.keys(_sbFilters).some(function(k) { return _sbFilters[k]; });
   if (!anyActive) {
-    grid.innerHTML = '<div class="sb-empty">Status oben ausw\u00e4hlen um Karten zu sehen</div>';
+    grid.innerHTML = '<div class="sb-empty">Kategorie oben ausw\u00e4hlen um Karten zu sehen</div>';
     return;
   }
 
   var allCards = Object.values(cards).filter(function(c) { return !c.archived && !c.deletedAt; });
+  var sortFn = function(a, b) { return (a.lane || '').localeCompare(b.lane || '') || (a.order || 0) - (b.order || 0); };
 
-  if (_sbDeadline === 'heute') {
-    allCards = allCards.filter(function(c) { return c.deadline && c.deadline <= todayISO; });
-  } else if (_sbDeadline === '7tage') {
-    var d7 = new Date(); d7.setDate(d7.getDate() + 7);
-    var weekISO = d7.toISOString().split('T')[0];
-    allCards = allCards.filter(function(c) { return c.deadline && c.deadline <= weekISO; });
-  }
-
-  var statusOrder = ['offen', 'blockiert', 'in-arbeit', 'erledigt'];
+  var statusCols = ['offen', 'blockiert', 'in-arbeit', 'erledigt'];
   var statusLabels = { offen: 'Offen', blockiert: 'Blockiert', 'in-arbeit': 'In Arbeit', erledigt: 'Erledigt' };
   var statusColors = { offen: '#9ca3af', blockiert: '#ef4444', 'in-arbeit': '#f59e0b', erledigt: '#22c55e' };
 
   var html = '';
-  statusOrder.forEach(function(status) {
+
+  statusCols.forEach(function(status) {
     if (!_sbFilters[status]) return;
-    var items = allCards.filter(function(c) { return c.status === status; })
-      .sort(function(a, b) { return (a.lane || '').localeCompare(b.lane || '') || (a.order || 0) - (b.order || 0); });
-
-    html += '<div class="sb-column">';
-    html += '<div class="sb-column-header" style="border-bottom:3px solid '+statusColors[status]+'">';
-    html += '<span class="sb-column-title">'+statusLabels[status]+'</span>';
-    html += '<span class="sb-column-count">'+items.length+'</span>';
-    html += '</div><div class="sb-column-body">';
-
-    if (items.length === 0) {
-      html += '<div class="sb-empty-col">Keine Items</div>';
-    } else {
-      items.forEach(function(c) {
-        var laneObj = LANES.find(function(l) { return l.id === c.lane; });
-        var laneName = laneObj ? laneObj.name : (c.lane || '?');
-        var laneColor = laneObj ? laneObj.color : '#666';
-        var dlBadge = c.deadline ? '<span class="sb-card-dl">\uD83D\uDCC5 '+fmtDateShort(c.deadline)+'</span>' : '';
-        var isOverdue = c.deadline && c.deadline < todayISO && c.status !== 'erledigt';
-
-        html += '<div class="sb-card'+(isOverdue?' sb-overdue':'')+'" data-id="'+esc(c.id)+'">';
-        html += '<div class="sb-card-top">';
-        html += '<span class="sb-card-lane" style="background:'+laneColor+'">'+esc(c.lane)+'</span>';
-        html += '<span class="sb-card-id">'+esc(c.id)+'</span>';
-        html += '</div>';
-        html += '<div class="sb-card-title">'+esc(c.title || '(kein Titel)')+'</div>';
-        if (dlBadge) html += '<div class="sb-card-bottom">'+dlBadge+'</div>';
-        html += '</div>';
-      });
-    }
-    html += '</div></div>';
+    var items = allCards.filter(function(c) { return c.status === status; }).sort(sortFn);
+    html += renderSBColumn(statusLabels[status], statusColors[status], items, todayISO);
   });
+
+  if (_sbFilters.heute) {
+    var heuteItems = allCards.filter(function(c) { return c.deadline && c.deadline <= todayISO; }).sort(sortFn);
+    html += renderSBColumn('Heute', '#818cf8', heuteItems, todayISO);
+  }
+
+  if (_sbFilters['7tage']) {
+    var wocheItems = allCards.filter(function(c) { return c.deadline && c.deadline <= weekISO; }).sort(sortFn);
+    html += renderSBColumn('7 Tage', '#38bdf8', wocheItems, todayISO);
+  }
 
   grid.innerHTML = html;
   grid.querySelectorAll('.sb-card').forEach(function(el) {
