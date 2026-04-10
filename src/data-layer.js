@@ -938,6 +938,53 @@ function setSyncStatus(status) {
 
 
 
+// ─── ACTIVITY LOGGING (Phase 8) ──────────────────────────────────────────────
+
+var _activityQueue = [];
+
+function logActivity(action, entity, entityId, summary) {
+  _activityQueue.push({
+    id: 'act_' + Date.now(),
+    ts: new Date().toISOString(),
+    agent: 'lifeos',
+    action: action,
+    entity: entity,
+    entityId: entityId || '',
+    summary: summary || ''
+  });
+}
+window.logActivity = logActivity;
+
+async function flushActivityQueue() {
+  if (_activityQueue.length === 0) return;
+  var batch = _activityQueue.splice(0);
+  try {
+    var resp = await fetchFromGitHub('data/activity.json');
+    if (!resp || !resp.content) return;
+    var raw = decodeBase64Utf8(resp.content);
+    var data = JSON.parse(raw);
+    var entries = data.entries || [];
+    batch.forEach(function(e) { entries.unshift(e); });
+    if (entries.length > 500) entries = entries.slice(0, 500);
+    data.entries = entries;
+    var json = JSON.stringify(data, null, 2);
+    await safeWriteToGitHub('data/activity.json', json, 'activity: ' + batch.length + ' entries');
+  } catch(e) {
+    batch.forEach(function(b) { _activityQueue.push(b); });
+  }
+}
+
+async function loadActivityFeed() {
+  try {
+    var resp = await fetchFromGitHub('data/activity.json');
+    if (!resp || !resp.content) return [];
+    var raw = decodeBase64Utf8(resp.content);
+    var data = JSON.parse(raw);
+    return data.entries || [];
+  } catch(e) { return []; }
+}
+window.loadActivityFeed = loadActivityFeed;
+
 // ─── AUTO SYNC — CARDS (unified through safeWriteToGitHub) ───────────────────
 
 var syncDebounceTimer = null;
@@ -1099,6 +1146,7 @@ async function syncToGitHub() {
     WriteGuard.log({ status: 'ok', reason: 'auto-sync', count: totalCards });
 
     _clearLocalBackup(); // Sync succeeded — backup no longer needed
+    flushActivityQueue().catch(function(){}); // Phase 8: fire-and-forget
 
   } catch(e) {
 

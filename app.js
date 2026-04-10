@@ -430,6 +430,7 @@ function switchTab(id) {
     showSystemTab();
     try { showRAGTab(); } catch (e) { console.warn('showRAGTab failed:', e); setSystemAlert('system-rag-dropdown', true); }
     try { showONTab(); }  catch (e) { console.warn('showONTab failed:',  e); setSystemAlert('system-on-dropdown',  true); }
+    renderActivityFeed();
     initSettings();
     updateSystemAlerts();
   }
@@ -1158,15 +1159,15 @@ document.getElementById('cm-save').addEventListener('click',function() {
 
   var cards=getCards();
 
-  if(cmCardId){Object.assign(cards[cmCardId],{title:title,deadline:deadline,desc:desc,status:status,assignee:assignee,source:source,tags:tags,context:context,linkedPatient:linkedPatient,linkedProject:linkedProject,updatedAt:new Date().toISOString(),updatedBy:'lifeos'});if(!cards[cmCardId].createdAt)cards[cmCardId].createdAt=new Date().toISOString();}
+  if(cmCardId){Object.assign(cards[cmCardId],{title:title,deadline:deadline,desc:desc,status:status,assignee:assignee,source:source,tags:tags,context:context,linkedPatient:linkedPatient,linkedProject:linkedProject,updatedAt:new Date().toISOString(),updatedBy:'lifeos'});if(!cards[cmCardId].createdAt)cards[cmCardId].createdAt=new Date().toISOString();logActivity('updated','task',cmCardId,title);}
 
-  else{var id=nextCardId(cmLaneId);var now=new Date().toISOString();cards[id]={id:id,lane:cmLaneId,title:title,deadline:deadline,desc:desc,status:status,archived:false,order:Date.now(),createdAt:now,updatedAt:now,updatedBy:'lifeos',assignee:assignee,source:source,tags:tags,context:context,linkedPatient:linkedPatient,linkedProject:linkedProject,dependsOn:[],recurrence:null,notes:[]};}
+  else{var id=nextCardId(cmLaneId);var now=new Date().toISOString();cards[id]={id:id,lane:cmLaneId,title:title,deadline:deadline,desc:desc,status:status,archived:false,order:Date.now(),createdAt:now,updatedAt:now,updatedBy:'lifeos',assignee:assignee,source:source,tags:tags,context:context,linkedPatient:linkedPatient,linkedProject:linkedProject,dependsOn:[],recurrence:null,notes:[]};logActivity('created','task',id,title);}
 
   saveCards(cards); syncPACardsToPatients(); savePatientsToGitHub(); closeCardModal(); if(currentTab==='heute')renderHeute(); if(currentTab==='kanban')renderKanban();
 
 });
 
-document.getElementById('cm-delete').addEventListener('click',function(){confirmAction('In Papierkorb?','Karte kann im Papierkorb wiederhergestellt werden.',function(){var cards=getCards();if(cmCardId){cards[cmCardId].archived=true;cards[cmCardId].updatedAt=new Date().toISOString();cards[cmCardId].updatedBy='lifeos';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});});
+document.getElementById('cm-delete').addEventListener('click',function(){confirmAction('In Papierkorb?','Karte kann im Papierkorb wiederhergestellt werden.',function(){var cards=getCards();if(cmCardId){cards[cmCardId].archived=true;cards[cmCardId].updatedAt=new Date().toISOString();cards[cmCardId].updatedBy='lifeos';logActivity('deleted','task',cmCardId,cards[cmCardId].title);saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});});
 
 document.getElementById('cm-heute').addEventListener('click',function(){var cards=getCards();if(cmCardId&&cards[cmCardId]){cards[cmCardId].lane='HE';cards[cmCardId].updatedAt=new Date().toISOString();cards[cmCardId].updatedBy='lifeos';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});
 
@@ -3193,6 +3194,42 @@ function renderUsageWidget(u) {
     buildPacingChart(allPct, u.weekly && u.weekly.allModels && u.weekly.allModels.resetsLabel);
 
   el.style.display = 'block';
+}
+
+// ─── ACTIVITY FEED WIDGET (Phase 8) ──────────────────────────────────────────
+
+function renderActivityFeed() {
+  var el = document.getElementById('activity-feed-widget');
+  if (!el) return;
+  loadActivityFeed().then(function(entries) {
+    if (!entries || entries.length === 0) {
+      el.innerHTML = '<div class="activity-widget"><div class="activity-header">Activity Feed</div><div class="empty-state" style="font-size:12px">Keine Aktivitaeten</div></div>';
+      return;
+    }
+    var agentIcons = { lifeos: '\uD83D\uDCBB', hermine: '\uD83E\uDDD9', kitt: '\u2699\uFE0F' };
+    var actionIcons = { created: '+', updated: '\u270E', completed: '\u2713', deleted: '\uD83D\uDDD1', note_added: '\uD83D\uDCDD' };
+    var show = entries.slice(0, 20);
+    var html = '<div class="activity-widget"><div class="activity-header">Activity Feed <span class="activity-count">' + entries.length + '</span></div><div class="activity-list">';
+    show.forEach(function(e) {
+      var ago = timeAgo(e.ts);
+      var icon = agentIcons[e.agent] || '\uD83D\uDD35';
+      var actIcon = actionIcons[e.action] || '\u2022';
+      html += '<div class="activity-item"><span class="activity-agent">' + icon + '</span><span class="activity-action">' + esc(actIcon) + '</span><span class="activity-summary">' + esc(e.summary || e.action + ' ' + e.entity) + '</span><span class="activity-meta">' + esc(e.entityId || '') + ' \u00b7 ' + ago + '</span></div>';
+    });
+    html += '</div></div>';
+    el.innerHTML = html;
+  });
+}
+
+function timeAgo(iso) {
+  var diff = Date.now() - new Date(iso).getTime();
+  var min = Math.floor(diff / 60000);
+  if (min < 1) return 'gerade';
+  if (min < 60) return min + 'min';
+  var hrs = Math.floor(min / 60);
+  if (hrs < 24) return hrs + 'h';
+  var days = Math.floor(hrs / 24);
+  return days + 'd';
 }
 
 // Parst Reset-Labels wie "Mon 7:00 PM" zum naechsten Reset-Datum
