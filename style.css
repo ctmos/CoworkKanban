@@ -904,6 +904,88 @@ nav {
 
 .done-archive-list .card-item { opacity: 0.6; }
 
+/* ── STATUS BOARD ── */
+
+#tab-statusboard { padding: 8px 16px; }
+
+.sb-filters {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 0 16px; flex-wrap: wrap;
+}
+
+.sb-toggle {
+  padding: 6px 16px; border-radius: 20px;
+  font-size: 13px; font-weight: 500; font-family: inherit;
+  border: 1.5px solid var(--border); background: var(--glass);
+  color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+  user-select: none;
+}
+.sb-toggle:hover { border-color: var(--text-muted); color: var(--text); }
+
+.sb-toggle.active[data-sbstatus="offen"] { background: #9ca3af; color: #fff; border-color: #9ca3af; }
+.sb-toggle.active[data-sbstatus="blockiert"] { background: #ef4444; color: #fff; border-color: #ef4444; }
+.sb-toggle.active[data-sbstatus="in-arbeit"] { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+.sb-toggle.active[data-sbstatus="erledigt"] { background: #22c55e; color: #fff; border-color: #22c55e; }
+
+.sb-dl.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.sb-divider {
+  width: 1px; height: 24px; background: var(--border); margin: 0 4px;
+}
+
+.statusboard-grid {
+  display: flex; gap: 12px; align-items: flex-start;
+  min-height: 200px;
+}
+
+.sb-column {
+  flex: 1; min-width: 200px; max-width: 400px;
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+
+.sb-column-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--card-bg);
+}
+.sb-column-title { font-size: 14px; font-weight: 600; }
+.sb-column-count {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  background: var(--bg); padding: 2px 8px; border-radius: 10px;
+}
+
+.sb-column-body { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+
+.sb-card {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px); padding: 10px 12px;
+  cursor: pointer; transition: box-shadow 0.15s, transform 0.15s;
+}
+.sb-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.sb-card.sb-overdue { border-left: 3px solid #ef4444; }
+
+.sb-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.sb-card-lane {
+  font-size: 10px; font-weight: 700; color: #fff;
+  padding: 1px 6px; border-radius: 4px; letter-spacing: 0.5px;
+}
+.sb-card-id { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+.sb-card-title { font-size: 13px; line-height: 1.4; }
+.sb-card-bottom { margin-top: 6px; }
+.sb-card-dl { font-size: 11px; color: var(--text-muted); }
+.sb-overdue .sb-card-dl { color: #ef4444; font-weight: 600; }
+
+.sb-empty, .sb-empty-col {
+  text-align: center; color: var(--text-muted); font-size: 13px;
+  padding: 40px 16px;
+}
+.sb-empty-col { padding: 20px 8px; }
+
+@media (max-width: 768px) {
+  .statusboard-grid { flex-direction: column; }
+  .sb-column { max-width: none; }
+}
+
 /* ── PAPIERKORB (TRASH) ── */
 .trash-section {
   margin-top: 16px;

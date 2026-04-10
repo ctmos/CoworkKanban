@@ -196,7 +196,8 @@
 
   <nav>
     <div class="nav-center">
-      <button class="tab-btn" data-tab="kanban">Kanban</button>
+      <button class="tab-btn" data-tab="kanban">Backlog</button>
+      <button class="tab-btn" data-tab="statusboard">Kanban</button>
       <button class="tab-btn" data-tab="kba">KBA</button>
       <button class="tab-btn" data-tab="projekte">Projekte</button>
       <button class="tab-btn" data-tab="life">Life</button>
@@ -397,6 +398,20 @@
 
 
 
+
+  <!-- STATUS BOARD (Kanban by Status) -->
+  <div id="tab-statusboard" class="tab-content">
+    <div class="sb-filters">
+      <button class="sb-toggle" data-sbstatus="offen" onclick="toggleSBFilter('offen')">Offen</button>
+      <button class="sb-toggle" data-sbstatus="blockiert" onclick="toggleSBFilter('blockiert')">Blockiert</button>
+      <button class="sb-toggle" data-sbstatus="in-arbeit" onclick="toggleSBFilter('in-arbeit')">In Arbeit</button>
+      <button class="sb-toggle" data-sbstatus="erledigt" onclick="toggleSBFilter('erledigt')">Erledigt</button>
+      <span class="sb-divider"></span>
+      <button class="sb-toggle sb-dl" data-sbdeadline="heute" onclick="toggleSBDeadline('heute')">Heute</button>
+      <button class="sb-toggle sb-dl" data-sbdeadline="7tage" onclick="toggleSBDeadline('7tage')">7 Tage</button>
+    </div>
+    <div id="statusboard-grid" class="statusboard-grid"></div>
+  </div>
 
   <!-- KBA TAB (Kategorie fuer Klinik/Patienten) -->
 
