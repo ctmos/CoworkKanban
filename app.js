@@ -740,7 +740,7 @@ function renderStatusTab() {
 
 
 
-  var heuteCards = Object.values(cards).filter(function(c) { return !c.archived && (c.lane === 'JZ' || c.todayFlag || c.lane === 'HE' || c.deadline === todayISO); });
+  var heuteCards = Object.values(cards).filter(function(c) { return !c.archived && !c.deletedAt && (c.lane === 'JZ' || c.todayFlag || c.lane === 'HE' || c.deadline === todayISO); });
 
   heuteCards.sort(function(a, b) { var aJZ = a.lane === 'JZ' ? 0 : 1; var bJZ = b.lane === 'JZ' ? 0 : 1; return aJZ - bJZ; });
 
@@ -985,7 +985,7 @@ function renderKanban() {
 
   grid.innerHTML = getOrderedLanes().map(function(lane) {
 
-    var all=Object.values(cards).filter(function(c){return !c.archived&&(lane.isHeute?(c.todayFlag||c.deadline===todayISO||c.lane==='HE'):c.lane===lane.id);});
+    var all=Object.values(cards).filter(function(c){return !c.archived&&!c.deletedAt&&(lane.isHeute?(c.todayFlag||c.deadline===todayISO||c.lane==='HE'):c.lane===lane.id);});
 
     var active=all.filter(function(c){return c.status!=='erledigt';}).sort(function(a,b){return(a.order-b.order)||a.id.localeCompare(b.id);});
 
@@ -1011,7 +1011,7 @@ function renderKanban() {
 
   // Papierkorb (Trash) section
 
-  var archivedCards = Object.values(cards).filter(function(c){ return c.archived; }).sort(function(a,b){ return (b.order||0) - (a.order||0); });
+  var archivedCards = Object.values(cards).filter(function(c){ return c.archived && !c.deletedAt; }).sort(function(a,b){ return (b.order||0) - (a.order||0); });
 
   if (archivedCards.length > 0) {
 
@@ -1295,7 +1295,7 @@ function renderPatients(filter) {
   // Sort
   var cards = typeof getCards === 'function' ? getCards() : {};
   var paCards = {};
-  Object.values(cards).forEach(function(c){ if (!c.archived && c.lane === 'PA') paCards[c.title] = c; });
+  Object.values(cards).forEach(function(c){ if (!c.archived && !c.deletedAt && c.lane === 'PA') paCards[c.title] = c; });
 
   var active = patients.filter(function(p){ return p.status !== 'archiviert'; });
 
@@ -2573,7 +2573,7 @@ async function showProjectDetail(projectId){
     var defaultStatusColors={aktiv:'#22c55e',pausiert:'#eab308',abgeschlossen:'#22c55e',archiviert:'#555'};
     var cb=meta.color?' style="border-top:4px solid '+esc(meta.color)+'"':'';
 
-    var activeEntries=(meta.entries||[]).filter(function(e){return !e.deleted&&!e.archived;});
+    var activeEntries=(meta.entries||[]).filter(function(e){return !e.deleted&&!e.archived&&!e.deletedAt;});
     activeEntries.sort(function(a,b){return new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt);});
     var archivedEntries=(meta.entries||[]).filter(function(e){return e.archived&&!e.deleted;});
     var deletedEntries=(meta.entries||[]).filter(function(e){return e.deleted;});
@@ -5230,7 +5230,7 @@ setInterval(function() {
     // Same-lane reorder
     if (card.lane === targetLane) {
       var laneCards = Object.values(cards)
-        .filter(function(c) { return !c.archived && c.lane === targetLane && c.status !== 'erledigt'; })
+        .filter(function(c) { return !c.archived && !c.deletedAt && c.lane === targetLane && c.status !== 'erledigt'; })
         .sort(function(a,b) { return (a.order||0) - (b.order||0) || a.id.localeCompare(b.id); });
       // Remove dragged card from list
       laneCards = laneCards.filter(function(c) { return c.id !== cardId; });
@@ -5289,7 +5289,7 @@ setInterval(function() {
 
     // Reorder target lane with insertion point
     var tLaneCards = Object.values(cards)
-      .filter(function(c) { return !c.archived && c.lane === targetLane && c.status !== 'erledigt'; })
+      .filter(function(c) { return !c.archived && !c.deletedAt && c.lane === targetLane && c.status !== 'erledigt'; })
       .sort(function(a,b) { return (a.order||0) - (b.order||0) || a.id.localeCompare(b.id); });
     // Remove the moved card from its position (it's currently at the end with old order)
     tLaneCards = tLaneCards.filter(function(c) { return c.id !== newId; });
