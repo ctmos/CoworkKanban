@@ -1086,7 +1086,7 @@ async function syncToGitHub() {
 
     _appState.cards_savedAt = savedAt;
 
-    var jsonStr = JSON.stringify({ _meta: { savedAt: savedAt }, cards: cards }, null, 2);
+    var jsonStr = JSON.stringify({ _meta: { savedAt: savedAt, updatedBy: 'lifeos' }, cards: cards }, null, 2);
 
     await safeWriteToGitHub('data/tasks.json', jsonStr, 'sync: auto-save kanban cards');
 
@@ -1145,6 +1145,28 @@ async function savePatientsToGitHub() {
   await queuedWrite('data/patients.json', async function() {
 
     try {
+
+      // ─── PATIENT-COUNT-GUARD ─────────────────────────────────────────
+      // Verhindert dass ein Auto-Save mit veraltetem State Patienten ueberschreibt.
+      // GET remote count → vergleiche mit lokal → bei Verlust: ABBRUCH.
+      var localCount = (_appState.patients || []).length;
+      try {
+        var remoteCheck = await fetchFromGitHub('data/patients.json');
+        if (remoteCheck && remoteCheck.content) {
+          var remoteDecrypted = await decryptJSON(remoteCheck.content);
+          var remotePatients = JSON.parse(remoteDecrypted) || [];
+          var remoteCount = remotePatients.length;
+          if (localCount < remoteCount) {
+            console.error('[PATIENT-COUNT-GUARD] ABBRUCH: Lokal ' + localCount + ' < Remote ' + remoteCount + ' Patienten. Wuerde Daten verlieren.');
+            setSyncStatus('error');
+            showToast('Patient-Sync blockiert: ' + (remoteCount - localCount) + ' Patient(en) wuerden verloren gehen', true);
+            return;
+          }
+        }
+      } catch(guardErr) {
+        console.error('[PATIENT-COUNT-GUARD] Pruefung fehlgeschlagen, schreibe trotzdem:', guardErr);
+      }
+      // ─── END PATIENT-COUNT-GUARD ─────────────────────────────────────
 
       var pJson = JSON.stringify(_appState.patients, null, 2);
 
@@ -1413,6 +1435,57 @@ async function saveSettingsToGitHub() {
 
 // ─── FIX 5: LOAD ALL FROM GITHUB (clean startup, no localStorage) ───────────
 
+// ─── SCHEMA MIGRATIONS (LifeOS Substrate v2) ─────────────────────────────────
+// Non-breaking: Adds optional fields with sensible defaults.
+// Runs on every load (idempotent). Never removes fields.
+
+function migrateTasksV2(cards) {
+  if (!cards || typeof cards !== 'object') return cards;
+  Object.keys(cards).forEach(function(key) {
+    var c = cards[key];
+    if (c.assignee === undefined) c.assignee = null;
+    if (c.source === undefined) c.source = 'manual';
+    if (!c.tags) c.tags = [];
+    if (c.context === undefined) c.context = '';
+    if (c.linkedPatient === undefined) c.linkedPatient = null;
+    if (c.linkedProject === undefined) c.linkedProject = null;
+    if (!c.dependsOn) c.dependsOn = [];
+    if (c.recurrence === undefined) c.recurrence = null;
+    if (!c.notes) c.notes = [];
+    if (!c.updatedAt) c.updatedAt = c.createdAt || '';
+    if (!c.updatedBy) c.updatedBy = '';
+  });
+  return cards;
+}
+
+function migratePatientsV2(patients) {
+  if (!Array.isArray(patients)) return patients;
+  patients.forEach(function(p) {
+    if (!p.updatedAt) p.updatedAt = '';
+    if (!p.updatedBy) p.updatedBy = '';
+    if (!p.linkedTasks) p.linkedTasks = [];
+    if (!p.diagnoses) p.diagnoses = [];
+    if (!p.goals) p.goals = [];
+    if (p.wochenplanung === undefined) p.wochenplanung = null;
+  });
+  return patients;
+}
+
+function migrateProjectsV2(projects) {
+  if (!Array.isArray(projects)) return projects;
+  projects.forEach(function(p) {
+    if (p.description === undefined) p.description = '';
+    if (!p.updatedAt) p.updatedAt = p.createdAt || '';
+    if (!p.updatedBy) p.updatedBy = '';
+    if (!p.linkedTasks) p.linkedTasks = [];
+    if (p.owner === undefined) p.owner = null;
+    if (p.deadline === undefined) p.deadline = null;
+    if (!p.tags) p.tags = [];
+    if (!p.milestones) p.milestones = [];
+  });
+  return projects;
+}
+
 async function loadFromGitHub() {
 
   var token = getGHToken();
@@ -1527,7 +1600,8 @@ async function loadFromGitHub() {
 
     }
 
-
+    // Substrate v2: Migrate tasks
+    if (_appState.cards) migrateTasksV2(_appState.cards);
 
     // Load patients (PIN-derived AES-256-GCM encryption)
 
@@ -1545,7 +1619,8 @@ async function loadFromGitHub() {
 
     }
 
-
+    // Substrate v2: Migrate patients
+    if (_appState.patients) migratePatientsV2(_appState.patients);
 
     // Load autonomy log
 
@@ -1591,7 +1666,8 @@ async function loadFromGitHub() {
 
     }
 
-
+    // Substrate v2: Migrate projects
+    if (_appState.projects) migrateProjectsV2(_appState.projects);
 
     // Load settings
 

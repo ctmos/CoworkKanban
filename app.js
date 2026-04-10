@@ -366,7 +366,7 @@ function savePatients(p, touchedId) {
   var id = touchedId || (typeof _currentPatId !== 'undefined' ? _currentPatId : null);
   if (id) {
     var pat = p.find(function(x) { return x.id === id; });
-    if (pat) pat.updatedAt = new Date().toISOString();
+    if (pat) { pat.updatedAt = new Date().toISOString(); pat.updatedBy = 'lifeos'; }
   }
   lsSet('cowork_patients', p);
 }
@@ -475,6 +475,8 @@ function moveToToday(cardId) {
 
   card.todayFlag = true;
 
+  card.updatedAt = new Date().toISOString(); card.updatedBy = 'lifeos';
+
   saveCards(cards);
 
   renderStatusTab();
@@ -498,6 +500,8 @@ function moveFromToday(cardId) {
   card.todayFlag = false;
 
   delete card.originalLane;
+
+  card.updatedAt = new Date().toISOString(); card.updatedBy = 'lifeos';
 
   saveCards(cards);
 
@@ -935,7 +939,7 @@ var trashExpanded = false;
 
 function toggleTrash() { trashExpanded = !trashExpanded; renderKanban(); }
 
-function restoreCard(cardId) { var cards=getCards(); if(cards[cardId]){cards[cardId].archived=false; saveCards(cards); showToast(cardId+' wiederhergestellt'); renderKanban(); if(currentTab==='heute')renderHeute();} }
+function restoreCard(cardId) { var cards=getCards(); if(cards[cardId]){cards[cardId].archived=false;cards[cardId].updatedAt=new Date().toISOString();cards[cardId].updatedBy='lifeos'; saveCards(cards); showToast(cardId+' wiederhergestellt'); renderKanban(); if(currentTab==='heute')renderHeute();} }
 
 function permanentDeleteCard(cardId) { confirmAction('Endgültig löschen?','Diese Karte wird UNWIDERRUFLICH gelöscht.',function(){var cards=getCards(); delete cards[cardId]; saveCards(cards); showToast(cardId+' gelöscht'); renderKanban();}); }
 
@@ -1105,17 +1109,17 @@ document.getElementById('cm-save').addEventListener('click',function() {
 
   var cards=getCards();
 
-  if(cmCardId){Object.assign(cards[cmCardId],{title:title,deadline:deadline,desc:desc,status:status});if(!cards[cmCardId].createdAt)cards[cmCardId].createdAt=new Date().toISOString();}
+  if(cmCardId){Object.assign(cards[cmCardId],{title:title,deadline:deadline,desc:desc,status:status,updatedAt:new Date().toISOString(),updatedBy:'lifeos'});if(!cards[cmCardId].createdAt)cards[cmCardId].createdAt=new Date().toISOString();}
 
-  else{var id=nextCardId(cmLaneId);cards[id]={id:id,lane:cmLaneId,title:title,deadline:deadline,desc:desc,status:status,archived:false,order:Date.now(),createdAt:new Date().toISOString()};}
+  else{var id=nextCardId(cmLaneId);var now=new Date().toISOString();cards[id]={id:id,lane:cmLaneId,title:title,deadline:deadline,desc:desc,status:status,archived:false,order:Date.now(),createdAt:now,updatedAt:now,updatedBy:'lifeos'};}
 
   saveCards(cards); syncPACardsToPatients(); savePatientsToGitHub(); closeCardModal(); if(currentTab==='heute')renderHeute(); if(currentTab==='kanban')renderKanban();
 
 });
 
-document.getElementById('cm-delete').addEventListener('click',function(){confirmAction('In Papierkorb?','Karte kann im Papierkorb wiederhergestellt werden.',function(){var cards=getCards();if(cmCardId){cards[cmCardId].archived=true;saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});});
+document.getElementById('cm-delete').addEventListener('click',function(){confirmAction('In Papierkorb?','Karte kann im Papierkorb wiederhergestellt werden.',function(){var cards=getCards();if(cmCardId){cards[cmCardId].archived=true;cards[cmCardId].updatedAt=new Date().toISOString();cards[cmCardId].updatedBy='lifeos';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});});
 
-document.getElementById('cm-heute').addEventListener('click',function(){var cards=getCards();if(cmCardId&&cards[cmCardId]){cards[cmCardId].lane='HE';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});
+document.getElementById('cm-heute').addEventListener('click',function(){var cards=getCards();if(cmCardId&&cards[cmCardId]){cards[cmCardId].lane='HE';cards[cmCardId].updatedAt=new Date().toISOString();cards[cmCardId].updatedBy='lifeos';saveCards(cards);}closeCardModal();if(currentTab==='heute')renderHeute();if(currentTab==='kanban')renderKanban();});
 
 
 
@@ -5202,6 +5206,7 @@ setInterval(function() {
       laneCards.splice(idx, 0, card);
       // Reassign order values
       laneCards.forEach(function(c, i) { cards[c.id].order = (i + 1) * 1000; });
+      card.updatedAt = new Date().toISOString(); card.updatedBy = 'lifeos';
       saveCards(cards);
       showToast(cardId + ' neu sortiert');
       renderKanban();
@@ -5242,6 +5247,7 @@ setInterval(function() {
 
     }
 
+    card.updatedAt = new Date().toISOString(); card.updatedBy = 'lifeos';
     cards[newId] = card;
 
     // Reorder target lane with insertion point
