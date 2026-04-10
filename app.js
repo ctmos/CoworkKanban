@@ -892,6 +892,13 @@ function fmtDateShort(dateStr) { if(!dateStr) return ''; var p=String(dateStr).s
 
 
 
+// Phase 7: Navigation helpers for entity badges
+function navToPatient(code){var patients=getPatients()||[];var pat=patients.find(function(p){return p.code===code;});if(pat){switchTab('kba');setTimeout(function(){showPatientDetail(pat.id);},100);}else{showToast('Patient '+code+' nicht gefunden',true);}}
+function navToProject(projectId){switchTab('projekte');setTimeout(function(){showProjectDetail(projectId);},100);}
+
+// Phase 7: Generate linked tasks HTML for detail views
+function renderLinkedTasks(filterKey,filterValue){var cards=_appState.cards||{};var linked=Object.values(cards).filter(function(c){return !c.archived&&!c.deletedAt&&c[filterKey]===filterValue;});if(linked.length===0)return '';var statusDots={offen:'#9ca3af',blockiert:'#ef4444','in-arbeit':'#f59e0b',erledigt:'#22c55e'};var html='<div class="linked-tasks-section"><h4>Verknuepfte Tasks <span class="linked-tasks-count">'+linked.length+'</span></h4><div class="linked-tasks-list">';linked.sort(function(a,b){return(a.order||0)-(b.order||0);});var show=linked.slice(0,5);show.forEach(function(c){var dotColor=statusDots[c.status]||statusDots.offen;html+='<div class="linked-task-item" onclick="switchTab(\'kanban\');setTimeout(function(){var el=document.querySelector(\'[data-id=&quot;'+esc(c.id)+'&quot;]\');if(el){el.scrollIntoView({behavior:\'smooth\',block:\'center\'});el.classList.add(\'highlight-pulse\');setTimeout(function(){el.classList.remove(\'highlight-pulse\');},2000);}},200)">'+'<span class="linked-task-dot" style="background:'+dotColor+'"></span>'+'<span class="linked-task-id">'+esc(c.id)+'</span>'+'<span class="linked-task-title">'+esc(c.title||'(kein Titel)')+'</span>'+'<span class="linked-task-lane">'+esc(c.lane)+'</span>'+'</div>';});if(linked.length>5){html+='<div class="linked-tasks-more">+ '+(linked.length-5)+' weitere</div>';}html+='</div></div>';return html;}
+
 function renderCardItem(card, laneColor) {
 
   var statusCls=(STATUSES[card.status]&&STATUSES[card.status].cls)||'status-offen';
@@ -919,7 +926,12 @@ function renderCardItem(card, laneColor) {
   var stRgb=statusColors[card.status]||statusColors.offen;
   var bgStyle='background:rgba('+stRgb+',0.12);';
 
-  return '<div class="card-item card-status-'+esc(card.status||'offen')+'" draggable="true" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><span class="card-drag-handle" title="Karte sortieren">\u22ee\u22ee</span><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
+  var linkBadges='';
+  if(card.linkedPatient){var pName=card.linkedPatient;var pp=(getPatients()||[]).find(function(p){return p.code===card.linkedPatient;});if(pp)pName=pp.name||pp.code;linkBadges+='<span class="card-badge badge-patient" onclick="event.stopPropagation();navToPatient(\''+esc(card.linkedPatient)+'\')" title="Patient: '+esc(pName)+'">&#128100; '+esc(pName.length>12?pName.substring(0,12)+'…':pName)+'</span>';}
+  if(card.linkedProject){var prName=card.linkedProject;var pr=(_appState.projects||[]).find(function(p){return p.id===card.linkedProject;});if(pr)prName=pr.name||pr.id;linkBadges+='<span class="card-badge badge-project" onclick="event.stopPropagation();navToProject(\''+esc(card.linkedProject)+'\')" title="Projekt: '+esc(prName)+'">&#128194; '+esc(prName.length>12?prName.substring(0,12)+'…':prName)+'</span>';}
+  var badgeRow=linkBadges?'<div class="card-badges">'+linkBadges+'</div>':'';
+
+  return '<div class="card-item card-status-'+esc(card.status||'offen')+'" draggable="true" data-id="'+cardId+'" style="position:relative;'+bgStyle+'"><span class="card-drag-handle" title="Karte sortieren">\u22ee\u22ee</span><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:10px;"><span class="card-prefix">'+esc(card.id)+'</span><span class="card-title">'+esc(card.title||'(kein Titel)')+'</span>'+descToggle+'<span class="status-dot '+statusCls+'"></span></div>'+badgeRow+datesHtml+descBox+'</div><button class="kanban-today-btn'+(isHE?' is-today':'')+'" onclick="event.stopPropagation();'+(isHE?"moveFromToday('"+cardId+"')":"moveToToday('"+cardId+"')")+'" title="'+(isHE?'Zur\u00fcck':'Heute')+'">'+(isHE?'\u21a9':'\u2192')+'</button></div>';
 
 }
 
@@ -1667,6 +1679,8 @@ function showPatientDetail(patId) {
     }
     html += '</div>';
   }
+
+  html += renderLinkedTasks('linkedPatient', pat.code);
 
   html += '<div class="pat-entries-section">'
 
@@ -2645,7 +2659,7 @@ async function showProjectDetail(projectId){
     container.innerHTML='<div class="proj-detail-header"><button class="proj-detail-back" onclick="showProjectsTab()">\u2190 Zur\u00fcck</button><span class="proj-status-circle proj-status-circle-lg" style="background:'+esc(detailSc)+'"'+detailCircleTitle+'></span><span class="proj-detail-name">'+esc(meta.name||projectId)+'</span><div style="margin-left:auto;display:flex;gap:8px"><button class="proj-action-btn" onclick="deleteProject(\''+esc(projectId)+'\',\''+esc(meta.name||projectId)+'\')" title="In Papierkorb" style="font-size:16px">\ud83d\uddd1</button></div></div>'
       +'<div class="proj-section section-info"'+cb+'><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-end"><div><label class="form-label">Name</label><input type="text" class="form-input" id="pjd-name" value="'+esc(meta.name||'')+'" style="width:auto;min-width:200px"></div><div><label class="form-label">Status-Farbe</label><div class="proj-sc-picker" id="pjd-sc-picker"><span class="proj-sc-opt'+(detailSc==='#22c55e'?' selected':'')+'" data-color="#22c55e" style="background:#22c55e" onclick="pickProjSc(this)"></span><span class="proj-sc-opt'+(detailSc==='#eab308'?' selected':'')+'" data-color="#eab308" style="background:#eab308" onclick="pickProjSc(this)"></span><span class="proj-sc-opt'+(detailSc==='#ef4444'?' selected':'')+'" data-color="#ef4444" style="background:#ef4444" onclick="pickProjSc(this)"></span><span class="proj-sc-opt'+(detailSc==='#555'?' selected':'')+'" data-color="#555" style="background:#555" onclick="pickProjSc(this)"></span></div></div><div><label class="form-label">Status-Text (Hover)</label><input type="text" class="form-input" id="pjd-status-text" value="'+esc(meta.statusText||'')+'" placeholder="z.B. Aktiv, Pausiert\u2026" style="width:auto;min-width:140px"></div></div><button class="btn-primary" id="pjd-save-btn">Speichern</button><span id="pjd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
       +(meta.description?'<div class="proj-section"><h3>Beschreibung</h3><div class="proj-description">'+esc(meta.description)+'</div></div>':'')
-      +'<div class="proj-section section-entries"><h3>Beitr\u00e4ge</h3><div class="proj-log-form">'+renderMarkdownToolbar('pjd-log-entry')+'<textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><div class="md-preview" id="preview-pjd-log-entry" style="display:none"></div><button class="btn-primary" id="pjd-log-btn">Hinzuf\u00fcgen</button></div><div id="pjd-entries-list" style="margin-top:16px">'+entriesHtml+'</div>'+archiveHtml+trashHtml+'</div>';
+      +renderLinkedTasks('linkedProject',projectId)+'<div class="proj-section section-entries"><h3>Beitr\u00e4ge</h3><div class="proj-log-form">'+renderMarkdownToolbar('pjd-log-entry')+'<textarea class="proj-log-input" id="pjd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><div class="md-preview" id="preview-pjd-log-entry" style="display:none"></div><button class="btn-primary" id="pjd-log-btn">Hinzuf\u00fcgen</button></div><div id="pjd-entries-list" style="margin-top:16px">'+entriesHtml+'</div>'+archiveHtml+trashHtml+'</div>';
 
     document.getElementById('pjd-save-btn').addEventListener('click',async function(){var btn=document.getElementById('pjd-save-btn');var st=document.getElementById('pjd-save-status');var nn=document.getElementById('pjd-name').value.trim();if(!nn){showToast('Name darf nicht leer sein',true);return;}var scEl=document.querySelector('.proj-sc-opt.selected');var nsc=scEl?scEl.dataset.color:'#22c55e';var nst=document.getElementById('pjd-status-text').value.trim();btn.disabled=true;st.textContent='Speichert\u2026';try{await saveProject(Object.assign({},meta,{name:nn,statusColor:nsc,statusText:nst||'',updatedAt:new Date().toISOString()}));st.textContent='Gespeichert \u2713';showToast('Projekt gespeichert');setTimeout(function(){if(st)st.textContent='';},3000);}catch(e){showToast('Fehler',true);st.textContent='';}btn.disabled=false;});
 

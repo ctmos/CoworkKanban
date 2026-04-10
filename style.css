@@ -860,6 +860,30 @@ nav {
 
 .card-date-cr { font-size: 10px; color: #868e96; white-space: nowrap; }
 
+/* ── ENTITY BADGES (Phase 7) ── */
+
+.card-badges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.card-badge { font-size: 10px; padding: 2px 8px; border-radius: 12px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; transition: transform 0.15s, box-shadow 0.15s; backdrop-filter: blur(8px); }
+.card-badge:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.badge-patient { background: rgba(14,165,233,0.12); border: 1px solid rgba(14,165,233,0.3); color: #0ea5e9; }
+.badge-project { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
+
+/* ── LINKED TASKS (Phase 7) ── */
+
+.linked-tasks-section { margin: 16px 0; padding: 12px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; }
+.linked-tasks-section h4 { font-size: 13px; color: var(--text-muted); margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; }
+.linked-tasks-count { font-size: 11px; background: var(--accent); color: #fff; border-radius: 10px; padding: 1px 7px; font-weight: 600; }
+.linked-tasks-list { display: flex; flex-direction: column; gap: 4px; }
+.linked-task-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 8px; cursor: pointer; transition: background 0.15s; font-size: 13px; }
+.linked-task-item:hover { background: rgba(255,255,255,0.06); }
+.linked-task-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.linked-task-id { font-size: 11px; color: var(--text-muted); font-family: monospace; min-width: 48px; }
+.linked-task-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.linked-task-lane { font-size: 10px; color: var(--text-muted); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 6px; }
+.linked-tasks-more { font-size: 12px; color: var(--accent); padding: 4px 10px; cursor: pointer; }
+.highlight-pulse { animation: highlightPulse 2s ease-out; }
+@keyframes highlightPulse { 0%,100% { box-shadow: none; } 25% { box-shadow: 0 0 0 3px var(--accent), 0 0 12px rgba(99,102,241,0.3); } }
+
 /* ── DONE ARCHIVE ── */
 
 .done-archive-toggle {
