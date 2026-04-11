@@ -6997,61 +6997,129 @@ function mRowBudget(name, current, target, note) {
 
 var frischData = [];
 var frischSHA = '';
+var frischLoaded = false;
 
 async function renderFrischTab() {
   var grid = document.getElementById('frisch-grid');
+  var stats = document.getElementById('frisch-stats');
   if (!grid) return;
-  grid.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
 
-  try {
-    var result = await fetchFromGitHub('data/backlog-fresh.json');
-    if (!result) { grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Fehler beim Laden</p>'; return; }
-    frischData = JSON.parse(result.content);
-    frischSHA = result.sha;
-  } catch(e) {
-    grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Fehler: ' + esc(e.message) + '</p>';
+  if (!frischLoaded) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
+    try {
+      var result = await fetchFromGitHub('data/backlog-fresh.json');
+      if (!result) { grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Fehler beim Laden</p>'; return; }
+      frischData = JSON.parse(result.content);
+      frischSHA = result.sha;
+      frischLoaded = true;
+    } catch(e) {
+      grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Fehler: ' + esc(e.message) + '</p>';
+      return;
+    }
+  }
+
+  // Filter by category
+  var filter = document.getElementById('frisch-cat-filter');
+  var catFilter = filter ? filter.value : '';
+  var filtered = catFilter ? frischData.filter(function(i) { return i.category === catFilter; }) : frischData;
+
+  // Stats
+  if (stats) {
+    var total = frischData.length;
+    var cats = {};
+    frischData.forEach(function(i) { var c = i.category || 'Ohne'; cats[c] = (cats[c] || 0) + 1; });
+    var catList = Object.keys(cats).sort().map(function(c) { return '<span class="frisch-stat-cat">' + esc(c) + ' <b>' + cats[c] + '</b></span>'; }).join('');
+    stats.innerHTML = '<span class="frisch-stat-total">' + total + ' Eintraege</span>' + catList;
+  }
+
+  if (filtered.length === 0 && frischData.length === 0) {
+    grid.innerHTML = '<div class="frisch-empty"><p>Noch keine Eintraege</p><p style="color:var(--text-muted);font-size:13px">Klicke auf "+ Neu" um den frischen Backlog zu befuellen</p></div>';
     return;
   }
 
-  if (frischData.length === 0) {
-    grid.innerHTML = '<div class="frisch-empty"><p>Noch keine Eintraege</p><p style="color:var(--text-muted);font-size:13px">Klicke auf "+ Neuer Eintrag" um zu starten</p></div>';
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="frisch-empty"><p>Keine Eintraege in dieser Kategorie</p></div>';
     return;
   }
+
+  // Group by category
+  var groups = {};
+  filtered.forEach(function(item, idx) {
+    var cat = item.category || 'Ohne Kategorie';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push({ item: item, idx: frischData.indexOf(item) });
+  });
 
   var html = '';
-  frischData.forEach(function(item, idx) {
-    var pClass = item.priority === 'hoch' ? 'frisch-prio-high' : item.priority === 'kritisch' ? 'frisch-prio-critical' : '';
-    html += '<div class="frisch-card ' + pClass + '" data-idx="' + idx + '">';
-    html += '<div class="frisch-card-header">';
-    html += '<span class="frisch-card-id">' + esc(item.id || '') + '</span>';
-    if (item.category) html += '<span class="frisch-card-cat">' + esc(item.category) + '</span>';
-    if (item.priority) html += '<span class="frisch-card-prio ' + pClass + '">' + esc(item.priority) + '</span>';
-    html += '<button class="frisch-del-btn" onclick="deleteFrischItem(' + idx + ')" title="Loeschen">&times;</button>';
-    html += '</div>';
-    html += '<div class="frisch-card-title">' + esc(item.title) + '</div>';
-    if (item.description) html += '<div class="frisch-card-desc">' + esc(item.description) + '</div>';
+  Object.keys(groups).sort().forEach(function(cat) {
+    html += '<div class="frisch-group">';
+    html += '<div class="frisch-group-header">' + esc(cat) + ' <span class="frisch-group-count">' + groups[cat].length + '</span></div>';
+    groups[cat].forEach(function(entry) {
+      var item = entry.item;
+      var idx = entry.idx;
+      var pClass = item.priority === 'hoch' ? 'frisch-prio-high' : item.priority === 'kritisch' ? 'frisch-prio-critical' : '';
+      html += '<div class="frisch-card ' + pClass + '" data-idx="' + idx + '" onclick="editFrischItem(' + idx + ')">';
+      html += '<div class="frisch-card-header">';
+      html += '<span class="frisch-card-id">' + esc(item.id || '') + '</span>';
+      if (item.priority) html += '<span class="frisch-card-prio ' + pClass + '">' + esc(item.priority) + '</span>';
+      html += '<span class="frisch-card-status">' + esc(item.status || 'offen') + '</span>';
+      html += '<button class="frisch-del-btn" onclick="event.stopPropagation();deleteFrischItem(' + idx + ')" title="Loeschen">&times;</button>';
+      html += '</div>';
+      html += '<div class="frisch-card-title">' + esc(item.title) + '</div>';
+      if (item.description) html += '<div class="frisch-card-desc">' + esc(item.description) + '</div>';
+      html += '</div>';
+    });
     html += '</div>';
   });
   grid.innerHTML = html;
 }
 
+var FRISCH_CATEGORIES = ['Feature','Infrastruktur','Integration','Automation','RAG','KI','Sicherheit','Projekte','Plan'];
+
 function addFrischItem() {
   var title = prompt('Titel:');
   if (!title || !title.trim()) return;
-  var category = prompt('Kategorie (optional):') || '';
+  var catChoice = prompt('Kategorie (' + FRISCH_CATEGORIES.join(', ') + '):') || 'Feature';
   var priority = prompt('Prioritaet (niedrig/mittel/hoch/kritisch):') || 'mittel';
   var description = prompt('Beschreibung (optional):') || '';
 
-  var id = 'BF-' + (frischData.length + 1);
+  var maxId = 0;
+  frischData.forEach(function(i) { var n = parseInt((i.id || '').replace('BF-', '')); if (n > maxId) maxId = n; });
+  var id = 'BF-' + (maxId + 1);
+
   frischData.push({
     id: id,
     title: title.trim(),
-    category: category.trim(),
+    category: catChoice.trim(),
     priority: priority.trim(),
     status: 'offen',
     description: description.trim(),
     createdAt: new Date().toISOString()
   });
+
+  saveFrischData();
+}
+
+function editFrischItem(idx) {
+  var item = frischData[idx];
+  if (!item) return;
+  var title = prompt('Titel:', item.title);
+  if (title === null) return;
+  var cat = prompt('Kategorie:', item.category || '');
+  if (cat === null) return;
+  var prio = prompt('Prioritaet (niedrig/mittel/hoch/kritisch):', item.priority || 'mittel');
+  if (prio === null) return;
+  var desc = prompt('Beschreibung:', item.description || '');
+  if (desc === null) return;
+  var status = prompt('Status (offen/in-arbeit/erledigt/blockiert):', item.status || 'offen');
+  if (status === null) return;
+
+  item.title = title.trim();
+  item.category = cat.trim();
+  item.priority = prio.trim();
+  item.description = desc.trim();
+  item.status = status.trim();
+  item.updatedAt = new Date().toISOString();
 
   saveFrischData();
 }

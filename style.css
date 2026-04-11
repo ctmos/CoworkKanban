@@ -4047,10 +4047,18 @@ html.dark-theme .hannah-label { color: #f9a8d4; }
 }
 
 /* ── FRISCH TAB ── */
-.frisch-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.frisch-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+.frisch-toolbar-right { display: flex; gap: 8px; align-items: center; }
+.frisch-toolbar-right select { font-family: inherit; font-size: 13px; padding: 6px 10px; background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); }
 .frisch-title { font-size: 18px; font-weight: 600; }
 .frisch-empty { text-align: center; padding: 60px 20px; }
 .frisch-empty p:first-child { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+.frisch-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; font-size: 12px; }
+.frisch-stat-total { color: var(--text-secondary); font-weight: 600; margin-right: 4px; }
+.frisch-stat-cat { background: var(--surface2); padding: 2px 8px; border-radius: 4px; color: var(--text-secondary); }
+.frisch-group { margin-bottom: 20px; }
+.frisch-group-header { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 0; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+.frisch-group-count { font-size: 11px; color: var(--text-muted); font-weight: 400; }
 
 #frisch-grid { display: flex; flex-direction: column; gap: 8px; }
 

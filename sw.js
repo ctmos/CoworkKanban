@@ -1,5 +1,5 @@
 // LifeOS Service Worker v4.11
-const CACHE_NAME = 'lifeos-v6.61';
+const CACHE_NAME = 'lifeos-v6.62';
 const isCustomDomain = self.location.hostname === 'lifeos.moser.ai';
 const BASE = isCustomDomain ? '/' : '/CoworkKanban/';
 const APP_SHELL = [
