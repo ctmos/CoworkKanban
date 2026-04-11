@@ -427,6 +427,7 @@ function switchTab(id) {
   if (id === 'projekte')   showProjectsTab();
   if (id === 'life')       renderMoneyTab();
   if (id === 'imperialki') showImperialKITab();
+  if (id === 'frisch')    renderFrischTab();
   if (id === 'system')     {
     showSystemTab();
     try { showRAGTab(); } catch (e) { console.warn('showRAGTab failed:', e); setSystemAlert('system-rag-dropdown', true); }
@@ -6990,6 +6991,99 @@ function mRowStatus(name, amount, status, note) {
 function mRowBudget(name, current, target, note) {
   var cls = parseInt(current) > parseInt(target) ? 'money-over' : '';
   return '<tr class="' + cls + '"><td>' + esc(name) + '</td><td>' + esc(current) + '</td><td><strong>' + esc(target) + '</strong> ' + esc(note) + '</td></tr>';
+}
+
+// ── FRISCH TAB ──
+
+var frischData = [];
+var frischSHA = '';
+
+async function renderFrischTab() {
+  var grid = document.getElementById('frisch-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
+
+  try {
+    var result = await fetchFromGitHub('data/backlog-fresh.json');
+    if (!result) { grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Fehler beim Laden</p>'; return; }
+    frischData = JSON.parse(result.content);
+    frischSHA = result.sha;
+  } catch(e) {
+    grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Fehler: ' + esc(e.message) + '</p>';
+    return;
+  }
+
+  if (frischData.length === 0) {
+    grid.innerHTML = '<div class="frisch-empty"><p>Noch keine Eintraege</p><p style="color:var(--text-muted);font-size:13px">Klicke auf "+ Neuer Eintrag" um zu starten</p></div>';
+    return;
+  }
+
+  var html = '';
+  frischData.forEach(function(item, idx) {
+    var pClass = item.priority === 'hoch' ? 'frisch-prio-high' : item.priority === 'kritisch' ? 'frisch-prio-critical' : '';
+    html += '<div class="frisch-card ' + pClass + '" data-idx="' + idx + '">';
+    html += '<div class="frisch-card-header">';
+    html += '<span class="frisch-card-id">' + esc(item.id || '') + '</span>';
+    if (item.category) html += '<span class="frisch-card-cat">' + esc(item.category) + '</span>';
+    if (item.priority) html += '<span class="frisch-card-prio ' + pClass + '">' + esc(item.priority) + '</span>';
+    html += '<button class="frisch-del-btn" onclick="deleteFrischItem(' + idx + ')" title="Loeschen">&times;</button>';
+    html += '</div>';
+    html += '<div class="frisch-card-title">' + esc(item.title) + '</div>';
+    if (item.description) html += '<div class="frisch-card-desc">' + esc(item.description) + '</div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+function addFrischItem() {
+  var title = prompt('Titel:');
+  if (!title || !title.trim()) return;
+  var category = prompt('Kategorie (optional):') || '';
+  var priority = prompt('Prioritaet (niedrig/mittel/hoch/kritisch):') || 'mittel';
+  var description = prompt('Beschreibung (optional):') || '';
+
+  var id = 'BF-' + (frischData.length + 1);
+  frischData.push({
+    id: id,
+    title: title.trim(),
+    category: category.trim(),
+    priority: priority.trim(),
+    status: 'offen',
+    description: description.trim(),
+    createdAt: new Date().toISOString()
+  });
+
+  saveFrischData();
+}
+
+async function deleteFrischItem(idx) {
+  if (!confirm('Eintrag "' + frischData[idx].title + '" loeschen?')) return;
+  frischData.splice(idx, 1);
+  saveFrischData();
+}
+
+async function saveFrischData() {
+  try {
+    var content = btoa(unescape(encodeURIComponent(JSON.stringify(frischData, null, 2))));
+    var resp = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/backlog-fresh.json', {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'token ' + GH_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: 'update backlog-fresh.json',
+        content: content,
+        sha: frischSHA
+      })
+    });
+    if (!resp.ok) throw new Error('PUT failed: ' + resp.status);
+    var data = await resp.json();
+    frischSHA = data.content.sha;
+    renderFrischTab();
+  } catch(e) {
+    alert('Speichern fehlgeschlagen: ' + e.message);
+  }
 }
 
 

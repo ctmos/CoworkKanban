@@ -202,6 +202,7 @@
       <button class="tab-btn" data-tab="projekte">Projekte</button>
       <button class="tab-btn" data-tab="life">Life</button>
       <button class="tab-btn" data-tab="imperialki">ImperialKI</button>
+      <button class="tab-btn" data-tab="frisch">Frisch</button>
       <button class="tab-btn" data-tab="system">System<span class="nav-alert" id="nav-system-alert" hidden aria-label="Problem">&#9889;</span></button>
     </div>
     <button class="theme-toggle" id="theme-toggle" title="Theme wechseln">&#9790;</button>
@@ -751,6 +752,14 @@
       <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Gueltig bis 06.04.2028 | 1.000 EUR auf Bereitstellungskosten | Einmalzahlung spart ~190 EUR</p>
     </div>
 
+  </div>
+
+  <div id="tab-frisch" class="tab-content">
+    <div class="frisch-toolbar">
+      <h2 class="frisch-title">Frischer Backlog</h2>
+      <button class="btn-primary" onclick="addFrischItem()">+ Neuer Eintrag</button>
+    </div>
+    <div id="frisch-grid"></div>
   </div>
 
   <div id="tab-system" class="tab-content">
