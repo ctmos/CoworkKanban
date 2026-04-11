@@ -755,26 +755,11 @@
   </div>
 
   <div id="tab-frisch" class="tab-content">
-    <div class="frisch-toolbar">
-      <h2 class="frisch-title">Frisch</h2>
-      <div class="frisch-toolbar-right">
-        <select id="frisch-cat-filter" onchange="renderFrischTab()">
-          <option value="">Alle Kategorien</option>
-          <option value="Feature">Feature</option>
-          <option value="Infrastruktur">Infrastruktur</option>
-          <option value="Integration">Integration</option>
-          <option value="Automation">Automation</option>
-          <option value="RAG">RAG</option>
-          <option value="KI">KI</option>
-          <option value="Sicherheit">Sicherheit</option>
-          <option value="Projekte">Projekte</option>
-          <option value="Plan">Plan</option>
-        </select>
-        <button class="btn-primary" onclick="addFrischItem()">+ Neu</button>
-      </div>
+    <div class="kanban-toolbar">
+      <button id="frisch-view-toggle" class="btn-secondary" onclick="toggleFrischView()">Board-Ansicht</button>
     </div>
-    <div class="frisch-stats" id="frisch-stats"></div>
-    <div id="frisch-grid"></div>
+    <div id="frisch-hannah-summary"></div>
+    <div class="kanban-grid" id="frisch-grid"></div>
   </div>
 
   <div id="tab-system" class="tab-content">

@@ -6993,146 +6993,129 @@ function mRowBudget(name, current, target, note) {
   return '<tr class="' + cls + '"><td>' + esc(name) + '</td><td>' + esc(current) + '</td><td><strong>' + esc(target) + '</strong> ' + esc(note) + '</td></tr>';
 }
 
-// ── FRISCH TAB ──
+// ── FRISCH TAB ── (Parallel-Kanban mit eigener Datenquelle)
 
-var frischData = [];
-var frischSHA = '';
-var frischLoaded = false;
+var _frischCards = {};
+var _frischSHA = '';
+var _frischLoaded = false;
+var _frischCollapsed = {};
+
+function getFrischCards() { return _frischCards; }
+
+async function loadFrischData() {
+  if (_frischLoaded) return;
+  try {
+    var result = await fetchFromGitHub('data/backlog-fresh.json');
+    if (!result) return;
+    var parsed = JSON.parse(result.content);
+    _frischCards = parsed.cards || {};
+    _frischSHA = result.sha;
+    _frischLoaded = true;
+  } catch(e) { console.error('loadFrischData:', e); }
+}
 
 async function renderFrischTab() {
   var grid = document.getElementById('frisch-grid');
-  var stats = document.getElementById('frisch-stats');
   if (!grid) return;
 
-  if (!frischLoaded) {
+  if (!_frischLoaded) {
     grid.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
-    try {
-      var result = await fetchFromGitHub('data/backlog-fresh.json');
-      if (!result) { grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Fehler beim Laden</p>'; return; }
-      frischData = JSON.parse(result.content);
-      frischSHA = result.sha;
-      frischLoaded = true;
-    } catch(e) {
-      grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px">Fehler: ' + esc(e.message) + '</p>';
-      return;
-    }
+    await loadFrischData();
   }
 
-  // Filter by category
-  var filter = document.getElementById('frisch-cat-filter');
-  var catFilter = filter ? filter.value : '';
-  var filtered = catFilter ? frischData.filter(function(i) { return i.category === catFilter; }) : frischData;
+  // Render Hannah summary (same as Backlog)
+  var hs = document.getElementById('frisch-hannah-summary');
+  if (hs) hs.innerHTML = document.getElementById('hannah-summary') ? document.getElementById('hannah-summary').innerHTML : '';
 
-  // Stats
-  if (stats) {
-    var total = frischData.length;
-    var cats = {};
-    frischData.forEach(function(i) { var c = i.category || 'Ohne'; cats[c] = (cats[c] || 0) + 1; });
-    var catList = Object.keys(cats).sort().map(function(c) { return '<span class="frisch-stat-cat">' + esc(c) + ' <b>' + cats[c] + '</b></span>'; }).join('');
-    stats.innerHTML = '<span class="frisch-stat-total">' + total + ' Eintraege</span>' + catList;
-  }
+  var cards = getFrischCards();
+  var lanes = getOrderedLanes();
 
-  if (filtered.length === 0 && frischData.length === 0) {
-    grid.innerHTML = '<div class="frisch-empty"><p>Noch keine Eintraege</p><p style="color:var(--text-muted);font-size:13px">Klicke auf "+ Neu" um den frischen Backlog zu befuellen</p></div>';
-    return;
-  }
-
-  if (filtered.length === 0) {
-    grid.innerHTML = '<div class="frisch-empty"><p>Keine Eintraege in dieser Kategorie</p></div>';
-    return;
-  }
-
-  // Group by category
-  var groups = {};
-  filtered.forEach(function(item, idx) {
-    var cat = item.category || 'Ohne Kategorie';
-    if (!groups[cat]) groups[cat] = [];
-    groups[cat].push({ item: item, idx: frischData.indexOf(item) });
-  });
-
-  var html = '';
-  Object.keys(groups).sort().forEach(function(cat) {
-    html += '<div class="frisch-group">';
-    html += '<div class="frisch-group-header">' + esc(cat) + ' <span class="frisch-group-count">' + groups[cat].length + '</span></div>';
-    groups[cat].forEach(function(entry) {
-      var item = entry.item;
-      var idx = entry.idx;
-      var pClass = item.priority === 'hoch' ? 'frisch-prio-high' : item.priority === 'kritisch' ? 'frisch-prio-critical' : '';
-      html += '<div class="frisch-card ' + pClass + '" data-idx="' + idx + '" onclick="editFrischItem(' + idx + ')">';
-      html += '<div class="frisch-card-header">';
-      html += '<span class="frisch-card-id">' + esc(item.id || '') + '</span>';
-      if (item.priority) html += '<span class="frisch-card-prio ' + pClass + '">' + esc(item.priority) + '</span>';
-      html += '<span class="frisch-card-status">' + esc(item.status || 'offen') + '</span>';
-      html += '<button class="frisch-del-btn" onclick="event.stopPropagation();deleteFrischItem(' + idx + ')" title="Loeschen">&times;</button>';
-      html += '</div>';
-      html += '<div class="frisch-card-title">' + esc(item.title) + '</div>';
-      if (item.description) html += '<div class="frisch-card-desc">' + esc(item.description) + '</div>';
-      html += '</div>';
+  grid.innerHTML = lanes.map(function(lane) {
+    var all = Object.values(cards).filter(function(c) {
+      return !c.archived && !c.deletedAt && (lane.isHeute ? (c.todayFlag || c.lane === 'HE') : lane.isJetzt ? (c.lane === 'JZ') : c.lane === lane.id);
     });
-    html += '</div>';
+
+    var active = all.filter(function(c) { return c.status !== 'erledigt'; }).sort(function(a,b) { return (a.order||0) - (b.order||0); });
+    var isCol = _frischCollapsed[lane.id];
+
+    var ch = active.map(function(c) { return renderCardItem(c, lane.color); }).join('') || '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
+
+    var hasCards = active.length > 0;
+
+    return '<div class="lane' + (isCol ? ' lane-collapsed' : '') + (hasCards ? ' lane-has-cards' : '') + '" data-lane="' + lane.id + '">' +
+      '<div class="lane-header" onclick="toggleFrischCollapse(\'' + lane.id + '\')" style="cursor:pointer">' +
+      '<span class="lane-title">' + esc(lane.name) + '</span>' +
+      '<span class="lane-count">' + active.length + '</span>' +
+      '<button class="btn-add-card" onclick="event.stopPropagation();addFrischCard(\'' + lane.id + '\')">+ Karte</button>' +
+      '<button class="lane-collapse" onclick="event.stopPropagation();toggleFrischCollapse(\'' + lane.id + '\')">' + (isCol ? '\u25b6' : '\u25bc') + '</button>' +
+      '</div>' +
+      '<div class="lane-body' + (isCol ? ' collapsed' : '') + '">' + ch + '</div></div>';
+  }).join('');
+
+  // Click handlers for cards
+  grid.querySelectorAll('.card-item').forEach(function(el) {
+    el.addEventListener('click', function() { openFrischCardModal(el.dataset.id); });
   });
-  grid.innerHTML = html;
 }
 
-var FRISCH_CATEGORIES = ['Feature','Infrastruktur','Integration','Automation','RAG','KI','Sicherheit','Projekte','Plan'];
+function toggleFrischCollapse(laneId) {
+  _frischCollapsed[laneId] = !_frischCollapsed[laneId];
+  renderFrischTab();
+}
 
-function addFrischItem() {
-  var title = prompt('Titel:');
+function toggleFrischView() {
+  var grid = document.getElementById('frisch-grid');
+  var tab = document.getElementById('tab-frisch');
+  var btn = document.getElementById('frisch-view-toggle');
+  if (!grid || !tab) return;
+  grid.classList.toggle('kanban-board');
+  tab.classList.toggle('board-active');
+  if (btn) btn.textContent = grid.classList.contains('kanban-board') ? 'Grid-Ansicht' : 'Board-Ansicht';
+}
+
+function addFrischCard(laneId) {
+  var title = prompt('Titel der neuen Karte:');
   if (!title || !title.trim()) return;
-  var catChoice = prompt('Kategorie (' + FRISCH_CATEGORIES.join(', ') + '):') || 'Feature';
-  var priority = prompt('Prioritaet (niedrig/mittel/hoch/kritisch):') || 'mittel';
-  var description = prompt('Beschreibung (optional):') || '';
 
-  var maxId = 0;
-  frischData.forEach(function(i) { var n = parseInt((i.id || '').replace('BF-', '')); if (n > maxId) maxId = n; });
-  var id = 'BF-' + (maxId + 1);
+  // Generate ID: lane prefix + sequence
+  var maxSeq = 0;
+  Object.values(_frischCards).forEach(function(c) {
+    if (c.lane === laneId) {
+      var n = parseInt((c.id || '').replace(/[A-Z]+/, ''));
+      if (n > maxSeq) maxSeq = n;
+    }
+  });
+  var id = laneId + String(maxSeq + 1).padStart(3, '0');
 
-  frischData.push({
+  _frischCards[id] = {
     id: id,
     title: title.trim(),
-    category: catChoice.trim(),
-    priority: priority.trim(),
+    lane: laneId,
     status: 'offen',
-    description: description.trim(),
-    createdAt: new Date().toISOString()
-  });
+    order: (maxSeq + 1) * 1000,
+    createdAt: new Date().toISOString().split('T')[0]
+  };
 
-  saveFrischData();
+  saveFrischCards();
 }
 
-function editFrischItem(idx) {
-  var item = frischData[idx];
-  if (!item) return;
-  var title = prompt('Titel:', item.title);
+function openFrischCardModal(cardId) {
+  var card = _frischCards[cardId];
+  if (!card) return;
+  // Reuse the existing card modal but for frisch cards
+  var title = prompt('Titel:', card.title);
   if (title === null) return;
-  var cat = prompt('Kategorie:', item.category || '');
-  if (cat === null) return;
-  var prio = prompt('Prioritaet (niedrig/mittel/hoch/kritisch):', item.priority || 'mittel');
-  if (prio === null) return;
-  var desc = prompt('Beschreibung:', item.description || '');
-  if (desc === null) return;
-  var status = prompt('Status (offen/in-arbeit/erledigt/blockiert):', item.status || 'offen');
-  if (status === null) return;
-
-  item.title = title.trim();
-  item.category = cat.trim();
-  item.priority = prio.trim();
-  item.description = desc.trim();
-  item.status = status.trim();
-  item.updatedAt = new Date().toISOString();
-
-  saveFrischData();
+  card.title = title.trim();
+  var status = prompt('Status (offen/in-arbeit/erledigt/blockiert):', card.status || 'offen');
+  if (status !== null) card.status = status.trim();
+  card.updatedAt = new Date().toISOString();
+  saveFrischCards();
 }
 
-async function deleteFrischItem(idx) {
-  if (!confirm('Eintrag "' + frischData[idx].title + '" loeschen?')) return;
-  frischData.splice(idx, 1);
-  saveFrischData();
-}
-
-async function saveFrischData() {
+async function saveFrischCards() {
   try {
-    var content = btoa(unescape(encodeURIComponent(JSON.stringify(frischData, null, 2))));
+    var payload = JSON.stringify({ cards: _frischCards }, null, 2);
+    var content = btoa(unescape(encodeURIComponent(payload)));
     var resp = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/backlog-fresh.json', {
       method: 'PUT',
       headers: {
@@ -7142,12 +7125,12 @@ async function saveFrischData() {
       body: JSON.stringify({
         message: 'update backlog-fresh.json',
         content: content,
-        sha: frischSHA
+        sha: _frischSHA
       })
     });
     if (!resp.ok) throw new Error('PUT failed: ' + resp.status);
     var data = await resp.json();
-    frischSHA = data.content.sha;
+    _frischSHA = data.content.sha;
     renderFrischTab();
   } catch(e) {
     alert('Speichern fehlgeschlagen: ' + e.message);
