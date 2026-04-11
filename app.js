@@ -7038,7 +7038,7 @@ async function renderFrischTab() {
     var active = all.filter(function(c) { return c.status !== 'erledigt'; }).sort(function(a,b) { return (a.order||0) - (b.order||0); });
     var isCol = _frischCollapsed[lane.id];
 
-    var ch = active.map(function(c) { return renderCardItem(c, lane.color); }).join('') || '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
+    var ch = active.map(function(c) { return renderFrischCardItem(c); }).join('') || '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
 
     var hasCards = active.length > 0;
 
@@ -7052,10 +7052,33 @@ async function renderFrischTab() {
       '<div class="lane-body' + (isCol ? ' collapsed' : '') + '">' + ch + '</div></div>';
   }).join('');
 
-  // Click handlers for cards
-  grid.querySelectorAll('.card-item').forEach(function(el) {
-    el.addEventListener('click', function() { openFrischCardModal(el.dataset.id); });
-  });
+  // Click handlers are inline via onclick in renderFrischCardItem
+}
+
+function renderFrischCardItem(card) {
+  var statusColors = {offen:'156,163,175', blockiert:'239,68,68', 'in-arbeit':'245,158,11', erledigt:'34,197,94'};
+  var stRgb = statusColors[card.status] || statusColors.offen;
+  var bgStyle = 'background:rgba(' + stRgb + ',0.12);';
+  var statusCls = 'status-' + (card.status || 'offen');
+  var dateBadge = card.createdAt ? '<span class="card-date-cr">' + esc(card.createdAt) + '</span>' : '';
+
+  return '<div class="card-item card-' + statusCls + '" data-id="' + esc(card.id) + '" style="position:relative;' + bgStyle + '" onclick="openFrischCardModal(\'' + esc(card.id) + '\')">' +
+    '<div style="flex:1;min-width:0;">' +
+    '<div style="display:flex;align-items:center;gap:10px;">' +
+    '<span class="card-prefix">' + esc(card.id) + '</span>' +
+    '<span class="card-title">' + esc(card.title || '(kein Titel)') + '</span>' +
+    '<span class="status-dot ' + statusCls + '"></span>' +
+    '</div>' +
+    (dateBadge ? '<div class="card-dates">' + dateBadge + '</div>' : '') +
+    '</div>' +
+    '<button class="frisch-del-btn" onclick="event.stopPropagation();deleteFrischCard(\'' + esc(card.id) + '\')" title="Loeschen">&times;</button>' +
+    '</div>';
+}
+
+function deleteFrischCard(cardId) {
+  if (!confirm('Karte "' + cardId + '" loeschen?')) return;
+  delete _frischCards[cardId];
+  saveFrischCards();
 }
 
 function toggleFrischCollapse(laneId) {
