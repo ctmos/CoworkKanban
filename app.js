@@ -5188,6 +5188,36 @@ document.addEventListener('keydown', function(e) {
 
     }
 
+    // V2 card modal
+    var v2Modal = document.getElementById('v2-modal-overlay');
+    if (v2Modal && v2Modal.classList.contains('open')) {
+      document.getElementById('v2m-save').click(); return;
+    }
+
+    // V2 project modal
+    var v2pModal = document.getElementById('v2p-modal-overlay');
+    if (v2pModal && v2pModal.classList.contains('open')) {
+      document.getElementById('v2pm-save').click(); return;
+    }
+
+    // Patient modal
+    var patModal = document.getElementById('pat-modal-overlay');
+    if (patModal && patModal.classList.contains('open')) {
+      document.getElementById('pm-save').click(); return;
+    }
+
+    // Project modal
+    var projModal = document.getElementById('proj-modal-overlay');
+    if (projModal && projModal.classList.contains('open')) {
+      document.getElementById('pjm-save').click(); return;
+    }
+
+    // Collect modal
+    var colModal = document.getElementById('collect-modal-overlay');
+    if (colModal && colModal.classList.contains('open')) {
+      document.getElementById('colm-save').click(); return;
+    }
+
   }
 
 });
