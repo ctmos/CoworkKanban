@@ -1604,6 +1604,80 @@ function copyBoxContent(boxId) {
     if (btn) { btn.textContent = '\u2713 Kopiert'; setTimeout(function(){ btn.textContent = '\u2398 Copy'; }, 1500); }
   });
 }
+// --- Dokumente-Box: Manifest laden + Download mit Entschluesselung ---
+var DOCS_BASE = 'https://app.moser.ai/docs/';
+function loadPatientDocs(code) {
+  var listEl = document.getElementById('doc-list-' + code);
+  var statusEl = document.getElementById('doc-status-' + code);
+  if (!listEl || !statusEl) return;
+  fetch(DOCS_BASE + code + '/manifest.json', {mode:'cors'})
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(manifest){
+      if (!manifest.length) { statusEl.textContent = 'Keine Dokumente'; return; }
+      statusEl.textContent = manifest.length + ' Dokument(e)';
+      var html = '';
+      manifest.forEach(function(doc){
+        var label = doc.original_name || doc.filename;
+        var typeLabel = doc.type === 'vgprep' ? 'VG-Vorbereitung' : doc.type === 'vgreport' ? 'VG-Bericht' : doc.type;
+        html += '<div class="doc-item">'
+          + '<span class="doc-type-badge">' + esc(typeLabel) + '</span>'
+          + '<span class="doc-name">' + esc(label) + '</span>'
+          + '<button class="doc-dl-btn" onclick="downloadEncDoc(\x27'+esc(code)+'\x27,\x27'+esc(doc.filename)+'\x27,\x27'+esc(doc.original_name)+'\x27)">Download</button>'
+          + '</div>';
+      });
+      listEl.innerHTML = html;
+    })
+    .catch(function(){
+      statusEl.textContent = 'Keine Dokumente';
+      listEl.innerHTML = '';
+    });
+}
+function downloadEncDoc(code, encFilename, originalName) {
+  var btn = event.target;
+  btn.textContent = 'Entschluessle...';
+  btn.disabled = true;
+  fetch(DOCS_BASE + code + '/' + encFilename, {mode:'cors'})
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+    .then(function(buf){
+      var data = new Uint8Array(buf);
+      var iv = data.slice(0, 12);
+      var ct = data.slice(12);
+      return _getDocKey().then(function(key){
+        return crypto.subtle.decrypt({name:'AES-GCM', iv:iv}, key, ct);
+      });
+    })
+    .then(function(decrypted){
+      var blob = new Blob([decrypted], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = originalName || 'dokument.docx';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      btn.textContent = 'Download';
+      btn.disabled = false;
+    })
+    .catch(function(e){
+      btn.textContent = 'Fehler';
+      setTimeout(function(){ btn.textContent = 'Download'; btn.disabled = false; }, 2000);
+    });
+}
+var _docKeyCache = null;
+function _getDocKey() {
+  if (_docKeyCache) return Promise.resolve(_docKeyCache);
+  var pin = localStorage.getItem('lifeos_pin') || '';
+  var enc = new TextEncoder();
+  var salt = enc.encode('lifeos-patient-enc');
+  return crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey'])
+    .then(function(baseKey){
+      return crypto.subtle.deriveKey(
+        {name:'PBKDF2', salt:salt, iterations:100000, hash:'SHA-256'},
+        baseKey, {name:'AES-GCM', length:256}, false, ['decrypt']
+      );
+    })
+    .then(function(key){ _docKeyCache = key; return key; });
+}
+
 function changeEntryType(entryId, newType) {
   var patients = getPatients().map(migratePatientEntries);
   var pat = patients.find(function(p){ return p.id === _patCurrentId; });
@@ -1770,6 +1844,16 @@ function showPatientDetail(patId) {
     }
     html += '</div>';
   }
+
+  // --- DOKUMENTE BOX (Hetzner encrypted docs) ---
+  html += '<div class="doc-box" id="doc-box-'+esc(pat.code)+'">'
+    + '<div class="doc-box-header">'
+    + '<span class="doc-box-title">Dokumente</span>'
+    + '<span class="doc-box-status" id="doc-status-'+esc(pat.code)+'">Lade...</span>'
+    + '</div>'
+    + '<div class="doc-box-list" id="doc-list-'+esc(pat.code)+'"></div>'
+    + '</div>';
+  loadPatientDocs(pat.code);
 
   html += renderLinkedTasks('linkedPatient', pat.code);
 
