@@ -3623,6 +3623,12 @@ function migrateIKData(ik) {
     if (!ik.officeHoursPrep) ik.officeHoursPrep = [];
     ik.version = 3;
   }
+  if (v < 4) {
+    if (!ik.courses) ik.courses = {};
+    if (!ik.assignments) ik.assignments = {};
+    if (!ik.scrapeStatus) ik.scrapeStatus = {};
+    ik.version = 4;
+  }
   return ik;
 }
 
@@ -3706,18 +3712,23 @@ function ikTriggerScrape() {
 }
 
 // Section 1: Automation Pipeline (Scraping-Status Banner)
-function renderIKAutomationPipeline() {
-  var state = {};
-  try { state = JSON.parse(localStorage.getItem('ikScrapeState') || '{}'); } catch(e) {}
+function renderIKAutomationPipeline(ik) {
+  var localState = {};
+  try { localState = JSON.parse(localStorage.getItem('ikScrapeState') || '{}'); } catch(e) {}
+  var dataState = ik.scrapeStatus || {};
+  var state = localState.status === 'requested' ? localState : (dataState.status ? dataState : localState);
   var status = state.status || 'idle';
   var colors = {idle:'#6b7280', requested:'#f59e0b', running:'#3b82f6', done:'#10b981', error:'#ef4444'};
-  var labels = {idle:'Noch nie gescraped', requested:'Scrape angefragt', running:'Scrape l\u00e4uft\u2026', done:'Letzter Scrape erfolgreich', error:'Scrape fehlgeschlagen'};
+  var labels = {idle:'Noch nie gescraped', requested:'Scrape angefragt', running:'Scrape läuft\u2026', done:'Letzter Scrape erfolgreich', error:'Scrape fehlgeschlagen'};
   var h = '<div class="ik-scrape-banner" style="border-left:4px solid ' + (colors[status]||'#6b7280') + ';">';
   h += '<div class="ik-scrape-status">';
   h += '<span class="ik-scrape-dot" style="background:' + (colors[status]||'#6b7280') + ';"></span>';
   h += '<span>' + (labels[status]||status) + '</span>';
-  if (state.lastRun) h += '<span class="ik-scrape-ts">' + _ikFmtDate(state.lastRun) + '</span>';
-  if (state.itemsFound) h += '<span class="ik-scrape-count">' + state.itemsFound + ' Items</span>';
+  var lastRun = state.lastRun || dataState.lastRun;
+  if (lastRun) h += '<span class="ik-scrape-ts">' + _ikFmtDate(lastRun) + '</span>';
+  var itemsFound = state.itemsFound || dataState.itemsFound;
+  if (itemsFound) h += '<span class="ik-scrape-count">' + itemsFound + ' Items</span>';
+  if (dataState.module) h += '<span class="ik-scrape-count">' + esc(dataState.module) + '</span>';
   h += '</div>';
   h += '<button class="ik-scrape-btn" onclick="ikTriggerScrape()">Scrape starten</button>';
   h += '</div>';
@@ -3764,6 +3775,15 @@ function renderIKMissionControl(ik) {
 }
 
 // Section 3: Kurs-Mirror (Progressive Disclosure)
+function _ikTypeIcon(type) {
+  var icons = {video:'\uD83C\uDFAC', discussion:'\uD83D\uDCAC', reading:'\uD83D\uDCDA', quiz:'\u270F\uFE0F', minilesson:'\uD83C\uDF93', reflection:'\uD83E\uDDD8', assignment:'\uD83D\uDCDD', resources:'\uD83D\uDCC2', poll:'\uD83D\uDCCA'};
+  return icons[type] || '\uD83D\uDCC4';
+}
+function _ikTypeLabel(type) {
+  var labels = {video:'Video', discussion:'Diskussion', reading:'Lektüre', quiz:'Quiz', minilesson:'Mini-Lesson', reflection:'Reflexion', assignment:'Assignment', resources:'Ressourcen', poll:'Umfrage'};
+  return labels[type] || type;
+}
+
 function renderIKKursMirror(ik) {
   var h = '<details class="ik-section">';
   h += '<summary class="ik-section-title">Kurs-Mirror</summary>';
@@ -3772,15 +3792,50 @@ function renderIKKursMirror(ik) {
     var isActive = c.status === 'active';
     h += '<details' + (isActive?' open':'') + ' class="ik-km-course">';
     h += '<summary class="ik-km-course-title" style="color:' + (c.color||'var(--text)') + ';">' + esc(c.shortName || ck);
-    if (c.started) h += ' <span class="ik-km-meta">(seit ' + _ikFmtDateShort(c.started) + ')</span>';
-    else if (c.starts) h += ' <span class="ik-km-meta">(Start: ' + _ikFmtDateShort(c.starts) + ')</span>';
+    if (c.facilitator) h += ' <span class="ik-km-meta">(' + esc(c.facilitator) + ')</span>';
+    if (c.started) h += ' <span class="ik-km-meta">seit ' + _ikFmtDateShort(c.started) + '</span>';
+    else if (c.starts) h += ' <span class="ik-km-meta">Start: ' + _ikFmtDateShort(c.starts) + '</span>';
     h += '</summary>';
     (c.modules || []).forEach(function(mod) {
-      var statusIcon = mod.status === 'locked' ? '\uD83D\uDD12' : mod.status === 'open' ? '\uD83D\uDCD6' : '\u2705';
-      h += '<details class="ik-km-module">';
+      var statusIcon = mod.status === 'locked' ? '\uD83D\uDD12' : mod.status === 'completed' ? '\u2705' : '\uD83D\uDCD6';
+      var isOpenMod = mod.status === 'open';
+      h += '<details' + (isOpenMod?' open':'') + ' class="ik-km-module">';
       h += '<summary class="ik-km-module-title">' + statusIcon + ' ' + esc(mod.id + ': ' + mod.title) + ' <span class="ik-km-hours">~' + mod.hours + 'h</span></summary>';
       h += '<div class="ik-km-module-desc">' + esc(mod.description || '') + '</div>';
-      h += '<div class="ik-km-placeholder">Volltext wird nach Scrape hier angezeigt.</div>';
+      var items = mod.items || [];
+      if (items.length === 0) {
+        h += '<div class="ik-km-placeholder">Keine Items vorhanden.</div>';
+      } else {
+        h += '<div class="ik-km-items">';
+        items.forEach(function(item) {
+          var tKey = 'km_' + item.id;
+          var done = isIkDone(tKey);
+          var hasContent = item.content && item.content.length > 0;
+          if (hasContent) {
+            h += '<details class="ik-km-item' + (done?' ik-done':'') + '">';
+            h += '<summary class="ik-km-item-header">';
+          } else {
+            h += '<div class="ik-km-item' + (done?' ik-done':'') + '">';
+            h += '<div class="ik-km-item-header">';
+          }
+          h += '<input type="checkbox" class="ik-checkbox" ' + (done?'checked':'') + ' onchange="event.stopPropagation();toggleIkDone(\'' + tKey + '\')"/>';
+          h += '<span class="ik-km-item-icon">' + _ikTypeIcon(item.type) + '</span>';
+          h += '<span class="ik-km-item-title">' + esc(item.title) + '</span>';
+          h += '<span class="ik-km-item-meta">';
+          if (item.required) h += '<span class="ik-badge ik-badge-req">Pflicht</span>';
+          h += '<span class="ik-km-item-type">' + _ikTypeLabel(item.type) + '</span>';
+          h += '<span class="ik-km-item-dur">' + esc(item.duration) + '</span>';
+          h += '</span>';
+          if (hasContent) {
+            h += '</summary>';
+            h += '<div class="ik-km-content">' + parseSimpleMarkdown(item.content) + '</div>';
+            h += '</details>';
+          } else {
+            h += '</div></div>';
+          }
+        });
+        h += '</div>';
+      }
       h += '</details>';
     });
     if (!isActive && c.starts) {
@@ -3849,25 +3904,41 @@ function renderIKAssignmentStudio(ik) {
   var h = '<details class="ik-section">';
   h += '<summary class="ik-section-title">Assignment Studio</summary>';
   h += '<div class="ik-as-warn">Assignments werden NIE automatisch abgegeben. Immer Draft reviewen, dann selbst auf Emeritus einreichen.</div>';
-  var schedule = (ik.schedule || []).filter(function(ev) { return ev.type === 'deadline' && (ev.title||'').toLowerCase().indexOf('assignment') > -1; });
-  if (schedule.length > 0) {
+  var assignments = ik.assignments || {};
+  var keys = Object.keys(assignments).sort();
+  if (keys.length > 0) {
     h += '<div class="ik-as-assignments">';
-    schedule.forEach(function(ev) {
-      var isPast = new Date(ev.date) < new Date();
-      h += '<div class="ik-as-card' + (isPast?' ik-done':'') + '">';
-      h += '<div class="ik-as-title">' + esc(ev.title) + '</div>';
-      h += '<div class="ik-as-deadline">' + (isPast ? 'Eingereicht' : 'Fällig: ' + _ikFmtDate(ev.date) + ' (' + _ikCountdown(ev.date) + ')') + '</div>';
-      if (ev.url) h += '<a href="' + esc(ev.url) + '" target="_blank" class="ik-as-link">Auf Emeritus öffnen</a>';
+    keys.forEach(function(k) {
+      var a = assignments[k];
+      var isSubmitted = a.status === 'submitted';
+      var isDraft = a.status === 'draft';
+      h += '<div class="ik-as-card' + (isSubmitted?' ik-done':'') + '">';
+      h += '<div class="ik-as-title">Assignment ' + esc(k) + ': ' + esc(a.title) + '</div>';
+      if (isSubmitted) {
+        h += '<div class="ik-as-deadline">\u2705 Eingereicht ' + _ikFmtDateShort(a.submittedDate) + ' (' + a.wordCount + ' Wörter)</div>';
+      } else if (isDraft && a.deadline) {
+        h += '<div class="ik-as-deadline">Fällig: ' + _ikFmtDate(a.deadline) + ' (' + _ikCountdown(a.deadline) + ')</div>';
+        h += '<div class="ik-as-draft-info">\u270F\uFE0F Draft bereit (' + a.wordCount + ' Wörter) - Review + Einreichen durch Christian</div>';
+      } else if (a.deadline) {
+        h += '<div class="ik-as-deadline">Fällig: ' + _ikFmtDate(a.deadline) + ' (' + _ikCountdown(a.deadline) + ')</div>';
+      }
+      if (isDraft && a.rubricCriteria) {
+        h += '<div class="ik-as-rubric">';
+        h += '<div class="ik-as-subtitle">Rubrik-Check</div>';
+        a.rubricCriteria.forEach(function(rc) {
+          var icon = rc.status === 'complete' ? '\u2705' : '\u26A0\uFE0F';
+          h += '<div class="ik-as-rubric-item">' + icon + ' <strong>' + esc(rc.name) + '</strong>';
+          if (rc.notes) h += ' <span class="ik-as-rubric-note">' + esc(rc.notes) + '</span>';
+          h += '</div>';
+        });
+        h += '</div>';
+      }
       h += '</div>';
     });
     h += '</div>';
   } else {
-    h += '<div class="ik-mc-empty">Keine anstehenden Assignments.</div>';
+    h += '<div class="ik-mc-empty">Keine Assignments vorhanden.</div>';
   }
-  h += '<div class="ik-as-section">';
-  h += '<div class="ik-as-subtitle">Referenz: Eingereichte Arbeiten</div>';
-  h += '<div class="ik-as-ref">Assignment 1.1: Scoping an AI Opportunity (eingereicht 08.04.2026)</div>';
-  h += '</div>';
   h += '</details>';
   return h;
 }
@@ -3897,7 +3968,7 @@ function renderImperialKI(container) {
   if (!ik) { container.innerHTML = '<div class="empty-state">Keine Daten.</div>'; return; }
 
   var html = '';
-  html += renderIKAutomationPipeline();
+  html += renderIKAutomationPipeline(ik);
   html += renderIKMissionControl(ik);
   html += renderIKKursMirror(ik);
   html += renderIKDiskussionsRadar(ik);
