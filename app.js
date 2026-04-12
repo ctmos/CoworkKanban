@@ -3535,6 +3535,10 @@ function migrateIKData(ik) {
     if (!ik.drafts) ik.drafts = [];
     ik.version = 2;
   }
+  if (v < 3) {
+    if (!ik.officeHoursPrep) ik.officeHoursPrep = [];
+    ik.version = 3;
+  }
   return ik;
 }
 
@@ -3587,1176 +3591,237 @@ function ikCopyDraft(draftId) {
   });
 }
 
-// ── COCKPIT SHOWCASE 2.0 (nicht-funktional, Mock-Daten, zum Diskutieren) ──
-function _csToggle(id) {
-  var el = document.getElementById(id);
-  if (!el) return;
-  el.classList.toggle('cs-hidden');
-  var btn = document.querySelector('[data-cs-toggle="' + id + '"]');
-  if (btn) btn.textContent = el.classList.contains('cs-hidden') ? 'Showcase einblenden' : 'Showcase ausblenden';
-  try { localStorage.setItem('cs_hidden_' + id, el.classList.contains('cs-hidden') ? '1' : '0'); } catch(e){}
+// ── IMPERIALKI SECTIONS ──
+
+function _ikCountdown(dateStr) {
+  var d = new Date(dateStr);
+  var diff = d - new Date();
+  if (diff <= 0) return 'vorbei';
+  var days = Math.floor(diff / 86400000);
+  var hours = Math.floor((diff % 86400000) / 3600000);
+  if (days > 0) return 'in ' + days + (days === 1 ? ' Tag' : ' Tagen') + ', ' + hours + ' Std.';
+  var mins = Math.floor((diff % 3600000) / 60000);
+  return 'in ' + hours + ' Std. ' + mins + ' Min.';
 }
-function _csVote(featureId, vote) {
-  var key = 'cs_vote_' + featureId;
-  try { localStorage.setItem(key, vote); } catch(e){}
-  var el = document.querySelector('[data-cs-feature="' + featureId + '"]');
-  if (el) {
-    el.querySelectorAll('.cs-vote-btn').forEach(function(b){ b.classList.remove('cs-vote-active'); });
-    var pick = el.querySelector('[data-cs-vote="' + vote + '"]');
-    if (pick) pick.classList.add('cs-vote-active');
-  }
+function _ikFmtDate(dateStr) {
+  var d = new Date(dateStr);
+  var hasTime = dateStr.indexOf('T') > -1 && dateStr.indexOf('T00:00:00') === -1;
+  var datePart = d.toLocaleDateString('de-CH', {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
+  if (hasTime) return datePart + ', ' + d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'}) + ' Uhr';
+  return datePart;
 }
-function _csVoted(featureId) { try { return localStorage.getItem('cs_vote_' + featureId) || ''; } catch(e){ return ''; } }
-
-function renderCockpitShowcase() {
-  var hidden = false;
-  try { hidden = localStorage.getItem('cs_hidden_cockpit-showcase-root') === '1'; } catch(e){}
-  var html = '';
-
-  // ── HEADER ──
-  html += '<div class="cs-shell">';
-  html += '<div class="cs-banner">';
-  html += '<div class="cs-banner-left">';
-  html += '<div class="cs-banner-title">ImperialKI Cockpit <span class="cs-tag">Showcase 2.0</span></div>';
-  html += '<div class="cs-banner-sub">Prototyp - keine Live-Daten, keine Pipeline. Alles Mockup zum Diskutieren. Sieben wir gemeinsam aus, was real wird.</div>';
-  html += '</div>';
-  html += '<button class="cs-banner-toggle" data-cs-toggle="cockpit-showcase-root" onclick="_csToggle(\'cockpit-showcase-root\')">' + (hidden ? 'Showcase einblenden' : 'Showcase ausblenden') + '</button>';
-  html += '</div>';
-
-  html += '<div id="cockpit-showcase-root" class="cs-root' + (hidden ? ' cs-hidden' : '') + '">';
-
-  // ── 1. MISSION CONTROL ──
-  html += '<div class="cs-mc">';
-  html += '<div class="cs-mc-cell"><div class="cs-mc-num">12<span class="cs-mc-den">/16</span></div><div class="cs-mc-label">Modul 1 erledigt</div><div class="cs-mc-bar"><div class="cs-mc-bar-fill" style="width:75%"></div></div></div>';
-  html += '<div class="cs-mc-cell cs-mc-warn"><div class="cs-mc-num">23<span class="cs-mc-den">h 14m</span></div><div class="cs-mc-label">Bis Assignment 1.1</div><div class="cs-mc-sub">Donnerstag 09.04. 18:29 MESZ</div></div>';
-  html += '<div class="cs-mc-cell"><div class="cs-mc-num">3</div><div class="cs-mc-label">Aktionen heute</div><div class="cs-mc-sub">Assignment + 1 Diskussion + Survey</div></div>';
-  html += '<div class="cs-mc-cell cs-mc-good"><div class="cs-mc-num">94<span class="cs-mc-den">%</span></div><div class="cs-mc-label">Pass-Wahrscheinlichkeit</div><div class="cs-mc-sub">Modul 1 (Self-Audit, Mock)</div></div>';
-  html += '</div>';
-
-  html += '<div class="cs-grid">';
-
-  // ── 2. SPRACH-DNA VAULT ──
-  html += '<details open class="cs-card cs-card-voice" data-cs-feature="voice-dna">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">DNA</span><span class="cs-card-title">Sprach-DNA Vault</span><span class="cs-card-meta">DE + EN aus Aufgabe 1.1</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-voice-row">';
-  html += '<div class="cs-voice-col"><div class="cs-voice-flag">DE</div><blockquote class="cs-voice-quote">Patrick - was ein Zufall, gleiche Klinik. Habe deinen Post zu AI in der Psychotherapie gerade gelesen und dachte direkt: das ist genau die Diskussion die wir vor Ort eigentlich haben sollten. Was mich besonders interessiert: wie siehst Du die Reibung zwischen Ambient Listening und der therapeutischen Beziehung?</blockquote></div>';
-  html += '<div class="cs-voice-col"><div class="cs-voice-flag">EN</div><blockquote class="cs-voice-quote">I am a clinical psychologist based in Switzerland, currently working at Klinik Barmelweid - a psychiatric and rehabilitation clinic in the canton of Aargau - where I focus on psychosomatic medicine and trauma-related disorders. I have been fascinated by the intersection of technology and healthcare for as long as I can remember.</blockquote></div>';
-  html += '</div>';
-  html += '<div class="cs-voice-meta">';
-  html += '<div class="cs-voice-pill">Bindestrich-Einschuebe</div>';
-  html += '<div class="cs-voice-pill">"ich will" statt "ich moechte"</div>';
-  html += '<div class="cs-voice-pill">DE/EN organisch gemischt</div>';
-  html += '<div class="cs-voice-pill">":)" als Schluss-Signal</div>';
-  html += '<div class="cs-voice-pill">Reflexion + Big Picture</div>';
-  html += '<div class="cs-voice-pill cs-voice-pill-bad">kein "leverage"</div>';
-  html += '<div class="cs-voice-pill cs-voice-pill-bad">kein "Selbstverstaendlich"</div>';
-  html += '<div class="cs-voice-pill cs-voice-pill-bad">keine Em-Dashes</div>';
-  html += '</div>';
-  html += '<div class="cs-voice-note">Verbunden mit /myhumanvoice Skill in KITT - jeder Forum-Post + Assignment-Draft laeuft durch diese DNA bevor er Dir gezeigt wird.</div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 3. KURS-MIRROR ──
-  html += '<details open class="cs-card cs-card-mirror" data-cs-feature="course-mirror">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">M1</span><span class="cs-card-title">Kurs-Mirror Modul 1</span><span class="cs-card-meta">12 erledigt / 4 offen</span></summary>';
-  html += '<div class="cs-card-body">';
-  var done12 = [
-    {t:'Module 1: Introduction', h:'Video 1.1 (Brendan, 1:06)', sum:'Kursueberblick: 40 Jahre AI-Historie, Transformer-Aera, ethische Spannungsfelder.'},
-    {t:'Foundations of AI in Healthcare', h:'Videos 1.2-1.3 + Poll 1.1', sum:'AI-Evolution, Healthcare-Anwendungen, Admin-Streamlining, Patient-facing Use Cases.'},
-    {t:'Mini-Lesson 1.1: Process Mapping', h:'Pflicht', sum:'6-Schritt-Methode zur Visualisierung klinischer Workflows. 4 Symbole: Step, Decision, Problem, Arrow.'},
-    {t:'Understanding AI Models', h:'Video 1.4 + Poll 1.2', sum:'Taxonomie: Supervised, Unsupervised, Knowledge-based, Hybrid. Stärken und Limits jeder Klasse.'},
-    {t:'Mini-Lesson 1.2: Model Validation', h:'Pflicht', sum:'Sensitivity, Specificity, PPV, NPV, ROC/AUC, F1, Overfitting. Klinisches Verstaendnis.'},
-    {t:'Building & Evaluating AI Models', h:'Video 1.5 + Reading 1.1', sum:'Wang 2024 (Lancet): Transformer-basierte Lung-Cancer-Detection aus EHR. Externe Validierung als Knackpunkt.'},
-    {t:'Try-It 1.1: Which Model Fits?', h:'Aktivität', sum:'Quiz-aehnliche Selbstpruefung zur Modell-Auswahl. Feedback war positiv.'},
-    {t:'Video 1.6: Bias and Ethics', h:'Pflicht', sum:'Datenbias, Algorithmen-Bias, Fairness-Metriken, Black-Box-Problem, Accountability.'},
-    {t:'Reflection 1.1: Bias Audit', h:'Reflexion', sum:'Eigene Use Cases gegen Bias-Risiken pruefen.'},
-    {t:'Video 1.7: Strategic Recap', h:'Abschluss', sum:'Modul-1-Synthesis: was Leadership ueber AI wissen muss bevor das Adoption-Playbook startet.'},
-    {t:'Module 1: Resources', h:'Bibliografie', sum:'Goodfellow, FDA GMLP, FHIR Specs, Lancet Cases, SNOMED CT.'},
-    {t:'Module 1: Glossary', h:'28 Begriffe', sum:'AlphaFold, BERT, EHR, FHIR, LLM, ROC, SNOMED CT, Transformer und 20 weitere.'}
-  ];
-  done12.forEach(function(it){
-    html += '<details class="cs-mirror-item cs-mirror-done">';
-    html += '<summary><span class="cs-mirror-check">erledigt</span><span class="cs-mirror-title">' + esc(it.t) + '</span><span class="cs-mirror-h">' + esc(it.h) + '</span></summary>';
-    html += '<div class="cs-mirror-sum">' + esc(it.sum) + '</div>';
-    html += '<div class="cs-mirror-actions"><button class="cs-mini-btn">Audio-Zusammenfassung</button><button class="cs-mini-btn">Karteikarte anlegen</button><button class="cs-mini-btn">Tiefer recherchieren</button></div>';
-    html += '</details>';
-  });
-  var open4 = [
-    {t:'Assignment 1.1: Scoping an AI Opportunity', h:'DUE 09.04. 18:29 MESZ', sum:'400-600 Worte, 2 Dokumente (Playbook + Process Map), 5 Bewertungskriterien. Christians Use Case: Behandlungsplanung DPP Barmelweid.', urgent:true},
-    {t:'Discussion 1.1: Where could AI help?', h:'Optional, empfohlen', sum:'42 Posts in der Diskussion. Christians Antwort: Voice-DNA-Draft fertig, wartet auf Freigabe.'},
-    {t:'Module 1: Feedback Survey', h:'~5 Min', sum:'Standard Emeritus-Umfrage. Pro forma.'},
-    {t:'Module 1: Q&A Discussion Board', h:'Optional', sum:'Fragen sammeln + an Luca Parisi richten.'}
-  ];
-  open4.forEach(function(it){
-    html += '<details class="cs-mirror-item cs-mirror-open' + (it.urgent ? ' cs-mirror-urgent' : '') + '">';
-    html += '<summary><span class="cs-mirror-check">offen</span><span class="cs-mirror-title">' + esc(it.t) + '</span><span class="cs-mirror-h">' + esc(it.h) + '</span></summary>';
-    html += '<div class="cs-mirror-sum">' + esc(it.sum) + '</div>';
-    html += '<div class="cs-mirror-actions"><button class="cs-mini-btn">Draft generieren</button><button class="cs-mini-btn">Pre-Grade</button><button class="cs-mini-btn">Kontext laden</button></div>';
-    html += '</details>';
-  });
-  html += '</div>';
-  html += '</details>';
-
-  // ── 4. DEUTSCHE LERN-DESTILLATE ──
-  html += '<details class="cs-card cs-card-learn" data-cs-feature="learn-distill">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">DE</span><span class="cs-card-title">Deutsche Lern-Destillate</span><span class="cs-card-meta">Mini-Lessons + Glossar + Reading auf DE</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<details class="cs-learn"><summary>Mini-Lesson 1.1: Process Mapping (DE-Destillat)</summary><div class="cs-learn-body">Process Mapping ist die strukturierte Visualisierung eines klinischen Workflows. Du brauchst 4 Symbole: Schritt (Rechteck), Entscheidung (Raute), Problem (Stern), Pfeil. Sechs Schritte: 1) Scope festlegen - wo faengt der Prozess an, wo hoert er auf. 2) Stakeholder identifizieren - wer ist beteiligt. 3) Schritte chronologisch sammeln, oft per Interview oder Shadowing. 4) Entscheidungspunkte einzeichnen. 5) Pain Points markieren - wo wartet der Patient, wo gibt es Doppelarbeit. 6) Mit dem Team validieren. Fuer dein Assignment: dokumentiere die Behandlungsplanung in der Psychosomatik und markier die drei Stellen wo AI greifen koennte.</div></details>';
-  html += '<details class="cs-learn"><summary>Mini-Lesson 1.2: Model Validation (DE-Destillat)</summary><div class="cs-learn-body">Sensitivity sagt: wie viele tatsaechlich Kranke erkennt das Modell. Specificity sagt: wie viele tatsaechlich Gesunde laesst es korrekt durch. PPV ist die Wahrscheinlichkeit dass ein positives Ergebnis stimmt - haengt von Praevalenz ab. NPV das Gegenstueck. ROC zeigt das Trade-off zwischen Sensitivity und 1-Specificity an verschiedenen Schwellen. AUC fasst das in einer Zahl zusammen - 0.5 ist Zufall, 1.0 ist perfekt. F1 verbindet Precision und Recall. Overfitting passiert wenn das Modell die Trainingsdaten auswendig lernt statt zu generalisieren - Cross-Validation und externe Test-Sets sind die Antwort.</div></details>';
-  html += '<details class="cs-learn"><summary>Reading 1.1: Wang 2024 - Lung Cancer Transformer (DE-Zusammenfassung)</summary><div class="cs-learn-body">Wang et al. (2024, Lancet) haben einen Transformer auf Hausarzt-EHR-Daten trainiert um Lungenkrebs frueher zu erkennen als Standard-Triage. Kernbefund: das Modell erkennt subtile Muster im Verlauf der Konsultationen die menschlichen GPs entgehen. Externe Validierung kritisch - das Modell musste auf einem zweiten, unabhaengigen Datensatz funktionieren. Leadership-Lehre: technisch gut heisst nicht klinisch nuetzlich. Equity-Frage: erkennt das Modell Risiken in unterversorgten Populationen genauso? Workflow-Integration und Staff-Akzeptanz waren die echten Bottlenecks, nicht der Algorithmus.</div></details>';
-  html += '<details class="cs-learn"><summary>Glossar 28 Begriffe (DE-Erklaerung)</summary><div class="cs-learn-body cs-learn-glossary">';
-  var gloss = [
-    ['AlphaFold','DeepMinds Modell zur Proteinfaltungs-Vorhersage. Hat ein 50-Jahre-Problem der Strukturbiologie geloest.'],
-    ['BERT','Bidirectional Encoder Representations from Transformers. Sprachmodell von Google, oft Basis fuer klinische NLP-Pipelines.'],
-    ['Deep Learning','Neuronale Netze mit vielen Schichten. Lernt Repraesentationen aus Rohdaten ohne Feature-Engineering.'],
-    ['EHR','Electronic Health Record. Digitale Patientenakte. Hauptquelle fuer Healthcare-AI-Trainingsdaten.'],
-    ['Explainability','Faehigkeit eines Modells, seine Entscheidung nachvollziehbar zu machen. In Medizin oft regulatorisch gefordert.'],
-    ['FHIR','Fast Healthcare Interoperability Resources. Standard fuer Datenaustausch zwischen Systemen.'],
-    ['HL7','Health Level Seven. Aelterer Standard fuer klinische Daten, oft Vorlaeufer von FHIR.'],
-    ['LLM','Large Language Model. GPT, Claude, Llama. Generative Sprachmodelle die in Healthcare zunehmend fuer Dokumentation eingesetzt werden.'],
-    ['Overfitting','Modell lernt Trainingsdaten auswendig statt zu generalisieren. Symptom: gut auf Training, schlecht auf neuen Daten.'],
-    ['ROC Curve','Receiver Operating Characteristic. Trade-off zwischen Sensitivity und 1-Specificity an verschiedenen Cutoffs.'],
-    ['SNOMED CT','Klinische Terminologie. Standardvokabular fuer Diagnosen, Symptome, Prozeduren.'],
-    ['Transformer','Neuronale Architektur mit Self-Attention. Basis aller modernen LLMs und vieler klinischer NLP-Modelle.'],
-    ['MYCIN','Historisches Expertensystem (1970er) fuer Antibiotika-Verschreibung. Wichtiger Vorlaeufer.'],
-    ['CDS Hooks','Standard fuer Clinical Decision Support Integration in EHR-Workflows.']
-  ];
-  gloss.forEach(function(g){ html += '<div class="cs-gloss-item"><strong>' + esc(g[0]) + '</strong> - ' + esc(g[1]) + '</div>'; });
-  html += '<div class="cs-gloss-more">14 weitere Begriffe (Autoencoder, Bayesian Systems, Answer Set Programming, FHIR, NPV/PPV, F1, ...) - im echten Cockpit alle anklickbar mit Karteikarte + Audio.</div>';
-  html += '</div></details>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 5. DISKUSSIONS-RADAR ──
-  html += '<details class="cs-card cs-card-radar" data-cs-feature="discussion-radar">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">RAD</span><span class="cs-card-title">Diskussions-Radar</span><span class="cs-card-meta">2 aktive Threads, 117 Posts gesamt</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-disc-row">';
-  html += '<div class="cs-disc-card">';
-  html += '<div class="cs-disc-title">Meet Your Fellow Learners</div>';
-  html += '<div class="cs-disc-stats">75 Posts | 23 ungelesen | Christian: <strong>gepostet 30.03.</strong> | 3 Likes auf eigenem Post</div>';
-  html += '<div class="cs-disc-bar"><div class="cs-disc-bar-fill" style="width:31%"></div></div>';
-  html += '<div class="cs-disc-list">';
-  html += '<div class="cs-disc-line"><span class="cs-disc-name">Patrick Koeck</span><span class="cs-disc-role">Psychiater, Klinik Barmelweid</span><span class="cs-disc-action">Reply-Draft fertig</span></div>';
-  html += '<div class="cs-disc-line"><span class="cs-disc-name">Owen Roodenburg</span><span class="cs-disc-role">CMO ICU, Melbourne</span><span class="cs-disc-action">Reply-Draft fertig</span></div>';
-  html += '<div class="cs-disc-line"><span class="cs-disc-name">Ezani Taib</span><span class="cs-disc-role">CEO IJN Malaysia</span><span class="cs-disc-action">Reply-Draft fertig</span></div>';
-  html += '<div class="cs-disc-line"><span class="cs-disc-name">Helgi Sigmundsson</span><span class="cs-disc-role">Gastro, Iowa</span><span class="cs-disc-action">Reply-Vorschlag</span></div>';
-  html += '</div>';
-  html += '</div>';
-  html += '<div class="cs-disc-card">';
-  html += '<div class="cs-disc-title">M1: Where Could AI Help in Your Organisation?</div>';
-  html += '<div class="cs-disc-stats">42 Posts | 42 ungelesen | Christian: <strong>noch nicht gepostet</strong> | Draft (EN, Voice DNA) ready</div>';
-  html += '<div class="cs-disc-bar"><div class="cs-disc-bar-fill cs-disc-bar-warn" style="width:0%"></div></div>';
-  html += '<div class="cs-disc-themes"><strong>Use Cases der Cohort:</strong> Ambient AI Scribing, Respiratory Triage NHS, Echocardiography Primary Care, Dermatological Screening, Cardiac Surgery Risk Prediction, Member Contact Center AI</div>';
-  html += '<div class="cs-disc-themes"><strong>Christians Position (Draft):</strong> AI scribe fuer Behandlungsplanung in der Psychosomatik. Reflektive Arbeit, aber repetitiv in Struktur. Mensch-im-Loop bleibt zentral.</div>';
-  html += '</div>';
-  html += '</div>';
-  html += '<div class="cs-disc-note">Real wuerde Hermine taeglich um 06:00 alle Discussions scrapen, neue Posts diff-detecten, in RAG indizieren und Reply-Drafts in Christians Voice DNA generieren. Du siehst nur das Ergebnis: 3 fertige Drafts auf dem Smartphone.</div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 6. FORUM-BATTERY ──
-  html += '<details class="cs-card cs-card-battery" data-cs-feature="forum-battery">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">FB</span><span class="cs-card-title">Forum-Battery (Pre-Drafts)</span><span class="cs-card-meta">4 fertige Replies, durch /myhumanvoice gefiltert</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-draft">';
-  html += '<div class="cs-draft-head"><span class="cs-draft-to">An Patrick Koeck (DE)</span><span class="cs-draft-pill">Score 9/10</span></div>';
-  html += '<div class="cs-draft-text">Patrick - was ein Zufall, gleiche Klinik. Habe deinen Post zu AI in der Psychotherapie gerade gelesen und dachte direkt: das ist genau die Diskussion die wir vor Ort eigentlich haben sollten. Was mich besonders interessiert: wie siehst Du die Reibung zwischen Ambient Listening und der therapeutischen Beziehung? Das ist bei uns in der Psychosomatik der Hauptknoten. Lass uns das mal vor Ort vertiefen - vielleicht beim Mittagessen?</div>';
-  html += '<div class="cs-draft-actions"><button class="cs-mini-btn">Kopieren</button><button class="cs-mini-btn">Auf Emeritus posten</button><button class="cs-mini-btn">Neu generieren</button></div>';
-  html += '</div>';
-  html += '<div class="cs-draft">';
-  html += '<div class="cs-draft-head"><span class="cs-draft-to">An Owen Roodenburg (EN)</span><span class="cs-draft-pill">Score 9/10</span></div>';
-  html += '<div class="cs-draft-text">Owen - your shift from ICU to CMO is exactly the move I want to think harder about. From the patient bed to the system level, the AI conversation looks completely different. In psychiatric rehab the bottleneck is rarely the model - it is therapist trust and the time AI gives back to the relationship. Curious how you handle that translation: what convinces a clinician at 3am, vs. what convinces a CMO board.</div>';
-  html += '<div class="cs-draft-actions"><button class="cs-mini-btn">Kopieren</button><button class="cs-mini-btn">Auf Emeritus posten</button><button class="cs-mini-btn">Neu generieren</button></div>';
-  html += '</div>';
-  html += '<div class="cs-draft">';
-  html += '<div class="cs-draft-head"><span class="cs-draft-to">An Ezani Taib (EN)</span><span class="cs-draft-pill">Score 8/10</span></div>';
-  html += '<div class="cs-draft-text">Ezani - EMRAM Level 7 is impressive context for everything you write. Cardiac surgery and psychiatric rehab look unrelated, but the AI question rhymes: how do you keep the clinical judgment central when the model is faster? At Barmelweid we are early. Would love to hear which step in your AI adoption you would do differently in hindsight - the kind of thing we never read in the case studies.</div>';
-  html += '<div class="cs-draft-actions"><button class="cs-mini-btn">Kopieren</button><button class="cs-mini-btn">Auf Emeritus posten</button><button class="cs-mini-btn">Neu generieren</button></div>';
-  html += '</div>';
-  html += '<div class="cs-draft">';
-  html += '<div class="cs-draft-head"><span class="cs-draft-to">M1 Where Could AI Help (EN)</span><span class="cs-draft-pill">Score 9/10</span></div>';
-  html += '<div class="cs-draft-text">One specific opening for AI at Klinik Barmelweid - psychosomatic medicine, my department. We currently spend a lot of time on treatment planning documentation: synthesising assessment, history, and treatment phase into a coherent plan. It is reflective work, but also repetitive in structure. An AI scribe that drafts the structural skeleton from the assessment would free clinical time for the therapeutic relationship - which is the actual asset. The risk: losing the reflective layer that planning forces. So the design has to keep the clinician in the loop, not replace the thinking. Curious how others handle this trade-off.</div>';
-  html += '<div class="cs-draft-actions"><button class="cs-mini-btn">Kopieren</button><button class="cs-mini-btn">Auf Emeritus posten</button><button class="cs-mini-btn">Neu generieren</button></div>';
-  html += '</div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 7. ASSIGNMENT 1.1 STUDIO ──
-  html += '<details class="cs-card cs-card-assign" data-cs-feature="assignment-studio">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">A1</span><span class="cs-card-title">Assignment 1.1 Studio</span><span class="cs-card-meta">DUE morgen 18:29 - Pre-Grading 38/50</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-assign-row">';
-  html += '<div class="cs-assign-col">';
-  html += '<div class="cs-assign-h">Use-Case-Vorschlag</div>';
-  html += '<div class="cs-assign-text"><strong>Behandlungsplanung DPP Barmelweid</strong> - die strukturierte Synthese aus Erstgespraech, Vorbericht, Diagnostik und Therapieplan. Repetitiv genug fuer AI-Unterstuetzung, sensibel genug um die Reflexionsschicht zu schuetzen.</div>';
-  html += '<div class="cs-assign-h">Process Map (Mock-Vorschau)</div>';
-  html += '<div class="cs-assign-pmap">';
-  html += '<div class="cs-pmap-step">Eintritt + Erstgespraech</div>';
-  html += '<div class="cs-pmap-arrow">↓</div>';
-  html += '<div class="cs-pmap-step">Diagnostik (3-5 Tage)</div>';
-  html += '<div class="cs-pmap-arrow">↓</div>';
-  html += '<div class="cs-pmap-decision">Komplexitaet?</div>';
-  html += '<div class="cs-pmap-arrow">↓</div>';
-  html += '<div class="cs-pmap-step cs-pmap-pain">Behandlungsplanung (~90 min, manuell)</div>';
-  html += '<div class="cs-pmap-arrow">↓</div>';
-  html += '<div class="cs-pmap-step">Teamkonferenz</div>';
-  html += '<div class="cs-pmap-arrow">↓</div>';
-  html += '<div class="cs-pmap-step">Patientengespraech + Plan</div>';
-  html += '</div>';
-  html += '</div>';
-  html += '<div class="cs-assign-col">';
-  html += '<div class="cs-assign-h">Pre-Grading (Self-Audit gegen Rubrik)</div>';
-  html += '<div class="cs-rubric"><div class="cs-rubric-row"><span>Problem Identification</span><div class="cs-rubric-bar"><div style="width:80%"></div></div><span>8/10</span></div>';
-  html += '<div class="cs-rubric-row"><span>Process Mapping</span><div class="cs-rubric-bar"><div style="width:60%" class="cs-rubric-warn"></div></div><span>6/10</span></div>';
-  html += '<div class="cs-rubric-row"><span>AI Design</span><div class="cs-rubric-bar"><div style="width:90%" class="cs-rubric-good"></div></div><span>9/10</span></div>';
-  html += '<div class="cs-rubric-row"><span>Requirements</span><div class="cs-rubric-bar"><div style="width:70%"></div></div><span>7/10</span></div>';
-  html += '<div class="cs-rubric-row"><span>Reflection + Leadership</span><div class="cs-rubric-bar"><div style="width:80%"></div></div><span>8/10</span></div>';
-  html += '</div>';
-  html += '<div class="cs-assign-meta">Wortzahl: <strong>542 / 600</strong> | Abgabe-Format: 2 PDFs (Playbook + Map) | Pass-Threshold: 30/50 (Mock)</div>';
-  html += '<div class="cs-assign-h">Verbesserungs-Vorschlaege</div>';
-  html += '<ul class="cs-assign-fix"><li>Process Mapping: 3 Decision Points fehlen - im Moment nur lineare Sequenz</li><li>Requirements: Cyber Security explizit erwaehnen (DSGVO + Klinik-IT)</li><li>Stakeholder-Map: Pflege ist im Draft nicht erwaehnt, sollte rein</li></ul>';
-  html += '</div>';
-  html += '</div>';
-  html += '<div class="cs-assign-actions"><button class="cs-mini-btn">Vollen Draft oeffnen</button><button class="cs-mini-btn">Process Map exportieren (PNG)</button><button class="cs-mini-btn">An Hannah/Patrick zur Review</button></div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 8. AUDIO BRIEFING ──
-  html += '<details class="cs-card cs-card-audio" data-cs-feature="audio-briefing">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">SND</span><span class="cs-card-title">Audio-Briefing</span><span class="cs-card-meta">5 min taeglich, Voice DNA Sprecher</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-audio-row">';
-  html += '<div class="cs-audio-card">';
-  html += '<div class="cs-audio-date">Heute, 08.04.2026 - 06:30</div>';
-  html += '<div class="cs-audio-title">Modul 1 - Was Du heute brauchst</div>';
-  html += '<div class="cs-audio-meta">5:12 min | DE | TTS-Mock</div>';
-  html += '<div class="cs-audio-player"><div class="cs-audio-btn">▶</div><div class="cs-audio-bar"><div class="cs-audio-bar-fill" style="width:34%"></div></div><span class="cs-audio-time">1:46 / 5:12</span></div>';
-  html += '<div class="cs-audio-script">"Guten Morgen Christian. Heute ist Mittwoch der 8. April. Modul 1 ist zu 75 Prozent durch. Drei Sachen: Assignment 1.1 ist morgen um 18 Uhr 29 faellig - der Draft liegt im Studio bereit, Pre-Grading 38 von 50, knapp ueber Pass. Das schwaechste Kriterium ist die Process Map, da fehlen drei Decision Points. Zweitens: Patrick Koeck hat in der Meet-Fellow-Learners-Diskussion einen Post zu AI in der Psychotherapie reingestellt - gleiche Klinik, wert zu antworten. Drittens: das Q-and-A-Board ist immer noch leer auf Deiner Seite. Empfehlung fuer heute: 90 Minuten Assignment finalisieren, dann Patrick antworten, Survey + Q-and-A in 10 Minuten am Abend abhaken. Mehr nicht. Tag wird gut."</div>';
-  html += '</div>';
-  html += '<div class="cs-audio-card">';
-  html += '<div class="cs-audio-date">Gestern, 07.04. - 06:30</div>';
-  html += '<div class="cs-audio-title">Modul 1 - Tag 11</div>';
-  html += '<div class="cs-audio-meta">4:48 min</div>';
-  html += '<div class="cs-audio-player"><div class="cs-audio-btn">▶</div><div class="cs-audio-bar"><div class="cs-audio-bar-fill" style="width:0%"></div></div><span class="cs-audio-time">0:00 / 4:48</span></div>';
-  html += '</div>';
-  html += '</div>';
-  html += '<div class="cs-audio-note">Real-Setup: Hermine generiert das Briefing-Script aus den letzten 24h Diff (Scrape + Voice DNA + Pre-Grading). OpenAI TTS oder ElevenLabs rendert es als MP3, push auf S3 + Telegram + LifeOS. Du hoerst es beim Fruehstueck, machst nichts.</div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 9. UPGRADE BASICS KURS ──
-  html += '<details class="cs-card cs-card-upgrade" data-cs-feature="upgrade-basics">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">UP</span><span class="cs-card-title">Upgrade Basics - Eigener Mini-Kurs</span><span class="cs-card-meta">14 Lektionen, ~2h gesamt</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-upgrade-intro">Selbstgebauter Foundation-Kurs - die Basics die ImperialKI voraussetzt aber nicht erklaert. In Deiner Sprach-DNA, mit Audio + Karteikarten + Mini-Quiz. Lokal generiert aus den ImperialKI-Materialien, keinen externen Anbieter.</div>';
-  var upLessons = [
-    {n:'01', t:'Was ist Supervised Learning?', d:'Klassifikation vs Regression, Trainingsdaten, Labels, Verlustfunktion. 8 min Audio + Quiz.'},
-    {n:'02', t:'Tokens, Embeddings, Attention', d:'Wie ein LLM Sprache zerlegt und Bedeutung rekonstruiert. 10 min.'},
-    {n:'03', t:'ROC, AUC, F1 verstehen', d:'Diagnostik-Metriken intuitiv. Wann ist 90% gut, wann ist 90% gefaehrlich. 9 min.'},
-    {n:'04', t:'Bias in klinischen Datensaetzen', d:'Wo Daten luegen. Beispiele aus Dermatologie und Mental Health. 8 min.'},
-    {n:'05', t:'Train/Validation/Test Split', d:'Warum dreigeteilt, warum extern. 7 min.'},
-    {n:'06', t:'Overfitting + Regularisierung', d:'Wenn das Modell auswendig lernt. Dropout, L1/L2 in einer Minute erklaert. 8 min.'},
-    {n:'07', t:'FHIR + EHR Integration', d:'Wie AI ueberhaupt an klinische Daten kommt. 10 min.'},
-    {n:'08', t:'Process Mapping in der Praxis', d:'Vertiefung von Mini-Lesson 1.1 mit zwei Klinik-Beispielen. 12 min.'},
-    {n:'09', t:'Stakeholder-Mapping fuer Klinikprojekte', d:'Wer muss frueh dabei sein, wer kommt spaeter. 9 min.'},
-    {n:'10', t:'EU AI Act Crashkurs', d:'High-Risk-Klassifikation, was das fuer Dich bedeutet. 10 min.'},
-    {n:'11', t:'GDPR und klinische AI', d:'DSGVO-Realitaet in CH und EU. 9 min.'},
-    {n:'12', t:'Human-in-the-Loop Design', d:'Wann der Mensch entscheidet, wann das Modell. 10 min.'},
-    {n:'13', t:'Bewertungsstrategien fuer klinische Modelle', d:'Vor Deployment, waehrend, nach. 11 min.'},
-    {n:'14', t:'Change Management bei AI-Adoption', d:'Warum die Haelfte der Pilots scheitert - und wie nicht. 12 min.'}
-  ];
-  html += '<div class="cs-upgrade-list">';
-  upLessons.forEach(function(l){
-    html += '<div class="cs-upgrade-item"><span class="cs-upgrade-num">' + l.n + '</span><div class="cs-upgrade-text"><div class="cs-upgrade-t">' + esc(l.t) + '</div><div class="cs-upgrade-d">' + esc(l.d) + '</div></div><button class="cs-mini-btn">Audio starten</button></div>';
-  });
-  html += '</div>';
-  html += '<div class="cs-upgrade-note">Vorschlag: Hermine generiert die Lektionen einmalig auf Lightsail (TTS via OpenAI). Speicherung als MP3 + Markdown + Quiz-JSON in cowork-data. Total ca. 2h Audio, alles offline-faehig im LifeOS.</div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 10. KARTEIKARTEN (Spaced Repetition) ──
-  html += '<details class="cs-card cs-card-cards" data-cs-feature="flashcards">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">SR</span><span class="cs-card-title">Karteikarten + Spaced Repetition</span><span class="cs-card-meta">28 Glossar + Konzepte aus Modul 1</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-cards-stats">';
-  html += '<div class="cs-cards-stat"><div class="cs-cards-num">28</div><div>Aktive Karten</div></div>';
-  html += '<div class="cs-cards-stat"><div class="cs-cards-num">7</div><div>Heute faellig (5 min)</div></div>';
-  html += '<div class="cs-cards-stat"><div class="cs-cards-num">0</div><div>Streak (Tage)</div></div>';
-  html += '<div class="cs-cards-stat"><div class="cs-cards-num">0%</div><div>Mastery</div></div>';
-  html += '</div>';
-  html += '<div class="cs-cards-preview">';
-  html += '<div class="cs-flash"><div class="cs-flash-q">Was misst eine ROC-Kurve?</div><div class="cs-flash-a">Trade-off zwischen Sensitivity (True Positive Rate) und 1-Specificity (False Positive Rate) an verschiedenen Cutoffs. AUC fasst die Kurve in einer Zahl zusammen - 0.5 ist Zufall, 1.0 ist perfekt.</div></div>';
-  html += '<div class="cs-flash"><div class="cs-flash-q">Welche 4 Symbole nutzt Process Mapping?</div><div class="cs-flash-a">Schritt (Rechteck), Entscheidung (Raute), Problem (Stern), Pfeil (Verbindung). Mehr braucht es fuer die Mini-Lesson 1.1 nicht.</div></div>';
-  html += '<div class="cs-flash"><div class="cs-flash-q">Was unterscheidet FHIR von HL7 v2?</div><div class="cs-flash-a">FHIR ist ressourcenbasiert (REST-API, JSON), modular und web-nativ. HL7 v2 ist nachrichtenbasiert, Pipe-delimited, alt aber noch verbreitet. FHIR ist der Standard fuer moderne Healthcare-AI-Integration.</div></div>';
-  html += '</div>';
-  html += '<div class="cs-cards-note">Algorithmus: FSRS (modern) oder SM-2 (klassisch). Lokal in localStorage gespeichert. Echte Karten haben Audio + Bild-Optional + Tags pro Modul.</div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 11. RECHERCHE STREAM ──
-  html += '<details class="cs-card cs-card-stream" data-cs-feature="research-stream">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">RS</span><span class="cs-card-title">Recherche-Stream</span><span class="cs-card-meta">Grok x.com + Google Deep Research</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-stream-section">';
-  html += '<div class="cs-stream-h">Heute - Grok x.com Pulse: "AI in Healthcare"</div>';
-  html += '<div class="cs-stream-item"><strong>NHS Wales</strong> - 3 Trusts pilot Ambient AI scribe. Kritik: 18% Halluzinationsrate bei Pflegenotizen.</div>';
-  html += '<div class="cs-stream-item"><strong>DiGA Update DE</strong> - 12 neue digitale Gesundheitsanwendungen registriert, 4 davon mit AI-Komponente.</div>';
-  html += '<div class="cs-stream-item"><strong>FDA</strong> - Neuer Draft Guidance fuer LLMs in Clinical Decision Support, Kommentarphase laeuft.</div>';
-  html += '<div class="cs-stream-item"><strong>Lancet</strong> - Kritisches Review zu externen Validierungen klinischer AI-Modelle. Median: nur 17% schaffen es ueber den eigenen Datensatz hinaus.</div>';
-  html += '</div>';
-  html += '<div class="cs-stream-section">';
-  html += '<div class="cs-stream-h">Google Deep Research Brief (verfuegbar)</div>';
-  html += '<div class="cs-stream-brief"><strong>Thema:</strong> AI in Psychiatric Rehabilitation Europe 2025-2026<br><strong>Umfang:</strong> 12 Seiten, 47 Quellen, 8 Case Studies<br><strong>Kernbefunde:</strong> Pilot-heavy, konzentriert in UK/DE/FR/NL. Ambient AI scribes sparen 20-35% Doku-Zeit. Multimodales Monitoring AUC 0.79 fuer Rueckfall-Praediktion. EU AI Act hochrisikoklassifiziert. EFQM-/TQM-Frameworks fuer AI Governance werden adoptiert.<br><button class="cs-mini-btn">Vollen Brief lesen</button><button class="cs-mini-btn">Audio-Version</button></div>';
-  html += '</div>';
-  html += '<div class="cs-stream-section">';
-  html += '<div class="cs-stream-h">Vorschlag: Diese Woche tiefer recherchieren</div>';
-  html += '<ul class="cs-stream-sugg"><li>Patient-facing AI in stationaerer Psychotherapie (sehr wenig Literatur)</li><li>Liability bei AI-gestuetzten Behandlungsplaenen (CH-Recht)</li><li>Pflegealltag und AI-Akzeptanz - empirische Daten</li></ul>';
-  html += '</div>';
-  html += '<div class="cs-stream-note">Real: Google Deep Research API + Grok x.com Search API + Perplexity. Hermine triggert taeglich, KITT verarbeitet die Briefs in dein RAG, Cockpit zeigt nur die Kondensate.</div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 12. COHORT MAP ──
-  html += '<details class="cs-card cs-card-cohort" data-cs-feature="cohort-map">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">58</span><span class="cs-card-title">Cohort Map</span><span class="cs-card-meta">58 Studierende, 14 Laender</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-cohort-grid">';
-  var cohortGeo = [['UK',24],['CH',3],['MY',4],['US',5],['DE',6],['NL',2],['IT',3],['IS',2],['AU',2],['FR',2],['ES',2],['JP',1],['SG',1],['Andere',1]];
-  cohortGeo.forEach(function(g){
-    html += '<div class="cs-cohort-cell"><div class="cs-cohort-flag">' + g[0] + '</div><div class="cs-cohort-num">' + g[1] + '</div></div>';
-  });
-  html += '</div>';
-  html += '<div class="cs-cohort-roles">';
-  html += '<div class="cs-cohort-role"><span class="cs-cohort-role-bar" style="width:42%"></span><span>Klinisch (Aerzte, Psychotherapeuten, Pflege)</span><strong>24</strong></div>';
-  html += '<div class="cs-cohort-role"><span class="cs-cohort-role-bar" style="width:24%"></span><span>Operations (CMO, COO, Klinikleitung)</span><strong>14</strong></div>';
-  html += '<div class="cs-cohort-role"><span class="cs-cohort-role-bar" style="width:17%"></span><span>Tech / Data (CIO, Data Manager, AI Lead)</span><strong>10</strong></div>';
-  html += '<div class="cs-cohort-role"><span class="cs-cohort-role-bar" style="width:10%"></span><span>Beratung / Pharma / Startup</span><strong>6</strong></div>';
-  html += '<div class="cs-cohort-role"><span class="cs-cohort-role-bar" style="width:7%"></span><span>Akademisch / Forschung</span><strong>4</strong></div>';
-  html += '</div>';
-  html += '<div class="cs-cohort-note">Echtes Cockpit: Klick auf Land oeffnet die Liste, klick auf Person oeffnet ihren Background + alle Posts + Voice-DNA-Reply-Vorschlag.</div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 13. NETWORKING COMPASS ──
-  html += '<details class="cs-card cs-card-net" data-cs-feature="networking">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">NC</span><span class="cs-card-title">Networking Compass</span><span class="cs-card-meta">Top 5 Kontakte fuer Christian</span></summary>';
-  html += '<div class="cs-card-body">';
-  var net = [
-    {n:'Patrick Koeck',role:'Psychiater, Klinik Barmelweid',br:'Gleiche Klinik. Gleiche Stadt. Gleiches Departement. Hoechster Hebel fuer lokalen Use Case.',next:'In nachster Woche zum Mittagessen einladen.'},
-    {n:'Owen Roodenburg',role:'CMO ICU, Melbourne',br:'Klinik-zu-System Perspektive. Selten in Cohort. Wertvoll fuer Leadership-Reflexion in Modulen 4-6.',next:'Reply auf Meet-Post + 1 Frage zur CMO-Transition.'},
-    {n:'Ezani Taib',role:'CEO IJN, Kuala Lumpur',br:'EMRAM Level 7 - eines der digital reifsten Krankenhaeuser weltweit. Lerneffekt fuer Christian sehr hoch.',next:'Spezifische Frage zum AI-Adoption-Stack stellen.'},
-    {n:'Iona Macmillan Douglas',role:'IP, Data Privacy, AI Training Rollout',br:'Brueckenfunktion zu DSGVO und EU AI Act. Wichtig fuer Modul 5.',next:'Connection-Request mit Kontext.'},
-    {n:'Luca Parisi',role:'Learning Facilitator',br:'Direkter Zugang. Jede gute Frage zaehlt. Office Hours nicht verschenken.',next:'Eine konkrete Frage in Q&A Board posten - erkennt deinen Namen.'}
-  ];
-  net.forEach(function(p,i){
-    html += '<div class="cs-net-card"><div class="cs-net-rank">' + (i+1) + '</div>';
-    html += '<div class="cs-net-body"><div class="cs-net-name">' + esc(p.n) + '</div><div class="cs-net-role">' + esc(p.role) + '</div>';
-    html += '<div class="cs-net-bridge"><strong>Bruecke:</strong> ' + esc(p.br) + '</div>';
-    html += '<div class="cs-net-next"><strong>Naechster Schritt:</strong> ' + esc(p.next) + '</div></div></div>';
-  });
-  html += '</div>';
-  html += '</details>';
-
-  // ── 14. AUTOMATION PIPELINE (Vision) ──
-  html += '<details class="cs-card cs-card-pipe" data-cs-feature="automation">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">AP</span><span class="cs-card-title">Automation Pipeline (Vision)</span><span class="cs-card-meta">Was Hermine taeglich machen wuerde</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-pipe">';
-  var steps = [
-    {t:'06:00',a:'Hermine scraped Emeritus via Browser Use',d:'Alle Module + Diskussionen + Announcements + Q&A. Diff zu gestern.'},
-    {t:'06:05',a:'Diff Detection',d:'Was ist neu seit letzter Pruefung? Posts, Replies, Likes, neue Module, Survey-Antworten.'},
-    {t:'06:08',a:'RAG Index Update',d:'Neue Inhalte ins LanceDB. Alte Versionen versioniert.'},
-    {t:'06:12',a:'Voice-DNA Drafts',d:'Fuer jeden neuen Post in einer Discussion: ein Reply-Draft in Christians Stil.'},
-    {t:'06:18',a:'Pre-Grading + Updates',d:'Falls Christian an Assignment gearbeitet hat: Self-Audit gegen Rubrik.'},
-    {t:'06:22',a:'Recherche-Stream',d:'Grok x.com + Google Deep Research: was war ueber Nacht relevant.'},
-    {t:'06:26',a:'Audio-Briefing TTS',d:'Hermine generiert das Briefing-Script, OpenAI TTS rendert MP3.'},
-    {t:'06:30',a:'Telegram + LifeOS Push',d:'1-Min Briefing Text + Audio Link. Cockpit aktualisiert.'},
-    {t:'18:00',a:'Tages-Recap',d:'Was wurde abgehakt? Was ist offen? Morgen-Vorschau.'},
-    {t:'21:00',a:'Karteikarten-Reminder',d:'7 Karten faellig - 5 Min reichen.'}
-  ];
-  steps.forEach(function(s){
-    html += '<div class="cs-pipe-step"><div class="cs-pipe-time">' + s.t + '</div><div class="cs-pipe-body"><div class="cs-pipe-action">' + esc(s.a) + '</div><div class="cs-pipe-desc">' + esc(s.d) + '</div></div></div>';
-  });
-  html += '</div>';
-  html += '<div class="cs-pipe-note">Aktiver Anteil von Christian: 5-15 Min pro Tag - Audio-Briefing hoeren, 1-2 Drafts approven, Karteikarten durchklicken. Pipeline laeuft autonom auf Hermine + Lightsail. Showcase = nicht aktiv.</div>';
-  html += '</div>';
-  html += '</details>';
-
-  // ── 15. IDEEN-BACKLOG (Was sonst noch machbar ist) ──
-  html += '<details open class="cs-card cs-card-ideas" data-cs-feature="ideas">';
-  html += '<summary class="cs-card-head"><span class="cs-icon">IB</span><span class="cs-card-title">Ideen-Backlog</span><span class="cs-card-meta">28 Vorschlaege - voten oder verwerfen</span></summary>';
-  html += '<div class="cs-card-body">';
-  html += '<div class="cs-ideas-intro">Push-the-limits-Liste. Alles realistisch oder fast realistisch mit unserem Setup. Voten: ja / vielleicht / nein. Was Du auswaehlst, baue ich danach echt.</div>';
-  var ideas = [
-    {tier:'1',id:'i01',t:'Daily Browser-Use Scrape via Hermine',d:'Taeglich 06:00 Emeritus durchsuchen, Diff erkennen, ins RAG.'},
-    {tier:'1',id:'i02',t:'Voice-DNA Forum-Drafts pre-generiert',d:'Fuer jeden neuen Post ein Reply in Deinem Stil. Du approvst nur.'},
-    {tier:'1',id:'i03',t:'Assignment Pre-Grading',d:'Self-Audit gegen die Rubrik bevor Du abgibst.'},
-    {tier:'1',id:'i04',t:'Audio-Briefing 5min taeglich',d:'OpenAI TTS oder ElevenLabs, Telegram Push.'},
-    {tier:'1',id:'i05',t:'Karteikarten + Spaced Repetition',d:'FSRS-Algorithmus, lokal in localStorage.'},
-    {tier:'1',id:'i06',t:'Deutsche Lern-Destillate aller Mini-Lessons',d:'Eine kompakte DE-Version jeder Mini-Lesson, ca. 200 Worte.'},
-    {tier:'1',id:'i07',t:'RAG-Index aller ImperialKI Materialien',d:'PDFs + Transcripts + Discussion-Volltext, durchsuchbar.'},
-    {tier:'1',id:'i08',t:'Telegram-Notifications bei Deadlines',d:'Hermine bei -7d, -3d, -24h, -2h.'},
-    {tier:'1',id:'i09',t:'Discussion Watch + Reply-Reminder',d:'Wer hat geantwortet? Wer wartet auf eine Antwort?'},
-    {tier:'1',id:'i10',t:'Networking Compass',d:'Top 5 Kontakte mit Bruecke + naechstem Schritt.'},
-    {tier:'2',id:'i11',t:'Upgrade-Basics-Mini-Kurs (14 Lektionen)',d:'Selbst generiert aus den Materialien. Audio + Quiz.'},
-    {tier:'2',id:'i12',t:'Cohort-Pulse Weekly',d:'Was diskutiert die Cohort? Trending topics + Word Cloud.'},
-    {tier:'2',id:'i13',t:'Pre-Plagiarism Check',d:'Bevor Submission durch eigenen Filter (lokal, kein externer Service).'},
-    {tier:'2',id:'i14',t:'Voice-to-Notes via Telefon',d:'Christian spricht Reflexionen am Telefon ein, Hermine transkribiert + strukturiert.'},
-    {tier:'2',id:'i15',t:'AI-Use-Case-Library Klinik Barmelweid',d:'Eigene Klinik-Use-Cases fuer alle 6 Module sammeln, taggen, verbinden.'},
-    {tier:'2',id:'i16',t:'Stakeholder-Map als Excalidraw',d:'Klick und ziehen, exportierbar fuer Assignment.'},
-    {tier:'2',id:'i17',t:'Process-Map-Generator (Excalidraw)',d:'Aus Klinik-Workflow eine Map bauen, fuer Assignment-Submissions.'},
-    {tier:'2',id:'i18',t:'Cross-Course Synthesis',d:'Verbindungen zwischen AIH (jetzt) und DTH (ab 25.06.) automatisch finden.'},
-    {tier:'2',id:'i19',t:'Klinik-Doc-Auto-Tagging',d:'Klinik-PDFs nach AI-Adoption-Reife taggen.'},
-    {tier:'2',id:'i20',t:'Live Session Calendar Sync',d:'Emeritus Live Sessions automatisch in Google Calendar.'},
-    {tier:'3',id:'i21',t:'Eigener AI-Tutor wie Brendan',d:'Voice clone des Brendan-Sprechers (legal heikel - verworfen?).'},
-    {tier:'3',id:'i22',t:'AI-Patient-Simulator',d:'Use-Cases mit simulierten Patienten validieren.'},
-    {tier:'3',id:'i23',t:'Knowledge Graph Concepts',d:'Visualisierung der Verbindungen zwischen 28 Glossar-Begriffen.'},
-    {tier:'3',id:'i24',t:'Real-time Co-Authoring',d:'Cockpit als VS-Code-Plugin, Assignment direkt im Editor.'},
-    {tier:'3',id:'i25',t:'Personalisierter Lernplan adaptiv',d:'Algorithmus passt Tagespensum an Christians Tempo an.'},
-    {tier:'3',id:'i26',t:'Patent + Paper Watch',d:'Neue Publikationen die zu Christians Use Cases passen.'},
-    {tier:'3',id:'i27',t:'Cross-Cohort Compare',d:'Wo steht Christian vs. Mittelwert (Mock-Daten - DSGVO heikel).'},
-    {tier:'3',id:'i28',t:'Forum-Sentiment-Analyse',d:'Welche Posts bekommen viel Engagement, was funktioniert.'}
-  ];
-  ideas.forEach(function(it){
-    var voted = _csVoted(it.id);
-    html += '<div class="cs-idea cs-tier-' + it.tier + '" data-cs-feature="' + it.id + '">';
-    html += '<div class="cs-idea-tier">T' + it.tier + '</div>';
-    html += '<div class="cs-idea-body"><div class="cs-idea-t">' + esc(it.t) + '</div><div class="cs-idea-d">' + esc(it.d) + '</div></div>';
-    html += '<div class="cs-vote">';
-    html += '<button class="cs-vote-btn cs-vote-yes' + (voted==='yes'?' cs-vote-active':'') + '" data-cs-vote="yes" onclick="_csVote(\'' + it.id + '\',\'yes\')">ja</button>';
-    html += '<button class="cs-vote-btn cs-vote-maybe' + (voted==='maybe'?' cs-vote-active':'') + '" data-cs-vote="maybe" onclick="_csVote(\'' + it.id + '\',\'maybe\')">vielleicht</button>';
-    html += '<button class="cs-vote-btn cs-vote-no' + (voted==='no'?' cs-vote-active':'') + '" data-cs-vote="no" onclick="_csVote(\'' + it.id + '\',\'no\')">nein</button>';
-    html += '</div>';
-    html += '</div>';
-  });
-  html += '<div class="cs-ideas-legend"><span><strong>T1</strong> heute machbar mit unserem Setup</span><span><strong>T2</strong> kleine Erweiterungen noetig</span><span><strong>T3</strong> visionaer / Limit-Push</span></div>';
-  html += '</div>';
-  html += '</details>';
-
-  html += '</div>'; // end cs-grid
-  html += '</div>'; // end cs-root
-  html += '</div>'; // end cs-shell
-
-  return html;
+function _ikFmtDateShort(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'numeric'});
+}
+function ikTriggerScrape() {
+  try {
+    localStorage.setItem('ikScrapeState', JSON.stringify({status:'requested', requestedAt: new Date().toISOString()}));
+    showImperialKITab();
+  } catch(e) {}
 }
 
-// ── COCKPIT SHOWCASE 3.0 (JARVIS + Hermine + Substrate + Coach Integration) ──
-function _csSetVersion(v) {
-  try { localStorage.setItem('cs_showcase_version', v); } catch(e){}
-  var container = document.getElementById('ik-container');
-  if (container) renderImperialKI(container);
-}
-function _csGetVersion() { try { return localStorage.getItem('cs_showcase_version') || '3'; } catch(e){ return '3'; } }
-
-function renderCockpitShowcase3() {
-  var hidden = false;
-  try { hidden = localStorage.getItem('cs_hidden_cockpit-showcase3-root') === '1'; } catch(e){}
-  var h = '';
-
-  h += '<div class="cs3-shell">';
-  h += '<div class="cs3-banner">';
-  h += '<div class="cs3-banner-left">';
-  h += '<div class="cs3-banner-title">ImperialKI Cockpit <span class="cs3-tag">Showcase 3.0</span></div>';
-  h += '<div class="cs3-banner-sub">Neues System-Backend: JARVIS v2.2 + Hermine 3-Tier + Substrate + Coach. Alles Mockup - zeigt was jetzt moeglich waere.</div>';
+// Section 1: Automation Pipeline (Scraping-Status Banner)
+function renderIKAutomationPipeline() {
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem('ikScrapeState') || '{}'); } catch(e) {}
+  var status = state.status || 'idle';
+  var colors = {idle:'#6b7280', requested:'#f59e0b', running:'#3b82f6', done:'#10b981', error:'#ef4444'};
+  var labels = {idle:'Noch nie gescraped', requested:'Scrape angefragt', running:'Scrape l\u00e4uft\u2026', done:'Letzter Scrape erfolgreich', error:'Scrape fehlgeschlagen'};
+  var h = '<div class="ik-scrape-banner" style="border-left:4px solid ' + (colors[status]||'#6b7280') + ';">';
+  h += '<div class="ik-scrape-status">';
+  h += '<span class="ik-scrape-dot" style="background:' + (colors[status]||'#6b7280') + ';"></span>';
+  h += '<span>' + (labels[status]||status) + '</span>';
+  if (state.lastRun) h += '<span class="ik-scrape-ts">' + _ikFmtDate(state.lastRun) + '</span>';
+  if (state.itemsFound) h += '<span class="ik-scrape-count">' + state.itemsFound + ' Items</span>';
   h += '</div>';
-  h += '<button class="cs-banner-toggle" data-cs-toggle="cockpit-showcase3-root" onclick="_csToggle(\'cockpit-showcase3-root\')">' + (hidden ? 'Einblenden' : 'Ausblenden') + '</button>';
+  h += '<button class="ik-scrape-btn" onclick="ikTriggerScrape()">Scrape starten</button>';
   h += '</div>';
-
-  h += '<div id="cockpit-showcase3-root" class="cs3-root' + (hidden ? ' cs-hidden' : '') + '">';
-
-  // ═══ BLOCK A: JARVIS-POWERED ═══
-  h += '<div class="cs3-block-label">JARVIS-Powered</div>';
-
-  // A1: Live System Pulse
-  h += '<details open class="cs-card" data-cs-feature="sys-pulse">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-j">J</span><span class="cs-card-title">Live System Pulse</span><span class="cs-card-meta">Echtzeit-Events aus JARVIS</span></summary>';
-  h += '<div class="cs-card-body">';
-  var pulseEvents = [
-    {t:'09:15',agent:'hermine',icon:'H',text:'Emeritus Modul 1 gescraped — 2 neue Replies in Discussion 1.1'},
-    {t:'09:18',agent:'jarvis',icon:'J',text:'Diff Detection: Owen Roodenburg hat auf Christians Post geantwortet'},
-    {t:'09:20',agent:'hermine',icon:'H',text:'Voice-DNA Reply-Draft fuer Owen generiert (Score 8/10)'},
-    {t:'09:22',agent:'kitt',icon:'K',text:'Destillat Modul 2 Video 2.1 auf Deutsch generiert'},
-    {t:'09:25',agent:'jarvis',icon:'J',text:'Knowledge Graph: 3 neue Relations extrahiert (Transformer → Fine-tuning → Healthcare NLP)'},
-    {t:'09:28',agent:'hermine',icon:'H',text:'Audio-Briefing TTS gerendert (4:52 min) — Telegram Push'},
-    {t:'09:30',agent:'jarvis',icon:'J',text:'Digest: "Hermine hat 2 neue Drafts generiert, Owen hat geantwortet, Modul 2 Material bereit"'},
-    {t:'09:31',agent:'kitt',icon:'K',text:'Pre-Grading Assignment 2.1 Draft: 41/50 — Process Map fehlt noch'}
-  ];
-  pulseEvents.forEach(function(ev){
-    h += '<div class="cs3-pulse-row"><span class="cs3-pulse-time">' + ev.t + '</span><span class="cs3-pulse-agent cs3-agent-' + ev.agent + '">' + ev.icon + '</span><span class="cs3-pulse-text">' + esc(ev.text) + '</span></div>';
-  });
-  h += '<div class="cs3-note">Real: JARVIS /api/context liefert Events in Echtzeit. Cockpit pollt alle 30s oder per WebSocket. Jeder Agent (Hermine, KITT, JARVIS) loggt automatisch.</div>';
-  h += '</div></details>';
-
-  // A2: Intent Tracker
-  h += '<details class="cs-card" data-cs-feature="intents">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-j">J</span><span class="cs-card-title">Intent Tracker</span><span class="cs-card-meta">Kurs-Ziele als JARVIS-Intents</span></summary>';
-  h += '<div class="cs-card-body">';
-  var intents = [
-    {goal:'Modul 1 komplett abschliessen',status:'active',pct:81,sub:'12/16 Items, fehlt: Discussion + Survey + Q&A + ggf. Bonus',by:'Fr 11.04.'},
-    {goal:'Discussion 1.1 posten (Voice DNA)',status:'active',pct:90,sub:'Draft fertig (Score 9/10), Freigabe durch Christian ausstehend',by:'Mo 14.04.'},
-    {goal:'Assignment 2.1 First Draft',status:'planned',pct:0,sub:'Use-Case aus M1 weiterentwickeln, Rubrik noch nicht bekannt',by:'offen'}
-  ];
-  intents.forEach(function(it){
-    var color = it.pct > 75 ? '#22c55e' : it.pct > 40 ? '#f59e0b' : 'var(--text-muted)';
-    h += '<div class="cs3-intent"><div class="cs3-intent-head"><span class="cs3-intent-goal">' + esc(it.goal) + '</span><span class="cs3-intent-status cs3-status-' + it.status + '">' + it.status + '</span></div>';
-    h += '<div class="cs3-intent-bar"><div style="width:' + it.pct + '%;background:' + color + '"></div></div>';
-    h += '<div class="cs3-intent-meta">' + esc(it.sub) + ' | Ziel: ' + esc(it.by) + '</div></div>';
-  });
-  h += '<div class="cs3-note">Real: JARVIS /api/intents (BDI-System). Christian sagt "Ich will X bis Y" → Intent wird angelegt → Hermine erinnert → Cockpit zeigt Progress.</div>';
-  h += '</div></details>';
-
-  // A3: Knowledge Graph
-  h += '<details class="cs-card" data-cs-feature="kg-view">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-j">J</span><span class="cs-card-title">Knowledge Graph</span><span class="cs-card-meta">Kurs-Konzepte als Netzwerk</span></summary>';
-  h += '<div class="cs-card-body">';
-  h += '<div class="cs3-kg">';
-  var kgNodes = [
-    {id:'transformer',label:'Transformer',x:50,y:30,cluster:'models'},
-    {id:'bert',label:'BERT',x:30,y:15,cluster:'models'},
-    {id:'llm',label:'LLM',x:70,y:15,cluster:'models'},
-    {id:'attention',label:'Attention',x:50,y:8,cluster:'models'},
-    {id:'overfit',label:'Overfitting',x:85,y:35,cluster:'validation'},
-    {id:'roc',label:'ROC/AUC',x:80,y:55,cluster:'validation'},
-    {id:'sensitivity',label:'Sensitivity',x:65,y:65,cluster:'validation'},
-    {id:'fhir',label:'FHIR',x:15,y:55,cluster:'standards'},
-    {id:'ehr',label:'EHR',x:15,y:35,cluster:'standards'},
-    {id:'snomed',label:'SNOMED CT',x:5,y:45,cluster:'standards'},
-    {id:'bias',label:'Bias',x:50,y:80,cluster:'ethics'},
-    {id:'explainability',label:'Explainability',x:35,y:80,cluster:'ethics'}
-  ];
-  kgNodes.forEach(function(n){
-    var colors = {models:'#3b82f6',validation:'#22c55e',standards:'#f59e0b',ethics:'#ef4444'};
-    h += '<div class="cs3-kg-node" style="left:' + n.x + '%;top:' + n.y + '%;border-color:' + colors[n.cluster] + ';color:' + colors[n.cluster] + '">' + n.label + '</div>';
-  });
-  h += '<div class="cs3-kg-legend"><span style="color:#3b82f6">AI Models</span><span style="color:#22c55e">Validation</span><span style="color:#f59e0b">Standards</span><span style="color:#ef4444">Ethics</span></div>';
-  h += '</div>';
-  h += '<div class="cs3-note">Real: JARVIS KG extrahiert Relations aus Digests (22+ Entities, 11+ Relations). Klick auf Node zeigt: Definition, verwandte Karten, Quellen, Karteikarte.</div>';
-  h += '</div></details>';
-
-  // A4: Cross-Agent Timeline
-  h += '<details class="cs-card" data-cs-feature="agent-timeline">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-j">J</span><span class="cs-card-title">Cross-Agent Timeline</span><span class="cs-card-meta">Wer hat was zum Kurs beigetragen</span></summary>';
-  h += '<div class="cs-card-body">';
-  var timeline = [
-    {d:'12.04.',agent:'christian',icon:'C',text:'Video 2.1 geschaut, Notizen in Coach-Tagebuch'},
-    {d:'12.04.',agent:'kitt',icon:'K',text:'Destillat Video 2.1 generiert + 8 Karteikarten angelegt'},
-    {d:'11.04.',agent:'hermine',icon:'H',text:'Emeritus gescraped: 4 neue Posts in Discussion 1.1'},
-    {d:'11.04.',agent:'hermine',icon:'H',text:'Reply-Draft fuer Owen generiert (EN, Voice DNA)'},
-    {d:'11.04.',agent:'jarvis',icon:'J',text:'Digest: "Christians Kurs-Velocity liegt ueber Durchschnitt"'},
-    {d:'10.04.',agent:'kitt',icon:'K',text:'Assignment 1.1 Pre-Grading: 38/50 → Verbesserungs-Tipps'},
-    {d:'10.04.',agent:'christian',icon:'C',text:'Assignment 1.1 eingereicht (Emeritus)'},
-    {d:'09.04.',agent:'hermine',icon:'H',text:'Audio-Briefing #7 gerendert: "Deadline heute, Draft liegt bereit"'},
-    {d:'08.04.',agent:'kitt',icon:'K',text:'Cockpit Showcase 2.0 gebaut (14 Sections)'},
-    {d:'08.04.',agent:'kitt',icon:'K',text:'Voice-DNA.md + /myhumanvoice Skill erstellt'}
-  ];
-  timeline.forEach(function(ev){
-    h += '<div class="cs3-tl-row"><span class="cs3-tl-date">' + ev.d + '</span><span class="cs3-pulse-agent cs3-agent-' + ev.agent + '">' + ev.icon + '</span><span class="cs3-tl-text">' + esc(ev.text) + '</span></div>';
-  });
-  h += '<div class="cs3-note">Real: JARVIS activity_log + system_events, gefiltert auf ImperialKI-Tags. Bisher nur im System-Tab, hier kurs-spezifisch.</div>';
-  h += '</div></details>';
-
-  // ═══ BLOCK B: HERMINE-POWERED ═══
-  h += '<div class="cs3-block-label">Hermine-Powered</div>';
-
-  // B1: Study Buddy Chat
-  h += '<details class="cs-card" data-cs-feature="study-buddy">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-h">H</span><span class="cs-card-title">Study Buddy Chat</span><span class="cs-card-meta">RAG-backed auf Kurs-Materialien</span></summary>';
-  h += '<div class="cs-card-body">';
-  h += '<div class="cs3-chat">';
-  h += '<div class="cs3-chat-msg cs3-chat-user"><div class="cs3-chat-bubble">Was ist der Unterschied zwischen Sensitivity und Specificity?</div></div>';
-  h += '<div class="cs3-chat-msg cs3-chat-ai"><div class="cs3-chat-bubble">Sensitivity misst wie viele tatsaechlich Kranke das Modell erkennt - von 100 Kranken findet es z.B. 92. Specificity misst wie viele Gesunde es korrekt durchlaesst. Hohe Sensitivity = wenig uebersehen. Hohe Specificity = wenig Fehlalarm. In der Psychiatrie willst Du meistens hohe Sensitivity - lieber einmal zu viel screenen als jemanden uebersehen.<div class="cs3-chat-src">Quelle: Mini-Lesson 1.2 + Glossar</div></div></div>';
-  h += '<div class="cs3-chat-msg cs3-chat-user"><div class="cs3-chat-bubble">Und was waere ein guter AUC-Wert fuer ein Screening-Tool?</div></div>';
-  h += '<div class="cs3-chat-msg cs3-chat-ai"><div class="cs3-chat-bubble">Wang 2024 (die Lancet-Studie aus Reading 1.1) hatte AUC 0.87 fuer Lungenkrebs-Detektion. Fuer psychiatrisches Screening zeigt die Literatur typisch 0.72-0.85. Ueber 0.80 gilt als klinisch nuetzlich, unter 0.70 ist kaum besser als Zufall.<div class="cs3-chat-src">Quellen: Reading 1.1, RAG: AI in Psych Rehab Brief</div></div></div>';
-  h += '</div>';
-  h += '<div class="cs3-chat-input"><input type="text" placeholder="Frag den Study Buddy..." disabled><button class="cs-mini-btn" disabled>Senden</button></div>';
-  h += '<div class="cs3-note">Real: RAG /query mit domain=imperialki Filter + Hermine DeepSeek fuer die Synthese. Quellen-Badge zeigt woher die Antwort kommt.</div>';
-  h += '</div></details>';
-
-  // B2: "Was wuerde Luca sagen?"
-  h += '<details class="cs-card" data-cs-feature="luca-sim">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-h">H</span><span class="cs-card-title">Was wuerde Luca sagen?</span><span class="cs-card-meta">Facilitator-Simulator aus 75+ Replies</span></summary>';
-  h += '<div class="cs-card-body">';
-  h += '<div class="cs3-luca-input"><div class="cs3-luca-label">Dein Draft:</div><div class="cs3-luca-draft">"One specific opening for AI at Klinik Barmelweid - psychosomatic medicine, my department. We currently spend a lot of time on treatment planning documentation..."</div></div>';
-  h += '<div class="cs3-luca-response">';
-  h += '<div class="cs3-luca-avatar">LP</div>';
-  h += '<div class="cs3-luca-text">';
-  h += '<div class="cs3-luca-name">Luca Parisi (simuliert, Confidence: 82%)</div>';
-  h += '"Hi Christian, this is a very well-scoped use case. Given your focus on treatment planning documentation, you may find it useful to explore how <mark>GMLP frameworks</mark> can guide the validation of such AI tools before clinical deployment. I\'d also recommend considering how <mark>human-in-the-loop design</mark> can preserve the reflective quality of planning while leveraging AI for structural components. Looking forward to seeing this develop in your Assignment."';
-  h += '<div class="cs3-luca-markers">Markierte Stellen: typische Luca-Patterns (Frameworks nennen, Validation betonen, Human-in-the-Loop)</div>';
-  h += '</div></div>';
-  h += '<div class="cs3-note">Real: 75 Luca-Replies als Few-Shot-Kontext + Christians Draft → DeepSeek generiert plausible Luca-Antwort. Hilft vor dem Posten einzuschaetzen ob der Draft auf Resonanz trifft.</div>';
-  h += '</div></details>';
-
-  // B3: Instant Draft Lab
-  h += '<details class="cs-card" data-cs-feature="draft-lab">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-h">H</span><span class="cs-card-title">Instant Draft Lab</span><span class="cs-card-meta">Ollama Sketch vs. DeepSeek Polish</span></summary>';
-  h += '<div class="cs-card-body">';
-  h += '<div class="cs3-lab-prompt"><strong>Prompt:</strong> "Reply to Owen about CMO perspective on AI trust"</div>';
-  h += '<div class="cs3-lab-split">';
-  h += '<div class="cs3-lab-col cs3-lab-fast"><div class="cs3-lab-head">Ollama Sketch <span class="cs3-lab-speed">0.8s lokal</span></div><div class="cs3-lab-text">Owen your move from ICU to CMO is interesting. Different levels see AI differently. In psych rehab the trust issue is main. How do you convince doctors vs boards?</div></div>';
-  h += '<div class="cs3-lab-col cs3-lab-polished"><div class="cs3-lab-head">DeepSeek + Voice DNA <span class="cs3-lab-speed">4.2s API</span></div><div class="cs3-lab-text">Owen - your shift from ICU to CMO is exactly the move I want to think harder about. From the patient bed to the system level, the AI conversation looks completely different. In psychiatric rehab the bottleneck is rarely the model - it is therapist trust and the time AI gives back to the relationship. Curious how you handle that translation: what convinces a clinician at 3am, vs. what convinces a CMO board.</div></div>';
-  h += '</div>';
-  h += '<div class="cs3-note">Real: Ollama Qwen2.5:1.5B lokal auf Hetzner (<1s, keine API-Kosten) vs. DeepSeek via OpenRouter (~4s, 0.02 EUR). Sketch zum schnellen Denken, Polish zum Posten.</div>';
-  h += '</div></details>';
-
-  // B4: Discussion Compass
-  h += '<details class="cs-card" data-cs-feature="disc-compass">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-h">H</span><span class="cs-card-title">Discussion Compass</span><span class="cs-card-meta">Welchem Post als naechstes antworten?</span></summary>';
-  h += '<div class="cs-card-body">';
-  var compass = [
-    {name:'Ezani Taib',score:94,reason:'CEO IJN, EMRAM Level 7 — hoechstes Lernpotential fuer Christian. Nur 1 Reply bisher, erwartet substanzielle Antworten.'},
-    {name:'Patrick Koeck',score:87,reason:'Gleiche Klinik — Face-to-Face-Hebel nach dem Kurs. Noch kein 1:1-Austausch.'},
-    {name:'Owen Roodenburg',score:83,reason:'CMO-Perspektive selten in der Cohort. Hat auf Christians Post geliked — Bruecke steht.'},
-    {name:'Helgi Sigmundsson',score:71,reason:'Gastro Iowa — andere Fachrichtung, aber fragt nach Process Mapping in seinem Post. Anschluss moeglich.'},
-    {name:'Carolyn Davies',score:65,reason:'GP UK — Primary Care AI sehr nah an Christians Use Case. Ambient Scribing.'},
-    {name:'Iona Macmillan Douglas',score:61,reason:'IP/Data Privacy — wichtig fuer Modul 5 (Governance). Langfristiger Kontakt.'}
-  ];
-  compass.forEach(function(c){
-    h += '<div class="cs3-compass-row"><div class="cs3-compass-score">' + c.score + '</div><div class="cs3-compass-body"><div class="cs3-compass-name">' + esc(c.name) + '</div><div class="cs3-compass-reason">' + esc(c.reason) + '</div></div></div>';
-  });
-  h += '<div class="cs3-note">Real: Hermine scored Posts nach Relevanz (Klinik-Naehe) x Networking-Wert (Rolle, Geografie) x Engagement-Potential (Likes, Response-Rate). Christians Zeit ist begrenzt — immer die 3 wertvollsten zuerst.</div>';
-  h += '</div></details>';
-
-  // ═══ BLOCK C: COACH-POWERED ═══
-  h += '<div class="cs3-block-label">Coach-Powered</div>';
-
-  // C1: Kurs-Reflexions-Tagebuch
-  h += '<details class="cs-card" data-cs-feature="journal">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-c">TC</span><span class="cs-card-title">Kurs-Reflexions-Tagebuch</span><span class="cs-card-meta">Direkt ins RAG via Coach-Gruppe</span></summary>';
-  h += '<div class="cs-card-body">';
-  h += '<div class="cs3-journal">';
-  h += '<div class="cs3-journal-entry"><div class="cs3-journal-date">12.04.</div><div class="cs3-journal-text">Modul 2 gestartet. Die Videos sind dichter als in M1 - mehr Taxonomie, weniger Ueberblick. Process Mapping hat sich gelohnt - das Konzept traegt mich durch die Assignments. Bin ueberrascht wie viel ich aus den Discussion-Posts anderer lerne. Ezanis EMRAM-Perspektive hat mir gezeigt dass wir in Barmelweid noch am Anfang stehen.</div></div>';
-  h += '<div class="cs3-journal-entry"><div class="cs3-journal-date">08.04.</div><div class="cs3-journal-text">Ueberwältigt von der Menge an Material. Aber Process Mapping hat Spass gemacht - das ist greifbar, das kann ich direkt in der Klinik anwenden. Assignment 1.1 Draft ist gut geworden, Pre-Grading sagt 38/50.</div></div>';
-  h += '<div class="cs3-journal-entry"><div class="cs3-journal-date">02.04.</div><div class="cs3-journal-text">Erste Woche. Orientation war gut, Luca wirkt kompetent und responsiv. Meet Fellow Learners gepostet - 3 Likes, Luca hat geantwortet. Patrick Koeck aus der gleichen Klinik! Das wird spannend.</div></div>';
-  h += '</div>';
-  h += '<div class="cs3-journal-input"><textarea placeholder="Wie laeuft der Kurs gerade?" disabled rows="2"></textarea><button class="cs-mini-btn" disabled>Speichern</button></div>';
-  h += '<div class="cs3-note">Real: Text geht via Coach-Gruppe (Tagebuch-Topic) ins RAG. Durchsuchbar, trendbar, Hermine kann Muster erkennen ("Christian schreibt oefter ueber Zeitdruck").</div>';
-  h += '</div></details>';
-
-  // C2: Stress-Radar
-  h += '<details class="cs-card" data-cs-feature="stress-radar">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-c">TC</span><span class="cs-card-title">Stress-Radar</span><span class="cs-card-meta">Kursbelastung tracken</span></summary>';
-  h += '<div class="cs-card-body">';
-  h += '<div class="cs3-radar-grid">';
-  var axes = [{label:'Zeitdruck',val:7},{label:'Verstaendnis',val:8},{label:'Motivation',val:9},{label:'Workload',val:5}];
-  axes.forEach(function(a){
-    h += '<div class="cs3-radar-axis"><div class="cs3-radar-label">' + a.label + '</div><div class="cs3-radar-bar-bg"><div class="cs3-radar-bar-fill" style="width:' + (a.val*10) + '%;background:' + (a.val>=7?'#22c55e':a.val>=4?'#f59e0b':'#ef4444') + '"></div></div><div class="cs3-radar-val">' + a.val + '/10</div></div>';
-  });
-  h += '</div>';
-  h += '<div class="cs3-radar-trend"><div class="cs3-radar-trend-label">3-Wochen-Trend</div><div class="cs3-radar-sparkline">W1: 6.2 avg → W2: 7.0 avg → W3: 7.3 avg <span style="color:#22c55e">aufwaerts</span></div></div>';
-  h += '<div class="cs3-note">Real: Coach-Gruppe Tracking-Topic. Christian klickt 4 Slider (30 Sek), Daten als JSONL. Hermine erkennt Trends und passt Tagesplan an.</div>';
-  h += '</div></details>';
-
-  // C3: Cohort-Persoenlichkeitsprofile
-  h += '<details class="cs-card" data-cs-feature="cohort-profiles">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-c">TC</span><span class="cs-card-title">Cohort-Persoenlichkeitsprofile</span><span class="cs-card-meta">Wie F&F-Wiki, fuer Kommilitonen</span></summary>';
-  h += '<div class="cs-card-body">';
-  var profiles = [
-    {name:'Owen Roodenburg',tags:['systemisch','evidenz-getrieben','schnell'],style:'Antwortet innerhalb 24h, fragt nach Daten. Mag Kontraste (Klinik vs. System). 3 Likes auf Christians Post.'},
-    {name:'Patrick Koeck',tags:['klinisch','gruppentherapie','lokal'],style:'Kurze Posts, praxisnah. Gleiche Klinik = Face-to-Face moeglich. Fokus Psychotherapie + AI.'},
-    {name:'Ezani Taib',tags:['CEO','EMRAM-7','strategisch'],style:'Schreibt ausfuehrlich, erwartet Substanz. Perspektive: Krankenhausweite AI-Adoption. Seltener Poster, aber jeder Post zaehlt.'},
-    {name:'Iona Macmillan Douglas',tags:['IP','Datenschutz','regulatorisch'],style:'Juristischer Blick. Fragt nach Compliance. Wichtig fuer Modul 5 + Assignment-Review.'},
-    {name:'Helgi Sigmundsson',tags:['Gastro','US-System','pragmatisch'],style:'Amerikanische Perspektive. Process Mapping in seinem Fachgebiet. Querverbindung moeglich.'}
-  ];
-  profiles.forEach(function(p){
-    h += '<div class="cs3-profile"><div class="cs3-profile-name">' + esc(p.name) + '</div>';
-    h += '<div class="cs3-profile-tags">';
-    p.tags.forEach(function(t){ h += '<span class="cs3-profile-tag">' + esc(t) + '</span>'; });
-    h += '</div>';
-    h += '<div class="cs3-profile-style">' + esc(p.style) + '</div></div>';
-  });
-  h += '<div class="cs3-note">Real: Gleiche Pipeline wie Coach F&F-Wiki (Sonnet-Subagenten). Input: Discussion-Posts statt WhatsApp-Chats. 22 Persoenlichkeitsprofile existieren schon fuer private Kontakte.</div>';
-  h += '</div></details>';
-
-  // ═══ BLOCK D: SUBSTRATE-POWERED ═══
-  h += '<div class="cs3-block-label">Substrate-Powered</div>';
-
-  // D1: ImperialKI als Substrate-Entities
-  h += '<details class="cs-card" data-cs-feature="entities">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-s">SE</span><span class="cs-card-title">ImperialKI als Substrate-Entities</span><span class="cs-card-meta">Echte LifeOS-Objekte mit Verlauf</span></summary>';
-  h += '<div class="cs-card-body">';
-  var entities = [
-    {type:'Assignment',name:'Assignment 1.1: Scoping an AI Opportunity',status:'erledigt',history:['01.04. angelegt','08.04. Draft fertig (Pre-Grading 38/50)','08.04. 18:29 eingereicht auf Emeritus'],tags:['M1','Playbook','DPP Barmelweid']},
-    {type:'Discussion',name:'Discussion 1.1: Where could AI help?',status:'draft-ready',history:['02.04. freigeschaltet','08.04. Voice-DNA-Draft generiert','12.04. Owen hat geantwortet'],tags:['M1','Forum','Voice DNA']},
-    {type:'Konzept',name:'Transformer',status:'gelernt',history:['03.04. Video 1.1 geschaut','04.04. Destillat generiert','05.04. Karteikarte angelegt','10.04. 3x korrekt im Spaced Repetition'],tags:['M1','Glossar','Deep Learning']}
-  ];
-  entities.forEach(function(e){
-    var statusColor = e.status==='erledigt'?'#22c55e':e.status==='draft-ready'?'#f59e0b':'#3b82f6';
-    h += '<div class="cs3-entity"><div class="cs3-entity-head"><span class="cs3-entity-type">' + e.type + '</span><span class="cs3-entity-name">' + esc(e.name) + '</span><span class="cs3-entity-status" style="background:' + statusColor + '">' + e.status + '</span></div>';
-    h += '<div class="cs3-entity-history">';
-    e.history.forEach(function(ev){ h += '<div class="cs3-entity-ev">' + esc(ev) + '</div>'; });
-    h += '</div>';
-    h += '<div class="cs3-entity-tags">';
-    e.tags.forEach(function(t){ h += '<span class="cs3-profile-tag">' + esc(t) + '</span>'; });
-    h += '</div></div>';
-  });
-  h += '<div class="cs3-note">Real: Substrate Phase 1-8 hat _history[], Entity-Badges, Activity Feed. ImperialKI-Items als echte Entities = versioniert, verknuepfbar, durchsuchbar.</div>';
-  h += '</div></details>';
-
-  // D2: Verknuepfte Kanban-Karten
-  h += '<details class="cs-card" data-cs-feature="linked-cards">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-s">SE</span><span class="cs-card-title">Verknuepfte Kanban-Karten</span><span class="cs-card-meta">IK-Lane mit Auto-Status</span></summary>';
-  h += '<div class="cs-card-body">';
-  var cards = [
-    {title:'Assignment 1.1',status:'erledigt',deadline:'09.04.',lane:'IK'},
-    {title:'Discussion 1.1 posten',status:'in-arbeit',deadline:'14.04.',lane:'IK'},
-    {title:'Modul 2 Videos schauen',status:'offen',deadline:'23.04.',lane:'IK'},
-    {title:'Assignment 2.1',status:'offen',deadline:'23.04.',lane:'IK'}
-  ];
-  h += '<div class="cs3-cards-row">';
-  cards.forEach(function(c){
-    var colors = {'erledigt':'rgba(34,197,94,0.12)','in-arbeit':'rgba(245,158,11,0.12)','offen':'rgba(156,163,175,0.12)'};
-    h += '<div class="cs3-kanban-card" style="background:' + (colors[c.status]||colors.offen) + '"><div class="cs3-kanban-title">' + esc(c.title) + '</div><div class="cs3-kanban-meta"><span class="cs3-kanban-status">' + c.status + '</span><span>bis ' + c.deadline + '</span><span class="cs3-kanban-lane">' + c.lane + '</span></div></div>';
-  });
-  h += '</div>';
-  h += '<div class="cs3-note">Real: IK-Lane existiert schon. Hermine erstellt Karten bei Modul-Freischaltung, updatet Status bei Scrape. Entity-Badges zeigen Typ (Assignment/Discussion/Video).</div>';
-  h += '</div></details>';
-
-  // ═══ BLOCK E: NEUE KREATIVE FEATURES ═══
-  h += '<div class="cs3-block-label">Kreativ-Labor</div>';
-
-  // E1: Peer Review Simulator
-  h += '<details class="cs-card" data-cs-feature="peer-review">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">PR</span><span class="cs-card-title">Peer Review Simulator</span><span class="cs-card-meta">3 AI-Personas bewerten Deinen Draft</span></summary>';
-  h += '<div class="cs-card-body">';
-  var reviewers = [
-    {name:'Prof. Streng',avatar:'PS',score:'34/50',tone:'Akademisch hart',feedback:'Die Process Map ist zu linear - echte klinische Workflows haben Feedback-Loops und parallele Pfade. Requirement Statements brauchen explizite DSGVO-Referenzen. Aber der Use Case ist praezise gewaehlt.'},
-    {name:'Kollegin Emma',avatar:'KE',score:'42/50',tone:'Praxis-Fokus',feedback:'Sehr gut gewaehlt - das ist ein echtes Problem in der Psychosomatik. Die Reflexion ist stark. Ich wuerde noch die Pflegeperspektive reinbringen - die schreiben am meisten.'},
-    {name:'Facilitator Luca',avatar:'LP',score:'40/50',tone:'Konstruktiv + Frameworks',feedback:'Well-scoped use case. Consider referencing GMLP for the validation approach. The human-in-the-loop design is promising - expand on how you would measure success beyond time saved.'}
-  ];
-  reviewers.forEach(function(r){
-    h += '<div class="cs3-reviewer"><div class="cs3-reviewer-head"><span class="cs3-reviewer-avatar">' + r.avatar + '</span><span class="cs3-reviewer-name">' + esc(r.name) + '</span><span class="cs3-reviewer-score">' + r.score + '</span><span class="cs3-reviewer-tone">' + esc(r.tone) + '</span></div>';
-    h += '<div class="cs3-reviewer-text">' + esc(r.feedback) + '</div></div>';
-  });
-  h += '<div class="cs3-note">Real: 3 DeepSeek-Calls mit verschiedenen System-Prompts (streng/praxis/luca). Luca-Persona basiert auf 75 echten Replies. Kosten: ~0.06 EUR pro Review-Runde.</div>';
-  h += '</div></details>';
-
-  // E2: Module Forecast
-  h += '<details class="cs-card" data-cs-feature="mod-forecast">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">MF</span><span class="cs-card-title">Module Forecast</span><span class="cs-card-meta">Was kommt in Modul 2-6</span></summary>';
-  h += '<div class="cs-card-body">';
-  var mods = [
-    {id:'M2',title:'Building AI Models',weeks:'W3-4',diff:7,prep:'Statistik-Basics auffrischen, Python-Grundlagen',overlap:'DTH: Implementation Strategies'},
-    {id:'M3',title:'Clinical Validation',weeks:'W5-6',diff:8,prep:'RCT-Design verstehen, FDA GMLP lesen',overlap:'DTH: Regulatory Frameworks'},
-    {id:'M4',title:'Data Governance',weeks:'W7-8',diff:6,prep:'DSGVO + EU AI Act, FHIR vertiefen',overlap:'DTH: Data Analytics'},
-    {id:'M5',title:'AI Ethics & Fairness',weeks:'W9-10',diff:7,prep:'Bias-Fallstudien, Ioana (IP/Privacy) kontaktieren',overlap:'DTH: Innovation Ethics'},
-    {id:'M6',title:'AI Strategy & Leadership',weeks:'W11-12',diff:5,prep:'Change Management Basics, Stakeholder-Mapping Barmelweid',overlap:'DTH: Digital Transformation'}
-  ];
-  mods.forEach(function(m){
-    var diffColor = m.diff>=8?'#ef4444':m.diff>=6?'#f59e0b':'#22c55e';
-    h += '<div class="cs3-mod-card"><div class="cs3-mod-head"><span class="cs3-mod-id">' + m.id + '</span><span class="cs3-mod-title">' + esc(m.title) + '</span><span class="cs3-mod-weeks">' + m.weeks + '</span></div>';
-    h += '<div class="cs3-mod-diff"><span>Schwierigkeit:</span><div class="cs3-mod-diff-bar"><div style="width:' + (m.diff*10) + '%;background:' + diffColor + '"></div></div><span>' + m.diff + '/10</span></div>';
-    h += '<div class="cs3-mod-prep"><strong>Vorbereitung:</strong> ' + esc(m.prep) + '</div>';
-    h += '<div class="cs3-mod-overlap"><strong>DTH-Overlap:</strong> ' + esc(m.overlap) + '</div>';
-    h += '</div>';
-  });
-  h += '<div class="cs3-note">Real: Curriculum-Info von der Emeritus-Seite (Session 28 gescraped) + DTH-Kurs-Overview. Schwierigkeits-Prognose basierend auf Christians Profil (Psychologie-Background, wenig Statistik).</div>';
-  h += '</div></details>';
-
-  // E3: Deep Dive Button
-  h += '<details class="cs-card" data-cs-feature="deep-dive">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">DD</span><span class="cs-card-title">Deep Dive Button</span><span class="cs-card-meta">Grok + Google DR + RAG in einem Shot</span></summary>';
-  h += '<div class="cs-card-body">';
-  h += '<div class="cs3-dd-topic"><strong>Thema:</strong> "Ambient AI Scribing in der stationaeren Psychotherapie"</div>';
-  h += '<div class="cs3-dd-sources">';
-  h += '<div class="cs3-dd-src"><div class="cs3-dd-src-head">Grok x.com (5 Treffer)</div><div class="cs3-dd-src-item">NHS Wales 3 Trusts piloten Ambient AI — 18% Halluzinationsrate</div><div class="cs3-dd-src-item">Nuance DAX vs. Abridge vs. Nabla: Vergleich in Psychiatrie-Settings</div></div>';
-  h += '<div class="cs3-dd-src"><div class="cs3-dd-src-head">Deep Research (12 Seiten)</div><div class="cs3-dd-src-item">2 RCTs in stationaerer Psychiatrie (UK, NL), AUC 0.79 Rueckfall-Praediktion</div><div class="cs3-dd-src-item">Kein einziger Pilot in CH — regulatorisches Vakuum</div></div>';
-  h += '<div class="cs3-dd-src"><div class="cs3-dd-src-head">RAG (8 Chunks)</div><div class="cs3-dd-src-item">Wang 2024 Lung Cancer Transformer als Methodologie-Template</div><div class="cs3-dd-src-item">Christians Assignment 1.1 Use-Case als Anknuepfungspunkt</div></div>';
-  h += '</div>';
-  h += '<div class="cs3-note">Real: Ein Klick → 3 parallele Queries (Grok API ~5s, Deep Research via Browser Use ~2min, RAG ~400ms) → DeepSeek konsolidiert → 5-Seiten-Brief. Kosten: ~0.50 EUR pro Deep Dive.</div>';
-  h += '</div></details>';
-
-  // E4: Spaced Repetition Radio
-  h += '<details class="cs-card" data-cs-feature="sr-radio">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">SR</span><span class="cs-card-title">Spaced Repetition Radio</span><span class="cs-card-meta">Karteikarten als Audio-Playlist</span></summary>';
-  h += '<div class="cs-card-body">';
-  h += '<div class="cs3-radio-player"><div class="cs3-radio-info"><div class="cs3-radio-title">Modul 1 — 7 faellige Karten</div><div class="cs3-radio-meta">12:34 min | DE | TTS</div></div>';
-  h += '<div class="cs3-radio-controls"><span class="cs3-radio-btn">|&lt;</span><span class="cs3-radio-btn cs3-radio-play">Play</span><span class="cs3-radio-btn">&gt;|</span></div></div>';
-  h += '<div class="cs3-radio-list">';
-  var tracks = [{q:'Was misst eine ROC-Kurve?',dur:'1:42'},{q:'4 Symbole im Process Mapping?',dur:'1:18'},{q:'FHIR vs. HL7 v2?',dur:'1:55'},{q:'Was ist Overfitting?',dur:'1:24'},{q:'AlphaFold — was hat es geloest?',dur:'2:01'},{q:'Sensitivity vs. Specificity?',dur:'2:08'},{q:'Was macht ein CDS Hook?',dur:'1:46'}];
-  tracks.forEach(function(t,i){
-    h += '<div class="cs3-radio-track"><span class="cs3-radio-num">' + (i+1) + '</span><span class="cs3-radio-q">' + esc(t.q) + '</span><span class="cs3-radio-dur">' + t.dur + '</span></div>';
-  });
-  h += '</div>';
-  h += '<div class="cs3-note">Real: TTS rendert Frage + 3s Pause + Antwort als MP3. Playlist taglich neu aus faelligen Karten. Download oder Telegram-Push. Beim Pendeln, Sport, Kochen.</div>';
-  h += '</div></details>';
-
-  // E5: Learning Velocity + E6-E10 compact
-  h += '<details class="cs-card" data-cs-feature="velocity">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">LV</span><span class="cs-card-title">Learning Velocity</span><span class="cs-card-meta">Tempo + Prognose Kurs-Ende</span></summary>';
-  h += '<div class="cs-card-body">';
-  h += '<div class="cs3-velocity"><div class="cs3-vel-stat"><div class="cs3-vel-num">12</div><div>Tage fuer Modul 1</div></div>';
-  h += '<div class="cs3-vel-stat"><div class="cs3-vel-num">1.3</div><div>Items / Tag</div></div>';
-  h += '<div class="cs3-vel-stat"><div class="cs3-vel-num" style="color:#22c55e">14.08.</div><div>Prognose Kurs-Ende</div></div>';
-  h += '<div class="cs3-vel-stat"><div class="cs3-vel-num" style="color:#22c55e">3 Wo.</div><div>vor Deadline</div></div></div>';
-  h += '<div class="cs3-vel-bar"><div class="cs3-vel-progress" style="width:17%"></div><div class="cs3-vel-marker" style="left:17%">Jetzt (M1)</div><div class="cs3-vel-marker" style="left:100%">03.09.</div></div>';
-  h += '<div class="cs3-note">Real: Items/Tag aus Emeritus-Scrape-Diffs + imperialki.json Timestamps. Prognose linear extrapoliert, adjustiert bei Schwierigkeits-Unterschieden zwischen Modulen.</div>';
-  h += '</div></details>';
-
-  // Compact: E6-E10 as idea cards (like Showcase 2.0 ideas)
-  h += '<details class="cs-card" data-cs-feature="more-ideas">';
-  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">+5</span><span class="cs-card-title">5 weitere Kreativ-Features</span><span class="cs-card-meta">Klinik-Bridge, Office Hours, Autopilot, Cohort Intel, Dr. Lobster</span></summary>';
-  h += '<div class="cs-card-body">';
-  var extra = [
-    {id:'e6',t:'Klinik-Bridge',d:'Verbindung Kurs-Konzepte ↔ Barmelweid-Workflows. "Process Mapping (M1) → Behandlungsplanung DPP". 5 Bruecken-Cards.'},
-    {id:'e7',t:'Office Hours Prep',d:'Vor jeder Live Session: 4 vorbereitete Fragen basierend auf Verstaendnisluecken + Cohort-Diskussionen + Christians Use Case.'},
-    {id:'e8',t:'Assignment Autopilot',d:'KITT generiert kompletten First Draft (Playbook + Map + Requirements + Reflection). Christian editiert nur. Voice DNA + Pre-Grading integriert.'},
-    {id:'e9',t:'Cohort Intelligence Dashboard',d:'Engagement-Heatmap (58 Studierende x 4 Wochen) + Word-Cloud Cohort-Themen + "Christian: Top 15%" Badge.'},
-    {id:'e10',t:'Dr. Lobster PDF Integration',d:'Assignment-PDF direkt aus Cockpit: Playbook + Process Map → Merge + Compress via pdf.moser.ai → Download-ready.'}
-  ];
-  extra.forEach(function(it){
-    var voted = _csVoted(it.id);
-    h += '<div class="cs3-idea" data-cs-feature="' + it.id + '"><div class="cs3-idea-body"><div class="cs3-idea-t">' + esc(it.t) + '</div><div class="cs3-idea-d">' + esc(it.d) + '</div></div>';
-    h += '<div class="cs-vote"><button class="cs-vote-btn cs-vote-yes' + (voted==='yes'?' cs-vote-active':'') + '" data-cs-vote="yes" onclick="_csVote(\'' + it.id + '\',\'yes\')">ja</button><button class="cs-vote-btn cs-vote-maybe' + (voted==='maybe'?' cs-vote-active':'') + '" data-cs-vote="maybe" onclick="_csVote(\'' + it.id + '\',\'maybe\')">vlt</button><button class="cs-vote-btn cs-vote-no' + (voted==='no'?' cs-vote-active':'') + '" data-cs-vote="no" onclick="_csVote(\'' + it.id + '\',\'no\')">nein</button></div></div>';
-  });
-  h += '</div></details>';
-
-  h += '</div>'; // end cs3-root
-  h += '</div>'; // end cs3-shell
   return h;
 }
 
+// Section 2: Mission Control (Countdowns)
+function renderIKMissionControl(ik) {
+  var h = '<details open class="ik-section">';
+  h += '<summary class="ik-section-title">Mission Control</summary>';
+  var schedule = (ik.schedule || []).filter(function(ev) { return new Date(ev.date) > new Date(); }).sort(function(a,b) { return a.date.localeCompare(b.date); });
+  var required = schedule.filter(function(ev) { return ev.type === 'deadline'; });
+  var optional = schedule.filter(function(ev) { return ev.type !== 'deadline'; });
+  if (required.length === 0 && optional.length === 0) {
+    h += '<div class="ik-mc-empty">Keine anstehenden Termine.</div>';
+  }
+  if (required.length > 0) {
+    h += '<div class="ik-mc-label">Pflicht</div>';
+    required.forEach(function(ev) {
+      var tKey = 'mc_' + (ev.title||'').replace(/\W/g,'_').substring(0,30);
+      var done = isIkDone(tKey);
+      h += '<div class="ik-mc-item' + (done?' ik-done':'') + '">';
+      h += '<input type="checkbox" class="ik-checkbox" ' + (done?'checked':'') + ' onchange="toggleIkDone(\'' + tKey + '\')"/>';
+      h += '<span class="ik-mc-title">' + esc(ev.title) + '</span>';
+      h += '<span class="ik-mc-countdown">' + _ikCountdown(ev.date) + '</span>';
+      h += '<span class="ik-mc-date">' + _ikFmtDateShort(ev.date) + '</span>';
+      h += '</div>';
+    });
+  }
+  if (optional.length > 0) {
+    h += '<div class="ik-mc-label" style="margin-top:12px;">Termine</div>';
+    optional.forEach(function(ev) {
+      var color = ev.type === 'live' ? '#3b82f6' : '#f59e0b';
+      h += '<div class="ik-mc-item">';
+      h += '<span class="ik-badge" style="background:' + color + ';">' + (ev.type==='live'?'Live':'Event') + '</span>';
+      h += '<span class="ik-mc-title">' + esc(ev.title) + '</span>';
+      h += '<span class="ik-mc-countdown">' + _ikCountdown(ev.date) + '</span>';
+      h += '<span class="ik-mc-date">' + _ikFmtDateShort(ev.date) + '</span>';
+      h += '</div>';
+    });
+  }
+  h += '</details>';
+  return h;
+}
+
+// Section 3: Kurs-Mirror (Progressive Disclosure)
+function renderIKKursMirror(ik) {
+  var h = '<details class="ik-section">';
+  h += '<summary class="ik-section-title">Kurs-Mirror</summary>';
+  Object.keys(ik.courses || {}).forEach(function(ck) {
+    var c = ik.courses[ck];
+    var isActive = c.status === 'active';
+    h += '<details' + (isActive?' open':'') + ' class="ik-km-course">';
+    h += '<summary class="ik-km-course-title" style="color:' + (c.color||'var(--text)') + ';">' + esc(c.shortName || ck);
+    if (c.started) h += ' <span class="ik-km-meta">(seit ' + _ikFmtDateShort(c.started) + ')</span>';
+    else if (c.starts) h += ' <span class="ik-km-meta">(Start: ' + _ikFmtDateShort(c.starts) + ')</span>';
+    h += '</summary>';
+    (c.modules || []).forEach(function(mod) {
+      var statusIcon = mod.status === 'locked' ? '\uD83D\uDD12' : mod.status === 'open' ? '\uD83D\uDCD6' : '\u2705';
+      h += '<details class="ik-km-module">';
+      h += '<summary class="ik-km-module-title">' + statusIcon + ' ' + esc(mod.id + ': ' + mod.title) + ' <span class="ik-km-hours">~' + mod.hours + 'h</span></summary>';
+      h += '<div class="ik-km-module-desc">' + esc(mod.description || '') + '</div>';
+      h += '<div class="ik-km-placeholder">Volltext wird nach Scrape hier angezeigt.</div>';
+      h += '</details>';
+    });
+    if (!isActive && c.starts) {
+      h += '<div class="ik-km-inactive">Kurs startet am ' + _ikFmtDateShort(c.starts) + '.</div>';
+    }
+    h += '</details>';
+  });
+  h += '</details>';
+  return h;
+}
+
+// Section 4: Diskussions-Radar
+function renderIKDiskussionsRadar(ik) {
+  var h = '<details class="ik-section">';
+  h += '<summary class="ik-section-title">Diskussions-Radar</summary>';
+  var hasAny = false;
+  Object.keys(ik.courses || {}).forEach(function(ck) {
+    var c = ik.courses[ck];
+    if (!c.discussions || c.discussions.length === 0) return;
+    hasAny = true;
+    h += '<div class="ik-dr-course">';
+    h += '<div class="ik-dr-course-name" style="color:' + (c.color||'var(--text)') + ';">' + esc(c.shortName || ck) + '</div>';
+    c.discussions.forEach(function(disc) {
+      var icon = disc.status === 'posted' ? '\u2705' : '\u270F\uFE0F';
+      h += '<div class="ik-dr-item">';
+      h += '<span>' + icon + '</span>';
+      if (disc.url) h += '<a href="' + esc(disc.url) + '" target="_blank" class="ik-dr-title">' + esc(disc.title) + '</a>';
+      else h += '<span class="ik-dr-title">' + esc(disc.title) + '</span>';
+      h += '<span class="ik-dr-status">' + (disc.status === 'posted' ? 'gepostet ' + _ikFmtDateShort(disc.postedDate) : 'offen') + '</span>';
+      h += '</div>';
+    });
+    h += '</div>';
+  });
+  if (!hasAny) h += '<div class="ik-mc-empty">Keine Diskussionen vorhanden.</div>';
+  h += '</details>';
+  return h;
+}
+
+// Section 5: Forum-Battery (Drafts)
+function renderIKForumBattery(ik) {
+  var drafts = ik.drafts || [];
+  if (drafts.length === 0) return '';
+  var h = '<details class="ik-section" id="ik-drafts">';
+  h += '<summary class="ik-section-title">Forum-Battery (' + drafts.length + ' Entwürfe)</summary>';
+  drafts.forEach(function(draft) {
+    var statusClass = draft.status === 'posted' ? 'ik-draft-posted' : draft.status === 'skipped' ? 'ik-draft-skipped' : '';
+    h += '<div class="ik-draft-card ' + statusClass + '">';
+    h += '<div class="ik-draft-header">';
+    h += '<span class="ik-draft-type">' + esc(draft.type || 'Entwurf') + '</span>';
+    if (draft.status) h += '<span class="ik-draft-status ik-draft-status-' + draft.status + '">' + esc(draft.status) + '</span>';
+    h += '</div>';
+    if (draft.context) h += '<div class="ik-draft-context">' + esc(draft.context) + '</div>';
+    h += '<div class="ik-draft-content">' + esc(draft.content) + '</div>';
+    h += '<div class="ik-draft-actions">';
+    h += '<button class="ik-draft-copy" onclick="ikCopyDraft(\'' + esc(draft.id) + '\')">Kopieren</button>';
+    if (draft.targetUrl) h += '<a href="' + esc(draft.targetUrl) + '" target="_blank" class="ik-draft-post">Auf Emeritus posten</a>';
+    h += '</div>';
+    h += '</div>';
+  });
+  h += '</details>';
+  return h;
+}
+
+// Section 6: Assignment Studio
+function renderIKAssignmentStudio(ik) {
+  var h = '<details class="ik-section">';
+  h += '<summary class="ik-section-title">Assignment Studio</summary>';
+  h += '<div class="ik-as-warn">Assignments werden NIE automatisch abgegeben. Immer Draft reviewen, dann selbst auf Emeritus einreichen.</div>';
+  var schedule = (ik.schedule || []).filter(function(ev) { return ev.type === 'deadline' && (ev.title||'').toLowerCase().indexOf('assignment') > -1; });
+  if (schedule.length > 0) {
+    h += '<div class="ik-as-assignments">';
+    schedule.forEach(function(ev) {
+      var isPast = new Date(ev.date) < new Date();
+      h += '<div class="ik-as-card' + (isPast?' ik-done':'') + '">';
+      h += '<div class="ik-as-title">' + esc(ev.title) + '</div>';
+      h += '<div class="ik-as-deadline">' + (isPast ? 'Eingereicht' : 'Fällig: ' + _ikFmtDate(ev.date) + ' (' + _ikCountdown(ev.date) + ')') + '</div>';
+      if (ev.url) h += '<a href="' + esc(ev.url) + '" target="_blank" class="ik-as-link">Auf Emeritus öffnen</a>';
+      h += '</div>';
+    });
+    h += '</div>';
+  } else {
+    h += '<div class="ik-mc-empty">Keine anstehenden Assignments.</div>';
+  }
+  h += '<div class="ik-as-section">';
+  h += '<div class="ik-as-subtitle">Referenz: Eingereichte Arbeiten</div>';
+  h += '<div class="ik-as-ref">Assignment 1.1: Scoping an AI Opportunity (eingereicht 08.04.2026)</div>';
+  h += '</div>';
+  h += '</details>';
+  return h;
+}
+
+// Section 7: Office Hours Prep
+function renderIKOfficeHoursPrep(ik) {
+  var questions = (ik.officeHoursPrep || []);
+  var h = '<details class="ik-section">';
+  h += '<summary class="ik-section-title">Office Hours Prep</summary>';
+  if (questions.length === 0) {
+    h += '<div class="ik-mc-empty">Fragen werden generiert, sobald Office Hours anstehen.</div>';
+  } else {
+    h += '<ol class="ik-oh-list">';
+    questions.forEach(function(q) {
+      h += '<li class="ik-oh-question">' + esc(q.question || q);
+      if (q.topic) h += ' <span class="ik-oh-tag">' + esc(q.topic) + '</span>';
+      h += '</li>';
+    });
+    h += '</ol>';
+  }
+  h += '</details>';
+  return h;
+}
 
 function renderImperialKI(container) {
   var ik = _ikCache;
   if (!ik) { container.innerHTML = '<div class="empty-state">Keine Daten.</div>'; return; }
 
-  var now = new Date();
   var html = '';
-
-  // Showcase Version Toggle
-  var csVer = _csGetVersion();
-  html += '<div class="cs-version-toggle">';
-  html += '<button class="cs-ver-btn' + (csVer==='2'?' cs-ver-active':'') + '" onclick="_csSetVersion(\'2\')">Showcase 2.0</button>';
-  html += '<button class="cs-ver-btn' + (csVer==='3'?' cs-ver-active':'') + '" onclick="_csSetVersion(\'3\')">Showcase 3.0</button>';
-  html += '</div>';
-  if (csVer === '2') { html += renderCockpitShowcase(); }
-  else { html += renderCockpitShowcase3(); }
-
-  function countdown(dateStr) {
-    var d = new Date(dateStr);
-    var diff = d - now;
-    if (diff <= 0) return 'vorbei';
-    var days = Math.floor(diff / 86400000);
-    var hours = Math.floor((diff % 86400000) / 3600000);
-    if (days > 0) return 'in ' + days + (days === 1 ? ' Tag' : ' Tagen') + ', ' + hours + ' Std.';
-    var mins = Math.floor((diff % 3600000) / 60000);
-    return 'in ' + hours + ' Std. ' + mins + ' Min.';
-  }
-  function fmtDate(dateStr) {
-    var d = new Date(dateStr);
-    var hasTime = dateStr.indexOf('T') > -1 && dateStr.indexOf('T00:00:00') === -1;
-    var datePart = d.toLocaleDateString('de-CH', {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
-    if (hasTime) return datePart + ', ' + d.toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'}) + ' Uhr';
-    return datePart;
-  }
-  function fmtDateShort(dateStr) {
-    if (!dateStr) return '';
-    var d = new Date(dateStr);
-    return d.toLocaleDateString('de-CH', {day:'2-digit', month:'2-digit', year:'numeric'});
-  }
-
-
-
-  // ── 1. MORGEN-BRIEFING (4 Dashboard-Cards) ──
-  var br = ik.briefing || {};
-  var cards = br.cards || {};
-
-  html += '<div class="ik-briefing-header">';
-  html += '<div class="ik-briefing-title">Briefing vom ' + fmtDateShort(br.date || '') + '</div>';
-  if (br.generatedAt) html += '<div class="ik-briefing-meta">Aktualisiert ' + new Date(br.generatedAt).toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'}) + ' Uhr</div>';
-  html += '</div>';
-
-  html += '<div class="ik-briefing-grid">';
-
-  // Card: Neu (blau)
-  var newItems = (cards.new || {}).items || [];
-  html += '<details class="ik-bcard ik-bcard-new">';
-  html += '<summary><span class="ik-bcard-count">' + newItems.length + '</span><span class="ik-bcard-label">Neu</span></summary>';
-  if (newItems.length === 0) { html += '<div class="ik-bcard-empty">Nichts Neues seit gestern.</div>'; }
-  newItems.forEach(function(item) {
-    html += '<div class="ik-bcard-item">';
-    if (item.url) html += '<a href="' + esc(item.url) + '" target="_blank">' + esc(item.title) + '</a>';
-    else html += '<span>' + esc(item.title) + '</span>';
-    if (item.details) html += '<div class="ik-bcard-details">' + esc(item.details) + '</div>';
-    html += '</div>';
-  });
-  html += '</details>';
-
-  // Card: Erledigt (gruen)
-  var doneItems = (cards.done || {}).items || [];
-  html += '<details class="ik-bcard ik-bcard-done">';
-  html += '<summary><span class="ik-bcard-count">' + doneItems.length + '</span><span class="ik-bcard-label">Erledigt</span></summary>';
-  if (doneItems.length === 0) { html += '<div class="ik-bcard-empty">Noch nichts abgehakt.</div>'; }
-  doneItems.forEach(function(item) {
-    html += '<div class="ik-bcard-item"><span>' + esc(item.title) + '</span>';
-    if (item.date) html += '<span class="ik-bcard-date">' + fmtDateShort(item.date) + '</span>';
-    html += '</div>';
-  });
-  html += '</details>';
-
-  // Card: Diskussionen (orange)
-  var discItems = (cards.discussions || {}).items || [];
-  html += '<details class="ik-bcard ik-bcard-disc">';
-  html += '<summary><span class="ik-bcard-count">' + discItems.length + '</span><span class="ik-bcard-label">Diskussionen</span></summary>';
-  if (discItems.length === 0) { html += '<div class="ik-bcard-empty">Keine offenen Diskussionen.</div>'; }
-  discItems.forEach(function(item) {
-    html += '<div class="ik-bcard-item">';
-    if (item.url) html += '<a href="' + esc(item.url) + '" target="_blank">' + esc(item.title) + '</a>';
-    else html += '<span>' + esc(item.title) + '</span>';
-    if (item.hint) html += '<div class="ik-bcard-details">' + esc(item.hint) + '</div>';
-    if (item.draftId) html += '<a href="#ik-drafts" class="ik-bcard-draft-link">Entwurf lesen</a>';
-    html += '</div>';
-  });
-  html += '</details>';
-
-  // Card: Zu erledigen (rot)
-  var dlItems = (cards.deadlines || {}).items || [];
-  html += '<details open class="ik-bcard ik-bcard-todo">';
-  html += '<summary><span class="ik-bcard-count">' + dlItems.length + '</span><span class="ik-bcard-label">Zu erledigen</span></summary>';
-  if (dlItems.length === 0) { html += '<div class="ik-bcard-empty">Alles erledigt!</div>'; }
-  dlItems.forEach(function(item) {
-    var tKey = 'dl_' + (item.title||'').replace(/\W/g,'_').substring(0,30);
-    var tDone = isIkDone(tKey);
-    html += '<div class="ik-bcard-item ik-bcard-task' + (tDone ? ' ik-done' : '') + '">';
-    html += '<input type="checkbox" class="ik-checkbox" ' + (tDone ? 'checked' : '') + ' onchange="toggleIkDone(\'' + tKey + '\')"/>';
-    if (item.url) html += '<a href="' + esc(item.url) + '" target="_blank">' + esc(item.title) + '</a>';
-    else html += '<span>' + esc(item.title) + '</span>';
-    var meta = [];
-    if (item.deadline) meta.push('bis ' + fmtDateShort(item.deadline));
-    if (item.estimatedMinutes) meta.push('~' + item.estimatedMinutes + ' min');
-    if (meta.length) html += '<span class="ik-bcard-meta' + (item.priority === 'high' ? ' ik-priority-high' : '') + '">' + meta.join(' | ') + '</span>';
-    if (tDone) html += '<span class="ik-done-ts">' + ikDoneTimestamp(tKey) + '</span>';
-    html += '</div>';
-  });
-  html += '</details>';
-
-  html += '</div>'; // end briefing-grid
-
-  // ── 2. TAGES-COACH ──
-  var coach = ik.coach || {};
-  var plan = coach.dailyPlan || [];
-
-  html += '<div class="ik-coach-box">';
-  html += '<div class="ik-coach-header">';
-  html += '<div class="ik-coach-title">Dein Tagesplan</div>';
-  if (coach.currentPhase) html += '<span class="ik-coach-phase">' + esc(coach.currentPhase) + '</span>';
-  html += '</div>';
-
-  if (coach.weeklyFocus) {
-    html += '<div class="ik-coach-focus">' + esc(coach.weeklyFocus) + '</div>';
-  }
-
-  // Progress bar
-  if (plan.length > 0) {
-    var planDone = plan.filter(function(p) { var k = 'plan_' + (p.title||'').replace(/\W/g,'_').substring(0,30); return isIkDone(k); }).length;
-    var pct = Math.round(planDone / plan.length * 100);
-    html += '<div class="ik-coach-progress">';
-    html += '<div class="ik-coach-progress-bar" style="width:' + pct + '%;"></div>';
-    html += '</div>';
-    html += '<div class="ik-coach-progress-label">' + planDone + ' von ' + plan.length + ' erledigt</div>';
-  }
-
-  var TYPE_ICONS = { admin: '\u{1F4CB}', test: '\u{1F4DD}', networking: '\u{1F91D}', study: '\u{1F4D6}', assignment: '\u{1F4DA}', discussion: '\u{1F4AC}' };
-  plan.forEach(function(item) {
-    var pKey = 'plan_' + (item.title||'').replace(/\W/g,'_').substring(0,30);
-    var pDone = isIkDone(pKey);
-    var icon = TYPE_ICONS[item.type] || '\u{2022}';
-    html += '<div class="ik-coach-item' + (pDone ? ' ik-done' : '') + '">';
-    html += '<input type="checkbox" class="ik-checkbox" ' + (pDone ? 'checked' : '') + ' onchange="toggleIkDone(\'' + pKey + '\')"/>';
-    html += '<span class="ik-coach-icon">' + icon + '</span>';
-    if (item.url) html += '<a href="' + esc(item.url) + '" target="_blank" class="ik-coach-task-name">' + esc(item.title) + '</a>';
-    else html += '<span class="ik-coach-task-name">' + esc(item.title) + '</span>';
-    if (item.estimatedMinutes) html += '<span class="ik-coach-time">~' + item.estimatedMinutes + ' min</span>';
-    if (pDone) html += '<span class="ik-done-ts">' + ikDoneTimestamp(pKey) + '</span>';
-    html += '</div>';
-  });
-
-  // Tips
-  if (coach.tips && coach.tips.length > 0) {
-    html += '<div class="ik-coach-tips">';
-    coach.tips.forEach(function(tip) {
-      html += '<div class="ik-coach-tip">' + esc(tip) + '</div>';
-    });
-    html += '</div>';
-  }
-
-  // Milestone
-  if (coach.nextMilestone) {
-    var ms = coach.nextMilestone;
-    html += '<div class="ik-coach-milestone">';
-    html += '<span class="ik-coach-milestone-label">Naechster Meilenstein:</span> ';
-    html += '<strong>' + esc(ms.title) + '</strong>';
-    if (ms.target) html += ' <span class="ik-coach-milestone-date">(' + countdown(ms.target + 'T23:59:00Z') + ')</span>';
-    html += '</div>';
-  }
-
-  html += '</div>'; // end coach-box
-
-  // ── 3. VORBEREITETE ENTWUERFE ──
-  var drafts = ik.drafts || [];
-  if (drafts.length > 0) {
-    html += '<details class="ik-section" id="ik-drafts">';
-    html += '<summary class="ik-section-title">Vorbereitete Entwuerfe (' + drafts.length + ')</summary>';
-    drafts.forEach(function(draft) {
-      var statusClass = draft.status === 'posted' ? 'ik-draft-posted' : draft.status === 'skipped' ? 'ik-draft-skipped' : '';
-      html += '<div class="ik-draft-card ' + statusClass + '">';
-      html += '<div class="ik-draft-header">';
-      html += '<span class="ik-draft-type">' + esc(draft.type || 'Entwurf') + '</span>';
-      if (draft.status) html += '<span class="ik-draft-status ik-draft-status-' + draft.status + '">' + esc(draft.status) + '</span>';
-      html += '</div>';
-      if (draft.context) html += '<div class="ik-draft-context">' + esc(draft.context) + '</div>';
-      html += '<div class="ik-draft-content">' + esc(draft.content) + '</div>';
-      html += '<div class="ik-draft-actions">';
-      html += '<button class="ik-draft-copy" data-draft-copy="' + esc(draft.id) + '" onclick="ikCopyDraft(\'' + esc(draft.id) + '\')">Kopieren</button>';
-      if (draft.targetUrl) html += '<a href="' + esc(draft.targetUrl) + '" target="_blank" class="ik-draft-post">Auf Emeritus posten</a>';
-      html += '</div>';
-      html += '</div>';
-    });
-    html += '</details>';
-  }
-
-  // ── 4. ZEITPLAN (Termine + Deadlines merged) ──
-  html += '<details open class="ik-section">';
-  html += '<summary class="ik-section-title">Zeitplan</summary>';
-  var upcoming = (ik.schedule || []).filter(function(ev) { return new Date(ev.date) > now; }).sort(function(a,b) { return a.date.localeCompare(b.date); });
-  if (upcoming.length === 0) {
-    html += '<div class="ik-card-sub" style="padding:8px 0;">Keine kommenden Termine.</div>';
-  } else {
-    upcoming.forEach(function(ev) {
-      var color = ev.type === 'live' ? '#3b82f6' : ev.type === 'deadline' ? '#ef4444' : '#f59e0b';
-      var label = ev.type === 'live' ? 'Live' : ev.type === 'deadline' ? 'Deadline' : 'Event';
-      var courseColor = ik.courses[ev.course] ? ik.courses[ev.course].color : '#6b7280';
-      html += '<div class="ik-entry">';
-      html += '<span class="ik-time">' + fmtDate(ev.date) + '</span>';
-      html += '<span class="ik-badge" style="background:' + color + ';">' + label + '</span>';
-      html += '<span class="ik-dot" style="background:' + courseColor + ';"></span>';
-      html += '<span class="ik-name">' + esc(ev.title) + '</span>';
-      html += '<span class="ik-right">' + countdown(ev.date) + '</span>';
-      html += '</div>';
-    });
-  }
-  html += '</details>';
-
-  // ── 5. KURS-DETAILS (Accordions) ──
-  Object.keys(ik.courses).forEach(function(ck) {
-    var c = ik.courses[ck];
-    var isActive = c.status === 'active';
-    html += '<details' + (isActive ? ' open' : '') + ' class="ik-section">';
-    html += '<summary class="ik-section-title" style="color:' + c.color + ';">' + esc(c.shortName);
-    if (c.started) html += ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(seit ' + fmtDateShort(c.started) + ')</span>';
-    else if (c.starts) html += ' <span style="font-weight:400;font-size:11px;color:var(--text-muted);">(Start: ' + fmtDateShort(c.starts) + ')</span>';
-    html += '</summary>';
-
-    // Modules
-    if (c.modules && c.modules.length > 0) {
-      html += '<div style="margin-bottom:12px;">';
-      html += '<div class="sl-section-title">Module</div>';
-      c.modules.forEach(function(mod) {
-        var statusBadge = mod.status === 'locked' ? '\uD83D\uDD12' : mod.status === 'open' ? '\uD83D\uDCD6' : '\u2705';
-        html += '<div class="ik-module-card">';
-        html += '<span class="ik-module-icon">' + statusBadge + '</span>';
-        html += '<div style="flex:1;">';
-        html += '<div class="ik-module-title">' + esc(mod.id + ': ' + mod.title) + '</div>';
-        html += '<div class="ik-module-desc">' + esc(mod.description) + '</div>';
-        html += '<div class="ik-module-desc">~' + mod.hours + ' Stunden</div>';
-        html += '</div></div>';
-      });
-      html += '</div>';
-    }
-
-    // Discussions
-    if (c.discussions && c.discussions.length > 0) {
-      html += '<div style="margin-bottom:8px;">';
-      html += '<div class="sl-section-title">Diskussionen</div>';
-      c.discussions.forEach(function(disc) {
-        var icon = disc.status === 'posted' ? '\u2705' : '\u270F\uFE0F';
-        html += '<div class="ik-entry" style="padding:6px 16px;">';
-        html += '<span>' + icon + '</span>';
-        html += '<a href="' + esc(disc.url) + '" target="_blank" style="color:' + c.color + ';" class="ik-name">' + esc(disc.title) + '</a>';
-        html += '<span class="ik-right">' + (disc.status === 'posted' ? 'gepostet ' + fmtDateShort(disc.postedDate) : 'offen') + '</span>';
-        html += '</div>';
-      });
-      html += '</div>';
-    }
-
-    if (!isActive && c.starts) {
-      html += '<div class="ik-card-sub" style="padding:8px 14px;">Kurs startet am ' + fmtDateShort(c.starts) + '.</div>';
-    }
-    html += '</details>';
-  });
-
-  // ── 6. WISSENSDATENBANK + TRIP REPORT + LOGBUCH ──
-  // Trip Report
-  html += '<details class="ik-section">';
-  html += '<summary class="ik-section-title">Trip Report / Blog</summary>';
-  var tr = ik.tripReport || {};
-  html += '<div class="ik-info-card">';
-  html += '<div class="ik-info-title">Reflective Journal Anfrage</div>';
-  html += 'Email gesendet: ' + fmtDateShort(tr.emailSent || '') + '<br>';
-  html += 'Status: <span style="color:#f59e0b;font-weight:600;">' + (tr.status === 'awaiting_response' ? 'Warte auf Antwort' : tr.status || '?') + '</span><br>';
-  if (tr.followUpDate) html += 'Follow-up geplant: ' + fmtDateShort(tr.followUpDate);
-  html += '</div>';
-  html += '</details>';
-
-  // Wissensdatenbank
-  html += '<details class="ik-section">';
-  html += '<summary class="ik-section-title">Wissensdatenbank</summary>';
-  var kb = ik.knowledgeBase || {};
-  html += '<div class="ik-info-card">';
-  html += '<strong>Klinik-Dokumente:</strong> ' + ((kb.clinicDocs || []).join(', ') || 'Keine') + '<br>';
-  html += '<strong>Transkripte:</strong> ' + ((kb.transcripts || []).length || 0) + ' Dateien<br>';
-  html += '<strong>NotebookLM:</strong> ' + (kb.notebookLM || 'nicht konfiguriert');
-  html += '</div>';
-
-  if (kb.grokResearch) {
-
-    html += '<div class="ik-info-card" style="margin-top:8px;">';
-
-    html += '<div class="ik-info-title" style="font-size:11px;">Grok-Recherche: AI in Psychiatric Rehab Europe</div>';
-
-    html += '<div style="font-size:11px;">' + esc(kb.grokResearch) + '</div>';
-
-    html += '</div>';
-
-  }
-
-  html += '</details>';
-
-
-
-  // ── PROFIL ──
-
-  html += '<details class="ik-section">';
-
-  html += '<summary class="ik-section-title">Mein Profil</summary>';
-
-  var pr = ik.profile || {};
-
-  html += '<div class="ik-info-card">';
-
-  html += '<strong>' + esc(pr.name || '') + '</strong> \u2014 ' + esc(pr.role || '') + '<br>';
-
-  html += esc(pr.clinic || '') + ', ' + esc(pr.department || '') + '<br>';
-
-  html += 'Arbeitstage: ' + esc(pr.workDays || '') + '<br>';
-
-  html += 'Fokus: ' + esc(pr.focus || '') + '<br>';
-
-  html += 'Hintergrund: ' + esc(pr.background || '');
-
-  html += '</div>';
-
-  html += '</details>';
-
-
-
+  html += renderIKAutomationPipeline();
+  html += renderIKMissionControl(ik);
+  html += renderIKKursMirror(ik);
+  html += renderIKDiskussionsRadar(ik);
+  html += renderIKForumBattery(ik);
+  html += renderIKAssignmentStudio(ik);
+  html += renderIKOfficeHoursPrep(ik);
   container.innerHTML = html;
-
 }
-
 
 
 // ─── SYSTEM-UEBERSICHT (Mermaid lazy-load) ──────────────────────────────────
