@@ -823,7 +823,7 @@ nav {
 .lane.lane-collapsed .lane-drag-handle:hover { background: rgba(255,255,255,0.15); color: #fff; }
 .lane.lane-dragging { opacity: 0.5; }
 /* Lane Position Select */
-.lane-pos-select { width: 32px; height: 24px; text-align: center; font-size: 12px; font-weight: 700; color: var(--text-muted); background: rgba(255,255,255,0.08); border: 1.5px solid var(--border); border-radius: 5px; cursor: pointer; padding: 0 2px; margin-right: 8px; font-family: inherit; }
+.lane-pos-select { width: 40px; height: 24px; text-align: center; font-size: 12px; font-weight: 700; color: var(--text-muted); background: rgba(255,255,255,0.08); border: 1.5px solid var(--border); border-radius: 5px; cursor: pointer; padding: 0 4px; margin-right: 8px; font-family: inherit; }
 .lane-pos-select:hover { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,0.08); }
 .lane-pos-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
 .lane.lane-collapsed .lane-pos-select { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); color: #fff; }
