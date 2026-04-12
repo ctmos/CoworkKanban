@@ -5727,9 +5727,9 @@ setInterval(function() {
 
     if (!cardId || !targetLane) return;
 
-
-
-    var cards = getCards();
+    // V2-Tab nutzt eigene Datenquelle
+    var isV2 = currentTab === 'v2';
+    var cards = isV2 ? _v2Cards : getCards();
 
     var card = cards[cardId];
 
@@ -5768,10 +5768,9 @@ setInterval(function() {
       // Reassign order values
       laneCards.forEach(function(c, i) { cards[c.id].order = (i + 1) * 1000; });
       card.updatedAt = new Date().toISOString(); card.updatedBy = 'lifeos';
-      saveCards(cards);
+      if (isV2) { scheduleV2Sync(); } else { saveCards(cards); }
       showToast(cardId + ' neu sortiert');
-      renderKanban();
-      if (currentTab === 'heute') renderHeute();
+      if (isV2) { renderV2Tab(); } else { renderKanban(); if (currentTab === 'heute') renderHeute(); }
       return;
     }
 
@@ -5784,7 +5783,7 @@ setInterval(function() {
 
     // Generate new ID for target lane
 
-    var newId = nextCardId(targetLane);
+    var newId = isV2 ? nextV2CardId(targetLane) : nextCardId(targetLane);
 
 
 
@@ -5827,13 +5826,11 @@ setInterval(function() {
 
 
 
-    saveCards(cards);
+    if (isV2) { scheduleV2Sync(); } else { saveCards(cards); }
 
     showToast(oldId + ' → ' + newId + ' (' + targetLane + ')');
 
-    renderKanban();
-
-    if (currentTab === 'heute') renderHeute();
+    if (isV2) { renderV2Tab(); } else { renderKanban(); if (currentTab === 'heute') renderHeute(); }
 
   });
 
@@ -7468,6 +7465,35 @@ function openV2Modal(cardId, laneId) {
     if ((card && card.lane === l.id) || (!card && l.id === laneId)) opt.selected = true;
     laneSel.appendChild(opt);
   });
+
+  // Substrate/Awareness-Felder (identisch zu Kanban-Modal)
+  document.getElementById('v2m-assignee').value = (card && card.assignee) || '';
+  document.getElementById('v2m-source').value = (card && card.source) || 'manual';
+  document.getElementById('v2m-tags').value = (card && card.tags) ? card.tags.join(', ') : '';
+  document.getElementById('v2m-context').value = (card && card.context) || '';
+
+  // Patient-Dropdown populieren
+  var patSel = document.getElementById('v2m-linked-patient');
+  patSel.innerHTML = '<option value="">(keiner)</option>';
+  (getPatients() || []).filter(function(p) { return p.status !== 'archiviert'; }).forEach(function(p) {
+    var opt = document.createElement('option'); opt.value = p.code || p.id; opt.textContent = p.code || p.id;
+    if (card && card.linkedPatient === (p.code || p.id)) opt.selected = true;
+    patSel.appendChild(opt);
+  });
+
+  // Projekt-Dropdown populieren
+  var projSel = document.getElementById('v2m-linked-project');
+  projSel.innerHTML = '<option value="">(keins)</option>';
+  (_appState.projects || []).filter(function(p) { return p.status !== 'archiviert' && !p.deleted; }).forEach(function(p) {
+    var opt = document.createElement('option'); opt.value = p.id; opt.textContent = p.title || p.name || p.id;
+    if (card && card.linkedProject === p.id) opt.selected = true;
+    projSel.appendChild(opt);
+  });
+
+  // Details aufklappen wenn Daten vorhanden
+  var det = document.getElementById('v2m-substrate-details');
+  det.open = !isNew && (card.assignee || card.linkedPatient || card.linkedProject || (card.tags && card.tags.length) || card.context);
+
   document.getElementById('v2m-delete').style.display = isNew ? 'none' : '';
   document.getElementById('v2-modal-overlay').classList.add('open');
   document.getElementById('v2m-title').focus();
@@ -7538,13 +7564,21 @@ document.getElementById('v2m-save').addEventListener('click', function() {
   var lane = document.getElementById('v2m-lane').value;
   var se = document.querySelector('[name=v2m-status]:checked');
   var status = se ? se.value : 'offen';
+  // Substrate/Awareness-Felder (identisch zu Kanban)
+  var assignee = document.getElementById('v2m-assignee').value || null;
+  var source = document.getElementById('v2m-source').value || 'manual';
+  var tagsRaw = document.getElementById('v2m-tags').value.trim();
+  var tags = tagsRaw ? tagsRaw.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [];
+  var context = document.getElementById('v2m-context').value.trim();
+  var linkedPatient = document.getElementById('v2m-linked-patient').value || null;
+  var linkedProject = document.getElementById('v2m-linked-project').value || null;
   if (!title) { document.getElementById('v2m-title').focus(); return; }
   if (_v2EditId) {
-    Object.assign(_v2Cards[_v2EditId], { title: title, deadline: deadline, desc: desc, status: status, lane: lane, updatedAt: new Date().toISOString() });
+    Object.assign(_v2Cards[_v2EditId], { title: title, deadline: deadline, desc: desc, status: status, lane: lane, assignee: assignee, source: source, tags: tags, context: context, linkedPatient: linkedPatient, linkedProject: linkedProject, updatedAt: new Date().toISOString(), updatedBy: 'lifeos' });
   } else {
     var id = nextV2CardId(lane);
     var now = new Date().toISOString();
-    _v2Cards[id] = { id: id, lane: lane, title: title, deadline: deadline, desc: desc, status: status, archived: false, order: Date.now(), createdAt: now, updatedAt: now };
+    _v2Cards[id] = { id: id, lane: lane, title: title, deadline: deadline, desc: desc, status: status, archived: false, order: Date.now(), createdAt: now, updatedAt: now, updatedBy: 'lifeos', assignee: assignee, source: source, tags: tags, context: context, linkedPatient: linkedPatient, linkedProject: linkedProject, dependsOn: [], recurrence: null, notes: [] };
   }
   closeV2Modal();
   renderV2Tab();
