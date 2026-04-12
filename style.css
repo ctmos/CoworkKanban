@@ -2942,6 +2942,23 @@ html.dark-theme .hannah-label { color: #f9a8d4; }
 .pat-blog-entry-copy.copied { background: #16a34a; color: #fff; border-color: #16a34a; }
 .pat-blog-entry-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; opacity: 0.5; }
 .pat-blog-entry-delete:hover { opacity: 1; color: #ef4444; }
+
+/* ── PATIENT TRASH DROPDOWN ── */
+.pat-trash-dropdown { margin-top: 20px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.pat-trash-summary { padding: 10px 16px; font-size: 13px; color: var(--text-muted); cursor: pointer; background: rgba(255,255,255,0.03); font-weight: 500; }
+.pat-trash-summary:hover { color: var(--text); }
+.pat-trash-body { padding: 8px; }
+.pat-trash-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); gap: 12px; }
+.pat-trash-item:last-child { border-bottom: none; }
+.pat-trash-info { display: flex; gap: 10px; align-items: center; flex: 1; min-width: 0; font-size: 12px; color: var(--text-muted); }
+.pat-trash-title { color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pat-trash-deleted { font-size: 11px; opacity: 0.6; white-space: nowrap; }
+.pat-trash-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.pat-trash-restore { font-size: 11px; padding: 3px 8px; background: none; border: 1px solid var(--accent); border-radius: var(--radius); cursor: pointer; color: var(--accent); font-family: inherit; }
+.pat-trash-restore:hover { background: var(--accent); color: #fff; }
+.pat-trash-perm-delete { font-size: 11px; padding: 3px 8px; background: none; border: 1px solid #ef4444; border-radius: var(--radius); cursor: pointer; color: #ef4444; font-family: inherit; }
+.pat-trash-perm-delete:hover { background: #ef4444; color: #fff; }
+
 .pat-blog-entry-text { font-size: 13px; line-height: 1.5; color: var(--text); }
 .pat-blog-entry-text.collapsed { max-height: 7.5em; overflow: hidden; position: relative; }
 .pat-blog-entry-text.collapsed::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2em; background: linear-gradient(transparent, var(--surface)); pointer-events: none; }
