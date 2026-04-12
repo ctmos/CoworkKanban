@@ -425,6 +425,7 @@ function switchTab(id) {
   if (id === 'statusboard') renderStatusBoard();
   if (id === 'kba')        renderPatients();
   if (id === 'projekte')   showProjectsTab();
+  if (id === 'v2p')        showV2PTab();
   if (id === 'life')       renderMoneyTab();
   if (id === 'imperialki') showImperialKITab();
   if (id === 'v2')        renderV2Tab();
@@ -7164,6 +7165,329 @@ document.getElementById('v2m-delete').addEventListener('click', function() {
     renderV2Tab();
     scheduleV2Sync();
   });
+});
+
+
+// ── V2P TAB ── (Eigenes Projektsystem mit eigener Datenquelle)
+
+var _v2pMeta = {};
+
+async function loadV2PProjects() {
+  var token = getGHToken(); if (!token) return null;
+  try {
+    var r = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/contents/v2p-projects', { headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' } });
+    if (r.status === 404) return [];
+    if (!r.ok) return null;
+    var items = await r.json();
+    return items.filter(function(i) { return i.type === 'dir'; }).map(function(i) { return i.name; });
+  } catch (e) { console.error('[loadV2PProjects]', e); return null; }
+}
+
+async function loadV2PMeta(id) { var result = await fetchFromGitHub('v2p-projects/' + id + '/meta.json'); if (!result) return null; try { return JSON.parse(result.content); } catch (e) { return null; } }
+
+async function saveV2PProject(meta) { await safeWriteToGitHub('v2p-projects/' + meta.id + '/meta.json', JSON.stringify(meta, null, 2), 'v2p: save ' + meta.name); _v2pMeta[meta.id] = meta; }
+
+async function addV2PEntry(projectId, text) {
+  var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta) return;
+  if (!meta.entries) meta.entries = [];
+  meta.entries.unshift({ id: 'e' + Date.now().toString(36), text: text, createdAt: new Date().toISOString(), deleted: false });
+  meta.updatedAt = new Date().toISOString();
+  await saveV2PProject(meta);
+}
+
+async function editV2PEntry(projectId, entryId, newText) {
+  var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta || !meta.entries) return;
+  var entry = meta.entries.find(function(e) { return e.id === entryId; }); if (!entry) return;
+  entry.text = newText; entry.updatedAt = new Date().toISOString();
+  meta.updatedAt = new Date().toISOString();
+  await saveV2PProject(meta);
+}
+
+async function deleteV2PProject(projectId, projectName) {
+  confirmAction('Projekt in Papierkorb?', '"' + projectName + '" kann im Papierkorb wiederhergestellt werden.', async function() {
+    var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta) return;
+    meta.deleted = true; meta.deletedAt = new Date().toISOString(); meta.updatedAt = new Date().toISOString();
+    await saveV2PProject(meta); showToast('In Papierkorb verschoben'); showV2PTab();
+  });
+}
+
+async function restoreV2PProject(projectId) {
+  var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta) return;
+  meta.deleted = false; delete meta.deletedAt; meta.updatedAt = new Date().toISOString();
+  await saveV2PProject(meta); showToast('Wiederhergestellt'); showV2PTab();
+}
+
+async function archiveV2PProject(projectId) {
+  var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta) return;
+  meta.status = 'archiviert'; meta.updatedAt = new Date().toISOString();
+  await saveV2PProject(meta); showToast('Archiviert'); showV2PTab();
+}
+
+async function deleteV2PEntry(projectId, entryId) {
+  var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta || !meta.entries) return;
+  var entry = meta.entries.find(function(e) { return e.id === entryId; }); if (!entry) return;
+  entry.deleted = true; entry.deletedAt = new Date().toISOString();
+  meta.updatedAt = new Date().toISOString();
+  await saveV2PProject(meta);
+}
+
+async function restoreV2PEntry(projectId, entryId) {
+  var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta || !meta.entries) return;
+  var entry = meta.entries.find(function(e) { return e.id === entryId; }); if (!entry) return;
+  entry.deleted = false; delete entry.deletedAt;
+  meta.updatedAt = new Date().toISOString();
+  await saveV2PProject(meta);
+}
+
+async function archiveV2PEntry(projectId, entryId) {
+  var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta || !meta.entries) return;
+  var entry = meta.entries.find(function(e) { return e.id === entryId; }); if (!entry) return;
+  entry.archived = true; entry.archivedAt = new Date().toISOString();
+  meta.updatedAt = new Date().toISOString();
+  await saveV2PProject(meta);
+}
+
+async function unarchiveV2PEntry(projectId, entryId) {
+  var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta || !meta.entries) return;
+  var entry = meta.entries.find(function(e) { return e.id === entryId; }); if (!entry) return;
+  entry.archived = false; delete entry.archivedAt;
+  meta.updatedAt = new Date().toISOString();
+  await saveV2PProject(meta);
+}
+
+async function reorderV2PEntry(projectId, draggedId, targetId, insertBefore) {
+  var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId);
+  if (!meta || !meta.entries) return;
+  var entries = meta.entries;
+  var dragIdx = entries.findIndex(function(e) { return e.id === draggedId; });
+  if (dragIdx === -1) return;
+  var dragged = entries.splice(dragIdx, 1)[0];
+  var targetIdx = entries.findIndex(function(e) { return e.id === targetId; });
+  if (targetIdx === -1) { entries.push(dragged); }
+  else { entries.splice(insertBefore ? targetIdx : targetIdx + 1, 0, dragged); }
+  meta.entries = entries; meta.updatedAt = new Date().toISOString();
+  await saveV2PProject(meta); showV2PDetail(projectId);
+}
+
+async function showV2PTab() {
+  var container = document.getElementById('v2p-view'); var token = getGHToken();
+  var hdr = '<div class="proj-header"><h2>Projekte V2</h2><button class="btn-primary" onclick="openCreateV2PModal()">+ Neues Projekt</button></div>';
+  if (!token) { container.innerHTML = hdr + '<div class="empty-state">Bitte GitHub Token eintragen.</div>'; return; }
+  container.innerHTML = hdr + '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Lade Projekte\u2026</div>';
+  try {
+    var ghIds = await loadV2PProjects(); if (ghIds === null) { container.innerHTML = hdr + '<div class="empty-state">Fehler beim Laden.</div>'; return; }
+    var localOnly = Object.keys(_v2pMeta).filter(function(id) { return !ghIds.includes(id); }); var pIds = ghIds.concat(localOnly);
+    if (pIds.length === 0) { container.innerHTML = hdr + '<div class="empty-state">Noch keine Projekte.</div>'; return; }
+    var metas = await Promise.all(pIds.map(function(id) { return _v2pMeta[id] ? Promise.resolve(_v2pMeta[id]) : loadV2PMeta(id); }));
+    var statusColors = { aktiv: '#22c55e', pausiert: '#eab308', abgeschlossen: '#22c55e', archiviert: '#555' };
+    var savedOrder = JSON.parse(localStorage.getItem('v2pOrder') || '[]');
+    var activeList = []; var deletedList = [];
+    pIds.forEach(function(id, i) { var meta = metas[i]; if (!meta) return; if (meta.deleted) { deletedList.push({ id: id, meta: meta }); } else { activeList.push({ id: id, meta: meta }); } });
+    if (savedOrder.length > 0) { activeList.sort(function(a, b) { var ai = savedOrder.indexOf(a.id); var bi = savedOrder.indexOf(b.id); if (ai === -1) ai = 9999; if (bi === -1) bi = 9999; return ai - bi; }); }
+
+    function fmtV2PDate(iso) { if (!iso) return ''; try { var d = new Date(iso); if (isNaN(d)) return ''; return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getFullYear()).slice(-2); } catch (e) { return ''; } }
+
+    var activeCards = ''; var deletedCards = '';
+    activeList.forEach(function(item) {
+      var id = item.id; var meta = item.meta;
+      var sc = meta.statusColor || statusColors[meta.status] || '#22c55e';
+      var circleTitle = meta.statusText ? (' title="' + esc(meta.statusText) + '"') : '';
+      var statusCircle = '<span class="proj-status-circle" style="background:' + esc(sc) + '"' + circleTitle + '></span>';
+      var lastModified = meta.updatedAt || meta.createdAt || '';
+      if (meta.entries && meta.entries.length) { meta.entries.forEach(function(e) { var ed = e.updatedAt || e.createdAt; if (ed && ed > lastModified) lastModified = ed; }); }
+      var lastFmt = fmtV2PDate(lastModified);
+      var statusText = esc(meta.statusText || meta.status || 'aktiv');
+      activeCards += '<div class="proj-card" draggable="true" data-proj-id="' + esc(id) + '" onclick="showV2PDetail(\'' + esc(id) + '\')">'
+        + '<div class="proj-card-color-bar" style="background:' + esc(sc) + '"></div>'
+        + '<div class="proj-card-name-row">' + statusCircle + '<span class="proj-card-name">' + esc(meta.name || id) + '</span>' + (lastFmt ? '<span class="proj-card-last">' + lastFmt + '</span>' : '') + '</div>'
+        + (meta.description ? '<div class="proj-card-desc">' + esc(meta.description) + '</div>' : '')
+        + '<div class="proj-card-status-row"><span class="proj-card-status-chip" style="background:rgba(' + hexToRgb(sc) + ',0.14);border-color:' + esc(sc) + ';color:' + esc(sc) + '">' + statusText + '</span></div>'
+        + '</div>';
+    });
+    deletedList.forEach(function(item) {
+      var id = item.id; var meta = item.meta;
+      var sc = meta.statusColor || statusColors[meta.status] || '#22c55e';
+      var circleTitle = meta.statusText ? (' title="' + esc(meta.statusText) + '"') : '';
+      var statusCircle = '<span class="proj-status-circle" style="background:' + esc(sc) + '"' + circleTitle + '></span>';
+      deletedCards += '<div class="proj-card proj-card-deleted"><div class="proj-card-color-bar" style="background:' + esc(sc) + '"></div><div class="proj-card-name-row">' + statusCircle + '<span class="proj-card-name">' + esc(meta.name || id) + '</span></div>' + (meta.description ? '<div class="proj-card-desc">' + esc(meta.description) + '</div>' : '') + '<button class="proj-card-restore" onclick="event.stopPropagation();restoreV2PProject(\'' + esc(id) + '\')">Wiederherstellen</button></div>';
+    });
+    var trashHtml = deletedCards ? '<div class="proj-trash-section"><details><summary class="proj-trash-toggle">Papierkorb</summary><div class="proj-grid" style="margin-top:12px">' + deletedCards + '</div></details></div>' : '';
+    container.innerHTML = hdr + '<div class="proj-grid" id="v2p-grid-active">' + activeCards + '</div>' + trashHtml;
+    initV2PDragDrop();
+  } catch (e) { container.innerHTML = hdr + '<div class="empty-state">Fehler: ' + esc(e.message) + '</div>'; }
+}
+
+function initV2PDragDrop() {
+  var grid = document.getElementById('v2p-grid-active'); if (!grid) return;
+  var dragEl = null;
+  grid.addEventListener('dragstart', function(e) { var card = e.target.closest('.proj-card[data-proj-id]'); if (!card) return; dragEl = card; card.classList.add('proj-card-dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', card.dataset.projId); });
+  grid.addEventListener('dragend', function(e) { if (dragEl) dragEl.classList.remove('proj-card-dragging'); grid.querySelectorAll('.proj-card-dragover').forEach(function(c) { c.classList.remove('proj-card-dragover'); }); dragEl = null; });
+  grid.addEventListener('dragover', function(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; var target = e.target.closest('.proj-card[data-proj-id]'); grid.querySelectorAll('.proj-card-dragover').forEach(function(c) { c.classList.remove('proj-card-dragover'); }); if (target && target !== dragEl) target.classList.add('proj-card-dragover'); });
+  grid.addEventListener('drop', function(e) { e.preventDefault(); var target = e.target.closest('.proj-card[data-proj-id]'); if (!target || !dragEl || target === dragEl) return; var cards = Array.from(grid.querySelectorAll('.proj-card[data-proj-id]')); var fromIdx = cards.indexOf(dragEl); var toIdx = cards.indexOf(target); if (fromIdx < toIdx) { target.after(dragEl); } else { target.before(dragEl); } var newOrder = Array.from(grid.querySelectorAll('.proj-card[data-proj-id]')).map(function(c) { return c.dataset.projId; }); localStorage.setItem('v2pOrder', JSON.stringify(newOrder)); });
+}
+
+async function showV2PDetail(projectId) {
+  var container = document.getElementById('v2p-view');
+  container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted)">Lade\u2026</div>';
+  try {
+    var meta = await loadV2PMeta(projectId); if (!meta) { container.innerHTML = '<div class="empty-state">Nicht gefunden.</div>'; return; }
+    if (!meta.entries) meta.entries = [];
+    var defaultStatusColors = { aktiv: '#22c55e', pausiert: '#eab308', abgeschlossen: '#22c55e', archiviert: '#555' };
+    var cb = meta.color ? ' style="border-top:4px solid ' + esc(meta.color) + '"' : '';
+    var activeEntries = (meta.entries || []).filter(function(e) { return !e.deleted && !e.archived && !e.deletedAt; });
+    activeEntries.sort(function(a, b) { return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt); });
+    var archivedEntries = (meta.entries || []).filter(function(e) { return e.archived && !e.deleted; });
+    var deletedEntries = (meta.entries || []).filter(function(e) { return e.deleted; });
+
+    function fmtDateDE(iso) { var d = new Date(iso); return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+    var _svgEdit = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
+    var _svgArchive = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>';
+    var _svgTrash = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
+    var _svgRestore = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
+
+    function renderV2PEntryCard(e, mode) {
+      var lines = e.text.split('\n').filter(function(l) { return l.trim(); });
+      var title = lines[0] || '(Kein Titel)';
+      title = title.replace(/^#+\s*/, '').replace(/^\*\*(.*)\*\*$/, '$1');
+      var previewLines = lines.slice(1, 6).join('\n');
+      var displayDate = e.updatedAt || e.createdAt;
+      var dateLabel = e.updatedAt ? 'Bearbeitet' : 'Erstellt';
+      if (mode === 'active') {
+        var html = '<div class="proj-entry-card" data-entry-id="' + esc(e.id) + '" data-expanded="false">';
+        html += '<span class="proj-entry-drag-handle" title="Verschieben">&#x2630;</span>';
+        html += '<div class="proj-entry-body">';
+        html += '<div class="proj-entry-top" onclick="toggleProjectEntryExpand(this.closest(\'.proj-entry-card\'))">';
+        html += '<span class="proj-entry-title">' + esc(title) + '</span>';
+        html += '<span class="proj-entry-date">' + dateLabel + ': ' + fmtDateDE(displayDate) + '</span></div>';
+        if (previewLines) { html += '<div class="proj-entry-preview" onclick="toggleProjectEntryExpand(this.closest(\'.proj-entry-card\'))">' + esc(previewLines) + '</div>'; }
+        html += '<div class="proj-entry-full proj-entry-md">' + parseSimpleMarkdown(e.text) + '</div>';
+        html += '<div class="proj-entry-actions">';
+        html += '<button class="proj-entry-btn proj-entry-edit" onclick="event.stopPropagation();startEditV2PEntry(\'' + esc(projectId) + '\',\'' + esc(e.id) + '\')" title="Bearbeiten">' + _svgEdit + ' Bearbeiten</button>';
+        html += '<button class="proj-entry-btn proj-entry-archive" onclick="event.stopPropagation();(async function(){await archiveV2PEntry(\'' + esc(projectId) + '\',\'' + esc(e.id) + '\');showToast(\'Archiviert\');showV2PDetail(\'' + esc(projectId) + '\');})()" title="Archivieren">' + _svgArchive + ' Archivieren</button>';
+        html += '<button class="proj-entry-btn proj-entry-del" onclick="event.stopPropagation();(async function(){await deleteV2PEntry(\'' + esc(projectId) + '\',\'' + esc(e.id) + '\');showToast(\'In Papierkorb verschoben\');showV2PDetail(\'' + esc(projectId) + '\');})()" title="L\u00f6schen">' + _svgTrash + ' L\u00f6schen</button>';
+        html += '</div></div></div>';
+        return html;
+      }
+      var html = '<div class="proj-entry-card" data-entry-id="' + esc(e.id) + '" style="padding:10px 14px;margin-bottom:6px;cursor:default">';
+      html += '<div class="proj-entry-body"><div class="proj-entry-top"><span class="proj-entry-title" style="font-size:13px">' + esc(title) + '</span>';
+      html += '<span class="proj-entry-date">' + dateLabel + ': ' + fmtDateDE(displayDate) + '</span></div>';
+      html += '<div class="proj-entry-text proj-entry-md" style="font-size:12px;opacity:0.7;margin-top:4px">' + parseSimpleMarkdown(e.text) + '</div>';
+      html += '<div style="display:flex;gap:6px;margin-top:8px">';
+      if (mode === 'trash') { html += '<button class="proj-entry-btn proj-entry-restore" onclick="(async function(){await restoreV2PEntry(\'' + esc(projectId) + '\',\'' + esc(e.id) + '\');showToast(\'Wiederhergestellt\');showV2PDetail(\'' + esc(projectId) + '\');})()" title="Wiederherstellen">' + _svgRestore + ' Wiederherstellen</button>'; }
+      else if (mode === 'archived') { html += '<button class="proj-entry-btn proj-entry-restore" onclick="(async function(){await unarchiveV2PEntry(\'' + esc(projectId) + '\',\'' + esc(e.id) + '\');showToast(\'Wiederhergestellt\');showV2PDetail(\'' + esc(projectId) + '\');})()" title="Wiederherstellen">' + _svgRestore + ' Wiederherstellen</button>'; }
+      html += '</div></div></div>';
+      return html;
+    }
+
+    var entriesHtml = '';
+    if (activeEntries.length === 0) { entriesHtml = '<div style="font-size:13px;color:var(--text-muted)">Noch keine Eintr\u00e4ge.</div>'; }
+    else { entriesHtml = '<div class="proj-entries-list" id="v2pd-entries-list">'; for (var i = 0; i < activeEntries.length; i++) { entriesHtml += renderV2PEntryCard(activeEntries[i], 'active'); } entriesHtml += '</div>'; }
+    var archiveHtml = '';
+    if (archivedEntries.length > 0) { archiveHtml = '<div class="proj-entry-archive"><details><summary class="proj-entry-archive-toggle">\ud83d\udce6 Archiv (' + archivedEntries.length + ')</summary><div class="proj-entry-archive-list">'; for (var k = 0; k < archivedEntries.length; k++) { archiveHtml += renderV2PEntryCard(archivedEntries[k], 'archived'); } archiveHtml += '</div></details></div>'; }
+    var trashHtml = '';
+    if (deletedEntries.length > 0) { trashHtml = '<div class="proj-entry-trash"><details><summary class="proj-entry-trash-toggle">\ud83d\uddd1 Papierkorb (' + deletedEntries.length + ')</summary><div class="proj-entry-trash-list">'; for (var j = 0; j < deletedEntries.length; j++) { trashHtml += renderV2PEntryCard(deletedEntries[j], 'trash'); } trashHtml += '</div></details></div>'; }
+
+    var detailSc = meta.statusColor || defaultStatusColors[meta.status] || '#22c55e';
+    var detailCircleTitle = meta.statusText ? (' title="' + esc(meta.statusText) + '"') : '';
+    container.innerHTML = '<div class="proj-detail-header"><button class="proj-detail-back" onclick="showV2PTab()">\u2190 Zur\u00fcck</button><span class="proj-status-circle proj-status-circle-lg" style="background:' + esc(detailSc) + '"' + detailCircleTitle + '></span><span class="proj-detail-name">' + esc(meta.name || projectId) + '</span><div style="margin-left:auto;display:flex;gap:8px"><button class="proj-action-btn" onclick="deleteV2PProject(\'' + esc(projectId) + '\',\'' + esc(meta.name || projectId) + '\')" title="In Papierkorb" style="font-size:16px">\ud83d\uddd1</button></div></div>'
+      + '<div class="proj-section section-info"' + cb + '><h3>Info</h3><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-end"><div><label class="form-label">Name</label><input type="text" class="form-input" id="v2pd-name" value="' + esc(meta.name || '') + '" style="width:auto;min-width:200px"></div><div><label class="form-label">Status-Farbe</label><div class="proj-sc-picker" id="v2pd-sc-picker"><span class="proj-sc-opt' + (detailSc === '#22c55e' ? ' selected' : '') + '" data-color="#22c55e" style="background:#22c55e" onclick="pickV2PSc(this)"></span><span class="proj-sc-opt' + (detailSc === '#eab308' ? ' selected' : '') + '" data-color="#eab308" style="background:#eab308" onclick="pickV2PSc(this)"></span><span class="proj-sc-opt' + (detailSc === '#ef4444' ? ' selected' : '') + '" data-color="#ef4444" style="background:#ef4444" onclick="pickV2PSc(this)"></span><span class="proj-sc-opt' + (detailSc === '#555' ? ' selected' : '') + '" data-color="#555" style="background:#555" onclick="pickV2PSc(this)"></span></div></div><div><label class="form-label">Status-Text (Hover)</label><input type="text" class="form-input" id="v2pd-status-text" value="' + esc(meta.statusText || '') + '" placeholder="z.B. Aktiv, Pausiert\u2026" style="width:auto;min-width:140px"></div></div><button class="btn-primary" id="v2pd-save-btn">Speichern</button><span id="v2pd-save-status" style="font-size:12px;color:var(--text-muted);margin-left:10px"></span></div>'
+      + (meta.description ? '<div class="proj-section"><h3>Beschreibung</h3><div class="proj-description">' + esc(meta.description) + '</div></div>' : '')
+      + '<div class="proj-section section-entries"><h3>Beitr\u00e4ge</h3><div class="proj-log-form">' + renderMarkdownToolbar('v2pd-log-entry') + '<textarea class="proj-log-input" id="v2pd-log-entry" placeholder="Neuer Eintrag\u2026"></textarea><div class="md-preview" id="preview-v2pd-log-entry" style="display:none"></div><button class="btn-primary" id="v2pd-log-btn">Hinzuf\u00fcgen</button></div><div id="v2pd-entries-list" style="margin-top:16px">' + entriesHtml + '</div>' + archiveHtml + trashHtml + '</div>';
+
+    document.getElementById('v2pd-save-btn').addEventListener('click', async function() {
+      var btn = document.getElementById('v2pd-save-btn'); var st = document.getElementById('v2pd-save-status');
+      var nn = document.getElementById('v2pd-name').value.trim(); if (!nn) { showToast('Name darf nicht leer sein', true); return; }
+      var scEl = document.querySelector('#v2pd-sc-picker .proj-sc-opt.selected'); var nsc = scEl ? scEl.dataset.color : '#22c55e';
+      var nst = document.getElementById('v2pd-status-text').value.trim();
+      btn.disabled = true; st.textContent = 'Speichert\u2026';
+      try { await saveV2PProject(Object.assign({}, meta, { name: nn, statusColor: nsc, statusText: nst || '', updatedAt: new Date().toISOString() })); st.textContent = 'Gespeichert \u2713'; showToast('Projekt gespeichert'); setTimeout(function() { if (st) st.textContent = ''; }, 3000); } catch (e) { showToast('Fehler', true); st.textContent = ''; }
+      btn.disabled = false;
+    });
+
+    document.getElementById('v2pd-log-btn').addEventListener('click', async function() {
+      var btn = document.getElementById('v2pd-log-btn');
+      var text = document.getElementById('v2pd-log-entry').value.trim();
+      if (!text) { document.getElementById('v2pd-log-entry').focus(); return; }
+      btn.disabled = true; btn.textContent = 'Speichert\u2026';
+      try { await addV2PEntry(projectId, text); document.getElementById('v2pd-log-entry').value = ''; showToast('Eintrag hinzugef\u00fcgt'); showV2PDetail(projectId); } catch (e) { showToast('Fehler', true); }
+      btn.disabled = false; btn.textContent = 'Hinzuf\u00fcgen';
+    });
+
+    initV2PEntryDragDrop(projectId);
+  } catch (e) { container.innerHTML = '<div class="empty-state">Fehler: ' + esc(e.message) + '</div>'; }
+}
+
+function startEditV2PEntry(projectId, entryId) {
+  var card = document.querySelector('.proj-entry-card[data-entry-id="' + entryId + '"]'); if (!card) return;
+  var meta = _v2pMeta[projectId]; if (!meta || !meta.entries) return;
+  var entry = meta.entries.find(function(e) { return e.id === entryId; }); if (!entry) return;
+  card.setAttribute('data-expanded', 'true');
+  var fullEl = card.querySelector('.proj-entry-full');
+  var previewEl = card.querySelector('.proj-entry-preview');
+  var actionsEl = card.querySelector('.proj-entry-actions');
+  var target = fullEl || previewEl; if (!target) return;
+  if (previewEl) previewEl.style.display = 'none';
+  if (actionsEl) actionsEl.style.display = 'none';
+  var origText = entry.text;
+  target.outerHTML = '<div class="proj-entry-edit-form">' + renderMarkdownToolbar('v2pe-' + esc(entryId)) + '<textarea class="proj-entry-edit-input" id="v2pe-' + esc(entryId) + '">' + esc(origText) + '</textarea><div class="md-preview" id="preview-v2pe-' + esc(entryId) + '" style="display:none"></div><div class="proj-entry-edit-actions"><button class="btn-primary proj-entry-save-btn" id="v2pe-save-' + esc(entryId) + '">Speichern</button><button class="proj-entry-cancel-btn" id="v2pe-cancel-' + esc(entryId) + '">Abbrechen</button></div></div>';
+  var textarea = document.getElementById('v2pe-' + entryId); if (textarea) textarea.focus();
+  document.getElementById('v2pe-save-' + entryId).addEventListener('click', async function() {
+    var newText = document.getElementById('v2pe-' + entryId).value.trim(); if (!newText) { showToast('Text darf nicht leer sein', true); return; }
+    try { await editV2PEntry(projectId, entryId, newText); showToast('Gespeichert'); showV2PDetail(projectId); } catch (e) { showToast('Fehler', true); }
+  });
+  document.getElementById('v2pe-cancel-' + entryId).addEventListener('click', function() { showV2PDetail(projectId); });
+}
+
+function initV2PEntryDragDrop(projectId) {
+  var container = document.getElementById('v2pd-entries-list'); if (!container) return;
+  var cards = container.querySelectorAll('.proj-entry-card'); if (cards.length < 2) return;
+  var _draggedId = null; var _touchStartY = 0; var _touchCard = null; var _isDragging = false;
+  cards.forEach(function(card) {
+    card.setAttribute('draggable', 'true');
+    card.addEventListener('dragstart', function(ev) { if (!ev.target.closest('.proj-entry-drag-handle')) return ev.preventDefault(); _draggedId = card.dataset.entryId; card.classList.add('proj-entry-dragging'); ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', _draggedId); });
+    card.addEventListener('dragend', function() { card.classList.remove('proj-entry-dragging'); _draggedId = null; clearDropIndicators(container); });
+    card.addEventListener('dragover', function(ev) { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; if (card.dataset.entryId === _draggedId) return; clearDropIndicators(container); var rect = card.getBoundingClientRect(); if (ev.clientY < rect.top + rect.height / 2) { card.classList.add('proj-entry-drop-above'); } else { card.classList.add('proj-entry-drop-below'); } });
+    card.addEventListener('dragleave', function() { card.classList.remove('proj-entry-drop-above', 'proj-entry-drop-below'); });
+    card.addEventListener('drop', function(ev) { ev.preventDefault(); var targetId = card.dataset.entryId; if (!_draggedId || _draggedId === targetId) return; var rect = card.getBoundingClientRect(); var insertBefore = ev.clientY < rect.top + rect.height / 2; clearDropIndicators(container); reorderV2PEntry(projectId, _draggedId, targetId, insertBefore); });
+  });
+  container.addEventListener('touchstart', function(ev) { var handle = ev.target.closest('.proj-entry-drag-handle'); if (!handle) return; var card = handle.closest('.proj-entry-card'); if (!card) return; _touchCard = card; _touchStartY = ev.touches[0].clientY; _isDragging = false; _draggedId = card.dataset.entryId; }, { passive: true });
+  container.addEventListener('touchmove', function(ev) { if (!_touchCard || !_draggedId) return; var dy = Math.abs(ev.touches[0].clientY - _touchStartY); if (dy > 15 && !_isDragging) { _isDragging = true; _touchCard.classList.add('proj-entry-dragging'); } if (!_isDragging) return; ev.preventDefault(); clearDropIndicators(container); var elem = document.elementFromPoint(ev.touches[0].clientX, ev.touches[0].clientY); if (!elem) return; var target = elem.closest('.proj-entry-card'); if (target && target.dataset.entryId !== _draggedId) { var rect = target.getBoundingClientRect(); if (ev.touches[0].clientY < rect.top + rect.height / 2) { target.classList.add('proj-entry-drop-above'); } else { target.classList.add('proj-entry-drop-below'); } } }, { passive: false });
+  container.addEventListener('touchend', function(ev) { if (!_isDragging || !_draggedId) { _touchCard = null; _draggedId = null; _isDragging = false; return; } _touchCard.classList.remove('proj-entry-dragging'); var target = container.querySelector('.proj-entry-drop-above,.proj-entry-drop-below'); if (target) { var insertBefore = target.classList.contains('proj-entry-drop-above'); var targetId = target.dataset.entryId; clearDropIndicators(container); if (targetId !== _draggedId) reorderV2PEntry(projectId, _draggedId, targetId, insertBefore); } else { clearDropIndicators(container); } _touchCard = null; _draggedId = null; _isDragging = false; }, { passive: true });
+}
+
+function openCreateV2PModal() {
+  document.getElementById('v2pm-name').value = '';
+  document.getElementById('v2pm-desc').value = '';
+  document.getElementById('v2pm-status-text').value = '';
+  document.querySelectorAll('#v2pm-sc-picker .proj-sc-opt').forEach(function(s, i) { s.classList.toggle('selected', i === 0); });
+  document.querySelectorAll('#v2p-modal-overlay .proj-color-swatch').forEach(function(s, i) { s.classList.toggle('selected', i === 0); });
+  var errEl = document.getElementById('v2pm-error'); if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+  document.getElementById('v2p-modal-overlay').classList.add('open');
+  setTimeout(function() { document.getElementById('v2pm-name').focus(); }, 50);
+}
+
+function selectV2PColor(el) { el.closest('.proj-color-options').querySelectorAll('.proj-color-swatch').forEach(function(s) { s.classList.remove('selected'); }); el.classList.add('selected'); }
+
+function pickV2PSc(el) { el.parentElement.querySelectorAll('.proj-sc-opt').forEach(function(s) { s.classList.remove('selected'); }); el.classList.add('selected'); }
+
+document.getElementById('v2pm-cancel').addEventListener('click', function() { document.getElementById('v2p-modal-overlay').classList.remove('open'); });
+document.getElementById('v2p-modal-overlay').addEventListener('click', function(e) { if (e.target === e.currentTarget) document.getElementById('v2p-modal-overlay').classList.remove('open'); });
+
+document.getElementById('v2pm-save').addEventListener('click', async function() {
+  var name = document.getElementById('v2pm-name').value.trim();
+  if (!name) { document.getElementById('v2pm-name').focus(); return; }
+  var token = getGHToken(); if (!token) { showToast('Bitte Token eintragen', true); return; }
+  var desc = document.getElementById('v2pm-desc').value.trim();
+  var scEl = document.querySelector('#v2pm-sc-picker .proj-sc-opt.selected'); var statusColor = scEl ? scEl.dataset.color : '#22c55e';
+  var statusText = document.getElementById('v2pm-status-text').value.trim();
+  var colorEl = document.querySelector('#v2p-modal-overlay .proj-color-swatch.selected'); var color = colorEl ? colorEl.dataset.color : '#cc785c';
+  var slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  var id = slug + '-' + Date.now().toString(36);
+  var meta = { id: id, name: name, description: desc, status: 'aktiv', statusColor: statusColor, statusText: statusText || '', color: color, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), entries: [] };
+  var btn = document.getElementById('v2pm-save'); btn.disabled = true; btn.textContent = 'Erstellt\u2026';
+  try { await saveV2PProject(meta); document.getElementById('v2p-modal-overlay').classList.remove('open'); showToast('Projekt erstellt'); showV2PTab(); }
+  catch (e) { var errEl = document.getElementById('v2pm-error'); if (errEl) { errEl.textContent = 'Fehler: ' + e.message; errEl.style.display = 'block'; } showToast('Fehler: ' + e.message, true); }
+  btn.disabled = false; btn.textContent = 'Erstellen';
 });
 
 
