@@ -6482,6 +6482,7 @@ async function processRAGQueue() {
         updateRAGProgress(item.name, totalParts + 1, totalParts + 1, 'Fertig');
         item.status = 'done';
         if (statusEl) { statusEl.textContent = totalParts + ' Teile hochgeladen'; statusEl.className = 'rag-queue-status done'; }
+        logActivity('uploaded', 'rag', item.name, 'RAG Upload: ' + item.name + ' (' + totalParts + ' Teile)');
 
       } else {
         // Normal single-file upload
@@ -6500,6 +6501,7 @@ async function processRAGQueue() {
           item.status = 'done';
           if (statusEl) { statusEl.textContent = 'Hochgeladen'; statusEl.className = 'rag-queue-status done'; }
           uploadedNames.push(item.name);
+          logActivity('uploaded', 'rag', item.name, 'RAG Upload: ' + item.name);
           if (item.context) {
             var metaContent = encodeUtf8Base64('Kontext: ' + item.context + '\nDatei: ' + item.name + '\nUpload: ' + new Date().toISOString());
             await uploadSingleToGitHub(token, path + '.meta.txt', metaContent, 'rag-meta: ' + item.name).catch(function() {});
