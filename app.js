@@ -2403,6 +2403,7 @@ function parseSimpleMarkdown(text){
     // inline formatting
     line=line.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
     line=line.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,'<em>$1</em>');
+    line=line.replace(/!\[([^\]]*)\]\(((?:https?:)[^\)]+)\)/g,'<img src="$2" alt="$1" style="max-width:100%;border-radius:6px;margin:8px 0" loading="lazy">');
     line=line.replace(/\[([^\]]+)\]\(((?:https?:|mailto:)[^\)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
     // block formatting
     if(/^### /.test(raw)){html+='<h3>'+line.substring(4)+'</h3>';}
@@ -7553,6 +7554,39 @@ document.getElementById('v2m-delete').addEventListener('click', function() {
 // ── V2P TAB ── (Eigenes Projektsystem mit eigener Datenquelle)
 
 var _v2pMeta = {};
+var _v2pLanes = [];
+var _v2pLanesSHA = '';
+var _v2pLanesLoaded = false;
+var _v2pLaneCollapsed = {};
+
+async function loadV2PLanes() {
+  if (_v2pLanesLoaded) return;
+  try {
+    var result = await fetchFromGitHub('data/v2p-lanes.json');
+    if (!result) { _v2pLanesLoaded = true; return; }
+    var parsed = JSON.parse(result.content);
+    _v2pLanes = parsed.lanes || [];
+    _v2pLanesSHA = result.sha;
+    _v2pLanesLoaded = true;
+  } catch (e) { console.warn('loadV2PLanes:', e); _v2pLanesLoaded = true; }
+}
+
+async function saveV2PLanes() {
+  try {
+    var payload = JSON.stringify({ lanes: _v2pLanes }, null, 2);
+    var content = btoa(unescape(encodeURIComponent(payload)));
+    var token = getGHToken(); if (!token) return;
+    var body = { message: 'v2p: save lanes', content: content };
+    if (_v2pLanesSHA) body.sha = _v2pLanesSHA;
+    var resp = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/v2p-lanes.json', {
+      method: 'PUT', headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) throw new Error('PUT failed: ' + resp.status);
+    var data = await resp.json();
+    _v2pLanesSHA = data.content.sha;
+  } catch (e) { showToast('Lane-Sync fehlgeschlagen: ' + e.message, true); }
+}
 
 async function loadV2PProjects() {
   var token = getGHToken(); if (!token) return null;
@@ -7653,24 +7687,23 @@ async function reorderV2PEntry(projectId, draggedId, targetId, insertBefore) {
 
 async function showV2PTab() {
   var container = document.getElementById('v2p-view'); var token = getGHToken();
-  var hdr = '<div class="proj-header"><h2>Projekte V2</h2><button class="btn-primary" onclick="openCreateV2PModal()">+ Neues Projekt</button></div>';
+  var hdr = '<div class="proj-header"><h2>Projekte V2</h2><div style="display:flex;gap:8px"><button class="btn-secondary" onclick="openV2PLaneModal()">+ Lane</button><button class="btn-primary" onclick="openCreateV2PModal()">+ Projekt</button></div></div>';
   if (!token) { container.innerHTML = hdr + '<div class="empty-state">Bitte GitHub Token eintragen.</div>'; return; }
-  container.innerHTML = hdr + '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Lade Projekte\u2026</div>';
+  container.innerHTML = hdr + '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">Lade\u2026</div>';
   try {
+    await loadV2PLanes();
     var ghIds = await loadV2PProjects(); if (ghIds === null) { container.innerHTML = hdr + '<div class="empty-state">Fehler beim Laden.</div>'; return; }
     var localOnly = Object.keys(_v2pMeta).filter(function(id) { return !ghIds.includes(id); }); var pIds = ghIds.concat(localOnly);
-    if (pIds.length === 0) { container.innerHTML = hdr + '<div class="empty-state">Noch keine Projekte.</div>'; return; }
     var metas = await Promise.all(pIds.map(function(id) { return _v2pMeta[id] ? Promise.resolve(_v2pMeta[id]) : loadV2PMeta(id); }));
     var statusColors = { aktiv: '#22c55e', pausiert: '#eab308', abgeschlossen: '#22c55e', archiviert: '#555' };
-    var savedOrder = JSON.parse(localStorage.getItem('v2pOrder') || '[]');
-    var activeList = []; var deletedList = [];
-    pIds.forEach(function(id, i) { var meta = metas[i]; if (!meta) return; if (meta.deleted) { deletedList.push({ id: id, meta: meta }); } else { activeList.push({ id: id, meta: meta }); } });
-    if (savedOrder.length > 0) { activeList.sort(function(a, b) { var ai = savedOrder.indexOf(a.id); var bi = savedOrder.indexOf(b.id); if (ai === -1) ai = 9999; if (bi === -1) bi = 9999; return ai - bi; }); }
+
+    // Projekte nach Lane gruppieren
+    var allProjects = [];
+    pIds.forEach(function(id, i) { var meta = metas[i]; if (meta && !meta.deleted) { _v2pMeta[id] = meta; allProjects.push({ id: id, meta: meta }); } });
 
     function fmtV2PDate(iso) { if (!iso) return ''; try { var d = new Date(iso); if (isNaN(d)) return ''; return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getFullYear()).slice(-2); } catch (e) { return ''; } }
 
-    var activeCards = ''; var deletedCards = '';
-    activeList.forEach(function(item) {
+    function renderV2PProjCard(item) {
       var id = item.id; var meta = item.meta;
       var sc = meta.statusColor || statusColors[meta.status] || '#22c55e';
       var circleTitle = meta.statusText ? (' title="' + esc(meta.statusText) + '"') : '';
@@ -7679,24 +7712,96 @@ async function showV2PTab() {
       if (meta.entries && meta.entries.length) { meta.entries.forEach(function(e) { var ed = e.updatedAt || e.createdAt; if (ed && ed > lastModified) lastModified = ed; }); }
       var lastFmt = fmtV2PDate(lastModified);
       var statusText = esc(meta.statusText || meta.status || 'aktiv');
-      activeCards += '<div class="proj-card" draggable="true" data-proj-id="' + esc(id) + '" onclick="showV2PDetail(\'' + esc(id) + '\')">'
+      return '<div class="proj-card" draggable="true" data-proj-id="' + esc(id) + '" data-lane-id="' + esc(meta.laneId || '') + '" onclick="showV2PDetail(\'' + esc(id) + '\')">'
         + '<div class="proj-card-color-bar" style="background:' + esc(sc) + '"></div>'
         + '<div class="proj-card-name-row">' + statusCircle + '<span class="proj-card-name">' + esc(meta.name || id) + '</span>' + (lastFmt ? '<span class="proj-card-last">' + lastFmt + '</span>' : '') + '</div>'
         + (meta.description ? '<div class="proj-card-desc">' + esc(meta.description) + '</div>' : '')
         + '<div class="proj-card-status-row"><span class="proj-card-status-chip" style="background:rgba(' + hexToRgb(sc) + ',0.14);border-color:' + esc(sc) + ';color:' + esc(sc) + '">' + statusText + '</span></div>'
         + '</div>';
-    });
-    deletedList.forEach(function(item) {
-      var id = item.id; var meta = item.meta;
-      var sc = meta.statusColor || statusColors[meta.status] || '#22c55e';
-      var circleTitle = meta.statusText ? (' title="' + esc(meta.statusText) + '"') : '';
-      var statusCircle = '<span class="proj-status-circle" style="background:' + esc(sc) + '"' + circleTitle + '></span>';
-      deletedCards += '<div class="proj-card proj-card-deleted"><div class="proj-card-color-bar" style="background:' + esc(sc) + '"></div><div class="proj-card-name-row">' + statusCircle + '<span class="proj-card-name">' + esc(meta.name || id) + '</span></div>' + (meta.description ? '<div class="proj-card-desc">' + esc(meta.description) + '</div>' : '') + '<button class="proj-card-restore" onclick="event.stopPropagation();restoreV2PProject(\'' + esc(id) + '\')">Wiederherstellen</button></div>';
-    });
-    var trashHtml = deletedCards ? '<div class="proj-trash-section"><details><summary class="proj-trash-toggle">Papierkorb</summary><div class="proj-grid" style="margin-top:12px">' + deletedCards + '</div></details></div>' : '';
-    container.innerHTML = hdr + '<div class="proj-grid" id="v2p-grid-active">' + activeCards + '</div>' + trashHtml;
-    initV2PDragDrop();
+    }
+
+    // Lanes rendern (Kanban-Style)
+    var lanes = _v2pLanes.slice().sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
+
+    // "Nicht zugeordnet" Lane am Ende
+    var unassigned = allProjects.filter(function(p) { return !p.meta.laneId || !lanes.find(function(l) { return l.id === p.meta.laneId; }); });
+
+    var lanesHtml = lanes.map(function(lane) {
+      var laneProjects = allProjects.filter(function(p) { return p.meta.laneId === lane.id; });
+      var isCol = _v2pLaneCollapsed[lane.id];
+      var hasCards = laneProjects.length > 0;
+      var cardsHtml = laneProjects.map(renderV2PProjCard).join('') || '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Projekte</div>';
+      return '<div class="lane' + (isCol ? ' lane-collapsed' : '') + (hasCards ? ' lane-has-cards' : '') + '" data-lane="' + esc(lane.id) + '" style="border-top:3px solid ' + esc(lane.color || '#4a90d9') + '">'
+        + '<div class="lane-header" onclick="toggleV2PLaneCollapse(\'' + esc(lane.id) + '\')" style="cursor:pointer">'
+        + '<span class="lane-title">' + esc(lane.name) + '</span>'
+        + '<span class="lane-count">' + laneProjects.length + '</span>'
+        + '<button class="btn-add-card" onclick="event.stopPropagation();openCreateV2PModal(\'' + esc(lane.id) + '\')">+ Projekt</button>'
+        + '<button class="btn-add-card" onclick="event.stopPropagation();openV2PLaneModal(\'' + esc(lane.id) + '\')" title="Lane bearbeiten" style="font-size:14px">\u270e</button>'
+        + '<button class="lane-collapse" onclick="event.stopPropagation();toggleV2PLaneCollapse(\'' + esc(lane.id) + '\')">' + (isCol ? '\u25b6' : '\u25bc') + '</button>'
+        + '</div>'
+        + '<div class="lane-body' + (isCol ? ' collapsed' : '') + '">' + cardsHtml + '</div></div>';
+    }).join('');
+
+    // Nicht zugeordnete Projekte
+    if (unassigned.length > 0) {
+      var uCards = unassigned.map(renderV2PProjCard).join('');
+      lanesHtml += '<div class="lane lane-has-cards" data-lane="_unassigned" style="border-top:3px solid #555">'
+        + '<div class="lane-header" style="cursor:pointer" onclick="toggleV2PLaneCollapse(\'_unassigned\')">'
+        + '<span class="lane-title">Nicht zugeordnet</span>'
+        + '<span class="lane-count">' + unassigned.length + '</span>'
+        + '<button class="lane-collapse" onclick="event.stopPropagation();toggleV2PLaneCollapse(\'_unassigned\')">\u25bc</button>'
+        + '</div><div class="lane-body">' + uCards + '</div></div>';
+    }
+
+    if (!lanes.length && !unassigned.length) {
+      lanesHtml = '<div class="empty-state">Noch keine Lanes oder Projekte. Erstelle eine Lane mit "+ Lane".</div>';
+    }
+
+    container.innerHTML = hdr + '<div class="kanban-grid" id="v2p-lane-grid">' + lanesHtml + '</div>';
+    initV2PLaneDragDrop();
   } catch (e) { container.innerHTML = hdr + '<div class="empty-state">Fehler: ' + esc(e.message) + '</div>'; }
+}
+
+function toggleV2PLaneCollapse(laneId) { _v2pLaneCollapsed[laneId] = !_v2pLaneCollapsed[laneId]; showV2PTab(); }
+
+// Lane-CRUD
+function openV2PLaneModal(editId) {
+  var lane = editId ? _v2pLanes.find(function(l) { return l.id === editId; }) : null;
+  var isNew = !lane;
+  document.getElementById('v2pl-modal-title').textContent = isNew ? 'Neue Lane' : 'Lane bearbeiten';
+  document.getElementById('v2pl-name').value = lane ? lane.name : '';
+  document.querySelectorAll('#v2pl-color-picker .proj-sc-opt').forEach(function(s) {
+    s.classList.toggle('selected', s.dataset.color === (lane ? lane.color : '#4a90d9'));
+  });
+  document.getElementById('v2pl-delete').style.display = isNew ? 'none' : '';
+  document.getElementById('v2pl-modal-overlay').dataset.editId = editId || '';
+  document.getElementById('v2pl-modal-overlay').classList.add('open');
+  setTimeout(function() { document.getElementById('v2pl-name').focus(); }, 50);
+}
+
+function closeV2PLaneModal() { document.getElementById('v2pl-modal-overlay').classList.remove('open'); }
+
+// Drag & Drop: Projekte zwischen Lanes verschieben
+function initV2PLaneDragDrop() {
+  var grid = document.getElementById('v2p-lane-grid'); if (!grid) return;
+  grid.addEventListener('dragover', function(e) {
+    if (!e.dataTransfer.types.includes('text/plain')) return;
+    e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+  });
+  grid.addEventListener('drop', async function(e) {
+    e.preventDefault();
+    var projId = e.dataTransfer.getData('text/plain'); if (!projId) return;
+    var targetLane = e.target.closest('.lane'); if (!targetLane) return;
+    var targetLaneId = targetLane.dataset.lane;
+    if (targetLaneId === '_unassigned') targetLaneId = '';
+    var meta = _v2pMeta[projId]; if (!meta) return;
+    if (meta.laneId === targetLaneId) return;
+    meta.laneId = targetLaneId;
+    meta.updatedAt = new Date().toISOString();
+    await saveV2PProject(meta);
+    showToast('Verschoben');
+    showV2PTab();
+  });
 }
 
 function initV2PDragDrop() {
@@ -7837,12 +7942,20 @@ function initV2PEntryDragDrop(projectId) {
   container.addEventListener('touchend', function(ev) { if (!_isDragging || !_draggedId) { _touchCard = null; _draggedId = null; _isDragging = false; return; } _touchCard.classList.remove('proj-entry-dragging'); var target = container.querySelector('.proj-entry-drop-above,.proj-entry-drop-below'); if (target) { var insertBefore = target.classList.contains('proj-entry-drop-above'); var targetId = target.dataset.entryId; clearDropIndicators(container); if (targetId !== _draggedId) reorderV2PEntry(projectId, _draggedId, targetId, insertBefore); } else { clearDropIndicators(container); } _touchCard = null; _draggedId = null; _isDragging = false; }, { passive: true });
 }
 
-function openCreateV2PModal() {
+function openCreateV2PModal(preselectedLaneId) {
   document.getElementById('v2pm-name').value = '';
   document.getElementById('v2pm-desc').value = '';
   document.getElementById('v2pm-status-text').value = '';
   document.querySelectorAll('#v2pm-sc-picker .proj-sc-opt').forEach(function(s, i) { s.classList.toggle('selected', i === 0); });
   document.querySelectorAll('#v2p-modal-overlay .proj-color-swatch').forEach(function(s, i) { s.classList.toggle('selected', i === 0); });
+  // Lane-Dropdown befüllen
+  var laneSel = document.getElementById('v2pm-lane');
+  laneSel.innerHTML = '<option value="">(Keine Lane)</option>';
+  _v2pLanes.forEach(function(l) {
+    var opt = document.createElement('option'); opt.value = l.id; opt.textContent = l.name;
+    if (preselectedLaneId && l.id === preselectedLaneId) opt.selected = true;
+    laneSel.appendChild(opt);
+  });
   var errEl = document.getElementById('v2pm-error'); if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
   document.getElementById('v2p-modal-overlay').classList.add('open');
   setTimeout(function() { document.getElementById('v2pm-name').focus(); }, 50);
@@ -7865,11 +7978,83 @@ document.getElementById('v2pm-save').addEventListener('click', async function() 
   var colorEl = document.querySelector('#v2p-modal-overlay .proj-color-swatch.selected'); var color = colorEl ? colorEl.dataset.color : '#cc785c';
   var slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
   var id = slug + '-' + Date.now().toString(36);
-  var meta = { id: id, name: name, description: desc, status: 'aktiv', statusColor: statusColor, statusText: statusText || '', color: color, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), entries: [] };
+  var laneId = document.getElementById('v2pm-lane').value || '';
+  var meta = { id: id, name: name, description: desc, status: 'aktiv', statusColor: statusColor, statusText: statusText || '', color: color, laneId: laneId, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), entries: [] };
   var btn = document.getElementById('v2pm-save'); btn.disabled = true; btn.textContent = 'Erstellt\u2026';
   try { await saveV2PProject(meta); document.getElementById('v2p-modal-overlay').classList.remove('open'); showToast('Projekt erstellt'); showV2PTab(); }
   catch (e) { var errEl = document.getElementById('v2pm-error'); if (errEl) { errEl.textContent = 'Fehler: ' + e.message; errEl.style.display = 'block'; } showToast('Fehler: ' + e.message, true); }
   btn.disabled = false; btn.textContent = 'Erstellen';
+});
+
+// Lane-Modal Event Listeners
+document.getElementById('v2pl-cancel').addEventListener('click', closeV2PLaneModal);
+document.getElementById('v2pl-modal-overlay').addEventListener('click', function(e) { if (e.target === e.currentTarget) closeV2PLaneModal(); });
+
+document.getElementById('v2pl-save').addEventListener('click', async function() {
+  var name = document.getElementById('v2pl-name').value.trim();
+  if (!name) { document.getElementById('v2pl-name').focus(); return; }
+  var scEl = document.querySelector('#v2pl-color-picker .proj-sc-opt.selected');
+  var color = scEl ? scEl.dataset.color : '#4a90d9';
+  var editId = document.getElementById('v2pl-modal-overlay').dataset.editId;
+  if (editId) {
+    var lane = _v2pLanes.find(function(l) { return l.id === editId; });
+    if (lane) { lane.name = name; lane.color = color; }
+  } else {
+    _v2pLanes.push({ id: 'l' + Date.now().toString(36), name: name, color: color, order: (_v2pLanes.length + 1) * 1000 });
+  }
+  closeV2PLaneModal();
+  await saveV2PLanes();
+  showToast(editId ? 'Lane aktualisiert' : 'Lane erstellt');
+  showV2PTab();
+});
+
+document.getElementById('v2pl-delete').addEventListener('click', function() {
+  var editId = document.getElementById('v2pl-modal-overlay').dataset.editId;
+  if (!editId) return;
+  confirmAction('Lane löschen?', 'Projekte in dieser Lane werden "Nicht zugeordnet".', async function() {
+    _v2pLanes = _v2pLanes.filter(function(l) { return l.id !== editId; });
+    // Projekte in dieser Lane → laneId leeren
+    Object.values(_v2pMeta).forEach(function(meta) { if (meta.laneId === editId) { meta.laneId = ''; } });
+    closeV2PLaneModal();
+    await saveV2PLanes();
+    showToast('Lane gelöscht');
+    showV2PTab();
+  });
+});
+
+// Bild-Upload für Blog-Posts: Paste-Handler auf Textarea
+document.addEventListener('paste', async function(e) {
+  var textarea = e.target;
+  if (!textarea || textarea.tagName !== 'TEXTAREA') return;
+  if (!textarea.id || (!textarea.id.startsWith('v2pd-') && !textarea.id.startsWith('v2pe-'))) return;
+  var items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].type.indexOf('image') !== -1) {
+      e.preventDefault();
+      var file = items[i].getAsFile();
+      if (!file) continue;
+      var ext = file.type.split('/')[1] || 'png';
+      var fname = 'v2p_' + Date.now() + '.' + ext;
+      showToast('Bild wird hochgeladen\u2026');
+      var reader = new FileReader();
+      reader.onload = async function(ev) {
+        var b64 = ev.target.result.split(',')[1];
+        try {
+          await safeWriteToGitHub('v2p-images/' + fname, b64, 'v2p: upload image ' + fname);
+          var url = 'https://raw.githubusercontent.com/ctmos/cowork-data/main/v2p-images/' + fname;
+          var pos = textarea.selectionStart || 0;
+          var before = textarea.value.substring(0, pos);
+          var after = textarea.value.substring(pos);
+          textarea.value = before + '![Bild](' + url + ')\n' + after;
+          textarea.focus();
+          showToast('Bild eingefügt');
+        } catch (err) { showToast('Upload fehlgeschlagen: ' + err.message, true); }
+      };
+      reader.readAsDataURL(file);
+      break;
+    }
+  }
 });
 
 

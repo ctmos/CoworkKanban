@@ -1653,6 +1653,33 @@
 
 
 
+<!-- V2P LANE MODAL -->
+<div class="modal-overlay" id="v2pl-modal-overlay" data-edit-id="">
+  <div class="modal">
+    <h2 id="v2pl-modal-title">Neue Lane</h2>
+    <div class="form-group">
+      <label class="form-label">Name *</label>
+      <input type="text" class="form-input" id="v2pl-name" placeholder="z.B. Arbeit, Privat, Ideen…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Farbe</label>
+      <div class="proj-sc-picker" id="v2pl-color-picker">
+        <span class="proj-sc-opt selected" data-color="#4a90d9" style="background:#4a90d9" onclick="pickV2PSc(this)"></span>
+        <span class="proj-sc-opt" data-color="#22c55e" style="background:#22c55e" onclick="pickV2PSc(this)"></span>
+        <span class="proj-sc-opt" data-color="#eab308" style="background:#eab308" onclick="pickV2PSc(this)"></span>
+        <span class="proj-sc-opt" data-color="#ef4444" style="background:#ef4444" onclick="pickV2PSc(this)"></span>
+        <span class="proj-sc-opt" data-color="#a855f7" style="background:#a855f7" onclick="pickV2PSc(this)"></span>
+        <span class="proj-sc-opt" data-color="#f97316" style="background:#f97316" onclick="pickV2PSc(this)"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="v2pl-delete" style="margin-right:auto">Löschen</button>
+      <button class="btn-secondary" id="v2pl-cancel">Abbrechen</button>
+      <button class="btn-primary" id="v2pl-save">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- V2P PROJEKT ERSTELLEN MODAL -->
 <div class="modal-overlay" id="v2p-modal-overlay">
   <div class="modal">
@@ -1664,6 +1691,10 @@
     <div class="form-group">
       <label class="form-label">Beschreibung</label>
       <textarea class="form-textarea" id="v2pm-desc" placeholder="Kurze Beschreibung…" style="min-height:60px"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Lane</label>
+      <select class="form-select" id="v2pm-lane"></select>
     </div>
     <div class="form-group">
       <label class="form-label">Status-Farbe</label>

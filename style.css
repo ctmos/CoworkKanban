@@ -2687,13 +2687,13 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
   border-radius: var(--radius) var(--radius) 0 0;
 }
 /* Two-column layout for lanes */
-#tab-kanban .kanban-grid, #tab-v2 .kanban-grid {
+#tab-kanban .kanban-grid, #tab-v2 .kanban-grid, #tab-v2p .kanban-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 @media (max-width: 768px) {
-  #tab-kanban .kanban-grid, #tab-v2 .kanban-grid {
+  #tab-kanban .kanban-grid, #tab-v2 .kanban-grid, #tab-v2p .kanban-grid {
     grid-template-columns: 1fr;
   }
 }
