@@ -952,8 +952,26 @@ function logActivity(action, entity, entityId, summary) {
     entityId: entityId || '',
     summary: summary || ''
   });
+  // Live Awareness: Task-Events an JARVIS melden (nur auf app.moser.ai)
+  notifyJarvis(action, entity, entityId, summary);
 }
 window.logActivity = logActivity;
+
+function notifyJarvis(action, entity, entityId, summary) {
+  var isApp = location.hostname === 'app.moser.ai';
+  if (!isApp) return;
+  try {
+    fetch('/jarvis/api/log-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agent: 'lifeos',
+        event_type: entity + '_' + action,
+        payload: { text: (summary || '') + ' (' + (entityId || '') + ')', entity: entity, entityId: entityId || '', action: action }
+      })
+    }).catch(function() {});
+  } catch(e) {}
+}
 
 async function flushActivityQueue() {
   if (_activityQueue.length === 0) return;
