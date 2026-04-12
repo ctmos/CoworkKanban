@@ -4041,6 +4041,382 @@ function renderCockpitShowcase() {
   return html;
 }
 
+// ── COCKPIT SHOWCASE 3.0 (JARVIS + Hermine + Substrate + Coach Integration) ──
+function _csSetVersion(v) {
+  try { localStorage.setItem('cs_showcase_version', v); } catch(e){}
+  var container = document.getElementById('ik-container');
+  if (container) renderImperialKI(container);
+}
+function _csGetVersion() { try { return localStorage.getItem('cs_showcase_version') || '3'; } catch(e){ return '3'; } }
+
+function renderCockpitShowcase3() {
+  var hidden = false;
+  try { hidden = localStorage.getItem('cs_hidden_cockpit-showcase3-root') === '1'; } catch(e){}
+  var h = '';
+
+  h += '<div class="cs3-shell">';
+  h += '<div class="cs3-banner">';
+  h += '<div class="cs3-banner-left">';
+  h += '<div class="cs3-banner-title">ImperialKI Cockpit <span class="cs3-tag">Showcase 3.0</span></div>';
+  h += '<div class="cs3-banner-sub">Neues System-Backend: JARVIS v2.2 + Hermine 3-Tier + Substrate + Coach. Alles Mockup - zeigt was jetzt moeglich waere.</div>';
+  h += '</div>';
+  h += '<button class="cs-banner-toggle" data-cs-toggle="cockpit-showcase3-root" onclick="_csToggle(\'cockpit-showcase3-root\')">' + (hidden ? 'Einblenden' : 'Ausblenden') + '</button>';
+  h += '</div>';
+
+  h += '<div id="cockpit-showcase3-root" class="cs3-root' + (hidden ? ' cs-hidden' : '') + '">';
+
+  // ═══ BLOCK A: JARVIS-POWERED ═══
+  h += '<div class="cs3-block-label">JARVIS-Powered</div>';
+
+  // A1: Live System Pulse
+  h += '<details open class="cs-card" data-cs-feature="sys-pulse">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-j">J</span><span class="cs-card-title">Live System Pulse</span><span class="cs-card-meta">Echtzeit-Events aus JARVIS</span></summary>';
+  h += '<div class="cs-card-body">';
+  var pulseEvents = [
+    {t:'09:15',agent:'hermine',icon:'H',text:'Emeritus Modul 1 gescraped — 2 neue Replies in Discussion 1.1'},
+    {t:'09:18',agent:'jarvis',icon:'J',text:'Diff Detection: Owen Roodenburg hat auf Christians Post geantwortet'},
+    {t:'09:20',agent:'hermine',icon:'H',text:'Voice-DNA Reply-Draft fuer Owen generiert (Score 8/10)'},
+    {t:'09:22',agent:'kitt',icon:'K',text:'Destillat Modul 2 Video 2.1 auf Deutsch generiert'},
+    {t:'09:25',agent:'jarvis',icon:'J',text:'Knowledge Graph: 3 neue Relations extrahiert (Transformer → Fine-tuning → Healthcare NLP)'},
+    {t:'09:28',agent:'hermine',icon:'H',text:'Audio-Briefing TTS gerendert (4:52 min) — Telegram Push'},
+    {t:'09:30',agent:'jarvis',icon:'J',text:'Digest: "Hermine hat 2 neue Drafts generiert, Owen hat geantwortet, Modul 2 Material bereit"'},
+    {t:'09:31',agent:'kitt',icon:'K',text:'Pre-Grading Assignment 2.1 Draft: 41/50 — Process Map fehlt noch'}
+  ];
+  pulseEvents.forEach(function(ev){
+    h += '<div class="cs3-pulse-row"><span class="cs3-pulse-time">' + ev.t + '</span><span class="cs3-pulse-agent cs3-agent-' + ev.agent + '">' + ev.icon + '</span><span class="cs3-pulse-text">' + esc(ev.text) + '</span></div>';
+  });
+  h += '<div class="cs3-note">Real: JARVIS /api/context liefert Events in Echtzeit. Cockpit pollt alle 30s oder per WebSocket. Jeder Agent (Hermine, KITT, JARVIS) loggt automatisch.</div>';
+  h += '</div></details>';
+
+  // A2: Intent Tracker
+  h += '<details class="cs-card" data-cs-feature="intents">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-j">J</span><span class="cs-card-title">Intent Tracker</span><span class="cs-card-meta">Kurs-Ziele als JARVIS-Intents</span></summary>';
+  h += '<div class="cs-card-body">';
+  var intents = [
+    {goal:'Modul 1 komplett abschliessen',status:'active',pct:81,sub:'12/16 Items, fehlt: Discussion + Survey + Q&A + ggf. Bonus',by:'Fr 11.04.'},
+    {goal:'Discussion 1.1 posten (Voice DNA)',status:'active',pct:90,sub:'Draft fertig (Score 9/10), Freigabe durch Christian ausstehend',by:'Mo 14.04.'},
+    {goal:'Assignment 2.1 First Draft',status:'planned',pct:0,sub:'Use-Case aus M1 weiterentwickeln, Rubrik noch nicht bekannt',by:'offen'}
+  ];
+  intents.forEach(function(it){
+    var color = it.pct > 75 ? '#22c55e' : it.pct > 40 ? '#f59e0b' : 'var(--text-muted)';
+    h += '<div class="cs3-intent"><div class="cs3-intent-head"><span class="cs3-intent-goal">' + esc(it.goal) + '</span><span class="cs3-intent-status cs3-status-' + it.status + '">' + it.status + '</span></div>';
+    h += '<div class="cs3-intent-bar"><div style="width:' + it.pct + '%;background:' + color + '"></div></div>';
+    h += '<div class="cs3-intent-meta">' + esc(it.sub) + ' | Ziel: ' + esc(it.by) + '</div></div>';
+  });
+  h += '<div class="cs3-note">Real: JARVIS /api/intents (BDI-System). Christian sagt "Ich will X bis Y" → Intent wird angelegt → Hermine erinnert → Cockpit zeigt Progress.</div>';
+  h += '</div></details>';
+
+  // A3: Knowledge Graph
+  h += '<details class="cs-card" data-cs-feature="kg-view">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-j">J</span><span class="cs-card-title">Knowledge Graph</span><span class="cs-card-meta">Kurs-Konzepte als Netzwerk</span></summary>';
+  h += '<div class="cs-card-body">';
+  h += '<div class="cs3-kg">';
+  var kgNodes = [
+    {id:'transformer',label:'Transformer',x:50,y:30,cluster:'models'},
+    {id:'bert',label:'BERT',x:30,y:15,cluster:'models'},
+    {id:'llm',label:'LLM',x:70,y:15,cluster:'models'},
+    {id:'attention',label:'Attention',x:50,y:8,cluster:'models'},
+    {id:'overfit',label:'Overfitting',x:85,y:35,cluster:'validation'},
+    {id:'roc',label:'ROC/AUC',x:80,y:55,cluster:'validation'},
+    {id:'sensitivity',label:'Sensitivity',x:65,y:65,cluster:'validation'},
+    {id:'fhir',label:'FHIR',x:15,y:55,cluster:'standards'},
+    {id:'ehr',label:'EHR',x:15,y:35,cluster:'standards'},
+    {id:'snomed',label:'SNOMED CT',x:5,y:45,cluster:'standards'},
+    {id:'bias',label:'Bias',x:50,y:80,cluster:'ethics'},
+    {id:'explainability',label:'Explainability',x:35,y:80,cluster:'ethics'}
+  ];
+  kgNodes.forEach(function(n){
+    var colors = {models:'#3b82f6',validation:'#22c55e',standards:'#f59e0b',ethics:'#ef4444'};
+    h += '<div class="cs3-kg-node" style="left:' + n.x + '%;top:' + n.y + '%;border-color:' + colors[n.cluster] + ';color:' + colors[n.cluster] + '">' + n.label + '</div>';
+  });
+  h += '<div class="cs3-kg-legend"><span style="color:#3b82f6">AI Models</span><span style="color:#22c55e">Validation</span><span style="color:#f59e0b">Standards</span><span style="color:#ef4444">Ethics</span></div>';
+  h += '</div>';
+  h += '<div class="cs3-note">Real: JARVIS KG extrahiert Relations aus Digests (22+ Entities, 11+ Relations). Klick auf Node zeigt: Definition, verwandte Karten, Quellen, Karteikarte.</div>';
+  h += '</div></details>';
+
+  // A4: Cross-Agent Timeline
+  h += '<details class="cs-card" data-cs-feature="agent-timeline">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-j">J</span><span class="cs-card-title">Cross-Agent Timeline</span><span class="cs-card-meta">Wer hat was zum Kurs beigetragen</span></summary>';
+  h += '<div class="cs-card-body">';
+  var timeline = [
+    {d:'12.04.',agent:'christian',icon:'C',text:'Video 2.1 geschaut, Notizen in Coach-Tagebuch'},
+    {d:'12.04.',agent:'kitt',icon:'K',text:'Destillat Video 2.1 generiert + 8 Karteikarten angelegt'},
+    {d:'11.04.',agent:'hermine',icon:'H',text:'Emeritus gescraped: 4 neue Posts in Discussion 1.1'},
+    {d:'11.04.',agent:'hermine',icon:'H',text:'Reply-Draft fuer Owen generiert (EN, Voice DNA)'},
+    {d:'11.04.',agent:'jarvis',icon:'J',text:'Digest: "Christians Kurs-Velocity liegt ueber Durchschnitt"'},
+    {d:'10.04.',agent:'kitt',icon:'K',text:'Assignment 1.1 Pre-Grading: 38/50 → Verbesserungs-Tipps'},
+    {d:'10.04.',agent:'christian',icon:'C',text:'Assignment 1.1 eingereicht (Emeritus)'},
+    {d:'09.04.',agent:'hermine',icon:'H',text:'Audio-Briefing #7 gerendert: "Deadline heute, Draft liegt bereit"'},
+    {d:'08.04.',agent:'kitt',icon:'K',text:'Cockpit Showcase 2.0 gebaut (14 Sections)'},
+    {d:'08.04.',agent:'kitt',icon:'K',text:'Voice-DNA.md + /myhumanvoice Skill erstellt'}
+  ];
+  timeline.forEach(function(ev){
+    h += '<div class="cs3-tl-row"><span class="cs3-tl-date">' + ev.d + '</span><span class="cs3-pulse-agent cs3-agent-' + ev.agent + '">' + ev.icon + '</span><span class="cs3-tl-text">' + esc(ev.text) + '</span></div>';
+  });
+  h += '<div class="cs3-note">Real: JARVIS activity_log + system_events, gefiltert auf ImperialKI-Tags. Bisher nur im System-Tab, hier kurs-spezifisch.</div>';
+  h += '</div></details>';
+
+  // ═══ BLOCK B: HERMINE-POWERED ═══
+  h += '<div class="cs3-block-label">Hermine-Powered</div>';
+
+  // B1: Study Buddy Chat
+  h += '<details class="cs-card" data-cs-feature="study-buddy">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-h">H</span><span class="cs-card-title">Study Buddy Chat</span><span class="cs-card-meta">RAG-backed auf Kurs-Materialien</span></summary>';
+  h += '<div class="cs-card-body">';
+  h += '<div class="cs3-chat">';
+  h += '<div class="cs3-chat-msg cs3-chat-user"><div class="cs3-chat-bubble">Was ist der Unterschied zwischen Sensitivity und Specificity?</div></div>';
+  h += '<div class="cs3-chat-msg cs3-chat-ai"><div class="cs3-chat-bubble">Sensitivity misst wie viele tatsaechlich Kranke das Modell erkennt - von 100 Kranken findet es z.B. 92. Specificity misst wie viele Gesunde es korrekt durchlaesst. Hohe Sensitivity = wenig uebersehen. Hohe Specificity = wenig Fehlalarm. In der Psychiatrie willst Du meistens hohe Sensitivity - lieber einmal zu viel screenen als jemanden uebersehen.<div class="cs3-chat-src">Quelle: Mini-Lesson 1.2 + Glossar</div></div></div>';
+  h += '<div class="cs3-chat-msg cs3-chat-user"><div class="cs3-chat-bubble">Und was waere ein guter AUC-Wert fuer ein Screening-Tool?</div></div>';
+  h += '<div class="cs3-chat-msg cs3-chat-ai"><div class="cs3-chat-bubble">Wang 2024 (die Lancet-Studie aus Reading 1.1) hatte AUC 0.87 fuer Lungenkrebs-Detektion. Fuer psychiatrisches Screening zeigt die Literatur typisch 0.72-0.85. Ueber 0.80 gilt als klinisch nuetzlich, unter 0.70 ist kaum besser als Zufall.<div class="cs3-chat-src">Quellen: Reading 1.1, RAG: AI in Psych Rehab Brief</div></div></div>';
+  h += '</div>';
+  h += '<div class="cs3-chat-input"><input type="text" placeholder="Frag den Study Buddy..." disabled><button class="cs-mini-btn" disabled>Senden</button></div>';
+  h += '<div class="cs3-note">Real: RAG /query mit domain=imperialki Filter + Hermine DeepSeek fuer die Synthese. Quellen-Badge zeigt woher die Antwort kommt.</div>';
+  h += '</div></details>';
+
+  // B2: "Was wuerde Luca sagen?"
+  h += '<details class="cs-card" data-cs-feature="luca-sim">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-h">H</span><span class="cs-card-title">Was wuerde Luca sagen?</span><span class="cs-card-meta">Facilitator-Simulator aus 75+ Replies</span></summary>';
+  h += '<div class="cs-card-body">';
+  h += '<div class="cs3-luca-input"><div class="cs3-luca-label">Dein Draft:</div><div class="cs3-luca-draft">"One specific opening for AI at Klinik Barmelweid - psychosomatic medicine, my department. We currently spend a lot of time on treatment planning documentation..."</div></div>';
+  h += '<div class="cs3-luca-response">';
+  h += '<div class="cs3-luca-avatar">LP</div>';
+  h += '<div class="cs3-luca-text">';
+  h += '<div class="cs3-luca-name">Luca Parisi (simuliert, Confidence: 82%)</div>';
+  h += '"Hi Christian, this is a very well-scoped use case. Given your focus on treatment planning documentation, you may find it useful to explore how <mark>GMLP frameworks</mark> can guide the validation of such AI tools before clinical deployment. I\'d also recommend considering how <mark>human-in-the-loop design</mark> can preserve the reflective quality of planning while leveraging AI for structural components. Looking forward to seeing this develop in your Assignment."';
+  h += '<div class="cs3-luca-markers">Markierte Stellen: typische Luca-Patterns (Frameworks nennen, Validation betonen, Human-in-the-Loop)</div>';
+  h += '</div></div>';
+  h += '<div class="cs3-note">Real: 75 Luca-Replies als Few-Shot-Kontext + Christians Draft → DeepSeek generiert plausible Luca-Antwort. Hilft vor dem Posten einzuschaetzen ob der Draft auf Resonanz trifft.</div>';
+  h += '</div></details>';
+
+  // B3: Instant Draft Lab
+  h += '<details class="cs-card" data-cs-feature="draft-lab">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-h">H</span><span class="cs-card-title">Instant Draft Lab</span><span class="cs-card-meta">Ollama Sketch vs. DeepSeek Polish</span></summary>';
+  h += '<div class="cs-card-body">';
+  h += '<div class="cs3-lab-prompt"><strong>Prompt:</strong> "Reply to Owen about CMO perspective on AI trust"</div>';
+  h += '<div class="cs3-lab-split">';
+  h += '<div class="cs3-lab-col cs3-lab-fast"><div class="cs3-lab-head">Ollama Sketch <span class="cs3-lab-speed">0.8s lokal</span></div><div class="cs3-lab-text">Owen your move from ICU to CMO is interesting. Different levels see AI differently. In psych rehab the trust issue is main. How do you convince doctors vs boards?</div></div>';
+  h += '<div class="cs3-lab-col cs3-lab-polished"><div class="cs3-lab-head">DeepSeek + Voice DNA <span class="cs3-lab-speed">4.2s API</span></div><div class="cs3-lab-text">Owen - your shift from ICU to CMO is exactly the move I want to think harder about. From the patient bed to the system level, the AI conversation looks completely different. In psychiatric rehab the bottleneck is rarely the model - it is therapist trust and the time AI gives back to the relationship. Curious how you handle that translation: what convinces a clinician at 3am, vs. what convinces a CMO board.</div></div>';
+  h += '</div>';
+  h += '<div class="cs3-note">Real: Ollama Qwen2.5:1.5B lokal auf Hetzner (<1s, keine API-Kosten) vs. DeepSeek via OpenRouter (~4s, 0.02 EUR). Sketch zum schnellen Denken, Polish zum Posten.</div>';
+  h += '</div></details>';
+
+  // B4: Discussion Compass
+  h += '<details class="cs-card" data-cs-feature="disc-compass">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-h">H</span><span class="cs-card-title">Discussion Compass</span><span class="cs-card-meta">Welchem Post als naechstes antworten?</span></summary>';
+  h += '<div class="cs-card-body">';
+  var compass = [
+    {name:'Ezani Taib',score:94,reason:'CEO IJN, EMRAM Level 7 — hoechstes Lernpotential fuer Christian. Nur 1 Reply bisher, erwartet substanzielle Antworten.'},
+    {name:'Patrick Koeck',score:87,reason:'Gleiche Klinik — Face-to-Face-Hebel nach dem Kurs. Noch kein 1:1-Austausch.'},
+    {name:'Owen Roodenburg',score:83,reason:'CMO-Perspektive selten in der Cohort. Hat auf Christians Post geliked — Bruecke steht.'},
+    {name:'Helgi Sigmundsson',score:71,reason:'Gastro Iowa — andere Fachrichtung, aber fragt nach Process Mapping in seinem Post. Anschluss moeglich.'},
+    {name:'Carolyn Davies',score:65,reason:'GP UK — Primary Care AI sehr nah an Christians Use Case. Ambient Scribing.'},
+    {name:'Iona Macmillan Douglas',score:61,reason:'IP/Data Privacy — wichtig fuer Modul 5 (Governance). Langfristiger Kontakt.'}
+  ];
+  compass.forEach(function(c){
+    h += '<div class="cs3-compass-row"><div class="cs3-compass-score">' + c.score + '</div><div class="cs3-compass-body"><div class="cs3-compass-name">' + esc(c.name) + '</div><div class="cs3-compass-reason">' + esc(c.reason) + '</div></div></div>';
+  });
+  h += '<div class="cs3-note">Real: Hermine scored Posts nach Relevanz (Klinik-Naehe) x Networking-Wert (Rolle, Geografie) x Engagement-Potential (Likes, Response-Rate). Christians Zeit ist begrenzt — immer die 3 wertvollsten zuerst.</div>';
+  h += '</div></details>';
+
+  // ═══ BLOCK C: COACH-POWERED ═══
+  h += '<div class="cs3-block-label">Coach-Powered</div>';
+
+  // C1: Kurs-Reflexions-Tagebuch
+  h += '<details class="cs-card" data-cs-feature="journal">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-c">TC</span><span class="cs-card-title">Kurs-Reflexions-Tagebuch</span><span class="cs-card-meta">Direkt ins RAG via Coach-Gruppe</span></summary>';
+  h += '<div class="cs-card-body">';
+  h += '<div class="cs3-journal">';
+  h += '<div class="cs3-journal-entry"><div class="cs3-journal-date">12.04.</div><div class="cs3-journal-text">Modul 2 gestartet. Die Videos sind dichter als in M1 - mehr Taxonomie, weniger Ueberblick. Process Mapping hat sich gelohnt - das Konzept traegt mich durch die Assignments. Bin ueberrascht wie viel ich aus den Discussion-Posts anderer lerne. Ezanis EMRAM-Perspektive hat mir gezeigt dass wir in Barmelweid noch am Anfang stehen.</div></div>';
+  h += '<div class="cs3-journal-entry"><div class="cs3-journal-date">08.04.</div><div class="cs3-journal-text">Ueberwältigt von der Menge an Material. Aber Process Mapping hat Spass gemacht - das ist greifbar, das kann ich direkt in der Klinik anwenden. Assignment 1.1 Draft ist gut geworden, Pre-Grading sagt 38/50.</div></div>';
+  h += '<div class="cs3-journal-entry"><div class="cs3-journal-date">02.04.</div><div class="cs3-journal-text">Erste Woche. Orientation war gut, Luca wirkt kompetent und responsiv. Meet Fellow Learners gepostet - 3 Likes, Luca hat geantwortet. Patrick Koeck aus der gleichen Klinik! Das wird spannend.</div></div>';
+  h += '</div>';
+  h += '<div class="cs3-journal-input"><textarea placeholder="Wie laeuft der Kurs gerade?" disabled rows="2"></textarea><button class="cs-mini-btn" disabled>Speichern</button></div>';
+  h += '<div class="cs3-note">Real: Text geht via Coach-Gruppe (Tagebuch-Topic) ins RAG. Durchsuchbar, trendbar, Hermine kann Muster erkennen ("Christian schreibt oefter ueber Zeitdruck").</div>';
+  h += '</div></details>';
+
+  // C2: Stress-Radar
+  h += '<details class="cs-card" data-cs-feature="stress-radar">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-c">TC</span><span class="cs-card-title">Stress-Radar</span><span class="cs-card-meta">Kursbelastung tracken</span></summary>';
+  h += '<div class="cs-card-body">';
+  h += '<div class="cs3-radar-grid">';
+  var axes = [{label:'Zeitdruck',val:7},{label:'Verstaendnis',val:8},{label:'Motivation',val:9},{label:'Workload',val:5}];
+  axes.forEach(function(a){
+    h += '<div class="cs3-radar-axis"><div class="cs3-radar-label">' + a.label + '</div><div class="cs3-radar-bar-bg"><div class="cs3-radar-bar-fill" style="width:' + (a.val*10) + '%;background:' + (a.val>=7?'#22c55e':a.val>=4?'#f59e0b':'#ef4444') + '"></div></div><div class="cs3-radar-val">' + a.val + '/10</div></div>';
+  });
+  h += '</div>';
+  h += '<div class="cs3-radar-trend"><div class="cs3-radar-trend-label">3-Wochen-Trend</div><div class="cs3-radar-sparkline">W1: 6.2 avg → W2: 7.0 avg → W3: 7.3 avg <span style="color:#22c55e">aufwaerts</span></div></div>';
+  h += '<div class="cs3-note">Real: Coach-Gruppe Tracking-Topic. Christian klickt 4 Slider (30 Sek), Daten als JSONL. Hermine erkennt Trends und passt Tagesplan an.</div>';
+  h += '</div></details>';
+
+  // C3: Cohort-Persoenlichkeitsprofile
+  h += '<details class="cs-card" data-cs-feature="cohort-profiles">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-c">TC</span><span class="cs-card-title">Cohort-Persoenlichkeitsprofile</span><span class="cs-card-meta">Wie F&F-Wiki, fuer Kommilitonen</span></summary>';
+  h += '<div class="cs-card-body">';
+  var profiles = [
+    {name:'Owen Roodenburg',tags:['systemisch','evidenz-getrieben','schnell'],style:'Antwortet innerhalb 24h, fragt nach Daten. Mag Kontraste (Klinik vs. System). 3 Likes auf Christians Post.'},
+    {name:'Patrick Koeck',tags:['klinisch','gruppentherapie','lokal'],style:'Kurze Posts, praxisnah. Gleiche Klinik = Face-to-Face moeglich. Fokus Psychotherapie + AI.'},
+    {name:'Ezani Taib',tags:['CEO','EMRAM-7','strategisch'],style:'Schreibt ausfuehrlich, erwartet Substanz. Perspektive: Krankenhausweite AI-Adoption. Seltener Poster, aber jeder Post zaehlt.'},
+    {name:'Iona Macmillan Douglas',tags:['IP','Datenschutz','regulatorisch'],style:'Juristischer Blick. Fragt nach Compliance. Wichtig fuer Modul 5 + Assignment-Review.'},
+    {name:'Helgi Sigmundsson',tags:['Gastro','US-System','pragmatisch'],style:'Amerikanische Perspektive. Process Mapping in seinem Fachgebiet. Querverbindung moeglich.'}
+  ];
+  profiles.forEach(function(p){
+    h += '<div class="cs3-profile"><div class="cs3-profile-name">' + esc(p.name) + '</div>';
+    h += '<div class="cs3-profile-tags">';
+    p.tags.forEach(function(t){ h += '<span class="cs3-profile-tag">' + esc(t) + '</span>'; });
+    h += '</div>';
+    h += '<div class="cs3-profile-style">' + esc(p.style) + '</div></div>';
+  });
+  h += '<div class="cs3-note">Real: Gleiche Pipeline wie Coach F&F-Wiki (Sonnet-Subagenten). Input: Discussion-Posts statt WhatsApp-Chats. 22 Persoenlichkeitsprofile existieren schon fuer private Kontakte.</div>';
+  h += '</div></details>';
+
+  // ═══ BLOCK D: SUBSTRATE-POWERED ═══
+  h += '<div class="cs3-block-label">Substrate-Powered</div>';
+
+  // D1: ImperialKI als Substrate-Entities
+  h += '<details class="cs-card" data-cs-feature="entities">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-s">SE</span><span class="cs-card-title">ImperialKI als Substrate-Entities</span><span class="cs-card-meta">Echte LifeOS-Objekte mit Verlauf</span></summary>';
+  h += '<div class="cs-card-body">';
+  var entities = [
+    {type:'Assignment',name:'Assignment 1.1: Scoping an AI Opportunity',status:'erledigt',history:['01.04. angelegt','08.04. Draft fertig (Pre-Grading 38/50)','08.04. 18:29 eingereicht auf Emeritus'],tags:['M1','Playbook','DPP Barmelweid']},
+    {type:'Discussion',name:'Discussion 1.1: Where could AI help?',status:'draft-ready',history:['02.04. freigeschaltet','08.04. Voice-DNA-Draft generiert','12.04. Owen hat geantwortet'],tags:['M1','Forum','Voice DNA']},
+    {type:'Konzept',name:'Transformer',status:'gelernt',history:['03.04. Video 1.1 geschaut','04.04. Destillat generiert','05.04. Karteikarte angelegt','10.04. 3x korrekt im Spaced Repetition'],tags:['M1','Glossar','Deep Learning']}
+  ];
+  entities.forEach(function(e){
+    var statusColor = e.status==='erledigt'?'#22c55e':e.status==='draft-ready'?'#f59e0b':'#3b82f6';
+    h += '<div class="cs3-entity"><div class="cs3-entity-head"><span class="cs3-entity-type">' + e.type + '</span><span class="cs3-entity-name">' + esc(e.name) + '</span><span class="cs3-entity-status" style="background:' + statusColor + '">' + e.status + '</span></div>';
+    h += '<div class="cs3-entity-history">';
+    e.history.forEach(function(ev){ h += '<div class="cs3-entity-ev">' + esc(ev) + '</div>'; });
+    h += '</div>';
+    h += '<div class="cs3-entity-tags">';
+    e.tags.forEach(function(t){ h += '<span class="cs3-profile-tag">' + esc(t) + '</span>'; });
+    h += '</div></div>';
+  });
+  h += '<div class="cs3-note">Real: Substrate Phase 1-8 hat _history[], Entity-Badges, Activity Feed. ImperialKI-Items als echte Entities = versioniert, verknuepfbar, durchsuchbar.</div>';
+  h += '</div></details>';
+
+  // D2: Verknuepfte Kanban-Karten
+  h += '<details class="cs-card" data-cs-feature="linked-cards">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-s">SE</span><span class="cs-card-title">Verknuepfte Kanban-Karten</span><span class="cs-card-meta">IK-Lane mit Auto-Status</span></summary>';
+  h += '<div class="cs-card-body">';
+  var cards = [
+    {title:'Assignment 1.1',status:'erledigt',deadline:'09.04.',lane:'IK'},
+    {title:'Discussion 1.1 posten',status:'in-arbeit',deadline:'14.04.',lane:'IK'},
+    {title:'Modul 2 Videos schauen',status:'offen',deadline:'23.04.',lane:'IK'},
+    {title:'Assignment 2.1',status:'offen',deadline:'23.04.',lane:'IK'}
+  ];
+  h += '<div class="cs3-cards-row">';
+  cards.forEach(function(c){
+    var colors = {'erledigt':'rgba(34,197,94,0.12)','in-arbeit':'rgba(245,158,11,0.12)','offen':'rgba(156,163,175,0.12)'};
+    h += '<div class="cs3-kanban-card" style="background:' + (colors[c.status]||colors.offen) + '"><div class="cs3-kanban-title">' + esc(c.title) + '</div><div class="cs3-kanban-meta"><span class="cs3-kanban-status">' + c.status + '</span><span>bis ' + c.deadline + '</span><span class="cs3-kanban-lane">' + c.lane + '</span></div></div>';
+  });
+  h += '</div>';
+  h += '<div class="cs3-note">Real: IK-Lane existiert schon. Hermine erstellt Karten bei Modul-Freischaltung, updatet Status bei Scrape. Entity-Badges zeigen Typ (Assignment/Discussion/Video).</div>';
+  h += '</div></details>';
+
+  // ═══ BLOCK E: NEUE KREATIVE FEATURES ═══
+  h += '<div class="cs3-block-label">Kreativ-Labor</div>';
+
+  // E1: Peer Review Simulator
+  h += '<details class="cs-card" data-cs-feature="peer-review">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">PR</span><span class="cs-card-title">Peer Review Simulator</span><span class="cs-card-meta">3 AI-Personas bewerten Deinen Draft</span></summary>';
+  h += '<div class="cs-card-body">';
+  var reviewers = [
+    {name:'Prof. Streng',avatar:'PS',score:'34/50',tone:'Akademisch hart',feedback:'Die Process Map ist zu linear - echte klinische Workflows haben Feedback-Loops und parallele Pfade. Requirement Statements brauchen explizite DSGVO-Referenzen. Aber der Use Case ist praezise gewaehlt.'},
+    {name:'Kollegin Emma',avatar:'KE',score:'42/50',tone:'Praxis-Fokus',feedback:'Sehr gut gewaehlt - das ist ein echtes Problem in der Psychosomatik. Die Reflexion ist stark. Ich wuerde noch die Pflegeperspektive reinbringen - die schreiben am meisten.'},
+    {name:'Facilitator Luca',avatar:'LP',score:'40/50',tone:'Konstruktiv + Frameworks',feedback:'Well-scoped use case. Consider referencing GMLP for the validation approach. The human-in-the-loop design is promising - expand on how you would measure success beyond time saved.'}
+  ];
+  reviewers.forEach(function(r){
+    h += '<div class="cs3-reviewer"><div class="cs3-reviewer-head"><span class="cs3-reviewer-avatar">' + r.avatar + '</span><span class="cs3-reviewer-name">' + esc(r.name) + '</span><span class="cs3-reviewer-score">' + r.score + '</span><span class="cs3-reviewer-tone">' + esc(r.tone) + '</span></div>';
+    h += '<div class="cs3-reviewer-text">' + esc(r.feedback) + '</div></div>';
+  });
+  h += '<div class="cs3-note">Real: 3 DeepSeek-Calls mit verschiedenen System-Prompts (streng/praxis/luca). Luca-Persona basiert auf 75 echten Replies. Kosten: ~0.06 EUR pro Review-Runde.</div>';
+  h += '</div></details>';
+
+  // E2: Module Forecast
+  h += '<details class="cs-card" data-cs-feature="mod-forecast">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">MF</span><span class="cs-card-title">Module Forecast</span><span class="cs-card-meta">Was kommt in Modul 2-6</span></summary>';
+  h += '<div class="cs-card-body">';
+  var mods = [
+    {id:'M2',title:'Building AI Models',weeks:'W3-4',diff:7,prep:'Statistik-Basics auffrischen, Python-Grundlagen',overlap:'DTH: Implementation Strategies'},
+    {id:'M3',title:'Clinical Validation',weeks:'W5-6',diff:8,prep:'RCT-Design verstehen, FDA GMLP lesen',overlap:'DTH: Regulatory Frameworks'},
+    {id:'M4',title:'Data Governance',weeks:'W7-8',diff:6,prep:'DSGVO + EU AI Act, FHIR vertiefen',overlap:'DTH: Data Analytics'},
+    {id:'M5',title:'AI Ethics & Fairness',weeks:'W9-10',diff:7,prep:'Bias-Fallstudien, Ioana (IP/Privacy) kontaktieren',overlap:'DTH: Innovation Ethics'},
+    {id:'M6',title:'AI Strategy & Leadership',weeks:'W11-12',diff:5,prep:'Change Management Basics, Stakeholder-Mapping Barmelweid',overlap:'DTH: Digital Transformation'}
+  ];
+  mods.forEach(function(m){
+    var diffColor = m.diff>=8?'#ef4444':m.diff>=6?'#f59e0b':'#22c55e';
+    h += '<div class="cs3-mod-card"><div class="cs3-mod-head"><span class="cs3-mod-id">' + m.id + '</span><span class="cs3-mod-title">' + esc(m.title) + '</span><span class="cs3-mod-weeks">' + m.weeks + '</span></div>';
+    h += '<div class="cs3-mod-diff"><span>Schwierigkeit:</span><div class="cs3-mod-diff-bar"><div style="width:' + (m.diff*10) + '%;background:' + diffColor + '"></div></div><span>' + m.diff + '/10</span></div>';
+    h += '<div class="cs3-mod-prep"><strong>Vorbereitung:</strong> ' + esc(m.prep) + '</div>';
+    h += '<div class="cs3-mod-overlap"><strong>DTH-Overlap:</strong> ' + esc(m.overlap) + '</div>';
+    h += '</div>';
+  });
+  h += '<div class="cs3-note">Real: Curriculum-Info von der Emeritus-Seite (Session 28 gescraped) + DTH-Kurs-Overview. Schwierigkeits-Prognose basierend auf Christians Profil (Psychologie-Background, wenig Statistik).</div>';
+  h += '</div></details>';
+
+  // E3: Deep Dive Button
+  h += '<details class="cs-card" data-cs-feature="deep-dive">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">DD</span><span class="cs-card-title">Deep Dive Button</span><span class="cs-card-meta">Grok + Google DR + RAG in einem Shot</span></summary>';
+  h += '<div class="cs-card-body">';
+  h += '<div class="cs3-dd-topic"><strong>Thema:</strong> "Ambient AI Scribing in der stationaeren Psychotherapie"</div>';
+  h += '<div class="cs3-dd-sources">';
+  h += '<div class="cs3-dd-src"><div class="cs3-dd-src-head">Grok x.com (5 Treffer)</div><div class="cs3-dd-src-item">NHS Wales 3 Trusts piloten Ambient AI — 18% Halluzinationsrate</div><div class="cs3-dd-src-item">Nuance DAX vs. Abridge vs. Nabla: Vergleich in Psychiatrie-Settings</div></div>';
+  h += '<div class="cs3-dd-src"><div class="cs3-dd-src-head">Deep Research (12 Seiten)</div><div class="cs3-dd-src-item">2 RCTs in stationaerer Psychiatrie (UK, NL), AUC 0.79 Rueckfall-Praediktion</div><div class="cs3-dd-src-item">Kein einziger Pilot in CH — regulatorisches Vakuum</div></div>';
+  h += '<div class="cs3-dd-src"><div class="cs3-dd-src-head">RAG (8 Chunks)</div><div class="cs3-dd-src-item">Wang 2024 Lung Cancer Transformer als Methodologie-Template</div><div class="cs3-dd-src-item">Christians Assignment 1.1 Use-Case als Anknuepfungspunkt</div></div>';
+  h += '</div>';
+  h += '<div class="cs3-note">Real: Ein Klick → 3 parallele Queries (Grok API ~5s, Deep Research via Browser Use ~2min, RAG ~400ms) → DeepSeek konsolidiert → 5-Seiten-Brief. Kosten: ~0.50 EUR pro Deep Dive.</div>';
+  h += '</div></details>';
+
+  // E4: Spaced Repetition Radio
+  h += '<details class="cs-card" data-cs-feature="sr-radio">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">SR</span><span class="cs-card-title">Spaced Repetition Radio</span><span class="cs-card-meta">Karteikarten als Audio-Playlist</span></summary>';
+  h += '<div class="cs-card-body">';
+  h += '<div class="cs3-radio-player"><div class="cs3-radio-info"><div class="cs3-radio-title">Modul 1 — 7 faellige Karten</div><div class="cs3-radio-meta">12:34 min | DE | TTS</div></div>';
+  h += '<div class="cs3-radio-controls"><span class="cs3-radio-btn">|&lt;</span><span class="cs3-radio-btn cs3-radio-play">Play</span><span class="cs3-radio-btn">&gt;|</span></div></div>';
+  h += '<div class="cs3-radio-list">';
+  var tracks = [{q:'Was misst eine ROC-Kurve?',dur:'1:42'},{q:'4 Symbole im Process Mapping?',dur:'1:18'},{q:'FHIR vs. HL7 v2?',dur:'1:55'},{q:'Was ist Overfitting?',dur:'1:24'},{q:'AlphaFold — was hat es geloest?',dur:'2:01'},{q:'Sensitivity vs. Specificity?',dur:'2:08'},{q:'Was macht ein CDS Hook?',dur:'1:46'}];
+  tracks.forEach(function(t,i){
+    h += '<div class="cs3-radio-track"><span class="cs3-radio-num">' + (i+1) + '</span><span class="cs3-radio-q">' + esc(t.q) + '</span><span class="cs3-radio-dur">' + t.dur + '</span></div>';
+  });
+  h += '</div>';
+  h += '<div class="cs3-note">Real: TTS rendert Frage + 3s Pause + Antwort als MP3. Playlist taglich neu aus faelligen Karten. Download oder Telegram-Push. Beim Pendeln, Sport, Kochen.</div>';
+  h += '</div></details>';
+
+  // E5: Learning Velocity + E6-E10 compact
+  h += '<details class="cs-card" data-cs-feature="velocity">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">LV</span><span class="cs-card-title">Learning Velocity</span><span class="cs-card-meta">Tempo + Prognose Kurs-Ende</span></summary>';
+  h += '<div class="cs-card-body">';
+  h += '<div class="cs3-velocity"><div class="cs3-vel-stat"><div class="cs3-vel-num">12</div><div>Tage fuer Modul 1</div></div>';
+  h += '<div class="cs3-vel-stat"><div class="cs3-vel-num">1.3</div><div>Items / Tag</div></div>';
+  h += '<div class="cs3-vel-stat"><div class="cs3-vel-num" style="color:#22c55e">14.08.</div><div>Prognose Kurs-Ende</div></div>';
+  h += '<div class="cs3-vel-stat"><div class="cs3-vel-num" style="color:#22c55e">3 Wo.</div><div>vor Deadline</div></div></div>';
+  h += '<div class="cs3-vel-bar"><div class="cs3-vel-progress" style="width:17%"></div><div class="cs3-vel-marker" style="left:17%">Jetzt (M1)</div><div class="cs3-vel-marker" style="left:100%">03.09.</div></div>';
+  h += '<div class="cs3-note">Real: Items/Tag aus Emeritus-Scrape-Diffs + imperialki.json Timestamps. Prognose linear extrapoliert, adjustiert bei Schwierigkeits-Unterschieden zwischen Modulen.</div>';
+  h += '</div></details>';
+
+  // Compact: E6-E10 as idea cards (like Showcase 2.0 ideas)
+  h += '<details class="cs-card" data-cs-feature="more-ideas">';
+  h += '<summary class="cs-card-head"><span class="cs-icon cs3-icon-e">+5</span><span class="cs-card-title">5 weitere Kreativ-Features</span><span class="cs-card-meta">Klinik-Bridge, Office Hours, Autopilot, Cohort Intel, Dr. Lobster</span></summary>';
+  h += '<div class="cs-card-body">';
+  var extra = [
+    {id:'e6',t:'Klinik-Bridge',d:'Verbindung Kurs-Konzepte ↔ Barmelweid-Workflows. "Process Mapping (M1) → Behandlungsplanung DPP". 5 Bruecken-Cards.'},
+    {id:'e7',t:'Office Hours Prep',d:'Vor jeder Live Session: 4 vorbereitete Fragen basierend auf Verstaendnisluecken + Cohort-Diskussionen + Christians Use Case.'},
+    {id:'e8',t:'Assignment Autopilot',d:'KITT generiert kompletten First Draft (Playbook + Map + Requirements + Reflection). Christian editiert nur. Voice DNA + Pre-Grading integriert.'},
+    {id:'e9',t:'Cohort Intelligence Dashboard',d:'Engagement-Heatmap (58 Studierende x 4 Wochen) + Word-Cloud Cohort-Themen + "Christian: Top 15%" Badge.'},
+    {id:'e10',t:'Dr. Lobster PDF Integration',d:'Assignment-PDF direkt aus Cockpit: Playbook + Process Map → Merge + Compress via pdf.moser.ai → Download-ready.'}
+  ];
+  extra.forEach(function(it){
+    var voted = _csVoted(it.id);
+    h += '<div class="cs3-idea" data-cs-feature="' + it.id + '"><div class="cs3-idea-body"><div class="cs3-idea-t">' + esc(it.t) + '</div><div class="cs3-idea-d">' + esc(it.d) + '</div></div>';
+    h += '<div class="cs-vote"><button class="cs-vote-btn cs-vote-yes' + (voted==='yes'?' cs-vote-active':'') + '" data-cs-vote="yes" onclick="_csVote(\'' + it.id + '\',\'yes\')">ja</button><button class="cs-vote-btn cs-vote-maybe' + (voted==='maybe'?' cs-vote-active':'') + '" data-cs-vote="maybe" onclick="_csVote(\'' + it.id + '\',\'maybe\')">vlt</button><button class="cs-vote-btn cs-vote-no' + (voted==='no'?' cs-vote-active':'') + '" data-cs-vote="no" onclick="_csVote(\'' + it.id + '\',\'no\')">nein</button></div></div>';
+  });
+  h += '</div></details>';
+
+  h += '</div>'; // end cs3-root
+  h += '</div>'; // end cs3-shell
+  return h;
+}
+
 
 function renderImperialKI(container) {
   var ik = _ikCache;
@@ -4049,8 +4425,14 @@ function renderImperialKI(container) {
   var now = new Date();
   var html = '';
 
-  // Cockpit Showcase 2.0 (oben, Mock-Daten, nicht-funktional)
-  html += renderCockpitShowcase();
+  // Showcase Version Toggle
+  var csVer = _csGetVersion();
+  html += '<div class="cs-version-toggle">';
+  html += '<button class="cs-ver-btn' + (csVer==='2'?' cs-ver-active':'') + '" onclick="_csSetVersion(\'2\')">Showcase 2.0</button>';
+  html += '<button class="cs-ver-btn' + (csVer==='3'?' cs-ver-active':'') + '" onclick="_csSetVersion(\'3\')">Showcase 3.0</button>';
+  html += '</div>';
+  if (csVer === '2') { html += renderCockpitShowcase(); }
+  else { html += renderCockpitShowcase3(); }
 
   function countdown(dateStr) {
     var d = new Date(dateStr);
