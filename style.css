@@ -858,7 +858,7 @@ nav {
 
 .card-date-dl { font-size: 10px; color: #b91c1c; font-weight: 500; white-space: nowrap; }
 
-.card-date-cr { font-size: 10px; color: #868e96; white-space: nowrap; }
+.card-date-cr { font-size: 10px; color: #868e96; white-space: nowrap; margin-left: auto; }
 
 /* ── ENTITY BADGES (Phase 7) ── */
 
