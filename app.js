@@ -1610,7 +1610,7 @@ function loadPatientDocs(code) {
   var listEl = document.getElementById('doc-list-' + code);
   var statusEl = document.getElementById('doc-status-' + code);
   if (!listEl || !statusEl) return;
-  fetch(DOCS_BASE + code + '/manifest.json', {mode:'cors'})
+  fetch(DOCS_BASE + code + '/manifest.json', {mode:'cors', credentials:'omit'})
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(manifest){
       if (!manifest.length) { statusEl.textContent = 'Keine Dokumente'; return; }
@@ -1636,7 +1636,7 @@ function downloadEncDoc(code, encFilename, originalName) {
   var btn = event.target;
   btn.textContent = 'Entschluessle...';
   btn.disabled = true;
-  fetch(DOCS_BASE + code + '/' + encFilename, {mode:'cors'})
+  fetch(DOCS_BASE + code + '/' + encFilename, {mode:'cors', credentials:'omit'})
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
     .then(function(buf){
       var data = new Uint8Array(buf);
