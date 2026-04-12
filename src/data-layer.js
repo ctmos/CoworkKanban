@@ -390,7 +390,7 @@ const WriteGuard = {
 
 // ─── SCHEMA VALIDATION (Fix 3) ─────────────────────────────────────────────
 
-const VALID_LANES = ['JZ','HE','HD','HB','BA','WB','IK','PA','FI','FA','FR','EV','EX','MA','TB','EK'];
+const VALID_LANES = ['JZ','HE','HD','HB','BA','WB','IK','PA','FI','FA','FR','EV','EX','MA','LO','TB','EK'];
 
 const ID_PATTERN = /^[A-Z]{2}\d{3}$/;
 
@@ -1853,6 +1853,8 @@ const LANES = [
   {id:'EX', name:'Explore',                   color:'#ff8787'},
 
   {id:'MA', name:'MOSER.AI',                  color:'#748ffc'},
+
+  {id:'LO', name:'LifeOS',                    color:'#f472b6'},
 
   {id:'TB', name:'Tagebuch',                  color:'#868e96'},
 
