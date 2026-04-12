@@ -2810,14 +2810,14 @@ html.dark-theme .hannah-label { color: #f9a8d4; }
   .hannah-grid { grid-template-columns: 1fr; }
 }
 /* Board view — full viewport */
-#tab-kanban.board-active, #tab-v2.board-active {
+#tab-kanban.board-active.active, #tab-v2.board-active.active {
   max-width: 100%;
   padding: 0 20px;
   height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
 }
-#tab-kanban.board-active .kanban-toolbar, #tab-v2.board-active .kanban-toolbar { flex-shrink: 0; margin-top: 12px; }
+#tab-kanban.board-active.active .kanban-toolbar, #tab-v2.board-active.active .kanban-toolbar { flex-shrink: 0; margin-top: 12px; }
 #tab-kanban .kanban-grid.kanban-board, #tab-v2 .kanban-grid.kanban-board {
   display: flex;
   flex-direction: row;
