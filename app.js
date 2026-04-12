@@ -7817,7 +7817,8 @@ async function showV2PDetail(projectId) {
   var container = document.getElementById('v2p-view');
   container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted)">Lade\u2026</div>';
   try {
-    var meta = await loadV2PMeta(projectId); if (!meta) { container.innerHTML = '<div class="empty-state">Nicht gefunden.</div>'; return; }
+    var meta = _v2pMeta[projectId] || await loadV2PMeta(projectId); if (!meta) { container.innerHTML = '<div class="empty-state">Nicht gefunden.</div>'; return; }
+    _v2pMeta[projectId] = meta;
     if (!meta.entries) meta.entries = [];
     var defaultStatusColors = { aktiv: '#22c55e', pausiert: '#eab308', abgeschlossen: '#22c55e', archiviert: '#555' };
     var cb = meta.color ? ' style="border-top:4px solid ' + esc(meta.color) + '"' : '';
