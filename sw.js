@@ -1,5 +1,5 @@
 // LifeOS Service Worker v4.12
-const CACHE_NAME = 'lifeos-v6.79';
+const CACHE_NAME = 'lifeos-v6.80';
 const isCustomDomain = self.location.hostname === 'lifeos.moser.ai' || self.location.hostname === 'app.moser.ai';
 const BASE = isCustomDomain ? '/' : '/CoworkKanban/';
 const APP_SHELL = [
@@ -13,12 +13,12 @@ const APP_SHELL = [
   BASE + 'icon-512.png'
 ];
 
-// Install: pre-cache app shell
+// Install: pre-cache app shell — KEIN skipWaiting() um Force-Reload zu verhindern
+// Neuer SW wird erst aktiv wenn ALLE Tabs geschlossen werden (sicher für Daten)
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
   );
 });
 
@@ -90,10 +90,8 @@ async function syncPendingWrites() {
 }
 
 // Listen for messages from main thread
+// SKIP_WAITING ENTFERNT — SW-Updates dürfen NIEMALS laufende Tabs killen
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
   if (event.data && event.data.type === 'CACHE_VERSION') {
     event.source.postMessage({ type: 'CACHE_VERSION_RESPONSE', version: CACHE_NAME });
   }

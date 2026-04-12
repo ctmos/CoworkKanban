@@ -7397,15 +7397,63 @@ async function loadV2Data() {
   if (_v2Loaded) return;
   try {
     var result = await fetchFromGitHub('data/v2.json');
-    if (!result) { _v2Loaded = true; return; }
+    if (!result) { _v2Loaded = true; _restoreV2FromLocalBackup(); return; }
     var parsed = JSON.parse(result.content);
     _v2Cards = parsed.cards || {};
     _v2SHA = result.sha;
+    // Prüfe ob localStorage neuere Daten hat (Crash-Recovery)
+    _mergeV2LocalBackup();
     _v2Loaded = true;
   } catch(e) {
     console.warn('loadV2Data:', e);
+    _restoreV2FromLocalBackup();
     _v2Loaded = true;
   }
+}
+
+function _restoreV2FromLocalBackup() {
+  try {
+    var backup = localStorage.getItem('v2_cards_local');
+    if (backup) {
+      var data = JSON.parse(backup);
+      if (data.cards && Object.keys(data.cards).length > 0) {
+        _v2Cards = data.cards;
+        showToast('V2: Aus lokalem Backup wiederhergestellt');
+      }
+    }
+  } catch(e) {}
+}
+
+function _mergeV2LocalBackup() {
+  try {
+    var backup = localStorage.getItem('v2_cards_local');
+    if (!backup) return;
+    var data = JSON.parse(backup);
+    if (!data.cards || !data.savedAt) return;
+    // Prüfe ob Backup neuer ist als GitHub-Stand
+    var backupTime = new Date(data.savedAt).getTime();
+    var ghTime = _v2Cards._meta ? new Date(_v2Cards._meta.savedAt).getTime() : 0;
+    // Merge: Backup-Karten die neuer sind übernehmen
+    var merged = false;
+    Object.keys(data.cards).forEach(function(id) {
+      var backupCard = data.cards[id];
+      var ghCard = _v2Cards[id];
+      if (!ghCard) {
+        // Karte existiert nur im Backup — wurde nicht auf GitHub gespeichert
+        _v2Cards[id] = backupCard;
+        merged = true;
+      } else if (backupCard.updatedAt && ghCard.updatedAt && new Date(backupCard.updatedAt) > new Date(ghCard.updatedAt)) {
+        // Backup ist neuer
+        _v2Cards[id] = backupCard;
+        merged = true;
+      }
+    });
+    if (merged) {
+      showToast('V2: Nicht-gespeicherte Änderungen wiederhergestellt');
+      scheduleV2Sync();
+    }
+    // Backup behalten bis GitHub-Sync erfolgreich
+  } catch(e) {}
 }
 
 async function renderV2Tab() {
@@ -7527,8 +7575,12 @@ function nextV2CardId(lane) {
   return lane + String(maxSeq + 1).padStart(3, '0');
 }
 
-var _v2SyncTimer = null;
-function scheduleV2Sync() { clearTimeout(_v2SyncTimer); _v2SyncTimer = setTimeout(saveV2Data, 5000); }
+function scheduleV2Sync() {
+  // SOFORT in localStorage sichern — überlebt Reload, Crash, SW-Update
+  try { localStorage.setItem('v2_cards_local', JSON.stringify({ cards: _v2Cards, savedAt: new Date().toISOString() })); } catch(e) {}
+  // Dann sofort auf GitHub pushen (kein Debounce mehr — nie wieder Datenverlust)
+  saveV2Data();
+}
 
 async function saveV2Data() {
   try {
@@ -7547,8 +7599,10 @@ async function saveV2Data() {
     if (!resp.ok) throw new Error('PUT failed: ' + resp.status);
     var data = await resp.json();
     _v2SHA = data.content.sha;
+    // Backup nur clearen nach erfolgreichem GitHub-Sync
+    try { localStorage.removeItem('v2_cards_local'); } catch(e2) {}
   } catch(e) {
-    showToast('V2 Sync fehlgeschlagen: ' + e.message, true);
+    showToast('V2 Sync fehlgeschlagen — Daten sind lokal gesichert', true);
   }
 }
 
