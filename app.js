@@ -427,7 +427,7 @@ function switchTab(id) {
   if (id === 'projekte')   showProjectsTab();
   if (id === 'life')       renderMoneyTab();
   if (id === 'imperialki') showImperialKITab();
-  if (id === 'frisch')    renderFrischTab();
+  if (id === 'v2')        renderV2Tab();
   if (id === 'system')     {
     showSystemTab();
     try { showRAGTab(); } catch (e) { console.warn('showRAGTab failed:', e); setSystemAlert('system-rag-dropdown', true); }
@@ -6993,171 +6993,195 @@ function mRowBudget(name, current, target, note) {
   return '<tr class="' + cls + '"><td>' + esc(name) + '</td><td>' + esc(current) + '</td><td><strong>' + esc(target) + '</strong> ' + esc(note) + '</td></tr>';
 }
 
-// ── FRISCH TAB ── (Parallel-Kanban mit eigener Datenquelle)
+// ── V2 TAB ── (Frischer Kanban mit eigener Datenquelle)
 
-var _frischCards = {};
-var _frischSHA = '';
-var _frischLoaded = false;
-var _frischCollapsed = {};
+var _v2Cards = {};
+var _v2SHA = '';
+var _v2Loaded = false;
+var _v2Collapsed = {};
+var _v2EditId = null;
+var _v2EditLane = null;
 
-function getFrischCards() { return _frischCards; }
-
-async function loadFrischData() {
-  if (_frischLoaded) return;
+async function loadV2Data() {
+  if (_v2Loaded) return;
   try {
-    var result = await fetchFromGitHub('data/backlog-fresh.json');
-    if (!result) return;
+    var result = await fetchFromGitHub('data/v2.json');
+    if (!result) { _v2Loaded = true; return; }
     var parsed = JSON.parse(result.content);
-    _frischCards = parsed.cards || {};
-    _frischSHA = result.sha;
-    _frischLoaded = true;
-  } catch(e) { console.error('loadFrischData:', e); }
+    _v2Cards = parsed.cards || {};
+    _v2SHA = result.sha;
+    _v2Loaded = true;
+  } catch(e) {
+    console.warn('loadV2Data:', e);
+    _v2Loaded = true;
+  }
 }
 
-async function renderFrischTab() {
-  var grid = document.getElementById('frisch-grid');
+async function renderV2Tab() {
+  var grid = document.getElementById('v2-grid');
   if (!grid) return;
-
-  if (!_frischLoaded) {
+  if (!_v2Loaded) {
     grid.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
-    await loadFrischData();
+    await loadV2Data();
   }
+  // Hannah Summary kopieren
+  var hs = document.getElementById('v2-hannah-summary');
+  var src = document.getElementById('hannah-summary');
+  if (hs && src) hs.innerHTML = src.innerHTML;
+  else if (hs) hs.innerHTML = '';
 
-  // Render Hannah summary (same as Backlog)
-  var hs = document.getElementById('frisch-hannah-summary');
-  if (hs) hs.innerHTML = document.getElementById('hannah-summary') ? document.getElementById('hannah-summary').innerHTML : '';
+  var cards = _v2Cards;
+  var todayISO = new Date().toISOString().split('T')[0];
 
-  var cards = getFrischCards();
-  var lanes = getOrderedLanes();
-
-  grid.innerHTML = lanes.map(function(lane) {
+  grid.innerHTML = getOrderedLanes().map(function(lane) {
     var all = Object.values(cards).filter(function(c) {
-      return !c.archived && !c.deletedAt && (lane.isHeute ? (c.todayFlag || c.lane === 'HE') : lane.isJetzt ? (c.lane === 'JZ') : c.lane === lane.id);
+      return !c.archived && !c.deletedAt && (lane.isHeute ? (c.todayFlag || c.lane === 'HE') : c.lane === lane.id);
     });
-
-    var active = all.filter(function(c) { return c.status !== 'erledigt'; }).sort(function(a,b) { return (a.order||0) - (b.order||0); });
-    var isCol = _frischCollapsed[lane.id];
-
-    var ch = active.map(function(c) { return renderFrischCardItem(c); }).join('') || '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
-
+    var active = all.filter(function(c) { return c.status !== 'erledigt'; }).sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
+    var done = all.filter(function(c) { return c.status === 'erledigt'; }).sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
+    var isCol = _v2Collapsed[lane.id];
     var hasCards = active.length > 0;
 
+    var ch = active.map(function(c) { return renderV2CardItem(c); }).join('') || '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
+    var dh = done.length > 0 ? '<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);opacity:0.6">' + done.map(function(c) { return renderV2CardItem(c); }).join('') + '</div>' : '';
+
     return '<div class="lane' + (isCol ? ' lane-collapsed' : '') + (hasCards ? ' lane-has-cards' : '') + '" data-lane="' + lane.id + '">' +
-      '<div class="lane-header" onclick="toggleFrischCollapse(\'' + lane.id + '\')" style="cursor:pointer">' +
+      '<div class="lane-header" onclick="toggleV2Collapse(\'' + lane.id + '\')" style="cursor:pointer">' +
       '<span class="lane-title">' + esc(lane.name) + '</span>' +
       '<span class="lane-count">' + active.length + '</span>' +
-      '<button class="btn-add-card" onclick="event.stopPropagation();addFrischCard(\'' + lane.id + '\')">+ Karte</button>' +
-      '<button class="lane-collapse" onclick="event.stopPropagation();toggleFrischCollapse(\'' + lane.id + '\')">' + (isCol ? '\u25b6' : '\u25bc') + '</button>' +
+      '<button class="btn-add-card" onclick="event.stopPropagation();openV2Modal(null,\'' + lane.id + '\')">+ Karte</button>' +
+      '<button class="lane-collapse" onclick="event.stopPropagation();toggleV2Collapse(\'' + lane.id + '\')">' + (isCol ? '\u25b6' : '\u25bc') + '</button>' +
       '</div>' +
-      '<div class="lane-body' + (isCol ? ' collapsed' : '') + '">' + ch + '</div></div>';
+      '<div class="lane-body' + (isCol ? ' collapsed' : '') + '">' + ch + dh + '</div></div>';
   }).join('');
-
-  // Click handlers are inline via onclick in renderFrischCardItem
 }
 
-function renderFrischCardItem(card) {
-  var statusColors = {offen:'156,163,175', blockiert:'239,68,68', 'in-arbeit':'245,158,11', erledigt:'34,197,94'};
+function renderV2CardItem(card) {
+  var statusColors = {offen: '156,163,175', blockiert: '239,68,68', 'in-arbeit': '245,158,11', erledigt: '34,197,94'};
   var stRgb = statusColors[card.status] || statusColors.offen;
   var bgStyle = 'background:rgba(' + stRgb + ',0.12);';
   var statusCls = 'status-' + (card.status || 'offen');
-  var dateBadge = card.createdAt ? '<span class="card-date-cr">' + esc(card.createdAt) + '</span>' : '';
+  var dlBadge = card.deadline ? '<span class="card-date-dl">\uD83D\uDCC5 ' + fmtDateShort(card.deadline) + '</span>' : '';
+  var crBadge = card.createdAt ? '<span class="card-date-cr">' + fmtDateShort(card.createdAt) + '</span>' : '';
+  var datesHtml = (dlBadge || crBadge) ? '<div class="card-dates">' + dlBadge + crBadge + '</div>' : '';
 
-  return '<div class="card-item card-' + statusCls + '" data-id="' + esc(card.id) + '" style="position:relative;' + bgStyle + '" onclick="openFrischCardModal(\'' + esc(card.id) + '\')">' +
+  return '<div class="card-item card-status-' + esc(card.status || 'offen') + '" data-id="' + esc(card.id) + '" style="position:relative;' + bgStyle + '" onclick="openV2Modal(\'' + esc(card.id) + '\')">' +
     '<div style="flex:1;min-width:0;">' +
     '<div style="display:flex;align-items:center;gap:10px;">' +
     '<span class="card-prefix">' + esc(card.id) + '</span>' +
     '<span class="card-title">' + esc(card.title || '(kein Titel)') + '</span>' +
     '<span class="status-dot ' + statusCls + '"></span>' +
-    '</div>' +
-    (dateBadge ? '<div class="card-dates">' + dateBadge + '</div>' : '') +
-    '</div>' +
-    '<button class="frisch-del-btn" onclick="event.stopPropagation();deleteFrischCard(\'' + esc(card.id) + '\')" title="Loeschen">&times;</button>' +
-    '</div>';
+    '</div>' + datesHtml + '</div></div>';
 }
 
-function deleteFrischCard(cardId) {
-  if (!confirm('Karte "' + cardId + '" loeschen?')) return;
-  delete _frischCards[cardId];
-  saveFrischCards();
+function openV2Modal(cardId, laneId) {
+  _v2EditId = cardId;
+  _v2EditLane = laneId;
+  var card = cardId ? _v2Cards[cardId] : null;
+  var isNew = !card;
+  document.getElementById('v2-modal-title').textContent = isNew ? 'Neue Karte' : card.id;
+  document.getElementById('v2m-title').value = (card && card.title) || '';
+  document.getElementById('v2m-deadline').value = (card && card.deadline) || '';
+  document.getElementById('v2m-desc').value = (card && card.desc) || '';
+  var status = (card && card.status) || 'offen';
+  document.querySelectorAll('[name=v2m-status]').forEach(function(r) { r.checked = r.value === status; });
+  var laneSel = document.getElementById('v2m-lane');
+  laneSel.innerHTML = '';
+  getOrderedLanes().forEach(function(l) {
+    var opt = document.createElement('option'); opt.value = l.id; opt.textContent = l.name;
+    if ((card && card.lane === l.id) || (!card && l.id === laneId)) opt.selected = true;
+    laneSel.appendChild(opt);
+  });
+  document.getElementById('v2m-delete').style.display = isNew ? 'none' : '';
+  document.getElementById('v2-modal-overlay').classList.add('open');
+  document.getElementById('v2m-title').focus();
 }
 
-function toggleFrischCollapse(laneId) {
-  _frischCollapsed[laneId] = !_frischCollapsed[laneId];
-  renderFrischTab();
+function closeV2Modal() {
+  document.getElementById('v2-modal-overlay').classList.remove('open');
+  _v2EditId = null; _v2EditLane = null;
 }
 
-function toggleFrischView() {
-  var grid = document.getElementById('frisch-grid');
-  var tab = document.getElementById('tab-frisch');
-  var btn = document.getElementById('frisch-view-toggle');
+function toggleV2Collapse(laneId) { _v2Collapsed[laneId] = !_v2Collapsed[laneId]; renderV2Tab(); }
+
+function toggleV2View() {
+  var grid = document.getElementById('v2-grid');
+  var tab = document.getElementById('tab-v2');
+  var btn = document.getElementById('v2-view-toggle');
   if (!grid || !tab) return;
   grid.classList.toggle('kanban-board');
   tab.classList.toggle('board-active');
   if (btn) btn.textContent = grid.classList.contains('kanban-board') ? 'Grid-Ansicht' : 'Board-Ansicht';
 }
 
-function addFrischCard(laneId) {
-  var title = prompt('Titel der neuen Karte:');
-  if (!title || !title.trim()) return;
-
-  // Generate ID: lane prefix + sequence
+function nextV2CardId(lane) {
   var maxSeq = 0;
-  Object.values(_frischCards).forEach(function(c) {
-    if (c.lane === laneId) {
+  Object.values(_v2Cards).forEach(function(c) {
+    if (c.lane === lane) {
       var n = parseInt((c.id || '').replace(/[A-Z]+/, ''));
       if (n > maxSeq) maxSeq = n;
     }
   });
-  var id = laneId + String(maxSeq + 1).padStart(3, '0');
-
-  _frischCards[id] = {
-    id: id,
-    title: title.trim(),
-    lane: laneId,
-    status: 'offen',
-    order: (maxSeq + 1) * 1000,
-    createdAt: new Date().toISOString().split('T')[0]
-  };
-
-  saveFrischCards();
+  return lane + String(maxSeq + 1).padStart(3, '0');
 }
 
-function openFrischCardModal(cardId) {
-  var card = _frischCards[cardId];
-  if (!card) return;
-  // Reuse the existing card modal but for frisch cards
-  var title = prompt('Titel:', card.title);
-  if (title === null) return;
-  card.title = title.trim();
-  var status = prompt('Status (offen/in-arbeit/erledigt/blockiert):', card.status || 'offen');
-  if (status !== null) card.status = status.trim();
-  card.updatedAt = new Date().toISOString();
-  saveFrischCards();
-}
+var _v2SyncTimer = null;
+function scheduleV2Sync() { clearTimeout(_v2SyncTimer); _v2SyncTimer = setTimeout(saveV2Data, 5000); }
 
-async function saveFrischCards() {
+async function saveV2Data() {
   try {
-    var payload = JSON.stringify({ cards: _frischCards }, null, 2);
+    var payload = JSON.stringify({ _meta: { savedAt: new Date().toISOString(), updatedBy: 'lifeos' }, cards: _v2Cards }, null, 2);
     var content = btoa(unescape(encodeURIComponent(payload)));
-    var resp = await fetch('https://api.github.com/repos/ctmos/cowork-data/contents/data/backlog-fresh.json', {
+    var token = getGHToken();
+    if (!token) { showToast('Kein GitHub-Token', true); return; }
+    var url = 'https://api.github.com/repos/ctmos/cowork-data/contents/data/v2.json';
+    var body = { message: 'v2: auto-save', content: content };
+    if (_v2SHA) body.sha = _v2SHA;
+    var resp = await fetch(url, {
       method: 'PUT',
-      headers: {
-        'Authorization': 'token ' + GH_TOKEN,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: 'update backlog-fresh.json',
-        content: content,
-        sha: _frischSHA
-      })
+      headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     });
     if (!resp.ok) throw new Error('PUT failed: ' + resp.status);
     var data = await resp.json();
-    _frischSHA = data.content.sha;
-    renderFrischTab();
+    _v2SHA = data.content.sha;
   } catch(e) {
-    alert('Speichern fehlgeschlagen: ' + e.message);
+    showToast('V2 Sync fehlgeschlagen: ' + e.message, true);
   }
 }
+
+// V2 Modal Event Listeners
+document.getElementById('v2m-cancel').addEventListener('click', closeV2Modal);
+document.getElementById('v2-modal-overlay').addEventListener('click', function(e) { if (e.target === e.currentTarget) closeV2Modal(); });
+document.getElementById('v2-view-toggle').addEventListener('click', toggleV2View);
+
+document.getElementById('v2m-save').addEventListener('click', function() {
+  var title = document.getElementById('v2m-title').value.trim();
+  var deadline = document.getElementById('v2m-deadline').value;
+  var desc = document.getElementById('v2m-desc').value.trim();
+  var lane = document.getElementById('v2m-lane').value;
+  var se = document.querySelector('[name=v2m-status]:checked');
+  var status = se ? se.value : 'offen';
+  if (!title) { document.getElementById('v2m-title').focus(); return; }
+  if (_v2EditId) {
+    Object.assign(_v2Cards[_v2EditId], { title: title, deadline: deadline, desc: desc, status: status, lane: lane, updatedAt: new Date().toISOString() });
+  } else {
+    var id = nextV2CardId(lane);
+    var now = new Date().toISOString();
+    _v2Cards[id] = { id: id, lane: lane, title: title, deadline: deadline, desc: desc, status: status, archived: false, order: Date.now(), createdAt: now, updatedAt: now };
+  }
+  closeV2Modal();
+  renderV2Tab();
+  scheduleV2Sync();
+});
+
+document.getElementById('v2m-delete').addEventListener('click', function() {
+  confirmAction('Karte löschen?', 'Diese V2-Karte wird gelöscht.', function() {
+    delete _v2Cards[_v2EditId];
+    closeV2Modal();
+    renderV2Tab();
+    scheduleV2Sync();
+  });
+});
 
 

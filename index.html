@@ -196,7 +196,7 @@
 
   <nav>
     <div class="nav-center">
-      <button class="tab-btn" data-tab="frisch">Frisch</button>
+      <button class="tab-btn" data-tab="v2">V2</button>
       <button class="tab-btn" data-tab="kanban">Backlog</button>
       <button class="tab-btn" data-tab="statusboard">Kanban</button>
       <button class="tab-btn" data-tab="kba">KBA</button>
@@ -754,12 +754,12 @@
 
   </div>
 
-  <div id="tab-frisch" class="tab-content">
+  <div id="tab-v2" class="tab-content">
     <div class="kanban-toolbar">
-      <button id="frisch-view-toggle" class="btn-secondary" onclick="toggleFrischView()">Board-Ansicht</button>
+      <button id="v2-view-toggle" class="btn-secondary">Board-Ansicht</button>
     </div>
-    <div id="frisch-hannah-summary"></div>
-    <div class="kanban-grid" id="frisch-grid"></div>
+    <div id="v2-hannah-summary"></div>
+    <div class="kanban-grid" id="v2-grid"></div>
   </div>
 
   <div id="tab-system" class="tab-content">
@@ -1305,10 +1305,42 @@
 
 
 
-<!-- BACKLOG MODAL -->
-
-
-
+<!-- V2 CARD MODAL -->
+<div class="modal-overlay" id="v2-modal-overlay">
+  <div class="modal">
+    <h2 id="v2-modal-title">Karte</h2>
+    <div class="form-group">
+      <label class="form-label">Titel</label>
+      <input type="text" class="form-input" id="v2m-title" placeholder="Aufgabe beschreiben…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <div class="status-options">
+        <label class="status-option"><input type="radio" name="v2m-status" value="offen" checked> <span class="status-dot status-offen"></span> Offen</label>
+        <label class="status-option"><input type="radio" name="v2m-status" value="in-arbeit"> <span class="status-dot status-in-arbeit"></span> In Arbeit</label>
+        <label class="status-option"><input type="radio" name="v2m-status" value="blockiert"> <span class="status-dot status-blockiert"></span> Blockiert</label>
+        <label class="status-option"><input type="radio" name="v2m-status" value="erledigt"> <span class="status-dot status-erledigt"></span> Erledigt</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Deadline</label>
+      <input type="date" class="form-input" id="v2m-deadline">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Lane</label>
+      <select class="form-select" id="v2m-lane"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Beschreibung</label>
+      <textarea class="form-textarea" id="v2m-desc" placeholder="Details…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="v2m-delete" style="margin-right:auto">Löschen</button>
+      <button class="btn-secondary" id="v2m-cancel">Abbrechen</button>
+      <button class="btn-primary" id="v2m-save">Speichern</button>
+    </div>
+  </div>
+</div>
 
 
 
