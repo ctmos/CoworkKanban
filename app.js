@@ -609,9 +609,9 @@ function toggleHannahBox(which) {
 
 
 
-function renderHannahSummary() {
+function renderHannahSummary(targetId) {
 
-  var el = document.getElementById('hannah-summary');
+  var el = document.getElementById(targetId || 'hannah-summary');
 
   if (!el) return;
 
@@ -7024,54 +7024,36 @@ async function renderV2Tab() {
     grid.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
     await loadV2Data();
   }
-  // Hannah Summary kopieren
-  var hs = document.getElementById('v2-hannah-summary');
-  var src = document.getElementById('hannah-summary');
-  if (hs && src) hs.innerHTML = src.innerHTML;
-  else if (hs) hs.innerHTML = '';
+  // Hannah Summary direkt rendern (gleiche Funktion wie Backlog)
+  renderHannahSummary('v2-hannah-summary');
 
   var cards = _v2Cards;
+  var collapsed = _v2Collapsed;
   var todayISO = new Date().toISOString().split('T')[0];
 
+  // EXAKT gleiche Lane-Rendering-Logik wie renderKanban()
   grid.innerHTML = getOrderedLanes().map(function(lane) {
-    var all = Object.values(cards).filter(function(c) {
-      return !c.archived && !c.deletedAt && (lane.isHeute ? (c.todayFlag || c.lane === 'HE') : c.lane === lane.id);
-    });
-    var active = all.filter(function(c) { return c.status !== 'erledigt'; }).sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
-    var done = all.filter(function(c) { return c.status === 'erledigt'; }).sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
-    var isCol = _v2Collapsed[lane.id];
-    var hasCards = active.length > 0;
 
-    var ch = active.map(function(c) { return renderV2CardItem(c); }).join('') || '<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
-    var dh = done.length > 0 ? '<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);opacity:0.6">' + done.map(function(c) { return renderV2CardItem(c); }).join('') + '</div>' : '';
+    var all=Object.values(cards).filter(function(c){return !c.archived&&!c.deletedAt&&(lane.isHeute?(c.todayFlag||c.deadline===todayISO||c.lane==='HE'):c.lane===lane.id);});
 
-    return '<div class="lane' + (isCol ? ' lane-collapsed' : '') + (hasCards ? ' lane-has-cards' : '') + '" data-lane="' + lane.id + '">' +
-      '<div class="lane-header" onclick="toggleV2Collapse(\'' + lane.id + '\')" style="cursor:pointer">' +
-      '<span class="lane-title">' + esc(lane.name) + '</span>' +
-      '<span class="lane-count">' + active.length + '</span>' +
-      '<button class="btn-add-card" onclick="event.stopPropagation();openV2Modal(null,\'' + lane.id + '\')">+ Karte</button>' +
-      '<button class="lane-collapse" onclick="event.stopPropagation();toggleV2Collapse(\'' + lane.id + '\')">' + (isCol ? '\u25b6' : '\u25bc') + '</button>' +
-      '</div>' +
-      '<div class="lane-body' + (isCol ? ' collapsed' : '') + '">' + ch + dh + '</div></div>';
+    var active=all.filter(function(c){return c.status!=='erledigt';}).sort(function(a,b){return(a.order-b.order)||a.id.localeCompare(b.id);});
+
+    var done=all.filter(function(c){return c.status==='erledigt';}).sort(function(a,b){return(a.order-b.order)||a.id.localeCompare(b.id);});
+
+    var isCol=collapsed[lane.id]; var doneExp=doneExpandState[lane.id]||false;
+
+    var ch=active.map(function(c){return renderCardItem(c,lane.color);}).join('')||'<div class="empty-state" style="padding:16px 8px;font-size:12px">Keine Karten</div>';
+
+    var dh=done.length>0?'<button class="done-archive-toggle" onclick="event.stopPropagation();toggleDoneArchive(\''+lane.id+'\')">Erledigt ('+done.length+') '+(doneExp?'\u25b4':'\u25be')+'</button>'+(doneExp?'<div class="done-archive-list">'+done.map(function(c){return renderCardItem(c,lane.color);}).join('')+'</div>':''):'';
+
+    var hasCards=active.length>0;
+
+    return '<div class="lane'+(isCol?' lane-collapsed':'')+(hasCards?' lane-has-cards':'')+'" data-lane="'+lane.id+'"><div class="lane-header" onclick="toggleV2Collapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-drag-handle" draggable="true" onclick="event.stopPropagation()" title="Lane verschieben">\u22ee\u22ee</span><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openV2Modal(null,\''+lane.id+'\')">+ Karte</button><button class="lane-collapse" onclick="event.stopPropagation();toggleV2Collapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'">'+ch+dh+'</div></div>';
+
   }).join('');
-}
 
-function renderV2CardItem(card) {
-  var statusColors = {offen: '156,163,175', blockiert: '239,68,68', 'in-arbeit': '245,158,11', erledigt: '34,197,94'};
-  var stRgb = statusColors[card.status] || statusColors.offen;
-  var bgStyle = 'background:rgba(' + stRgb + ',0.12);';
-  var statusCls = 'status-' + (card.status || 'offen');
-  var dlBadge = card.deadline ? '<span class="card-date-dl">\uD83D\uDCC5 ' + fmtDateShort(card.deadline) + '</span>' : '';
-  var crBadge = card.createdAt ? '<span class="card-date-cr">' + fmtDateShort(card.createdAt) + '</span>' : '';
-  var datesHtml = (dlBadge || crBadge) ? '<div class="card-dates">' + dlBadge + crBadge + '</div>' : '';
-
-  return '<div class="card-item card-status-' + esc(card.status || 'offen') + '" data-id="' + esc(card.id) + '" style="position:relative;' + bgStyle + '" onclick="openV2Modal(\'' + esc(card.id) + '\')">' +
-    '<div style="flex:1;min-width:0;">' +
-    '<div style="display:flex;align-items:center;gap:10px;">' +
-    '<span class="card-prefix">' + esc(card.id) + '</span>' +
-    '<span class="card-title">' + esc(card.title || '(kein Titel)') + '</span>' +
-    '<span class="status-dot ' + statusCls + '"></span>' +
-    '</div>' + datesHtml + '</div></div>';
+  // V2-spezifische Click-Handler (openV2Modal statt openCardModal)
+  grid.querySelectorAll('.card-item').forEach(function(el){el.addEventListener('click',function(e){e.stopPropagation();openV2Modal(el.dataset.id);});});
 }
 
 function openV2Modal(cardId, laneId) {

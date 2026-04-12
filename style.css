@@ -738,7 +738,7 @@ nav {
 
 /* ── KANBAN ── */
 
-#tab-kanban, #tab-frisch {
+#tab-kanban, #tab-v2 {
 
   padding: 8px 16px;
 
@@ -2479,7 +2479,7 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
 
 /* ── NOTEBOOK RESPONSIVE ── */
 @media (max-width: 1024px) {
-  #tab-kanban { max-width: 100%; }
+  #tab-kanban, #tab-v2 { max-width: 100%; }
   .status-grid { grid-template-columns: 1fr !important; }
 }
 @media (max-width: 768px) {
@@ -2569,7 +2569,7 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
   /* Settings cards full width */
   .settings-section { margin: 8px; padding: 12px; }
   /* Kanban scroll horizontal hint */
-  #tab-kanban { padding: 8px; }
+  #tab-kanban, #tab-v2 { padding: 8px; }
   /* AL cards less padding */
   .al-card { padding: 12px; }
 }
@@ -2687,13 +2687,13 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
   border-radius: var(--radius) var(--radius) 0 0;
 }
 /* Two-column layout for lanes */
-#tab-kanban .kanban-grid {
+#tab-kanban .kanban-grid, #tab-v2 .kanban-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 @media (max-width: 768px) {
-  #tab-kanban .kanban-grid {
+  #tab-kanban .kanban-grid, #tab-v2 .kanban-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -2702,8 +2702,8 @@ details[open] > .proj-trash-toggle::before { content: '\25b4 '; }
 .kanban-toolbar .btn-secondary { font-size: 12px; padding: 5px 12px; }
 
 /* ─── HANNAH SUMMARY BOXES ─────────────────────────────────────────── */
-#hannah-summary { margin-bottom: 16px; }
-#hannah-summary:empty { display: none; }
+#hannah-summary, #v2-hannah-summary { margin-bottom: 16px; }
+#hannah-summary:empty, #v2-hannah-summary:empty { display: none; }
 .hannah-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2804,22 +2804,21 @@ html.dark-theme .hannah-label { color: #f9a8d4; }
 #tab-frisch .hannah-box.collapsed .hannah-box-header {
   border-bottom: none;
 }
-#tab-frisch .hannah-text { padding: 12px 14px; }
-#tab-frisch .hannah-footer { padding: 0 14px 10px; }
-#tab-kanban.board-active #hannah-summary { display: none; }
+#tab-kanban.board-active #hannah-summary,
+#tab-v2.board-active #v2-hannah-summary { display: none; }
 @media (max-width: 720px) {
   .hannah-grid { grid-template-columns: 1fr; }
 }
 /* Board view — full viewport */
-#tab-kanban.board-active {
+#tab-kanban.board-active, #tab-v2.board-active {
   max-width: 100%;
   padding: 0 20px;
   height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
 }
-#tab-kanban.board-active .kanban-toolbar { flex-shrink: 0; margin-top: 12px; }
-#tab-kanban .kanban-grid.kanban-board {
+#tab-kanban.board-active .kanban-toolbar, #tab-v2.board-active .kanban-toolbar { flex-shrink: 0; margin-top: 12px; }
+#tab-kanban .kanban-grid.kanban-board, #tab-v2 .kanban-grid.kanban-board {
   display: flex;
   flex-direction: row;
   overflow-x: auto;
@@ -2829,17 +2828,17 @@ html.dark-theme .hannah-label { color: #f9a8d4; }
   align-items: stretch;
   padding-bottom: 8px;
 }
-#tab-kanban .kanban-grid.kanban-board .lane {
+#tab-kanban .kanban-grid.kanban-board .lane, #tab-v2 .kanban-grid.kanban-board .lane {
   min-width: 280px;
   max-width: 320px;
   flex-shrink: 0;
   max-height: 100%;
   overflow-y: auto;
 }
-#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar { height: 6px; }
-#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar-track { background: transparent; }
-#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar, #tab-v2 .kanban-grid.kanban-board::-webkit-scrollbar { height: 6px; }
+#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar-track, #tab-v2 .kanban-grid.kanban-board::-webkit-scrollbar-track { background: transparent; }
+#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar-thumb, #tab-v2 .kanban-grid.kanban-board::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+#tab-kanban .kanban-grid.kanban-board::-webkit-scrollbar-thumb:hover, #tab-v2 .kanban-grid.kanban-board::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 @media (max-width: 768px) {
   .kanban-toolbar { display: none; }
 }
