@@ -1853,7 +1853,6 @@ function showPatientDetail(patId) {
     + '</div>'
     + '<div class="doc-box-list" id="doc-list-'+esc(pat.code)+'"></div>'
     + '</div>';
-  loadPatientDocs(pat.code);
 
   html += renderLinkedTasks('linkedPatient', pat.code);
 
@@ -1919,7 +1918,8 @@ function showPatientDetail(patId) {
 
   container.innerHTML = html;
 
-
+  // Dokumente laden (nach DOM-Render)
+  loadPatientDocs(pat.code);
 
   var syncBtnD = document.getElementById('sync-patients-btn-detail');
 
