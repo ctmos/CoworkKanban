@@ -1605,7 +1605,7 @@ function copyBoxContent(boxId) {
   });
 }
 // --- Dokumente-Box: Manifest laden + Download mit Entschluesselung ---
-var DOCS_BASE = 'https://app.moser.ai/docs/';
+var DOCS_BASE = (location.hostname === 'lifeos.moser.ai' ? '' : '/CoworkKanban') + '/docs/';
 function loadPatientDocs(code) {
   var listEl = document.getElementById('doc-list-' + code);
   var statusEl = document.getElementById('doc-status-' + code);
