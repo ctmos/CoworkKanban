@@ -1231,7 +1231,7 @@ nav {
 :root.dark-theme .patient-row:hover { border-color: rgba(196,122,42,0.4); }
 
 /* ── GLOBAL LAYOUT ── */
-#tab-kanban, #tab-patienten, #tab-autonomy, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-rag, #tab-on, #tab-kba, #tab-life {
+#tab-kanban, #tab-v2, #tab-patienten, #tab-autonomy, #tab-projekte, #tab-settings, #tab-system, #tab-imperialki, #tab-rag, #tab-on, #tab-kba, #tab-life {
   padding: 20px 24px;
   max-width: 940px;
   margin: 0 auto;
