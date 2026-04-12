@@ -6654,7 +6654,9 @@ async function renderV2Tab() {
   var todayISO = new Date().toISOString().split('T')[0];
 
   // EXAKT gleiche Lane-Rendering-Logik wie renderKanban()
-  grid.innerHTML = getOrderedLanes().map(function(lane) {
+  var orderedLanes = getOrderedLanes();
+  var totalLanes = orderedLanes.length;
+  grid.innerHTML = orderedLanes.map(function(lane, idx) {
 
     var all=Object.values(cards).filter(function(c){return !c.archived&&!c.deletedAt&&(lane.isHeute?(c.todayFlag||c.deadline===todayISO||c.lane==='HE'):c.lane===lane.id);});
 
@@ -6669,8 +6671,12 @@ async function renderV2Tab() {
     var dh=done.length>0?'<button class="done-archive-toggle" onclick="event.stopPropagation();toggleDoneArchive(\''+lane.id+'\')">Erledigt ('+done.length+') '+(doneExp?'\u25b4':'\u25be')+'</button>'+(doneExp?'<div class="done-archive-list">'+done.map(function(c){return renderCardItem(c,lane.color);}).join('')+'</div>':''):'';
 
     var hasCards=active.length>0;
+    var posNum = idx + 1;
+    var posOpts = '';
+    for (var p = 1; p <= totalLanes; p++) { posOpts += '<option value="'+p+'"'+(p===posNum?' selected':'')+'>'+p+'</option>'; }
+    var posSelect = '<select class="lane-pos-select" onclick="event.stopPropagation()" onchange="moveLaneToPos(\''+lane.id+'\',parseInt(this.value));this.blur()" title="Position aendern">'+posOpts+'</select>';
 
-    return '<div class="lane'+(isCol?' lane-collapsed':'')+(hasCards?' lane-has-cards':'')+'" data-lane="'+lane.id+'"><div class="lane-header" onclick="toggleV2Collapse(\''+lane.id+'\')" style="cursor:pointer"><span class="lane-drag-handle" draggable="true" onclick="event.stopPropagation()" title="Lane verschieben">\u22ee\u22ee</span><span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openV2Modal(null,\''+lane.id+'\')">+ Karte</button><button class="lane-collapse" onclick="event.stopPropagation();toggleV2Collapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'">'+ch+dh+'</div></div>';
+    return '<div class="lane'+(isCol?' lane-collapsed':'')+(hasCards?' lane-has-cards':'')+'" data-lane="'+lane.id+'"><div class="lane-header" onclick="toggleV2Collapse(\''+lane.id+'\')" style="cursor:pointer">'+posSelect+'<span class="lane-title">'+esc(lane.name)+'</span><span class="lane-count">'+active.length+'</span><button class="btn-add-card" onclick="event.stopPropagation();openV2Modal(null,\''+lane.id+'\')">+ Karte</button><button class="lane-collapse" onclick="event.stopPropagation();toggleV2Collapse(\''+lane.id+'\')">'+(isCol?'\u25b6':'\u25bc')+'</button></div><div class="lane-body'+(isCol?' collapsed':'')+'">'+ch+dh+'</div></div>';
 
   }).join('');
 
@@ -6736,6 +6742,20 @@ function closeV2Modal() {
 }
 
 function toggleV2Collapse(laneId) { _v2Collapsed[laneId] = !_v2Collapsed[laneId]; renderV2Tab(); }
+
+function moveLaneToPos(laneId, newPos) {
+  var order = getLaneOrder() || LANES.map(function(l) { return l.id; });
+  var curIdx = order.indexOf(laneId);
+  if (curIdx === -1) return;
+  var targetIdx = newPos - 1;
+  if (targetIdx < 0) targetIdx = 0;
+  if (targetIdx >= order.length) targetIdx = order.length - 1;
+  if (curIdx === targetIdx) return;
+  order.splice(curIdx, 1);
+  order.splice(targetIdx, 0, laneId);
+  saveLaneOrder(order);
+  if (currentTab === 'v2') { renderV2Tab(); } else { renderKanban(); }
+}
 
 function toggleV2View() {
   var grid = document.getElementById('v2-grid');

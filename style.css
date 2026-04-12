@@ -822,6 +822,12 @@ nav {
 .lane.lane-collapsed .lane-drag-handle { color: rgba(255,255,255,0.75); }
 .lane.lane-collapsed .lane-drag-handle:hover { background: rgba(255,255,255,0.15); color: #fff; }
 .lane.lane-dragging { opacity: 0.5; }
+/* Lane Position Select */
+.lane-pos-select { appearance: none; -webkit-appearance: none; width: 24px; height: 22px; text-align: center; font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; padding: 0; margin-right: 6px; font-family: inherit; }
+.lane-pos-select:hover { border-color: var(--accent); color: var(--accent); }
+.lane-pos-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
+.lane.lane-collapsed .lane-pos-select { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); }
+.lane.lane-collapsed .lane-pos-select:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
 /* Collapsed + has cards: helle Akzent-Punkt daneben */
 .lane.lane-collapsed.lane-has-cards .lane-count { background: #22c55e; color: #ffffff; padding: 1px 8px; border-radius: 10px; font-size: 11px; }
 .lane.lane-collapsed:not(.lane-has-cards) .lane-count { color: rgba(255,255,255,0.4); }
