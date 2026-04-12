@@ -4782,7 +4782,7 @@ setInterval(function() {
       order.splice(targetIdx, 0, sourceLaneId);
       saveLaneOrder(order);
       showToast('Lane ' + sourceLaneId + ' verschoben');
-      renderKanban();
+      if (currentTab === 'v2') { renderV2Tab(); } else { renderKanban(); }
       return;
     }
 
