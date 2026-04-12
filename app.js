@@ -6163,6 +6163,8 @@ async function checkForRemoteChanges() {
       showToast('Neue Daten erkannt \u2014 lade...', false);
 
       _dataLoaded = false;
+      _v2Loaded = false;
+      _v2pLanesLoaded = false;
 
       await loadFromGitHub();
 
@@ -6205,6 +6207,12 @@ async function checkForRemoteChanges() {
       if (currentTab === 'kba') renderPatients();
 
       if (currentTab === 'autonomy') renderAL();
+
+      if (currentTab === 'v2') renderV2Tab();
+
+      if (currentTab === 'v2p') showV2PTab();
+
+      if (currentTab === 'projekte') showProjectsTab();
 
 
 
