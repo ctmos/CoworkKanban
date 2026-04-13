@@ -3948,6 +3948,12 @@ function renderIKAssignmentStudio(ik) {
       } else if (a.deadline) {
         h += '<div class="ik-as-deadline">Fällig: ' + _ikFmtDate(a.deadline) + ' (' + _ikCountdown(a.deadline) + ')</div>';
       }
+      if (isDraft && a.draftContent) {
+        h += '<details class="ik-as-draft-expand">';
+        h += '<summary class="ik-as-subtitle">Draft anzeigen</summary>';
+        h += '<div class="ik-as-draft-text">' + parseSimpleMarkdown(a.draftContent) + '</div>';
+        h += '</details>';
+      }
       if (isDraft && a.rubricCriteria) {
         h += '<div class="ik-as-rubric">';
         h += '<div class="ik-as-subtitle">Rubrik-Check</div>';
@@ -3958,6 +3964,12 @@ function renderIKAssignmentStudio(ik) {
           h += '</div>';
         });
         h += '</div>';
+      }
+      if (isDraft && a.notesContent) {
+        h += '<details class="ik-as-notes-expand">';
+        h += '<summary class="ik-as-subtitle">Build Notes & Kommentare</summary>';
+        h += '<div class="ik-as-notes-text">' + parseSimpleMarkdown(a.notesContent) + '</div>';
+        h += '</details>';
       }
       h += '</div>';
     });

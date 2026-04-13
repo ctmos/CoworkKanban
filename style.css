@@ -3768,6 +3768,18 @@ details.ik-km-item[open] > summary.ik-km-item-header::after { transform: rotate(
 .ik-as-rubric { margin-top: 10px; padding: 8px 12px; background: var(--surface2); border-radius: var(--radius-sm); }
 .ik-as-rubric-item { font-size: 12px; line-height: 1.6; padding: 2px 0; }
 .ik-as-rubric-note { color: var(--text-muted); font-weight: 400; }
+.ik-as-draft-expand, .ik-as-notes-expand { margin-top: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.ik-as-draft-expand > summary, .ik-as-notes-expand > summary { cursor: pointer; padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--accent); }
+.ik-as-draft-expand > summary:hover, .ik-as-notes-expand > summary:hover { background: rgba(196,122,42,0.04); }
+.ik-as-draft-text, .ik-as-notes-text { padding: 12px 16px; font-size: 13px; line-height: 1.7; color: var(--text); border-top: 1px solid var(--border); max-height: 600px; overflow-y: auto; }
+.ik-as-draft-text h1, .ik-as-notes-text h1 { font-size: 16px; font-weight: 700; margin: 12px 0 6px; }
+.ik-as-draft-text h2, .ik-as-notes-text h2 { font-size: 14px; font-weight: 700; margin: 10px 0 4px; }
+.ik-as-draft-text h3, .ik-as-notes-text h3 { font-size: 13px; font-weight: 600; margin: 8px 0 4px; }
+.ik-as-draft-text p, .ik-as-notes-text p { margin: 4px 0; }
+.ik-as-draft-text strong, .ik-as-notes-text strong { font-weight: 600; }
+.ik-as-draft-text table, .ik-as-notes-text table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 12px; }
+.ik-as-draft-text th, .ik-as-draft-text td, .ik-as-notes-text th, .ik-as-notes-text td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; }
+.ik-as-draft-text th, .ik-as-notes-text th { background: var(--surface2); font-weight: 600; }
 
 /* Office Hours Prep */
 .ik-oh-list { padding-left: 20px; margin: 0; }
