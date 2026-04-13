@@ -578,6 +578,15 @@ async function fetchFromGitHub(path, options) {
 
     if (ghSHA.hasOwnProperty(path)) ghSHA[path] = d.sha;
 
+    // Fallback für Dateien >1MB: GitHub gibt encoding:"none" und kein content
+    if (!d.content && d.download_url) {
+      var rawResp = await fetch(d.download_url);
+      if (rawResp.ok) {
+        var rawText = await rawResp.text();
+        return { content: rawText, sha: d.sha };
+      }
+    }
+
     return { content: decodeBase64Utf8(d.content), sha: d.sha };
 
   } catch(e) {
