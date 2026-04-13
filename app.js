@@ -2478,17 +2478,43 @@ await saveProject(meta);}
 
 function parseSimpleMarkdown(text){
   if(!text)return'';
-  var lines=text.split('\n');var html='';var inUl=false;var inOl=false;
-  for(var i=0;i<lines.length;i++){
-    var raw=lines[i];var line=esc(raw);
-    // close open lists if line is not a list item
-    if(inUl&&!/^\s*- /.test(raw)){html+='</ul>';inUl=false;}
-    if(inOl&&!/^\s*\d+\.\s/.test(raw)){html+='</ol>';inOl=false;}
-    // inline formatting
+  var lines=text.split('\n');var html='';var inUl=false;var inOl=false;var inTable=false;
+  function applyInline(line){
     line=line.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
     line=line.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,'<em>$1</em>');
     line=line.replace(/!\[([^\]]*)\]\(((?:https?:)[^\)]+)\)/g,'<img src="$2" alt="$1" style="max-width:100%;border-radius:6px;margin:8px 0" loading="lazy">');
     line=line.replace(/\[([^\]]+)\]\(((?:https?:|mailto:)[^\)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return line;
+  }
+  for(var i=0;i<lines.length;i++){
+    var raw=lines[i];
+    // Table detection
+    if(/^\|/.test(raw)){
+      var cells=raw.split('|').slice(1);if(cells[cells.length-1].trim()==='')cells.pop();
+      // Skip separator row (|---|---|)
+      if(/^[\s\-:|]+$/.test(cells.join('|'))){continue;}
+      if(!inTable){
+        // close open lists
+        if(inUl){html+='</ul>';inUl=false;}if(inOl){html+='</ol>';inOl=false;}
+        html+='<table>';inTable=true;
+        // Check if this is header (next line is separator)
+        var nextRaw=i+1<lines.length?lines[i+1]:'';
+        if(/^\|[\s\-:|]+\|/.test(nextRaw)){
+          html+='<thead><tr>';cells.forEach(function(c){html+='<th>'+applyInline(esc(c.trim()))+'</th>';});html+='</tr></thead><tbody>';
+          i++;continue;
+        }
+        html+='<tbody>';
+      }
+      html+='<tr>';cells.forEach(function(c){html+='<td>'+applyInline(esc(c.trim()))+'</td>';});html+='</tr>';
+      continue;
+    }
+    if(inTable){html+='</tbody></table>';inTable=false;}
+    var line=esc(raw);
+    // close open lists if line is not a list item
+    if(inUl&&!/^\s*- /.test(raw)){html+='</ul>';inUl=false;}
+    if(inOl&&!/^\s*\d+\.\s/.test(raw)){html+='</ol>';inOl=false;}
+    // inline formatting
+    line=applyInline(line);
     // block formatting
     if(/^### /.test(raw)){html+='<h3>'+line.substring(4)+'</h3>';}
     else if(/^## /.test(raw)){html+='<h2>'+line.substring(3)+'</h2>';}
@@ -2498,7 +2524,7 @@ function parseSimpleMarkdown(text){
     else if(line.trim()===''){html+='<br>';}
     else{html+='<p>'+line+'</p>';}
   }
-  if(inUl)html+='</ul>';if(inOl)html+='</ol>';
+  if(inUl)html+='</ul>';if(inOl)html+='</ol>';if(inTable)html+='</tbody></table>';
   return html;
 }
 
