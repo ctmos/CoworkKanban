@@ -2345,7 +2345,6 @@ try{
     // Switch to new key and save
     _encKey=newKey;
     await savePatientsToGitHub();
-    console.log('[PIN-change] Patienten mit neuem Key re-encrypted');
   }else{
     _encKey=newKey;
   }
@@ -3020,7 +3019,6 @@ async function initApp() {
 
       WriteGuard.log({ status: 'ok', reason: 'startup OK, ' + taskCount + ' Tasks' });
 
-      console.log('[startupIntegrity] OK:', taskCount, 'Tasks, floor:', DataGuard.floor);
 
     }
 
@@ -4563,7 +4561,6 @@ if ('serviceWorker' in navigator) {
 
         if (newWorker.state === 'activated') {
 
-          console.log('[SW] New version activated — reloading');
 
           window.location.reload();
 
@@ -4714,7 +4711,6 @@ setInterval(function() {
 
       if (currentTab === 'heute') renderHeute();
 
-      console.log('[CAL] Auto-refreshed');
 
     }).catch(function() {});
 
@@ -5451,7 +5447,6 @@ async function checkForRemoteChanges() {
 
     if (_lastKnownSHA && remoteSHA !== _lastKnownSHA) {
 
-      console.log('[sync] Remote change detected:', _lastKnownSHA, '->', remoteSHA);
 
       showToast('Neue Daten erkannt \u2014 lade...', false);
 
