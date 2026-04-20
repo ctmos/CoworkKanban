@@ -889,10 +889,79 @@ async function fetchItemsFromGithub(){
   return {items: data.items || [], connections: data.connections || [], sha: meta.sha};
 }
 
-async function saveItemsToGithub(){
+/* === Local backups (rotating, last 20) === */
+function saveLocalBackup(){
+  try{
+    const ts = Date.now();
+    const snap = {ts, items: state.items, connections: state.connections};
+    localStorage.setItem(BACKUP_PREFIX + ts, JSON.stringify(snap));
+    // Prune: keep last BACKUP_MAX
+    const keys = [];
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith(BACKUP_PREFIX)) keys.push(k);
+    }
+    keys.sort();
+    while(keys.length > BACKUP_MAX){
+      const old = keys.shift();
+      try{ localStorage.removeItem(old); }catch(e){}
+    }
+  }catch(e){ /* quota — ignore */ }
+}
+
+function currentLiveItemCount(){
+  return state.items.filter(i => !i.deletedAt).length;
+}
+
+/* === Pending retry queue === */
+function updatePendingBadge(){
+  const $b = document.getElementById('pending-badge');
+  if(!$b) return;
+  const n = (state.pending || []).length;
+  if(n > 0){ $b.textContent = `${n} pending · retry`; $b.classList.add('show'); }
+  else $b.classList.remove('show');
+}
+function enqueuePending(payload){
+  state.pending = state.pending || [];
+  state.pending.push({ts: Date.now(), payload});
+  try{ localStorage.setItem(PENDING_KEY, JSON.stringify(state.pending)); }catch(e){}
+  updatePendingBadge();
+}
+async function flushPending(){
+  if(!state.pending || !state.pending.length) return;
   const token = getGhToken();
-  if(!token){ toast('lokal gespeichert'); persistLocal(); flushHistoryBuffer(); return; }
+  if(!token) return;
   const path = state.settings.daten.itemsPath || STORE_FILE;
+  // Replay by triggering a fresh save — the current state is the most recent
+  // so we just attempt to push current state and drain the queue on success
+  try{
+    // Re-fetch SHA first to avoid stale conflicts
+    const fresh = await fetchItemsFromGithub();
+    state.sha = fresh.sha;
+    try{ localStorage.setItem(SHA_KEY, state.sha||''); }catch(e){}
+    await saveItemsToGithub({_fromPending: true});
+  }catch(e){ console.warn('flushPending failed', e); }
+}
+
+async function saveItemsToGithub(opts){
+  opts = opts || {};
+  const token = getGhToken();
+  if(!token){ toast('lokal gespeichert'); saveLocalBackup(); persistLocal(); flushHistoryBuffer(); return; }
+  const path = state.settings.daten.itemsPath || STORE_FILE;
+
+  // SIZE GUARD: refuse to save if we'd overwrite with less than 85% of baseline
+  const baselineCount = parseInt(localStorage.getItem(LOCAL_CACHE_KEY + '.count') || '0', 10) || 0;
+  const currentCount = currentLiveItemCount();
+  if(baselineCount > 1 && currentCount < Math.max(1, Math.floor(baselineCount * 0.85))){
+    toast(`ABBRUCH · size-guard (${currentCount}/${baselineCount}) — lokal gesichert`);
+    saveLocalBackup();
+    persistLocal();
+    return;
+  }
+
+  // BACKUP BEFORE WRITE
+  saveLocalBackup();
+
   const payload = {
     _meta: {updatedAt: new Date().toISOString(), version: 1, schema:'lifeos-globe-v0.2'},
     items: state.items, connections: state.connections,
@@ -925,19 +994,29 @@ async function saveItemsToGithub(){
       }
       state.items = [...byId.values()];
       state.connections = Array.from(new Map([...fresh.connections,...state.connections].map(c=>[c.id||c.from+'→'+c.to,c])).values());
-      return saveItemsToGithub();
+      return saveItemsToGithub(opts);
     }
     if(!r.ok) throw new Error(`PUT ${r.status}`);
     const j = await r.json();
     state.sha = j.content.sha;
     try{ localStorage.setItem(SHA_KEY, state.sha); }catch(e){}
+    // Update baseline count after successful save
+    try{ localStorage.setItem(LOCAL_CACHE_KEY + '.count', String(currentCount)); }catch(e){}
     persistLocal();
     flushHistoryBuffer();
+    // Drain pending queue on success
+    if(state.pending && state.pending.length){
+      state.pending = [];
+      try{ localStorage.removeItem(PENDING_KEY); }catch(e){}
+      updatePendingBadge();
+    }
     toast('gespeichert');
   }catch(err){
     console.error('save failed', err);
-    toast('fehler — lokal gesichert');
+    toast('fehler — retry-queue + lokal gesichert');
     persistLocal();
+    // Enqueue for retry
+    enqueuePending({ts: Date.now(), reason: String(err && err.message || err)});
   }
 }
 
@@ -1182,6 +1261,36 @@ function buildRings(){
 
 /* === Chip-style HTML labels === */
 const MAX_VISIBLE_LABELS = 80;
+let _labelUpdateTimer = null;
+let _labelRafHandle = null;
+function scheduleLabelRefresh(){
+  if(_labelUpdateTimer) return;
+  _labelUpdateTimer = setTimeout(() => {
+    _labelUpdateTimer = null;
+    if(state.globe) state.globe.htmlElementsData(computeVisibleLabels());
+  }, 100);
+}
+function startLabelCameraTracker(){
+  if(_labelRafHandle) return;
+  let lastAz = null, lastPo = null, lastDist = null;
+  const tick = () => {
+    if(state.globe){
+      try{
+        const c = state.globe.controls();
+        const az = c.getAzimuthalAngle();
+        const po = c.getPolarAngle();
+        const cam = state.globe.camera();
+        const dist = cam ? cam.position.length() : 0;
+        if(lastAz === null || Math.abs(az-lastAz) > 0.01 || Math.abs(po-lastPo) > 0.01 || Math.abs(dist-(lastDist||0)) > 2){
+          lastAz = az; lastPo = po; lastDist = dist;
+          scheduleLabelRefresh();
+        }
+      }catch(e){}
+    }
+    _labelRafHandle = requestAnimationFrame(tick);
+  };
+  _labelRafHandle = requestAnimationFrame(tick);
+}
 function computeVisibleLabels(){
   if(!state.labelsOn) return [];
   const lab01 = state.studio.label / 100;
@@ -1211,22 +1320,20 @@ function computeVisibleLabels(){
   }
   return pool.slice(0, MAX_VISIBLE_LABELS);
 }
-// Re-bind existing element when possible (globe.gl diffs by object identity)
-const _labelEls = new WeakMap();
+// Re-use existing DOM element by id (globe.gl recreates data objects each refresh)
+const _labelEls = new Map();
 function buildLabelChipEl(d){
-  let el = _labelEls.get(d);
   const lab01 = state.studio.label / 100;
   const vis01 = (state.studio.labelOpacity == null ? 100 : state.studio.labelOpacity) / 100;
   const fs = Math.round(9 + lab01 * 10); // 9..19px
   const selId = state.selectedId;
+  let el = _labelEls.get(d.id);
   if(!el){
     el = document.createElement('div');
     el.className = 'item-label';
-    el.textContent = d.label || '';
-    _labelEls.set(d, el);
-  } else {
-    if(el.textContent !== (d.label||'')) el.textContent = d.label || '';
+    _labelEls.set(d.id, el);
   }
+  if(el.textContent !== (d.label||'')) el.textContent = d.label || '';
   el.style.fontSize = fs + 'px';
   el.classList.remove('selected','faded');
   if(selId){
@@ -1762,9 +1869,7 @@ function applyStudio(persist=true){
   const pts = buildPoints();
   state.globe.pointsData(pts);
   updateTerrainPeaks();
-  const lab01 = state.studio.label / 100;
-  const labelsVisible = state.labelsOn && lab01 > 0.05;
-  state.globe.labelsData(labelsVisible ? pts : []);
+  state.globe.htmlElementsData(computeVisibleLabels());
   state.globe.arcsData(buildAllArcs(state.selectedId ? {id:state.selectedId} : null));
   state.globe.arcAltitudeAutoScale(0.28 + arcAltitudeBoost());
   state.globe.customLayerData([]).customLayerData(buildContinentLabels());
@@ -2270,7 +2375,13 @@ document.getElementById('d-delete').onclick = () => {
     toast('stub kann nicht gelöscht werden');
     return;
   }
-  if(!confirm('item wirklich löschen?')) return;
+  // Last-item guard
+  const nonStubLive = state.items.filter(i => !i.deletedAt && !i.isStub);
+  if(nonStubLive.length <= 1){
+    if(!confirm('Willst du wirklich dein letztes Item löschen?')) return;
+  } else {
+    if(!confirm('item wirklich löschen?')) return;
+  }
   if(it){
     it.deletedAt = new Date().toISOString();
     it.updatedAt = it.deletedAt;
@@ -2335,12 +2446,10 @@ function refreshAll(){
   const prevCount = state.visible.length;
   const pts = buildPoints();
   if(state.globe){
-    const lab01 = state.studio.label / 100;
-    const labelsVisible = state.labelsOn && lab01 > 0.05;
     state.globe.pointsData(pts)
       .ringsData(buildRings())
       .arcsData(buildAllArcs(state.selectedId ? {id:state.selectedId} : null))
-      .labelsData(labelsVisible ? pts : [])
+      .htmlElementsData(computeVisibleLabels())
       .customLayerData(buildContinentLabels());
   }
   updateTerrainPeaks();
@@ -2371,6 +2480,15 @@ function updateRotateBtn(){
   if(state.globe) state.globe.controls().autoRotate = state.rotate && state.studio.rot > 0;
 }
 $btnRot.onclick = () => { state.rotate = !state.rotate; updateRotateBtn() };
+
+// Pending-badge manual retry
+const $pendingBadge = document.getElementById('pending-badge');
+if($pendingBadge){
+  $pendingBadge.onclick = () => {
+    toast('retry...');
+    flushPending();
+  };
+}
 
 document.getElementById('btn-theme').onclick = () => applyTheme(state.theme==='dark'?'light':'dark');
 document.getElementById('btn-kanban').onclick = () => toggleKanbanView();
@@ -2955,6 +3073,7 @@ document.addEventListener('keydown', e => {
   const kb = state.settings.keybinds;
 
   if(k === 'escape'){
+    if(document.body.classList.contains('move-mode')){ document.body.classList.remove('move-mode'); toast('move-mode aus'); return; }
     if(state.connect.mode !== 'idle') cancelConnect();
     else if(document.getElementById('settings-backdrop').classList.contains('open')) closeSettings();
     else if(document.getElementById('modal-backdrop').classList.contains('open')) closeAddModal();
@@ -2962,6 +3081,15 @@ document.addEventListener('keydown', e => {
     else if(state.selectedId) document.getElementById('detail-close').click();
     return;
   }
+
+  // Move-mode: D toggles, arrows nudge selected item
+  if(document.body.classList.contains('move-mode')){
+    if(e.key === 'ArrowUp'){ e.preventDefault(); moveModeNudge(2, 0); return; }
+    if(e.key === 'ArrowDown'){ e.preventDefault(); moveModeNudge(-2, 0); return; }
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); moveModeNudge(0, -2); return; }
+    if(e.key === 'ArrowRight'){ e.preventDefault(); moveModeNudge(0, 2); return; }
+  }
+  if(k === 'd'){ e.preventDefault(); toggleMoveMode(); return; }
 
   if(k === kb.add){ e.preventDefault(); openAddModal(); }
   else if(k === kb.connect){ e.preventDefault(); if(state.connect.mode==='idle') enterConnectMode(); else cancelConnect(); }
@@ -3004,6 +3132,191 @@ document.addEventListener('keydown', e => {
     }
   }
 });
+
+/* === Drag-to-reposition points === */
+function setupGlobeDrag(){
+  if(!state.globe) return;
+  const canvas = state.globe.renderer().domElement;
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(GLOBE_RADIUS, 64, 48),
+    new THREE.MeshBasicMaterial({visible:false})
+  );
+
+  let pressStart = null; // {x,y,time,candidate}
+  let dragging = null;   // {item, originLat, originLng, originLane}
+  let dragIntentTimer = null;
+
+  function screenToLatLng(clientX, clientY){
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouse, state.globe.camera());
+    const hits = raycaster.intersectObject(sphere);
+    if(!hits.length) return null;
+    const p = hits[0].point;
+    const r = p.length();
+    const lat = 90 - Math.acos(clamp(p.y / r, -1, 1)) * 180 / Math.PI;
+    // Match latLngToVec3 convention: theta = (lng + 180)*PI/180 → lng = theta*180/PI - 180
+    let theta = Math.atan2(p.z, -p.x); // because x=-sin*cos, z=sin*sin
+    let lng = theta * 180 / Math.PI - 180;
+    while(lng < -180) lng += 360;
+    while(lng > 180) lng -= 360;
+    return {lat, lng};
+  }
+
+  function findPointUnder(clientX, clientY){
+    // Lean on globe.gl's hover state — state.hovered is set during mousemove
+    return state.hovered;
+  }
+
+  function beginDrag(p){
+    dragging = {
+      id: p.id,
+      originLat: p.lat, originLng: p.lng,
+      originLane: p.lane,
+    };
+    document.body.classList.add('dragging');
+    // Disable orbit controls while dragging
+    try{ state.globe.controls().enabled = false; }catch(e){}
+    state.selectedId = p.id;
+    refreshAll();
+  }
+
+  function applyDragTo(latLng){
+    if(!dragging) return;
+    const it = state.items.find(i => i.id === dragging.id);
+    if(!it) return;
+    it.customLat = latLng.lat;
+    it.customLng = latLng.lng;
+    refreshAll();
+  }
+
+  function finishDrag(){
+    if(!dragging) return;
+    const it = state.items.find(i => i.id === dragging.id);
+    const info = dragging;
+    dragging = null;
+    document.body.classList.remove('dragging');
+    try{ state.globe.controls().enabled = true; }catch(e){}
+    if(!it) return;
+    // Determine new lane from longitude
+    const newLane = laneFromLongitude(it.customLng);
+    if(newLane && newLane !== info.originLane){
+      // Ask the user whether to change lane or keep position only
+      const choice = confirm(
+        `Neue Lane: ${LANE_MAP[newLane]?.name || newLane}?\n\n` +
+        `OK = Lane wechseln auf ${newLane} (Position neu berechnet)\n` +
+        `Abbrechen = Position absolut behalten (bleibt in ${info.originLane})`
+      );
+      if(choice){
+        it.lane = newLane;
+        delete it.customLat;
+        delete it.customLng;
+      } // else: keep customLat/customLng, lane stays
+    }
+    it.updatedAt = new Date().toISOString();
+    logHistory('📍', it.id,
+      `position ${info.originLat.toFixed(1)},${info.originLng.toFixed(1)} → ${(it.customLat ?? info.originLat).toFixed(1)},${(it.customLng ?? info.originLng).toFixed(1)}${it.lane !== info.originLane ? ` · lane ${info.originLane}→${it.lane}` : ''}`
+    );
+    scheduleSave();
+    refreshAll();
+    toast('verschoben');
+  }
+
+  canvas.addEventListener('pointerdown', e => {
+    if(e.button !== 0) return;
+    if(state.connect.mode !== 'idle') return;
+    const p = findPointUnder(e.clientX, e.clientY);
+    if(!p || p.isStub) return;
+    pressStart = {x: e.clientX, y: e.clientY, time: Date.now(), candidate: p, moved: false};
+    document.body.classList.add('drag-target');
+    clearTimeout(dragIntentTimer);
+    dragIntentTimer = setTimeout(() => {
+      // If still pressing and haven't dragged yet, arm the drag
+      if(pressStart && !dragging){ /* nothing; movement triggers */ }
+    }, 200);
+  }, true);
+
+  canvas.addEventListener('pointermove', e => {
+    if(!pressStart) return;
+    const dx = e.clientX - pressStart.x, dy = e.clientY - pressStart.y;
+    const dist2 = dx*dx + dy*dy;
+    if(!dragging){
+      const elapsed = Date.now() - pressStart.time;
+      if(dist2 > 25 && elapsed >= 200){
+        // Begin drag
+        beginDrag(pressStart.candidate);
+      } else if(dist2 > 25){
+        // Moved before the 200ms threshold — probably panning orbit — cancel intent
+        pressStart = null;
+        document.body.classList.remove('drag-target');
+        return;
+      }
+    }
+    if(dragging){
+      const latLng = screenToLatLng(e.clientX, e.clientY);
+      if(latLng) applyDragTo(latLng);
+    }
+  });
+
+  canvas.addEventListener('pointerup', e => {
+    clearTimeout(dragIntentTimer);
+    document.body.classList.remove('drag-target');
+    if(dragging){
+      finishDrag();
+      // Swallow the click so onPointClick doesn't fire
+      const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); canvas.removeEventListener('click', swallow, true); };
+      canvas.addEventListener('click', swallow, true);
+      setTimeout(() => canvas.removeEventListener('click', swallow, true), 400);
+    }
+    pressStart = null;
+  });
+
+  canvas.addEventListener('pointercancel', () => {
+    clearTimeout(dragIntentTimer);
+    document.body.classList.remove('drag-target','dragging');
+    if(dragging){
+      try{ state.globe.controls().enabled = true; }catch(e){}
+      dragging = null;
+    }
+    pressStart = null;
+  });
+}
+
+function laneFromLongitude(lng){
+  // Inverse of laneLongitude center: lng = -180 + ((idx+0.5)/total)*360 → idx = (lng+180)*total/360 - 0.5
+  const total = LANES.length;
+  let idx = Math.round((lng + 180) * total / 360 - 0.5);
+  idx = ((idx % total) + total) % total;
+  return LANES[idx]?.code || null;
+}
+
+/* === Move-mode (keyboard-driven) === */
+function toggleMoveMode(){
+  if(!state.selectedId){ toast('kein item ausgewählt'); return; }
+  const on = !document.body.classList.contains('move-mode');
+  document.body.classList.toggle('move-mode', on);
+  toast(on ? 'move-mode · pfeiltasten · esc zum beenden' : 'move-mode aus');
+}
+function moveModeNudge(dLat, dLng){
+  if(!state.selectedId) return;
+  const it = state.items.find(i => i.id === state.selectedId);
+  if(!it || it.isStub) return;
+  const p = state.visible.find(v => v.id === state.selectedId);
+  const baseLat = it.customLat != null ? it.customLat : (p ? p.lat : 0);
+  const baseLng = it.customLng != null ? it.customLng : (p ? p.lng : 0);
+  it.customLat = clamp(baseLat + dLat, -89, 89);
+  let lng = baseLng + dLng;
+  while(lng < -180) lng += 360;
+  while(lng > 180) lng -= 360;
+  it.customLng = lng;
+  it.updatedAt = new Date().toISOString();
+  logHistory('📍', it.id, `nudge lat+=${dLat} lng+=${dLng} → ${it.customLat.toFixed(1)},${it.customLng.toFixed(1)}`);
+  scheduleSave();
+  refreshAll();
+}
 
 /* === Mobile: swipe + long-press === */
 function setupMobile(){
@@ -3069,6 +3382,8 @@ async function start(){
       state.sha = remote.sha;
       try{ localStorage.setItem(SHA_KEY, state.sha||''); }catch(e){}
       persistLocal();
+      // Establish size-guard baseline from remote truth
+      try{ localStorage.setItem(LOCAL_CACHE_KEY + '.count', String(currentLiveItemCount())); }catch(e){}
     }
   }catch(err){
     console.warn('remote load failed, using local', err);
@@ -3076,6 +3391,14 @@ async function start(){
   }
 
   ensureStubItems();
+
+  // Load pending retry queue from localStorage
+  try{
+    const pend = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
+    state.pending = Array.isArray(pend) ? pend : [];
+  }catch(e){ state.pending = []; }
+  updatePendingBadge();
+  if(state.pending && state.pending.length){ setTimeout(flushPending, 2500); }
 
   document.getElementById('loading').classList.add('hidden');
   buildPoints();
@@ -3086,6 +3409,8 @@ async function start(){
   updateRotateBtn();
   refreshAll();
   setupMobile();
+  setupGlobeDrag();
+  startLabelCameraTracker();
 
   // Apply initial view
   if(state.view === 'kanban'){
