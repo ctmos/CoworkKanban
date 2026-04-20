@@ -5188,7 +5188,7 @@ function renderPatAmpel(pat){var a=pat.ampel||{};var fields=['austritt','ambulan
 
 function cycleAmpel(field){var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat)return;if(!pat.ampel)pat.ampel={};if(!pat.ampel[field])pat.ampel[field]={status:'offen',text:''};var order=['offen','gruen','gelb','rot'];var idx=order.indexOf(pat.ampel[field].status);pat.ampel[field].status=order[(idx+1)%4];savePatients(patients);renderPatAmpel(pat);}
 
-function renderPatBlog(pat){var allEntries=(pat.entries||[]).concat(pat.blog||[]);var seen={};allEntries=allEntries.filter(function(e){if(!e.id)return true;if(seen[e.id])return false;seen[e.id]=true;return true;});allEntries.sort(function(a,b){var da=new Date(a.date||a.ts||0);var db=new Date(b.date||b.ts||0);return db-da;});var entries=allEntries.filter(function(e){return !e.trashed;});var trashed=allEntries.filter(function(e){return e.trashed;});var c=document.getElementById('pat-blog-list');if(entries.length===0&&trashed.length===0){c.innerHTML='<div class="empty-state">Noch keine Verlaufseintr\u00e4ge.</div>';return;}var html=entries.map(function(e){var text=e.content||e.text||'';var hasRef=!!e.contentRef;if(hasRef&&!text){text='Lade Vorbericht...';}var lines=text.split('\n');var isLong=lines.length>5||text.length>400;var exp=_blogExpanded[e.id];var cls=isLong&&!exp?'pat-blog-entry-text collapsed':'pat-blog-entry-text';var btn=isLong?'<button class="pat-blog-expand" onclick="toggleBlogExpand(\''+e.id+'\')">'+(exp?'Weniger':'Mehr anzeigen...')+'</button>':'';var dateStr=e.date||e.ts?new Date(e.date||e.ts).toLocaleString('de-CH'):'';var titleStr=e.title?'<span class="pat-blog-entry-title">'+esc(e.title)+'</span>':'';var typeStr=e.type?'<span class="pat-blog-entry-type">'+esc(e.type)+'</span>':'';var syncBadge=e.status_sync==='synced'?'<span class="pat-sync-badge">\u2714 synced</span>':'';var copyBtn='<button class="pat-blog-entry-copy" onclick="copyBlogEntry(this,\''+e.id+'\')" title="Inhalt kopieren">\u2398 Copy</button>';return '<div class="pat-blog-entry"><div class="pat-blog-entry-header"><span class="pat-blog-entry-date">'+dateStr+'</span>'+typeStr+syncBadge+'<div class="pat-blog-entry-actions">'+copyBtn+'<button class="pat-blog-entry-delete" onclick="deleteEntry(\''+e.id+'\')">L\u00f6schen</button></div></div>'+titleStr+'<div class="'+cls+'" data-entry-id="'+e.id+'">'+esc(text)+'</div>'+btn+'</div>';}).join('');_loadContentRefs(entries);if(trashed.length>0){html+='<details class="pat-trash-dropdown"><summary class="pat-trash-summary">Papierkorb ('+trashed.length+')</summary><div class="pat-trash-body">'+trashed.map(function(e){var dateStr=e.date||e.ts?new Date(e.date||e.ts).toLocaleString('de-CH'):'';var titleStr=e.title?esc(e.title):'(kein Titel)';var trashedDate=e.trashedAt?new Date(e.trashedAt).toLocaleDateString('de-CH'):'';return '<div class="pat-trash-item"><div class="pat-trash-info"><span class="pat-trash-date">'+dateStr+'</span><span class="pat-trash-title">'+titleStr+'</span><span class="pat-trash-deleted">gel\u00f6scht '+trashedDate+'</span></div><div class="pat-trash-actions"><button onclick="restoreEntry(\''+e.id+'\')" class="pat-trash-restore">Wiederherstellen</button><button onclick="permanentDeleteEntry(\''+e.id+'\')" class="pat-trash-perm-delete">Endg\u00fcltig l\u00f6schen</button></div></div>';}).join('')+'</div></details>';}if(entries.length===0&&trashed.length>0){html='<div class="empty-state">Keine aktiven Verlaufseintr\u00e4ge.</div>'+html;}c.innerHTML=html;}
+function renderPatBlog(pat){var allEntries=(pat.entries||[]).concat(pat.blog||[]);var seen={};allEntries=allEntries.filter(function(e){if(!e.id)return true;if(seen[e.id])return false;seen[e.id]=true;return true;});allEntries.sort(function(a,b){var da=new Date(a.date||a.ts||0);var db=new Date(b.date||b.ts||0);return db-da;});var entries=allEntries.filter(function(e){return !e.trashed;});var trashed=allEntries.filter(function(e){return e.trashed;});var c=document.getElementById('pat-blog-list');if(entries.length===0&&trashed.length===0){c.innerHTML='<div class="empty-state">Noch keine Verlaufseintr\u00e4ge.</div>';return;}var html=entries.map(function(e){var text=e.content||e.text||'';var hasRef=!!e.contentRef;if(hasRef&&!text){text='Lade Vorbericht...';}var lines=text.split('\n');var isLong=lines.length>5||text.length>400;var exp=_blogExpanded[e.id];var cls=isLong&&!exp?'pat-blog-entry-text collapsed':'pat-blog-entry-text';var btn=isLong?'<button class="pat-blog-expand" onclick="toggleBlogExpand(\''+e.id+'\')">'+(exp?'Weniger':'Mehr anzeigen...')+'</button>':'';var dateStr=e.date||e.ts?new Date(e.date||e.ts).toLocaleString('de-CH'):'';var titleStr=e.title?'<span class="pat-blog-entry-title">'+esc(e.title)+'</span>':'';var typeStr=e.type?'<span class="pat-blog-entry-type">'+esc(e.type)+'</span>':'';var syncBadge=e.status_sync==='synced'?'<span class="pat-sync-badge">\u2714 synced</span>':'';var copyBtn='<button class="pat-blog-entry-copy" onclick="copyBlogEntry(this,\''+e.id+'\')" title="Inhalt kopieren">\u2398 Copy</button>';var bodyHtml;if(e.type==='transkript'&&e.server_ref){var previewHtml=e.summary_preview?'<div class="entry-preview">'+esc(e.summary_preview)+'</div>':'';bodyHtml='<div class="'+cls+'" data-entry-id="'+e.id+'">'+previewHtml+'<button class="btn-transcript-load" data-server-ref="'+esc(e.server_ref)+'" data-entry-id="'+esc(e.id)+'" onclick="loadTranscript(this.dataset.serverRef,this.dataset.entryId,this)">Transkript lesen</button></div>';}else{bodyHtml='<div class="'+cls+'" data-entry-id="'+e.id+'">'+esc(text)+'</div>';}return '<div class="pat-blog-entry"><div class="pat-blog-entry-header"><span class="pat-blog-entry-date">'+dateStr+'</span>'+typeStr+syncBadge+'<div class="pat-blog-entry-actions">'+copyBtn+'<button class="pat-blog-entry-delete" onclick="deleteEntry(\''+e.id+'\')">L\u00f6schen</button></div></div>'+titleStr+bodyHtml+btn+'</div>';}).join('');_loadContentRefs(entries);if(trashed.length>0){html+='<details class="pat-trash-dropdown"><summary class="pat-trash-summary">Papierkorb ('+trashed.length+')</summary><div class="pat-trash-body">'+trashed.map(function(e){var dateStr=e.date||e.ts?new Date(e.date||e.ts).toLocaleString('de-CH'):'';var titleStr=e.title?esc(e.title):'(kein Titel)';var trashedDate=e.trashedAt?new Date(e.trashedAt).toLocaleDateString('de-CH'):'';return '<div class="pat-trash-item"><div class="pat-trash-info"><span class="pat-trash-date">'+dateStr+'</span><span class="pat-trash-title">'+titleStr+'</span><span class="pat-trash-deleted">gel\u00f6scht '+trashedDate+'</span></div><div class="pat-trash-actions"><button onclick="restoreEntry(\''+e.id+'\')" class="pat-trash-restore">Wiederherstellen</button><button onclick="permanentDeleteEntry(\''+e.id+'\')" class="pat-trash-perm-delete">Endg\u00fcltig l\u00f6schen</button></div></div>';}).join('')+'</div></details>';}if(entries.length===0&&trashed.length>0){html='<div class="empty-state">Keine aktiven Verlaufseintr\u00e4ge.</div>'+html;}c.innerHTML=html;}
 
 function addBlogEntry(){var t=document.getElementById('pat-blog-text').value.trim();if(!t)return;var patients=getPatients();var pat=patients.find(function(p){return p.id===_currentPatId;});if(!pat)return;if(!pat.entries)pat.entries=[];pat.entries.unshift({id:'entry'+Date.now(),date:new Date().toISOString(),content:t,type:'notiz',source:'manual'});savePatients(patients);document.getElementById('pat-blog-text').value='';renderPatBlog(pat);}
 
@@ -7467,4 +7467,101 @@ document.addEventListener('paste', async function(e) {
   }
 });
 
+// ─── Transkript Lazy-Load (AudioRec v2 Phase 4) ─────────────────────────────
+// Lazy-Load fuer verschluesselte Transkripte von audio.moser.ai.
+// Ciphertext bleibt Ende-zu-Ende, nur Dashboard entschluesselt via PIN-abgeleitetem Schluessel.
+
+async function loadTranscript(serverRef, entryId, triggerEl) {
+  var AUDIO_BASE = 'https://audio.moser.ai';
+  triggerEl.disabled = true;
+  var originalText = triggerEl.textContent;
+  triggerEl.textContent = 'Laedt...';
+  try {
+    var jwt = (typeof getAuthJwt === 'function') ? getAuthJwt() : (localStorage.getItem('jwt') || sessionStorage.getItem('jwt') || '');
+    var resp = await fetch(AUDIO_BASE + '/api/transcript/' + serverRef, {
+      headers: jwt ? { 'Authorization': 'Bearer ' + jwt } : {}
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var body = await resp.json();
+    var pin = sessionStorage.getItem('cowork_pin_val') || '';
+    if (!pin) throw new Error('Kein PIN in Session — bitte neu anmelden');
+    var pinKey = await deriveKeyFromPin(pin, 'lifeos-patient-enc');
+    var iv = Uint8Array.from(atob(body.iv), function(c){return c.charCodeAt(0);});
+    var ciphertext = Uint8Array.from(atob(body.data), function(c){return c.charCodeAt(0);});
+    var decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, pinKey, ciphertext);
+    var plaintext = new TextDecoder().decode(decrypted);
+    var transcript = JSON.parse(plaintext);
+    triggerEl.disabled = false;
+    triggerEl.textContent = originalText;
+    showTranscriptModal(transcript);
+  } catch (err) {
+    var isOffline = !navigator.onLine || (err && err.message && err.message.indexOf('Failed to fetch') >= 0);
+    if (isOffline || (err && err.message && err.message.indexOf('HTTP 5') >= 0)) {
+      showTranscriptOfflineFallback(triggerEl);
+    } else {
+      triggerEl.textContent = 'Fehler: ' + (err && err.message ? err.message : 'unbekannt');
+      triggerEl.disabled = false;
+    }
+  }
+}
+
+function showTranscriptModal(transcript) {
+  var segs = (transcript && transcript.segments) || [];
+  var segmentsHtml = segs.map(function(s){
+    var speakerClass = (s.speaker === 'Therapeut' || s.speaker === 'T') ? 'speaker-t' : 'speaker-p';
+    return '<div class="transcript-segment">' +
+      '<span class="transcript-time">[' + _formatTranscriptTime(s.start || 0) + ']</span>' +
+      '<span class="transcript-speaker ' + speakerClass + '">' + esc(s.speaker || '') + ':</span>' +
+      '<span class="transcript-text">' + esc(s.text || '') + '</span>' +
+      '</div>';
+  }).join('');
+  var summary = (transcript && transcript.summary) || {};
+  var summaryHtml = summary.verlauf
+    ? '<div class="transcript-summary"><strong>Verlauf:</strong> ' + esc(summary.verlauf) + '</div>'
+    : '';
+  var durationMin = Math.round(((transcript && transcript.audio_duration_s) || 0) / 60);
+  var anonCount = (transcript && transcript.anonymization && transcript.anonymization.total_detections) || 0;
+  var sttModel = (transcript && transcript.stt && transcript.stt.model) || '';
+  var patCode = (transcript && transcript.patient_code) || '';
+  var modalHtml = '<div class="transcript-modal-overlay" id="transcriptModalOverlay">' +
+    '<div class="transcript-modal">' +
+      '<div class="transcript-modal-header">' +
+        '<h3>Transkript \u2014 ' + esc(patCode) + '</h3>' +
+        '<button class="btn-modal-close" onclick="closeTranscriptModal()">\u2715</button>' +
+      '</div>' +
+      '<div class="transcript-modal-meta">' +
+        '<span>Dauer: ' + durationMin + ' min</span>' +
+        '<span>Anon: ' + anonCount + ' Entitaeten</span>' +
+        '<span>Modell: ' + esc(sttModel) + '</span>' +
+      '</div>' +
+      summaryHtml +
+      '<div class="transcript-segments">' + segmentsHtml + '</div>' +
+    '</div>' +
+    '</div>';
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  var overlay = document.getElementById('transcriptModalOverlay');
+  if (overlay) {
+    overlay.addEventListener('click', function(e){ if (e.target === overlay) closeTranscriptModal(); });
+  }
+}
+
+function closeTranscriptModal() {
+  var overlay = document.getElementById('transcriptModalOverlay');
+  if (overlay) overlay.remove();
+}
+
+function showTranscriptOfflineFallback(triggerEl) {
+  var fallback = document.createElement('div');
+  fallback.className = 'transcript-offline-notice';
+  fallback.textContent = 'Transkript aktuell nicht erreichbar. Summary-Vorschau wird angezeigt.';
+  triggerEl.replaceWith(fallback);
+}
+
+function _formatTranscriptTime(seconds) {
+  var m = Math.floor(seconds / 60);
+  var s = Math.floor(seconds % 60);
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+// ─── Ende Transkript Lazy-Load ─────────────────────────────────────────────
 
