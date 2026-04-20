@@ -175,10 +175,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--ink)
 /* GLOBE + KANBAN IFRAME */
 #globe-wrap{position:fixed;inset:0;z-index:1;transition:opacity .4s}
 #globe-wrap canvas{display:block}
-#kanban-frame{position:fixed;inset:0;z-index:2;border:none;width:100%;height:100%;opacity:0;pointer-events:none;transition:opacity .4s;background:var(--bg)}
-body.view-kanban #globe-wrap{opacity:0;pointer-events:none}
-body.view-kanban #kanban-frame{opacity:1;pointer-events:auto}
-body.view-kanban #rail,body.view-kanban #detail,body.view-kanban #studio,body.view-kanban #legend,body.view-kanban #empty,body.view-kanban #tip{display:none}
+/* kanban-frame + view-kanban CSS entfernt — globe ist eigenständig */
 
 /* TOOLTIP */
 #tip{position:fixed;z-index:200;background:var(--tip-bg);color:var(--ink);border:1px solid var(--line);padding:14px 18px;font-size:11px;pointer-events:none;display:none;max-width:280px;box-shadow:var(--shadow-panel);font-weight:400;letter-spacing:0.02em}
@@ -461,9 +458,8 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
   </div>
 </aside>
 
-<!-- GLOBE + KANBAN IFRAME -->
+<!-- GLOBE (eigenständig, keine Kanban-iframe) -->
 <div id="globe-wrap"></div>
-<iframe id="kanban-frame" src="about:blank" title="LifeOS Kanban" loading="lazy"></iframe>
 <div id="tip"><div class="t1"></div><div class="t2"></div></div>
 
 <!-- EMPTY -->
@@ -875,7 +871,10 @@ try{
     }
   }catch(e){ state.studio = {...STUDIO_DEFAULT}; }
   state.studioCollapsed = localStorage.getItem(STUDIO_COLLAPSE_KEY) === '1';
-  state.view = localStorage.getItem(VIEW_KEY) || state.settings.general.startView || 'globe';
+  // view ist fest 'globe' - Kanban-iframe wurde komplett entfernt.
+  // Alte localStorage-Reste aufräumen, falls User view=kanban gespeichert hatte.
+  try{ localStorage.removeItem(VIEW_KEY); }catch(e){}
+  state.view = 'globe';
 }catch(e){}
 
 /* === GitHub token === */
@@ -2521,21 +2520,7 @@ document.getElementById('btn-studio').onclick = () => {
 };
 document.getElementById('btn-settings').onclick = () => openSettings();
 
-/* === Kanban toggle (iframe crossfade) === */
-function toggleKanbanView(){
-  const $frame = document.getElementById('kanban-frame');
-  if(state.view === 'globe'){
-    state.view = 'kanban';
-    if($frame.src === 'about:blank' || !$frame.src.includes('?tab=kanban')){
-      $frame.src = '/?tab=kanban';
-    }
-    document.body.classList.add('view-kanban');
-  } else {
-    state.view = 'globe';
-    document.body.classList.remove('view-kanban');
-  }
-  try{ localStorage.setItem(VIEW_KEY, state.view); }catch(e){}
-}
+/* === Kanban-Toggle entfernt — globe ist eigenständig, keine iframe-Einbindung === */
 
 /* === Add modal === */
 function openAddModal(preset){
@@ -3427,12 +3412,7 @@ async function start(){
   setupGlobeDrag();
   startLabelCameraTracker();
 
-  // Apply initial view
-  if(state.view === 'kanban'){
-    const $frame = document.getElementById('kanban-frame');
-    if($frame.src === 'about:blank') $frame.src = '/?tab=kanban';
-    document.body.classList.add('view-kanban');
-  }
+  // view fest 'globe' — Kanban-iframe komplett entfernt.
 
   if(state.visible.length > 0 && state.terrainMat){
     state.peakIntroWeight = 0;
