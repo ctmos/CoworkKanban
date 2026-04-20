@@ -10,11 +10,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#05070d; --bg-2:#0b1020; --panel:rgba(16,22,40,.78);
+  /* DARK (default) */
+  --bg:#05070d; --bg-grad-a:#0c1230; --bg-grad-b:#05070d; --bg-grad-c:#000;
+  --panel:rgba(16,22,40,.78); --panel-solid:#0d1428;
   --ink:#e8ecf7; --muted:#9aa3bf; --dim:#5a6684;
-  --accent:#5eead4; --accent-2:#60a5fa; --danger:#f87171; --warn:#fbbf24; --ok:#34d399;
-  --border:rgba(120,150,220,.18);
+  --accent:#5eead4; --accent-2:#60a5fa;
+  --danger:#f87171; --warn:#fbbf24; --ok:#34d399;
+  --border:rgba(120,150,220,.18); --border-strong:rgba(120,150,220,.35);
   --shadow:0 10px 40px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+  --globe-base:#0a1229; --globe-emissive:#050a18; --globe-atmos:#60a5fa;
+  --dot-land:#3a4a78; --dot-opacity:0.5;
+  --label-color:#e8ecf7; --label-stroke:rgba(0,0,0,.92);
+  --continent-color:#ffffff;
+  --tip-bg:rgba(7,11,24,.96);
   --radius:14px;
   --lane-HE:#ff6b6b; --lane-JZ:#ff3860; --lane-PA:#4ecdc4; --lane-BA:#ffe66d;
   --lane-MA:#60a5fa; --lane-IK:#c9b1ff; --lane-FR:#ffb4a2; --lane-FA:#b8f2e6;
@@ -22,87 +30,130 @@
   --lane-EM:#ffc0cb; --lane-EX:#7dd3fc; --lane-TB:#d4a5ff; --lane-EK:#ff7f50;
   --lane-UNK:#64748b;
 }
+body.light{
+  --bg:#f5f7fa; --bg-grad-a:#e8edf5; --bg-grad-b:#f5f7fa; --bg-grad-c:#ffffff;
+  --panel:rgba(255,255,255,.88); --panel-solid:#ffffff;
+  --ink:#1a1d24; --muted:#5a6070; --dim:#8a90a0;
+  --accent:#e5484d; --accent-2:#d13438;
+  --danger:#e5484d; --warn:#f59e0b; --ok:#10b981;
+  --border:#dde1e8; --border-strong:#cdd2da;
+  --shadow:0 12px 32px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.05);
+  --globe-base:#e4e9f2; --globe-emissive:#ffffff; --globe-atmos:#e5484d;
+  --dot-land:#b8c3d6; --dot-opacity:0.75;
+  --label-color:#1a1d24; --label-stroke:rgba(255,255,255,.98);
+  --continent-color:#1a1d24;
+  --tip-bg:rgba(255,255,255,.98);
+  --lane-HE:#e5484d; --lane-JZ:#be185d; --lane-PA:#0d9488; --lane-BA:#d97706;
+  --lane-MA:#2563eb; --lane-IK:#7c3aed; --lane-FR:#ea580c; --lane-FA:#059669;
+  --lane-PR:#f59e0b; --lane-EV:#0891b2; --lane-WB:#9333ea; --lane-FI:#10b981;
+  --lane-EM:#db2777; --lane-EX:#0284c7; --lane-TB:#8b5cf6; --lane-EK:#dc2626;
+  --lane-UNK:#64748b;
+}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;height:100%;width:100%;background:var(--bg);color:var(--ink);font-family:'Lexend',system-ui,sans-serif;overflow:hidden}
-body{background:radial-gradient(ellipse at 50% 30%, #0c1230 0%, #05070d 60%, #000 100%)}
+html,body{margin:0;padding:0;height:100%;width:100%;background:var(--bg);color:var(--ink);font-family:'Lexend',system-ui,sans-serif;overflow:hidden;transition:background .3s,color .3s}
+body{background:radial-gradient(ellipse at 50% 30%, var(--bg-grad-a) 0%, var(--bg-grad-b) 60%, var(--bg-grad-c) 100%)}
 
-/* Login overlay */
+/* Login */
 #login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
 #login.hidden{display:none}
 .login-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:32px 40px;text-align:center;backdrop-filter:blur(12px);box-shadow:var(--shadow);min-width:300px}
-.login-box h1{font-weight:300;font-size:22px;margin:0 0 6px;letter-spacing:.5px}
+.login-box h1{font-weight:300;font-size:22px;margin:0 0 6px;letter-spacing:.5px;color:var(--ink)}
 .login-box p{color:var(--muted);font-size:13px;margin:0 0 20px}
-.login-box input{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--ink);font-family:inherit;font-size:18px;text-align:center;letter-spacing:8px;outline:none}
+.login-box input{width:100%;background:rgba(0,0,0,.06);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--ink);font-family:inherit;font-size:18px;text-align:center;letter-spacing:8px;outline:none}
+body.light .login-box input{background:#f5f7fa}
 .login-box input:focus{border-color:var(--accent)}
 .login-box .err{color:var(--danger);font-size:12px;margin-top:10px;min-height:16px}
 
 /* Topbar */
-#top{position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;padding:0 16px;gap:12px;z-index:100;background:linear-gradient(180deg,rgba(5,7,13,.85) 0%,rgba(5,7,13,0) 100%);pointer-events:none}
+#top{position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;padding:0 16px;gap:8px;z-index:100;background:linear-gradient(180deg,var(--bg) 0%,transparent 100%);pointer-events:none}
+body.light #top{background:linear-gradient(180deg,rgba(245,247,250,.85) 0%,transparent 100%)}
 #top > *{pointer-events:auto}
 #top .brand{font-weight:600;font-size:15px;letter-spacing:.3px;color:var(--ink);display:flex;align-items:center;gap:10px}
 #top .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2s ease-in-out infinite}
 #top .brand .sub{color:var(--muted);font-weight:300;font-size:12px;letter-spacing:2px;text-transform:uppercase}
-#search{margin-left:auto;background:rgba(16,22,40,.85);border:1px solid var(--border);border-radius:10px;color:var(--ink);padding:8px 14px;font-family:inherit;font-size:13px;width:260px;outline:none;backdrop-filter:blur(8px)}
+#search{background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--ink);padding:8px 14px;font-family:inherit;font-size:13px;width:200px;outline:none;backdrop-filter:blur(8px)}
+#search::placeholder{color:var(--muted)}
 #search:focus{border-color:var(--accent-2)}
-.btn{background:rgba(16,22,40,.85);border:1px solid var(--border);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;letter-spacing:.4px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(8px);transition:all .15s}
+.btn{background:var(--panel);border:1px solid var(--border);color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;letter-spacing:.3px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(8px);transition:all .15s;white-space:nowrap}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
-.btn.active{background:var(--accent);color:#051210;border-color:var(--accent)}
-.kbd{background:rgba(0,0,0,.4);border:1px solid var(--border);padding:2px 6px;border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted)}
+.btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:600}
+.btn.primary:hover{filter:brightness(1.1);color:var(--bg)}
+.kbd{background:rgba(0,0,0,.25);border:1px solid var(--border);padding:2px 6px;border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted)}
+body.light .kbd{background:rgba(0,0,0,.05)}
+
+/* Spacer pushes next items to the right */
+.spacer{flex:1}
 
 /* Left rail */
 #rail{position:fixed;top:60px;left:12px;bottom:12px;width:250px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px;backdrop-filter:blur(12px);box-shadow:var(--shadow);z-index:50;overflow-y:auto;overflow-x:hidden}
 #rail h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:500;margin:6px 0 10px}
 #rail h3:not(:first-child){margin-top:18px}
 .lane-row{display:flex;align-items:center;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:13px;gap:10px;transition:background .12s;user-select:none}
-.lane-row:hover{background:rgba(255,255,255,.04)}
+.lane-row:hover{background:rgba(127,127,127,.08)}
 .lane-row.off{opacity:.35}
 .lane-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
 .lane-row .cnt{margin-left:auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .lane-row .lane-code{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);min-width:18px}
 .lane-row .lane-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.status-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:100px;font-size:11px;margin-right:6px;margin-bottom:6px;border:1px solid var(--border);cursor:pointer;transition:all .12s;color:var(--muted)}
-.status-chip.on{background:var(--accent);color:#051210;border-color:var(--accent)}
+.status-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:100px;font-size:11px;margin-right:6px;margin-bottom:6px;border:1px solid var(--border);cursor:pointer;transition:all .12s;color:var(--muted);background:transparent}
+.status-chip.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 .status-chip:hover:not(.on){border-color:var(--accent);color:var(--ink)}
 
-/* Stats block */
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-.stat{background:rgba(0,0,0,.25);border-radius:8px;padding:8px 10px;border:1px solid var(--border)}
-.stat .n{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.stat{background:rgba(127,127,127,.08);border-radius:8px;padding:8px 10px;border:1px solid var(--border)}
+.stat .n{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink)}
 .stat .l{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
 
 /* Right detail panel */
 #detail{position:fixed;top:60px;right:12px;width:360px;max-height:calc(100% - 72px);background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;backdrop-filter:blur(12px);box-shadow:var(--shadow);z-index:50;overflow-y:auto;transform:translateX(120%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
 #detail.open{transform:translateX(0)}
 #detail .close{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px}
-#detail .close:hover{background:rgba(255,255,255,.06);color:var(--ink)}
+#detail .close:hover{background:rgba(127,127,127,.1);color:var(--ink)}
 #detail .head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-right:30px}
 #detail .lane-badge{padding:4px 9px;border-radius:6px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
-#detail h2{font-size:17px;font-weight:500;margin:0 0 8px;line-height:1.3}
+#detail h2{font-size:17px;font-weight:500;margin:0 0 8px;line-height:1.3;color:var(--ink)}
 #detail .meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;font-size:11px}
-#detail .meta span{padding:3px 8px;border-radius:5px;background:rgba(0,0,0,.3);border:1px solid var(--border);color:var(--muted)}
+#detail .meta span{padding:3px 8px;border-radius:5px;background:rgba(127,127,127,.08);border:1px solid var(--border);color:var(--muted)}
 #detail .meta .urgent{color:var(--danger);border-color:var(--danger)}
 #detail .meta .new{color:var(--warn);border-color:var(--warn)}
 #detail .desc{font-size:13px;line-height:1.55;color:var(--ink);white-space:pre-wrap;border-top:1px solid var(--border);padding-top:14px;margin-top:10px;max-height:240px;overflow-y:auto}
+#detail textarea,#detail input,#detail select{width:100%;background:rgba(127,127,127,.08);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--ink);font-family:inherit;font-size:13px;margin-bottom:8px;outline:none;transition:border-color .15s}
+#detail textarea:focus,#detail input:focus,#detail select:focus{border-color:var(--accent)}
+#detail textarea{resize:vertical;min-height:80px}
+#detail .actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+#detail .actions .danger{border-color:var(--danger);color:var(--danger)}
+#detail .actions .danger:hover{background:var(--danger);color:#fff}
 #detail .links{margin-top:14px;display:flex;flex-direction:column;gap:6px}
-#detail .links .lk{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer;transition:border-color .12s}
+#detail .links .lk{background:rgba(127,127,127,.08);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer;transition:border-color .12s;display:flex;justify-content:space-between;align-items:center;gap:8px}
 #detail .links .lk:hover{border-color:var(--accent)}
-#detail .links .lk .tt{font-weight:500}
-#detail .links .lk .mm{color:var(--muted);font-size:10px;margin-top:2px}
+#detail .links .lk .tt{font-weight:500;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#detail .links .lk .x{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:4px}
+#detail .links .lk .x:hover{background:var(--danger);color:#fff}
 
-/* Globe canvas container */
+/* Globe container */
 #globe-wrap{position:fixed;inset:0;z-index:1}
 #globe-wrap canvas{display:block}
 
 /* Tooltip */
-#tip{position:fixed;z-index:200;background:rgba(7,11,24,.96);border:1px solid var(--accent);border-radius:8px;padding:8px 12px;font-size:12px;pointer-events:none;display:none;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.6);backdrop-filter:blur(8px)}
-#tip .t1{font-weight:500;margin-bottom:3px}
-#tip .t2{color:var(--muted);font-size:10px;display:flex;gap:8px}
+#tip{position:fixed;z-index:200;background:var(--tip-bg);color:var(--ink);border:1px solid var(--accent);border-radius:8px;padding:8px 12px;font-size:12px;pointer-events:none;display:none;max-width:280px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+#tip .t1{font-weight:500;margin-bottom:3px;color:var(--ink)}
+#tip .t2{color:var(--muted);font-size:10px;display:flex;gap:8px;flex-wrap:wrap}
+#tip .t2 .pill{padding:1px 5px;border-radius:4px;background:rgba(127,127,127,.15)}
 
-/* Legend bottom */
-#legend{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:14px;background:var(--panel);border:1px solid var(--border);border-radius:100px;padding:8px 18px;font-size:11px;color:var(--muted);backdrop-filter:blur(12px);z-index:40;align-items:center}
+/* Connect banner */
+#connect-banner{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-70px);background:var(--accent);color:var(--bg);padding:10px 18px;border-radius:100px;font-size:13px;font-weight:500;z-index:90;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow);transition:transform .3s cubic-bezier(.4,0,.2,1);opacity:0}
+#connect-banner.open{transform:translateX(-50%) translateY(0);opacity:1}
+#connect-banner .btn{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.3);color:var(--bg)}
+#connect-banner .btn:hover{background:rgba(255,255,255,.35);color:var(--bg)}
+body.connect-mode #globe-wrap canvas{cursor:crosshair}
+body.connect-mode::after{content:'';position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 0 2px var(--accent);z-index:70;animation:connectpulse 1.5s ease-in-out infinite}
+@keyframes connectpulse{0%,100%{box-shadow:inset 0 0 0 2px var(--accent)}50%{box-shadow:inset 0 0 0 4px var(--accent)}}
+
+/* Legend */
+#legend{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:12px;background:var(--panel);border:1px solid var(--border);border-radius:100px;padding:7px 18px;font-size:11px;color:var(--muted);backdrop-filter:blur(12px);z-index:40;align-items:center}
 #legend .it{display:flex;align-items:center;gap:5px}
 #legend .sep{width:1px;height:14px;background:var(--border)}
-#legend .kbd{margin:0 2px}
 
 /* Loading */
 #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:500;flex-direction:column;gap:16px}
@@ -110,32 +161,43 @@ body{background:radial-gradient(ellipse at 50% 30%, #0c1230 0%, #05070d 60%, #00
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
 .loadtxt{color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase}
 
-/* Empty state */
-#empty{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:12px;display:none;z-index:30}
+/* Empty state + toast */
+#empty{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--muted);font-size:14px;display:none;z-index:30;text-align:center;max-width:420px;padding:24px}
+#empty h2{font-weight:300;font-size:22px;color:var(--ink);margin:0 0 10px}
+#empty p{line-height:1.6;margin:0 0 16px}
+
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--panel-solid);color:var(--ink);border:1px solid var(--accent);padding:10px 18px;border-radius:100px;font-size:13px;z-index:600;opacity:0;transition:opacity .25s;pointer-events:none;box-shadow:var(--shadow)}
+#toast.show{opacity:1}
+
+/* Add modal */
+#modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:700;display:none;align-items:center;justify-content:center}
+body.light #modal-backdrop{background:rgba(0,0,0,.25)}
+#modal-backdrop.open{display:flex}
+.modal{background:var(--panel-solid);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:min(480px, 92vw);box-shadow:var(--shadow)}
+.modal h2{margin:0 0 16px;font-weight:500;font-size:18px;color:var(--ink)}
+.modal label{display:block;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin:12px 0 4px}
+.modal input,.modal textarea,.modal select{width:100%;background:rgba(127,127,127,.08);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--ink);font-family:inherit;font-size:14px;outline:none}
+.modal input:focus,.modal textarea:focus,.modal select:focus{border-color:var(--accent)}
+.modal textarea{resize:vertical;min-height:70px}
+.modal .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
 
 /* Mobile */
 @media (max-width:900px){
   #rail{width:210px;left:8px;top:56px;bottom:8px}
   #detail{width:calc(100vw - 24px);max-width:340px;right:8px}
-  #search{width:140px}
+  #search{width:120px}
   #legend{font-size:10px;padding:6px 12px;gap:8px;bottom:8px}
-  #legend .kbd{display:none}
+  .btn .btn-txt{display:none}
 }
-@media (max-width:600px){
-  #rail{transform:translateX(-120%);transition:transform .3s;z-index:60}
-  #rail.open{transform:translateX(0)}
-  #rail-toggle{display:flex}
-}
-#rail-toggle{display:none}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Scrollbar */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25)}
+::-webkit-scrollbar-thumb{background:rgba(127,127,127,.3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(127,127,127,.5)}
 </style>
 </head>
 <body>
@@ -156,35 +218,45 @@ body{background:radial-gradient(ellipse at 50% 30%, #0c1230 0%, #05070d 60%, #00
   <div class="loadtxt" id="loadtxt">lade globe</div>
 </div>
 
-<!-- UI -->
+<!-- Topbar -->
 <div id="top">
-  <button class="btn" id="rail-toggle" title="Filter">☰</button>
   <div class="brand"><span class="dot"></span>LifeOS<span class="sub">Globe</span></div>
   <input id="search" type="search" placeholder="Suchen…" />
-  <button class="btn" id="btn-rotate" title="Rotation an/aus (R)">◉ Rotate</button>
-  <button class="btn" id="btn-kanban" title="Kanban-Ansicht (K)">▦ Kanban</button>
+  <button class="btn primary" id="btn-add" title="Neues Item (A)">＋ <span class="btn-txt">Item</span></button>
+  <button class="btn" id="btn-connect" title="Verbinden-Modus (C): Item A \u2192 B">🔗 <span class="btn-txt">Verbinden</span></button>
+  <div class="spacer"></div>
+  <button class="btn" id="btn-labels" title="Labels an/aus (L)">𝐀 <span class="btn-txt">Labels</span></button>
+  <button class="btn" id="btn-rotate" title="Rotation an/aus (R)">◉ <span class="btn-txt">Rotate</span></button>
+  <button class="btn" id="btn-theme" title="Hell/Dunkel (T)">☾</button>
+  <button class="btn" id="btn-kanban" title="Kanban-Ansicht (K)">▦ <span class="btn-txt">Kanban</span></button>
 </div>
 
+<div id="connect-banner">
+  <span id="connect-text">Verbinden: wähle Start-Item</span>
+  <button class="btn" id="connect-cancel">Esc</button>
+</div>
+
+<!-- Left rail -->
 <aside id="rail">
   <div class="stats">
-    <div class="stat"><div class="n" id="s-total">–</div><div class="l">Items</div></div>
-    <div class="stat"><div class="n" id="s-urgent">–</div><div class="l">Urgent</div></div>
+    <div class="stat"><div class="n" id="s-total">0</div><div class="l">Items</div></div>
+    <div class="stat"><div class="n" id="s-urgent">0</div><div class="l">Urgent</div></div>
   </div>
   <h3>Status</h3>
   <div id="status-chips"></div>
-  <h3>Lanes</h3>
+  <h3>Lanes (Kontinente)</h3>
   <div id="lane-list"></div>
   <h3>Shortcuts</h3>
   <div style="font-size:11px;color:var(--muted);line-height:1.9">
-    <span class="kbd">R</span> rotate<br>
-    <span class="kbd">K</span> Kanban<br>
-    <span class="kbd">F</span> Focus fit<br>
-    <span class="kbd">N</span> Neue first<br>
-    <span class="kbd">J</span> Jetzt · <span class="kbd">H</span> Heute · <span class="kbd">P</span> Patienten<br>
-    <span class="kbd">B</span> Barmelweid · <span class="kbd">M</span> Moser.AI
+    <span class="kbd">A</span> neu · <span class="kbd">C</span> verbinden<br>
+    <span class="kbd">R</span> rotate · <span class="kbd">L</span> labels<br>
+    <span class="kbd">T</span> theme · <span class="kbd">K</span> kanban<br>
+    <span class="kbd">F</span> fit · <span class="kbd">Esc</span> cancel<br>
+    <span style="color:var(--dim)">2-Finger-Trackpad dreht</span>
   </div>
 </aside>
 
+<!-- Detail -->
 <aside id="detail">
   <button class="close" id="detail-close">×</button>
   <div class="head">
@@ -193,24 +265,88 @@ body{background:radial-gradient(ellipse at 50% 30%, #0c1230 0%, #05070d 60%, #00
       <div style="font-size:10px;color:var(--dim);letter-spacing:1px;font-family:'JetBrains Mono',monospace" id="d-id">–</div>
     </div>
   </div>
-  <h2 id="d-title">–</h2>
+  <h2 id="d-title" contenteditable="true" spellcheck="false">–</h2>
   <div class="meta" id="d-meta"></div>
-  <div class="desc" id="d-desc"></div>
+  <label style="font-size:10px;color:var(--muted);letter-spacing:1px">Beschreibung</label>
+  <textarea id="d-desc" placeholder="Notizen…"></textarea>
+  <label style="font-size:10px;color:var(--muted);letter-spacing:1px">Verbindungen</label>
   <div class="links" id="d-links"></div>
+  <div class="actions">
+    <button class="btn primary" id="d-save">Speichern</button>
+    <button class="btn" id="d-connect-from">🔗 Verbinden ab hier</button>
+    <button class="btn danger" id="d-delete">Löschen</button>
+  </div>
 </aside>
 
+<!-- Globe -->
 <div id="globe-wrap"></div>
 <div id="tip"><div class="t1"></div><div class="t2"></div></div>
-<div id="empty">Keine Items matchen deine Filter</div>
 
+<!-- Empty state -->
+<div id="empty">
+  <h2>Dein Globus ist leer</h2>
+  <p>Leg dein erstes Item an. Titel + Kategorie reicht. Details und Verbindungen kommen später.</p>
+  <button class="btn primary" onclick="openAddModal()">＋ Erstes Item anlegen</button>
+</div>
+
+<!-- Legend -->
 <div id="legend">
-  <div class="it"><span class="lane-dot" style="background:#ff3860"></span>heiß (Jetzt/Heute)</div>
-  <div class="sep"></div>
-  <div class="it"><span style="color:var(--warn)">●</span> neu</div>
   <div class="it"><span style="color:var(--danger)">●</span> überdue</div>
   <div class="sep"></div>
-  <div class="it"><span class="kbd">Hover</span> Details · <span class="kbd">Click</span> öffnen</div>
+  <div class="it"><span style="color:var(--warn)">●</span> neu</div>
+  <div class="sep"></div>
+  <div class="it"><span class="kbd">Hover</span> Details</div>
+  <div class="it"><span class="kbd">Click</span> öffnen</div>
 </div>
+
+<!-- Add modal -->
+<div id="modal-backdrop">
+  <div class="modal">
+    <h2 id="modal-title">Neues Item</h2>
+    <label>Titel</label>
+    <input id="m-title" type="text" autocomplete="off" placeholder="Was ist zu tun?" />
+    <div class="row">
+      <div>
+        <label>Kategorie (Kontinent)</label>
+        <select id="m-lane"></select>
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="m-status">
+          <option value="offen">offen</option>
+          <option value="in-arbeit">in-arbeit</option>
+          <option value="geplant">geplant</option>
+          <option value="blockiert">blockiert</option>
+          <option value="erledigt">erledigt</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Priorität</label>
+        <select id="m-priority">
+          <option value="">—</option>
+          <option value="kritisch">kritisch</option>
+          <option value="hoch">hoch</option>
+          <option value="mittel">mittel</option>
+          <option value="niedrig">niedrig</option>
+        </select>
+      </div>
+      <div>
+        <label>Deadline</label>
+        <input id="m-deadline" type="date" />
+      </div>
+    </div>
+    <label>Notizen (optional)</label>
+    <textarea id="m-desc" placeholder="…"></textarea>
+    <div class="actions">
+      <button class="btn" id="m-cancel">Abbrechen</button>
+      <button class="btn primary" id="m-save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <!-- libs -->
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
@@ -218,270 +354,296 @@ body{background:radial-gradient(ellipse at 50% 30%, #0c1230 0%, #05070d 60%, #00
 
 <script>
 /* ============================================================
-   LifeOS · Globe v0.1 — 2026-04-20
+   LifeOS · Globe v0.2 — 2026-04-20
+   Eigenständige Datenschicht. Keine Abhängigkeit von tasks.json.
    ============================================================ */
 
-const GH_API = 'https://api.github.com/repos/ctmos/cowork-data/contents/data';
+const STORE_FILE = 'data/globe-items.json';      // in ctmos/cowork-data repo
+const GH_API = 'https://api.github.com/repos/ctmos/cowork-data/contents';
 const PIN_STORE_KEY = 'lifeos.pin';
 const LAST_VISIT_KEY = 'lifeos.globe.lastVisit';
 const GH_TOKEN_KEY = 'cowork_gh_token';
+const THEME_KEY = 'lifeos.globe.theme';
+const LABELS_KEY = 'lifeos.globe.labels';
+const LOCAL_CACHE_KEY = 'lifeos.globe.items';
+const LOCAL_CONN_KEY = 'lifeos.globe.connections';
+const SHA_KEY = 'lifeos.globe.itemsSha';
 
-function getGhToken(){
-  try{ return localStorage.getItem(GH_TOKEN_KEY) || ''; }catch(e){ return ''; }
-}
-async function ghFetchJson(path){
-  const token = getGhToken();
-  const headers = { 'Accept':'application/vnd.github.v3+json' };
-  if(token) headers['Authorization'] = 'token ' + token;
-  const r = await fetch(`${GH_API}/${path}?t=${Date.now()}`, { headers, cache:'no-store' });
-  if(!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
-  const meta = await r.json();
-  // meta.content is base64-encoded; use atob + UTF-8 decode
-  const b64 = (meta.content || '').replace(/\n/g,'');
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
-  const txt = new TextDecoder('utf-8').decode(bytes);
-  return JSON.parse(txt);
-}
-
-// Lane definitions — order defines longitude wedges on globe
+// Lane definitions — drives longitude wedges (continents)
 const LANES = [
-  {code:'JZ', name:'Jetzt',       color:'#ff3860'},
-  {code:'HE', name:'Heute',       color:'#ff6b6b'},
-  {code:'BA', name:'Barmelweid',  color:'#ffe66d'},
-  {code:'PA', name:'Patienten',   color:'#4ecdc4'},
-  {code:'MA', name:'MOSER.AI',    color:'#60a5fa'},
-  {code:'IK', name:'ImperialKI',  color:'#c9b1ff'},
-  {code:'PR', name:'Projekte',    color:'#ff9f1c'},
-  {code:'WB', name:'PSP WB',      color:'#9d4edd'},
-  {code:'FR', name:'Freunde',     color:'#ffb4a2'},
-  {code:'FA', name:'Familie',     color:'#b8f2e6'},
-  {code:'EV', name:'Events',      color:'#95e1d3'},
-  {code:'FI', name:'Finanzen',    color:'#34d399'},
-  {code:'TB', name:'Tagebuch',    color:'#d4a5ff'},
+  {code:'JZ', name:'Jetzt',        color:'#ff3860'},
+  {code:'HE', name:'Heute',        color:'#ff6b6b'},
+  {code:'BA', name:'Barmelweid',   color:'#ffe66d'},
+  {code:'PA', name:'Patienten',    color:'#4ecdc4'},
+  {code:'MA', name:'MOSER.AI',     color:'#60a5fa'},
+  {code:'IK', name:'ImperialKI',   color:'#c9b1ff'},
+  {code:'PR', name:'Projekte',     color:'#ff9f1c'},
+  {code:'WB', name:'PSP WB',       color:'#9d4edd'},
+  {code:'FR', name:'Freunde',      color:'#ffb4a2'},
+  {code:'FA', name:'Familie',      color:'#b8f2e6'},
+  {code:'EV', name:'Events',       color:'#95e1d3'},
+  {code:'FI', name:'Finanzen',     color:'#34d399'},
+  {code:'TB', name:'Tagebuch',     color:'#d4a5ff'},
   {code:'EK', name:'Einkaufsliste',color:'#ff7f50'},
-  {code:'EM', name:'Erinnerungen',color:'#ffc0cb'},
-  {code:'EX', name:'Explore',     color:'#7dd3fc'},
+  {code:'EM', name:'Erinnerungen', color:'#ffc0cb'},
+  {code:'EX', name:'Explore',      color:'#7dd3fc'},
 ];
 const LANE_MAP = Object.fromEntries(LANES.map((l,i)=>[l.code,{...l,idx:i}]));
+const STATUSES = ['offen','in-arbeit','geplant','blockiert','erledigt'];
 
-// Status list
-const STATUSES = ['offen','in-arbeit','erledigt','geplant','blockiert'];
-
-// ======= PIN gate =======
+// ======= PIN / SSO =======
 const $pin = document.getElementById('pin');
 const $err = document.getElementById('err');
 const $login = document.getElementById('login');
+
+function isLoggedIn(){
+  try{
+    if(localStorage.getItem(PIN_STORE_KEY)==='1') return true;
+    if(sessionStorage.getItem('cowork_pin_set')==='true') return true;
+    if(sessionStorage.getItem('cowork_pin_val')==='2611') return true;
+  }catch(e){}
+  return false;
+}
+function acceptPin(val){
+  try{
+    localStorage.setItem(PIN_STORE_KEY,'1');
+    sessionStorage.setItem('cowork_pin_set','true');
+    sessionStorage.setItem('cowork_pin_val', val);
+  }catch(e){}
+}
 function checkPin(val){
-  if(val === '2611'){
-    try{localStorage.setItem(PIN_STORE_KEY,'1')}catch(e){}
-    $login.classList.add('hidden');
-    start();
-  } else {
-    $err.textContent = 'Falsch.';
-    $pin.value = '';
-  }
+  if(val === '2611'){ acceptPin(val); $login.classList.add('hidden'); start(); }
+  else { $err.textContent = 'Falsch.'; $pin.value = ''; }
 }
 $pin.addEventListener('input',()=>{
   $err.textContent='';
   if($pin.value.length===4) checkPin($pin.value);
 });
-try{ if(localStorage.getItem(PIN_STORE_KEY)==='1'){ $login.classList.add('hidden'); queueMicrotask(start);} else { setTimeout(()=>$pin.focus(),100); } }catch(e){ setTimeout(()=>$pin.focus(),100); }
+
+if(isLoggedIn()){ $login.classList.add('hidden'); queueMicrotask(start); }
+else { setTimeout(()=>$pin.focus(),80); }
 
 // ======= Utility =======
-const hash = s => { let h=0; s=String(s); for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0} return h };
-const daysBetween = (a,b) => Math.floor((a-b)/86400000);
-const now = new Date();
-const nowMs = now.getTime();
+const uid = () => 'g_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
+const hash = s => { let h=0; s=String(s||''); for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0} return Math.abs(h) };
+const nowMs = Date.now();
 
 function urgencyScore(item){
   const status = (item.status||'').toLowerCase();
-  if(status==='erledigt' || status==='done' || status==='abgeschlossen') return 0.05;
+  if(['erledigt','done','abgeschlossen'].includes(status)) return 0.05;
   if(item.deadline){
     const dl = new Date(item.deadline).getTime();
     if(!isNaN(dl)){
-      const days = daysBetween(dl, nowMs);
-      if(days < 0) return 1.0;        // overdue
-      if(days === 0) return 0.95;     // today
-      if(days <= 3) return 0.8;
-      if(days <= 7) return 0.65;
-      if(days <= 30) return 0.45;
-      return 0.25;
+      const days = Math.floor((dl-nowMs)/86400000);
+      if(days < 0) return 1.0;
+      if(days === 0) return 0.95;
+      if(days <= 3) return 0.82;
+      if(days <= 7) return 0.66;
+      if(days <= 30) return 0.46;
+      return 0.26;
     }
   }
   const p = (item.priority||'').toLowerCase();
-  if(p==='kritisch'||p==='critical') return 0.85;
-  if(p==='hoch'||p==='high') return 0.6;
-  if(p==='mittel'||p==='medium') return 0.4;
-  if(p==='niedrig'||p==='low') return 0.2;
-  return 0.3;
+  if(p==='kritisch') return 0.88;
+  if(p==='hoch') return 0.62;
+  if(p==='mittel') return 0.42;
+  if(p==='niedrig') return 0.22;
+  return 0.32;
 }
-
 function isNewish(item, lastVisit){
   const t = item.updatedAt || item.createdAt;
   if(!t) return false;
   const ts = new Date(t).getTime();
   return !isNaN(ts) && ts > lastVisit;
 }
-
 function isOverdue(item){
   if(!item.deadline) return false;
   if(['erledigt','done','abgeschlossen'].includes((item.status||'').toLowerCase())) return false;
   const dl = new Date(item.deadline).getTime();
-  return !isNaN(dl) && dl < nowMs - 86400000; // past yesterday
+  return !isNaN(dl) && dl < nowMs - 86400000;
 }
 
 function laneLongitude(code, item){
-  const L = LANE_MAP[code] || {idx:LANES.length, color:'#64748b'};
+  const L = LANE_MAP[code] || {idx:LANES.length};
   const total = LANES.length;
-  // center each lane wedge at (-180 + (idx+0.5)/total * 360)
   const center = -180 + ((L.idx + 0.5) / total) * 360;
-  // consistent jitter within wedge (±10°)
-  const wedgeHalf = 360 / total / 2 * 0.8;  // keep gap between wedges
-  const j = ((hash(item.id||item.title||Math.random()) % 1000) / 1000 - 0.5) * 2 * wedgeHalf;
+  const wedgeHalf = (360 / total) / 2 * 0.65;   // keep gap between wedges
+  const j = ((hash(item.id||item.title)%1000)/1000 - 0.5) * 2 * wedgeHalf;
   return center + j;
 }
-
 function itemLatitude(item, urg){
-  // equator=hot, poles=cold
-  // urg 1.0 → |lat| ≈ 5; urg 0 → |lat| ≈ 70
-  const absLat = (1 - urg) * 65 + 5;
-  const sign = (hash((item.id||'')+'_sign') % 2 === 0) ? 1 : -1;
-  // small jitter to avoid rows
-  const jitter = ((hash((item.id||'')+'_lat') % 100) / 100 - 0.5) * 8;
-  return sign * absLat + jitter;
+  const absLat = (1 - urg) * 62 + 5;
+  const sign = (hash((item.id||'')+'_s')%2===0) ? 1 : -1;
+  const j = ((hash((item.id||'')+'_l')%100)/100 - 0.5) * 10;
+  return sign * absLat + j;
+}
+
+const STOPWORDS = new Set(['der','die','das','den','dem','und','oder','mit','für','im','in','an','auf','ab','von','zu','bei','nach','über','vor','bis','wegen','eine','einen','einer','einem','ein','de','zur','zum','ist','sind','war','mich','dich','sich','the','and','with','for']);
+function shortLabel(item){
+  let t = (item.title||'').trim();
+  if(!t) return '';
+  t = t.replace(/^[\W_]+/,'').replace(/[*_`]/g,'');
+  t = t.replace(/^(WICHTIG|TODO|FIXME|FIX|BUG|TEST)\s*:?\s*/i,'');
+  const words = t.split(/\s+/).filter(w => w && !STOPWORDS.has(w.toLowerCase()));
+  if(!words.length) return t.slice(0, 14);
+  if(words.length === 1) return words[0].slice(0, 16);
+  const pair = words[0] + ' ' + words[1];
+  if(pair.length <= 18) return pair;
+  return words[0].slice(0, 16);
 }
 
 // ======= State =======
 const state = {
   items: [],
+  connections: [],
   visible: [],
   selectedId: null,
   filters:{
     lanes: new Set(LANES.map(l=>l.code)),
-    statuses: new Set(['offen','in-arbeit','geplant','blockiert']),  // erledigt off by default
+    statuses: new Set(['offen','in-arbeit','geplant','blockiert']),
     search: ''
   },
   rotate: true,
   hovered: null,
   lastVisit: 0,
   globe: null,
+  dotMesh: null,
+  theme: 'dark',
+  labelsOn: true,
+  connect: { mode:'idle', pickedA: null },
+  sha: null,
 };
-
-// Last visit
 try{
+  state.theme = localStorage.getItem(THEME_KEY) || 'dark';
+  state.labelsOn = localStorage.getItem(LABELS_KEY) !== '0';
+  state.connections = JSON.parse(localStorage.getItem(LOCAL_CONN_KEY) || '[]');
+  state.sha = localStorage.getItem(SHA_KEY) || null;
   const lv = localStorage.getItem(LAST_VISIT_KEY);
   state.lastVisit = lv ? parseInt(lv,10) : nowMs - 2*86400000;
   localStorage.setItem(LAST_VISIT_KEY, String(nowMs));
-}catch(e){ state.lastVisit = nowMs - 2*86400000 }
+}catch(e){}
 
-// ======= Data loading =======
-async function loadData(){
-  const $lt = document.getElementById('loadtxt');
-  document.getElementById('loading').classList.remove('hidden');
+// ======= GitHub token =======
+function getGhToken(){ try{ return localStorage.getItem(GH_TOKEN_KEY) || ''; }catch(e){ return ''; } }
+
+// ======= Data layer — own file globe-items.json =======
+async function fetchItemsFromGithub(){
+  const token = getGhToken();
+  if(!token) throw new Error('no-token');
+  const r = await fetch(`${GH_API}/${STORE_FILE}?t=${Date.now()}`, {
+    headers: { 'Authorization':'token '+token, 'Accept':'application/vnd.github.v3+json' },
+    cache:'no-store'
+  });
+  if(r.status === 404) return { items:[], connections:[], sha:null };
+  if(!r.ok) throw new Error(`HTTP ${r.status}`);
+  const meta = await r.json();
+  const b64 = (meta.content||'').replace(/\n/g,'');
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  const txt = new TextDecoder('utf-8').decode(bytes);
+  const data = JSON.parse(txt);
+  return {
+    items: data.items || [],
+    connections: data.connections || [],
+    sha: meta.sha
+  };
+}
+
+async function saveItemsToGithub(){
+  const token = getGhToken();
+  if(!token) { toast('Lokal gespeichert (kein GitHub-Token)'); persistLocal(); return; }
+  const payload = {
+    _meta: { updatedAt: new Date().toISOString(), version: 1, schema:'lifeos-globe-v0.2' },
+    items: state.items,
+    connections: state.connections,
+  };
+  const content = JSON.stringify(payload, null, 2);
+  // UTF-8 safe base64
+  const bytes = new TextEncoder().encode(content);
+  let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b));
+  const b64 = btoa(bin);
+
+  const body = {
+    message: `globe: ${state.items.length} items, ${state.connections.length} connections — ${new Date().toISOString()}`,
+    content: b64,
+  };
+  if(state.sha) body.sha = state.sha;
+
   try{
-    if(!getGhToken()){
-      $lt.innerHTML = 'kein GitHub-Token · bitte erst <a href="/" style="color:var(--accent)">einloggen</a>';
-      return;
+    const r = await fetch(`${GH_API}/${STORE_FILE}`, {
+      method: 'PUT',
+      headers: { 'Authorization':'token '+token, 'Accept':'application/vnd.github.v3+json', 'Content-Type':'application/json' },
+      body: JSON.stringify(body)
+    });
+    if(r.status === 409){
+      // conflict — re-fetch and merge (simple: remote wins for items not locally newer)
+      toast('Konflikt, hole frische Version…');
+      const fresh = await fetchItemsFromGithub();
+      state.sha = fresh.sha;
+      // merge: union by id, prefer newer updatedAt
+      const byId = new Map(fresh.items.map(i=>[i.id,i]));
+      for(const it of state.items){
+        const remote = byId.get(it.id);
+        if(!remote || new Date(it.updatedAt||0) > new Date(remote.updatedAt||0)) byId.set(it.id, it);
+      }
+      state.items = [...byId.values()];
+      state.connections = Array.from(new Map([...fresh.connections,...state.connections].map(c=>[c.id||c.from+'→'+c.to,c])).values());
+      // retry once
+      return saveItemsToGithub();
     }
-    $lt.textContent = 'lade daten';
-    const [tasksJ, backlogJ, projJ] = await Promise.all([
-      ghFetchJson('tasks.json'),
-      ghFetchJson('backlog.json'),
-      ghFetchJson('projects.json'),
-    ]);
-
-    const items = [];
-
-    // Tasks → points
-    const cards = tasksJ.cards || tasksJ.tasks || tasksJ;
-    const taskList = Array.isArray(cards) ? cards : Object.values(cards);
-    for(const t of taskList){
-      if(t.deletedAt) continue;
-      if(!t.id || !t.title) continue;
-      items.push({
-        id: t.id,
-        kind: 'task',
-        title: t.title,
-        desc: t.desc || t.context || '',
-        lane: t.lane || 'EX',
-        status: t.status || 'offen',
-        priority: t.priority || '',
-        deadline: t.deadline || null,
-        updatedAt: t.updatedAt || t.createdAt,
-        createdAt: t.createdAt,
-        linkedProject: t.linkedProject,
-        linkedPatient: t.linkedPatient,
-        tags: t.tags || [],
-        dependsOn: t.dependsOn || [],
-        assignee: t.assignee,
-        source: t.source,
-      });
-    }
-
-    // Backlog → treat as 'PR' (Projekte) lane items (or map by category)
-    const backlogList = Array.isArray(backlogJ) ? backlogJ : (backlogJ.items || Object.values(backlogJ));
-    const catMap = {
-      'Infrastruktur':'PR','Automation':'PR','Features':'MA','KI':'MA',
-      'Datenschutz':'PR','Integration':'MA','Plan':'PR'
-    };
-    for(const b of backlogList){
-      if(b.deletedAt) continue;
-      if(!b.id || !b.title) continue;
-      items.push({
-        id: b.id,
-        kind: 'backlog',
-        title: b.title,
-        desc: b.description || '',
-        lane: catMap[b.category] || 'PR',
-        status: b.status || 'geplant',
-        priority: b.priority || '',
-        deadline: b.deadline || null,
-        updatedAt: b.updatedAt || b.createdAt,
-        createdAt: b.createdAt,
-        tags: b.tags || [],
-        category: b.category,
-        dependsOn: b.dependencies || [],
-      });
-    }
-
-    // Projects → 'PR' lane items as anchors
-    const projList = Array.isArray(projJ) ? projJ : (projJ.projects || Object.values(projJ));
-    for(const p of projList){
-      if(!p.id || !p.title) continue;
-      items.push({
-        id: p.id,
-        kind: 'project',
-        title: p.title,
-        desc: p.description || '',
-        lane: 'PR',
-        status: p.status || 'aktiv',
-        color: p.color,
-        updatedAt: p.updatedAt || p.createdAt,
-        createdAt: p.createdAt,
-        tags: [],
-      });
-    }
-
-    state.items = items;
-    document.getElementById('loading').classList.add('hidden');
-    return items;
-  } catch(err){
-    console.error('data load failed', err);
-    $lt.textContent = 'fehler: ' + err.message;
+    if(!r.ok){ throw new Error(`PUT ${r.status}`); }
+    const j = await r.json();
+    state.sha = j.content.sha;
+    try{ localStorage.setItem(SHA_KEY, state.sha); }catch(e){}
+    persistLocal();
+    toast('✓ Gespeichert');
+  }catch(err){
+    console.error('save failed', err);
+    toast('Speichern fehlgeschlagen — lokal gesichert');
+    persistLocal();
   }
 }
 
-// ======= Build point data from items =======
+function persistLocal(){
+  try{
+    localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(state.items));
+    localStorage.setItem(LOCAL_CONN_KEY, JSON.stringify(state.connections));
+  }catch(e){}
+}
+function loadLocalCache(){
+  try{
+    state.items = JSON.parse(localStorage.getItem(LOCAL_CACHE_KEY) || '[]');
+    state.connections = JSON.parse(localStorage.getItem(LOCAL_CONN_KEY) || '[]');
+  }catch(e){ state.items=[]; state.connections=[]; }
+}
+
+let saveTimer = null;
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveItemsToGithub(), 800);
+  persistLocal();
+}
+
+// ======= Toast =======
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ======= Build points =======
 function buildPoints(){
   const filt = state.filters;
   const q = filt.search.toLowerCase();
   const pts = [];
   for(const it of state.items){
+    if(it.deletedAt) continue;
     if(!filt.lanes.has(it.lane)) continue;
     if(!filt.statuses.has(it.status)) continue;
-    if(q && !(it.title.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q) || (it.id||'').toLowerCase().includes(q))) continue;
+    if(q && !(it.title.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q))) continue;
 
     const urg = urgencyScore(it);
     const lane = LANE_MAP[it.lane] || {color:'#64748b'};
@@ -492,12 +654,11 @@ function buildPoints(){
       ...it,
       lat: itemLatitude(it, urg),
       lng: laneLongitude(it.lane, it),
-      alt: 0.015 + urg * 0.08,           // altitude = urgency
-      size: 0.25 + urg * 0.75,           // radius
-      color: overdue ? '#f87171' : (it.color || lane.color),
-      urgency: urg,
-      isNew,
-      overdue,
+      alt: 0.02 + urg * 0.09,
+      size: 0.35 + urg * 0.75,
+      color: overdue ? '#f87171' : lane.color,
+      urgency: urg, isNew, overdue,
+      label: shortLabel(it),
     });
   }
   state.visible = pts;
@@ -505,141 +666,232 @@ function buildPoints(){
 }
 
 function buildRings(){
-  // gold pulsing ring for new, red for overdue
   return state.visible
     .filter(p => p.isNew || p.overdue)
     .map(p => ({
-      lat: p.lat,
-      lng: p.lng,
-      maxR: p.overdue ? 3.5 : 2.5,
+      lat: p.lat, lng: p.lng,
+      maxR: p.overdue ? 3.2 : 2.4,
       propagationSpeed: p.overdue ? 2 : 1.5,
       repeatPeriod: p.overdue ? 900 : 1400,
       color: p.overdue ? '#f87171' : '#fbbf24',
     }));
 }
 
-function buildArcsForItem(item){
-  // arcs to dependencies + same linked project
+function buildContinentLabels(){
+  // one big label per lane at the wedge center, at the equator
+  const cs = getComputedStyle(document.documentElement);
+  const color = cs.getPropertyValue('--continent-color').trim() || '#ffffff';
+  const total = LANES.length;
+  const counts = {};
+  for(const it of state.items){ if(!it.deletedAt) counts[it.lane] = (counts[it.lane]||0)+1 }
+  return LANES.filter(l => counts[l.code] > 0 || state.filters.lanes.has(l.code)).map((l,i) => ({
+    lat: 0,
+    lng: -180 + ((l.idx + 0.5)/total)*360,
+    text: l.name.toUpperCase(),
+    color
+  }));
+}
+
+function buildAllArcs(forItem){
+  // arcs = user-defined connections (always visible, subtle) + hover/select arcs to related
   const arcs = [];
   const lookup = Object.fromEntries(state.visible.map(p=>[p.id,p]));
-  if(item.dependsOn && item.dependsOn.length){
-    for(const dep of item.dependsOn){
-      const target = lookup[dep];
-      if(target){
-        arcs.push({startLat:item.lat,startLng:item.lng,endLat:target.lat,endLng:target.lng,color:['#5eead4','#60a5fa']});
-      }
-    }
-  }
-  if(item.linkedProject){
-    const target = lookup[item.linkedProject];
-    if(target){
-      arcs.push({startLat:item.lat,startLng:item.lng,endLat:target.lat,endLng:target.lng,color:['#ff9f1c','#ffe66d']});
-    }
-  }
-  // also surface peers in same linkedProject
-  if(item.linkedProject){
-    for(const peer of state.visible){
-      if(peer.id !== item.id && peer.linkedProject === item.linkedProject){
-        arcs.push({startLat:item.lat,startLng:item.lng,endLat:peer.lat,endLng:peer.lng,color:['#ffe66d','#ff9f1c']});
-      }
-    }
+
+  // User connections (always dimmed, highlight if selected item is endpoint)
+  const selectedId = forItem ? forItem.id : state.selectedId;
+  for(const c of state.connections){
+    const a = lookup[c.from]; const b = lookup[c.to];
+    if(!a || !b) continue;
+    const isActive = selectedId && (c.from===selectedId || c.to===selectedId);
+    arcs.push({
+      startLat:a.lat, startLng:a.lng, endLat:b.lat, endLng:b.lng,
+      color: isActive ? [a.color, b.color] : ['rgba(128,128,128,0.35)','rgba(128,128,128,0.15)'],
+      stroke: isActive ? 0.5 : 0.2,
+      dash: isActive ? 0.25 : 0,
+      _uid: c.id
+    });
   }
   return arcs;
 }
 
 // ======= Globe setup =======
 function makeGlobe(){
+  const cs = getComputedStyle(document.documentElement);
+  const base = cs.getPropertyValue('--globe-base').trim();
+  const emis = cs.getPropertyValue('--globe-emissive').trim();
+  const atm = cs.getPropertyValue('--globe-atmos').trim();
+
   const mat = new THREE.MeshPhongMaterial({
-    color: 0x0a1229,
-    emissive: 0x050a18,
-    shininess: 2,
+    color: new THREE.Color(base),
+    emissive: new THREE.Color(emis),
+    shininess: state.theme === 'light' ? 12 : 2,
     transparent: true,
-    opacity: 0.92,
+    opacity: state.theme === 'light' ? 1 : 0.93,
   });
 
   const g = Globe()(document.getElementById('globe-wrap'))
     .backgroundColor('rgba(0,0,0,0)')
-    .showGlobe(true)
-    .showAtmosphere(true)
-    .atmosphereColor('#60a5fa')
-    .atmosphereAltitude(0.18)
+    .showGlobe(true).showAtmosphere(true)
+    .atmosphereColor(atm).atmosphereAltitude(0.16)
     .globeMaterial(mat)
     .pointsData(state.visible)
     .pointLat('lat').pointLng('lng').pointColor('color')
-    .pointAltitude('alt')
-    .pointRadius('size')
-    .pointsMerge(false)
-    .pointResolution(12)
+    .pointAltitude('alt').pointRadius('size')
+    .pointsMerge(false).pointResolution(12)
     .onPointHover(onPointHover)
     .onPointClick(onPointClick)
     .ringsData(buildRings())
     .ringColor(d => () => d.color)
-    .ringMaxRadius('maxR')
-    .ringPropagationSpeed('propagationSpeed')
-    .ringRepeatPeriod('repeatPeriod')
-    .arcsData([])
-    .arcColor('color')
-    .arcStroke(0.4)
+    .ringMaxRadius('maxR').ringPropagationSpeed('propagationSpeed').ringRepeatPeriod('repeatPeriod')
+    .arcsData(buildAllArcs())
+    .arcColor('color').arcStroke(d => d.stroke||0.2)
     .arcAltitudeAutoScale(0.35)
-    .arcDashLength(0.4).arcDashGap(0.6).arcDashAnimateTime(2200)
-    .labelsData([])
-    .labelText('title')
-    .labelLat('lat').labelLng('lng')
-    .labelColor(() => '#e8ecf7')
-    .labelSize(0.4).labelDotRadius(0)
-    .labelAltitude(d => d.alt + 0.005)
-    .labelResolution(3);
+    .arcDashLength(d=>d.dash||0).arcDashGap(0.6).arcDashAnimateTime(2200)
+    .labelsData(state.labelsOn ? state.visible : [])
+    .labelText('label').labelLat('lat').labelLng('lng')
+    .labelColor(() => cs.getPropertyValue('--label-color').trim())
+    .labelSize(0.42).labelDotRadius(0)
+    .labelAltitude(d => (d.alt||0) + 0.008)
+    .labelResolution(3)
+    .customLayerData(buildContinentLabels())
+    .customThreeObject(d => {
+      const canvas = document.createElement('canvas');
+      const DPR = 2;
+      canvas.width = 512*DPR; canvas.height = 96*DPR;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(DPR,DPR);
+      ctx.font = '500 32px Lexend, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle = d.color;
+      ctx.globalAlpha = 0.38;
+      ctx.fillText(d.text, 256, 48);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.anisotropy = 4;
+      const spr = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false}));
+      spr.scale.set(24, 4.5, 1);
+      return spr;
+    })
+    .customThreeObjectUpdate((obj, d) => {
+      // place at radius 130 (globe radius ~100, altitude ~0.3)
+      const phi = (90 - d.lat) * Math.PI/180;
+      const theta = (d.lng + 180) * Math.PI/180;
+      const R = 128;
+      obj.position.set(
+        -R * Math.sin(phi) * Math.cos(theta),
+         R * Math.cos(phi),
+         R * Math.sin(phi) * Math.sin(theta)
+      );
+      obj.lookAt(0,0,0);
+      obj.rotateY(Math.PI);
+    });
 
-  // Custom dotted-land sphere on top — use an icosphere of small dots
+  // Dotted land sphere
   try{
-    const dotGroup = new THREE.Group();
-    const geom = new THREE.SphereGeometry(0.7, 1);
     const cnt = 2200;
-    const dotMat = new THREE.MeshBasicMaterial({color:0x3a4a78,transparent:true,opacity:0.45});
-    const baseGeo = new THREE.SphereGeometry(1, 0, 0);
+    const dotColor = new THREE.Color(cs.getPropertyValue('--dot-land').trim()||'#3a4a78');
+    const dotOp = parseFloat(cs.getPropertyValue('--dot-opacity').trim()||'0.5');
+    const dotMat = new THREE.MeshBasicMaterial({color:dotColor,transparent:true,opacity:dotOp, depthWrite:false});
     const dotMesh = new THREE.InstancedMesh(new THREE.CircleGeometry(0.7, 6), dotMat, cnt);
     const dummy = new THREE.Object3D();
-    const R = 100.15; // globe radius is 100 in globe.gl
-    const phi = Math.PI * (3 - Math.sqrt(5));
+    const R = 100.2;
+    const phiStep = Math.PI * (3 - Math.sqrt(5));
     for(let i=0;i<cnt;i++){
-      const y = 1 - (i / (cnt-1))*2;
-      const r = Math.sqrt(1 - y*y);
-      const theta = phi * i;
-      const x = Math.cos(theta)*r, z = Math.sin(theta)*r;
+      const y = 1 - (i/(cnt-1))*2;
+      const r = Math.sqrt(1-y*y);
+      const th = phiStep * i;
+      const x = Math.cos(th)*r, z = Math.sin(th)*r;
       dummy.position.set(x*R, y*R, z*R);
-      dummy.lookAt(0,0,0);
-      dummy.rotateY(Math.PI);
+      dummy.lookAt(0,0,0); dummy.rotateY(Math.PI);
       dummy.updateMatrix();
       dotMesh.setMatrixAt(i, dummy.matrix);
     }
     dotMesh.instanceMatrix.needsUpdate = true;
     g.scene().add(dotMesh);
-  }catch(e){console.warn('dot mesh skipped',e)}
+    state.dotMesh = dotMesh;
+  }catch(e){}
 
-  // lighting tweak
+  // Lighting
   g.scene().children.forEach(c=>{
-    if(c.isDirectionalLight){ c.intensity = 0.6 }
-    if(c.isAmbientLight){ c.intensity = 0.45 }
+    if(c.isDirectionalLight) c.intensity = 0.55;
+    if(c.isAmbientLight) c.intensity = state.theme==='light' ? 1.05 : 0.45;
   });
-  const extra = new THREE.PointLight(0x5eead4, 0.6, 800);
-  extra.position.set(200, 140, 220);
-  g.scene().add(extra);
 
-  // controls
+  // Controls
   const controls = g.controls();
   controls.autoRotate = state.rotate;
   controls.autoRotateSpeed = 0.35;
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minDistance = 180;
-  controls.maxDistance = 550;
-  controls.addEventListener('start', () => { controls.autoRotate = false; updateRotateBtn() });
+  controls.maxDistance = 560;
+  controls.addEventListener('start', () => {
+    if(controls.autoRotate){ controls.autoRotate = false; state.rotate = false; updateRotateBtn() }
+  });
 
-  // initial POV
+  // Trackpad: 2-finger pan → rotate
+  const canvas = g.renderer().domElement;
+  canvas.addEventListener('wheel', e => {
+    // pinch-zoom (ctrl+wheel) stays as zoom → let default handle
+    if(e.ctrlKey) return;
+    // Mouse wheel has big discrete deltaY; trackpad has small continuous
+    const absY = Math.abs(e.deltaY), absX = Math.abs(e.deltaX);
+    const isTrackpad = absX > 0.5 || absY < 45;
+    if(!isTrackpad) return;
+    e.preventDefault();
+    const speed = 0.0035;
+    const az = controls.getAzimuthalAngle();
+    const po = controls.getPolarAngle();
+    const newAz = az - e.deltaX * speed;
+    const newPo = Math.max(0.18, Math.min(Math.PI - 0.18, po - e.deltaY * speed));
+    // Manually set by orbiting the camera
+    const r = controls.target.distanceTo(g.camera().position);
+    const cam = g.camera();
+    cam.position.x = r * Math.sin(newPo) * Math.sin(newAz);
+    cam.position.y = r * Math.cos(newPo);
+    cam.position.z = r * Math.sin(newPo) * Math.cos(newAz);
+    cam.lookAt(controls.target);
+    if(state.rotate){ controls.autoRotate = false; state.rotate = false; updateRotateBtn() }
+  }, { passive:false });
+
   g.pointOfView({altitude: 2.1}, 0);
-
   state.globe = g;
+
+  window.addEventListener('resize', () => g.width(window.innerWidth).height(window.innerHeight));
   return g;
+}
+
+// ======= Theme =======
+function applyTheme(theme){
+  state.theme = theme;
+  document.body.classList.toggle('light', theme === 'light');
+  try{ localStorage.setItem(THEME_KEY, theme); }catch(e){}
+  document.getElementById('btn-theme').textContent = theme === 'light' ? '☽' : '☾';
+  document.querySelector('meta[name=theme-color]').setAttribute('content', theme==='light' ? '#f5f7fa' : '#05070d');
+  if(!state.globe) return;
+  const cs = getComputedStyle(document.documentElement);
+  const base = cs.getPropertyValue('--globe-base').trim();
+  const emis = cs.getPropertyValue('--globe-emissive').trim();
+  const atm = cs.getPropertyValue('--globe-atmos').trim();
+  const mat = new THREE.MeshPhongMaterial({
+    color: new THREE.Color(base),
+    emissive: new THREE.Color(emis),
+    shininess: theme==='light' ? 12 : 2,
+    transparent:true,
+    opacity: theme==='light' ? 1 : 0.93,
+  });
+  state.globe.globeMaterial(mat).atmosphereColor(atm);
+  if(state.dotMesh){
+    state.dotMesh.material.color = new THREE.Color(cs.getPropertyValue('--dot-land').trim());
+    state.dotMesh.material.opacity = parseFloat(cs.getPropertyValue('--dot-opacity').trim());
+    state.dotMesh.material.needsUpdate = true;
+  }
+  state.globe.scene().children.forEach(c=>{
+    if(c.isAmbientLight) c.intensity = theme==='light' ? 1.05 : 0.45;
+  });
+  state.globe.labelColor(() => cs.getPropertyValue('--label-color').trim());
+  // repaint continent labels
+  state.globe.customLayerData([]).customLayerData(buildContinentLabels());
+  refreshAll();
 }
 
 // ======= Interactions =======
@@ -648,36 +900,22 @@ function onPointHover(p){
   state.hovered = p;
   if(!p){
     tip.style.display='none';
-    // clear arcs unless a selection is active
-    if(state.globe) state.globe.arcsData(state.selectedId ? buildArcsForItem(state.visible.find(v=>v.id===state.selectedId)||{}) : []);
+    if(state.globe) state.globe.arcsData(buildAllArcs(state.selectedId ? {id:state.selectedId} : null));
     return;
   }
   tip.style.display='block';
   tip.querySelector('.t1').textContent = p.title;
   const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) : '';
   tip.querySelector('.t2').innerHTML =
-    `<span style="color:${p.color}">${p.lane}</span>` +
-    `<span>${p.status}</span>` +
-    (deadline?`<span>⏰ ${deadline}</span>`:'') +
-    (p.overdue?`<span style="color:var(--danger)">überdue</span>`:'') +
-    (p.isNew?`<span style="color:var(--warn)">neu</span>`:'');
-  // arcs on hover (unless something is selected)
+    `<span class="pill" style="color:${p.color}">${(LANE_MAP[p.lane]||{}).name||p.lane}</span>` +
+    `<span class="pill">${p.status}</span>` +
+    (deadline?`<span class="pill">⏰ ${deadline}</span>`:'') +
+    (p.overdue?`<span class="pill" style="color:var(--danger)">überdue</span>`:'') +
+    (p.isNew?`<span class="pill" style="color:var(--warn)">neu</span>`:'');
   if(!state.selectedId && state.globe){
-    state.globe.arcsData(buildArcsForItem(p));
+    state.globe.arcsData(buildAllArcs(p));
   }
 }
-
-function onPointClick(p){
-  state.selectedId = p.id;
-  openDetail(p);
-  if(state.globe){
-    state.globe.arcsData(buildArcsForItem(p));
-    state.globe.pointOfView({lat:p.lat,lng:p.lng,altitude:1.6}, 800);
-    state.globe.controls().autoRotate = false;
-    state.rotate = false; updateRotateBtn();
-  }
-}
-
 document.addEventListener('mousemove',e=>{
   if(tip.style.display==='block'){
     let x = e.clientX + 14, y = e.clientY + 14;
@@ -687,61 +925,152 @@ document.addEventListener('mousemove',e=>{
   }
 });
 
+function onPointClick(p){
+  if(state.connect.mode === 'pickingA'){
+    state.connect.pickedA = p.id;
+    state.connect.mode = 'pickingB';
+    document.getElementById('connect-text').textContent = `Verbinden: ${shortLabel(p)} → Ziel wählen`;
+    return;
+  }
+  if(state.connect.mode === 'pickingB'){
+    if(p.id === state.connect.pickedA){ toast('Gleiches Item — Verbindung abgebrochen'); cancelConnect(); return; }
+    createConnection(state.connect.pickedA, p.id);
+    cancelConnect();
+    return;
+  }
+  state.selectedId = p.id;
+  openDetail(p);
+  if(state.globe){
+    state.globe.arcsData(buildAllArcs(p));
+    state.globe.pointOfView({lat:p.lat,lng:p.lng,altitude:1.55}, 800);
+    state.globe.controls().autoRotate = false;
+    state.rotate = false; updateRotateBtn();
+  }
+}
+
+function enterConnectMode(fromId){
+  state.connect.mode = 'pickingA';
+  state.connect.pickedA = fromId || null;
+  if(fromId){
+    state.connect.mode = 'pickingB';
+    const it = state.items.find(i=>i.id===fromId);
+    document.getElementById('connect-text').textContent = `Verbinden: ${it?shortLabel(it):''} → Ziel wählen`;
+  } else {
+    document.getElementById('connect-text').textContent = 'Verbinden: Start-Item klicken';
+  }
+  document.body.classList.add('connect-mode');
+  document.getElementById('connect-banner').classList.add('open');
+}
+function cancelConnect(){
+  state.connect.mode = 'idle'; state.connect.pickedA = null;
+  document.body.classList.remove('connect-mode');
+  document.getElementById('connect-banner').classList.remove('open');
+}
+function createConnection(fromId, toId){
+  const already = state.connections.find(c => (c.from===fromId&&c.to===toId)||(c.from===toId&&c.to===fromId));
+  if(already){ toast('Verbindung existiert bereits'); return; }
+  const conn = { id: uid(), from: fromId, to: toId, createdAt: new Date().toISOString() };
+  state.connections.push(conn);
+  scheduleSave();
+  refreshAll();
+  toast('✓ Verbunden');
+}
+function deleteConnection(connId){
+  state.connections = state.connections.filter(c => c.id !== connId);
+  scheduleSave();
+  refreshAll();
+  toast('Verbindung entfernt');
+}
+
 // ======= Detail panel =======
 const $detail = document.getElementById('detail');
 function openDetail(p){
-  document.getElementById('d-id').textContent = p.id + ' · ' + p.kind;
+  const it = state.items.find(i=>i.id===p.id) || p;
+  document.getElementById('d-id').textContent = (it.id||'—') + ' · ' + ((LANE_MAP[it.lane]||{}).name || it.lane);
   const badge = document.getElementById('d-badge');
-  badge.textContent = p.lane;
-  badge.style.background = p.color;
-  badge.style.color = '#0a0f1f';
-  document.getElementById('d-title').textContent = p.title;
+  badge.textContent = it.lane;
+  const cs = getComputedStyle(document.documentElement);
+  const color = (LANE_MAP[it.lane]||{}).color || '#64748b';
+  badge.style.background = color;
+  badge.style.color = state.theme==='light' ? '#fff' : '#0a0f1f';
+  document.getElementById('d-title').textContent = it.title || '—';
+  document.getElementById('d-desc').value = it.desc || '';
   const meta = document.getElementById('d-meta');
   meta.innerHTML = '';
-  const addMeta = (txt, cls='') => {
-    const s = document.createElement('span');
-    if(cls) s.className = cls;
-    s.textContent = txt; meta.appendChild(s);
-  };
-  addMeta(p.status);
-  if(p.priority) addMeta('prio: '+p.priority);
-  if(p.deadline) addMeta('⏰ '+new Date(p.deadline).toLocaleDateString('de-DE'), p.overdue?'urgent':'');
-  if(p.isNew) addMeta('neu', 'new');
-  if(p.overdue) addMeta('überdue', 'urgent');
-  if(p.updatedAt) addMeta('upd: '+new Date(p.updatedAt).toLocaleDateString('de-DE'));
-  if(p.tags && p.tags.length) p.tags.slice(0,5).forEach(t=>addMeta('#'+t));
-  document.getElementById('d-desc').textContent = p.desc || '— keine Beschreibung —';
-  // linked
+  const add = (t,c='')=>{ const s=document.createElement('span'); if(c)s.className=c; s.textContent=t; meta.appendChild(s); };
+  add(it.status);
+  if(it.priority) add('prio: '+it.priority);
+  if(it.deadline) add('⏰ '+new Date(it.deadline).toLocaleDateString('de-DE'), isOverdue(it)?'urgent':'');
+  if(isNewish(it, state.lastVisit)) add('neu', 'new');
+  if(isOverdue(it)) add('überdue', 'urgent');
+  if(it.updatedAt) add('upd: '+new Date(it.updatedAt).toLocaleDateString('de-DE'));
+  // links
   const links = document.getElementById('d-links');
   links.innerHTML = '';
-  const related = [];
-  if(p.linkedProject) related.push({label:'Linked Project', id:p.linkedProject});
-  if(p.linkedPatient) related.push({label:'Linked Patient', id:p.linkedPatient});
-  if(p.dependsOn) p.dependsOn.forEach(d=>related.push({label:'dependsOn', id:d}));
-  related.forEach(r => {
-    const found = state.items.find(i=>i.id===r.id);
+  const myConns = state.connections.filter(c => c.from===it.id || c.to===it.id);
+  if(!myConns.length){
     const el = document.createElement('div');
-    el.className = 'lk';
-    el.innerHTML = `<div class="tt">${r.label}</div><div class="mm">${r.id}${found?' — '+found.title:''}</div>`;
-    if(found) el.onclick = () => { const pt = state.visible.find(v=>v.id===found.id); if(pt) onPointClick(pt) };
+    el.style.cssText='font-size:12px;color:var(--muted);padding:6px 0';
+    el.textContent = 'Noch keine Verbindungen.';
+    links.appendChild(el);
+  }
+  myConns.forEach(c => {
+    const otherId = c.from===it.id ? c.to : c.from;
+    const other = state.items.find(x=>x.id===otherId);
+    if(!other) return;
+    const el = document.createElement('div');
+    el.className='lk';
+    el.innerHTML = `<div class="tt">${other.title}</div><button class="x" title="Löschen">×</button>`;
+    el.onclick = (e) => {
+      if(e.target.classList.contains('x')){ deleteConnection(c.id); return; }
+      const pt = state.visible.find(v=>v.id===otherId);
+      if(pt) onPointClick(pt);
+    };
     links.appendChild(el);
   });
   $detail.classList.add('open');
+  state.selectedId = it.id;
 }
 document.getElementById('detail-close').onclick = () => {
   $detail.classList.remove('open');
   state.selectedId = null;
-  if(state.globe) state.globe.arcsData([]);
+  if(state.globe) state.globe.arcsData(buildAllArcs());
+};
+document.getElementById('d-save').onclick = () => {
+  const id = state.selectedId; if(!id) return;
+  const it = state.items.find(i=>i.id===id); if(!it) return;
+  it.title = document.getElementById('d-title').textContent.trim() || it.title;
+  it.desc = document.getElementById('d-desc').value;
+  it.updatedAt = new Date().toISOString();
+  scheduleSave();
+  refreshAll();
+  toast('✓ Gespeichert');
+};
+document.getElementById('d-delete').onclick = () => {
+  const id = state.selectedId; if(!id) return;
+  if(!confirm('Item wirklich löschen?')) return;
+  const it = state.items.find(i=>i.id===id);
+  if(it){ it.deletedAt = new Date().toISOString(); it.updatedAt = it.deletedAt; }
+  state.connections = state.connections.filter(c => c.from!==id && c.to!==id);
+  scheduleSave();
+  $detail.classList.remove('open');
+  state.selectedId = null;
+  refreshAll();
+  toast('Gelöscht');
+};
+document.getElementById('d-connect-from').onclick = () => {
+  const id = state.selectedId; if(!id) return;
+  $detail.classList.remove('open');
+  enterConnectMode(id);
 };
 
 // ======= Left rail =======
 function renderRail(){
   const laneCounts = {};
-  for(const it of state.items) laneCounts[it.lane] = (laneCounts[it.lane]||0)+1;
+  for(const it of state.items){ if(!it.deletedAt) laneCounts[it.lane] = (laneCounts[it.lane]||0)+1 }
   const $lane = document.getElementById('lane-list');
   $lane.innerHTML = '';
   LANES.forEach(l => {
-    if(!laneCounts[l.code]) return; // skip empty lanes in rail
     const row = document.createElement('div');
     row.className = 'lane-row' + (state.filters.lanes.has(l.code)?'':' off');
     row.innerHTML = `<span class="lane-dot" style="background:${l.color};color:${l.color}"></span>
@@ -752,11 +1081,10 @@ function renderRail(){
       if(state.filters.lanes.has(l.code)) state.filters.lanes.delete(l.code);
       else state.filters.lanes.add(l.code);
       row.classList.toggle('off');
-      refreshPoints();
+      refreshAll();
     };
     $lane.appendChild(row);
   });
-  // status chips
   const $st = document.getElementById('status-chips');
   $st.innerHTML = '';
   STATUSES.forEach(s => {
@@ -767,32 +1095,37 @@ function renderRail(){
       if(state.filters.statuses.has(s)) state.filters.statuses.delete(s);
       else state.filters.statuses.add(s);
       c.classList.toggle('on');
-      refreshPoints();
+      refreshAll();
     };
     $st.appendChild(c);
   });
-  // stats
-  document.getElementById('s-total').textContent = state.items.length;
-  const urg = state.items.filter(i=>isOverdue(i) || urgencyScore(i) > 0.7).length;
+  const live = state.items.filter(i=>!i.deletedAt);
+  document.getElementById('s-total').textContent = live.length;
+  const urg = live.filter(i => isOverdue(i) || urgencyScore(i) > 0.7).length;
   document.getElementById('s-urgent').textContent = urg;
 }
 
-// ======= Update loop =======
-function refreshPoints(){
+// ======= Refresh =======
+function refreshAll(){
   const pts = buildPoints();
   if(state.globe){
-    state.globe.pointsData(pts).ringsData(buildRings());
+    state.globe.pointsData(pts)
+               .ringsData(buildRings())
+               .arcsData(buildAllArcs(state.selectedId ? {id:state.selectedId} : null))
+               .labelsData(state.labelsOn ? pts : [])
+               .customLayerData(buildContinentLabels());
   }
-  document.getElementById('empty').style.display = pts.length ? 'none':'block';
+  renderRail();
+  document.getElementById('empty').style.display = state.items.filter(i=>!i.deletedAt).length ? 'none':'block';
 }
 
 // ======= Search =======
 document.getElementById('search').addEventListener('input', e => {
   state.filters.search = e.target.value.trim();
-  refreshPoints();
+  refreshAll();
 });
 
-// ======= Rotate button =======
+// ======= Buttons =======
 const $btnRot = document.getElementById('btn-rotate');
 function updateRotateBtn(){
   $btnRot.classList.toggle('active', state.rotate);
@@ -800,32 +1133,87 @@ function updateRotateBtn(){
 }
 $btnRot.onclick = () => { state.rotate = !state.rotate; updateRotateBtn() };
 
-// ======= Kanban toggle =======
-document.getElementById('btn-kanban').onclick = () => {
-  // redirect to main Kanban — same PIN session
-  window.location.href = '/';
+const $btnLab = document.getElementById('btn-labels');
+function updateLabelBtn(){ $btnLab.classList.toggle('active', state.labelsOn); }
+$btnLab.onclick = () => {
+  state.labelsOn = !state.labelsOn;
+  try{ localStorage.setItem(LABELS_KEY, state.labelsOn?'1':'0'); }catch(e){}
+  updateLabelBtn();
+  if(state.globe) state.globe.labelsData(state.labelsOn ? state.visible : []);
 };
 
-// ======= Rail toggle (mobile) =======
-document.getElementById('rail-toggle').onclick = () => {
-  document.getElementById('rail').classList.toggle('open');
+document.getElementById('btn-theme').onclick = () => applyTheme(state.theme==='light'?'dark':'light');
+document.getElementById('btn-kanban').onclick = () => { window.location.href = '/'; };
+document.getElementById('btn-connect').onclick = () => {
+  if(state.connect.mode==='idle') enterConnectMode();
+  else cancelConnect();
+};
+document.getElementById('connect-cancel').onclick = cancelConnect;
+document.getElementById('btn-add').onclick = openAddModal;
+
+// ======= Add/Edit modal =======
+function openAddModal(preset){
+  const $m = document.getElementById('modal-backdrop');
+  const $lane = document.getElementById('m-lane');
+  $lane.innerHTML = LANES.map(l => `<option value="${l.code}">${l.code} · ${l.name}</option>`).join('');
+  document.getElementById('m-title').value = preset?.title || '';
+  $lane.value = preset?.lane || state.lastLane || 'HE';
+  document.getElementById('m-status').value = preset?.status || 'offen';
+  document.getElementById('m-priority').value = preset?.priority || '';
+  document.getElementById('m-deadline').value = preset?.deadline || '';
+  document.getElementById('m-desc').value = preset?.desc || '';
+  document.getElementById('modal-title').textContent = preset ? 'Item bearbeiten' : 'Neues Item';
+  $m.classList.add('open');
+  setTimeout(() => document.getElementById('m-title').focus(), 50);
+}
+function closeAddModal(){ document.getElementById('modal-backdrop').classList.remove('open'); }
+document.getElementById('m-cancel').onclick = closeAddModal;
+document.getElementById('modal-backdrop').addEventListener('click', e => {
+  if(e.target.id==='modal-backdrop') closeAddModal();
+});
+document.getElementById('m-save').onclick = () => {
+  const title = document.getElementById('m-title').value.trim();
+  if(!title){ toast('Titel fehlt'); return; }
+  const lane = document.getElementById('m-lane').value;
+  state.lastLane = lane;
+  const item = {
+    id: uid(), lane, title,
+    status: document.getElementById('m-status').value,
+    priority: document.getElementById('m-priority').value,
+    deadline: document.getElementById('m-deadline').value || null,
+    desc: document.getElementById('m-desc').value,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  state.items.push(item);
+  scheduleSave();
+  refreshAll();
+  closeAddModal();
+  toast('✓ Item angelegt');
 };
 
 // ======= Keyboard =======
 document.addEventListener('keydown', e => {
-  if(e.target.tagName==='INPUT') return;
+  if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if(e.target.isContentEditable) return;
   const k = e.key.toLowerCase();
-  if(k==='r'){ state.rotate=!state.rotate; updateRotateBtn() }
+  if(k==='escape'){
+    if(state.connect.mode!=='idle') cancelConnect();
+    else if(state.selectedId) document.getElementById('detail-close').click();
+    else if(document.getElementById('modal-backdrop').classList.contains('open')) closeAddModal();
+    return;
+  }
+  if(k==='a'){ e.preventDefault(); openAddModal(); }
+  else if(k==='c'){ e.preventDefault(); if(state.connect.mode==='idle') enterConnectMode(); else cancelConnect(); }
+  else if(k==='r'){ state.rotate=!state.rotate; updateRotateBtn() }
+  else if(k==='l'){ $btnLab.click() }
+  else if(k==='t'){ document.getElementById('btn-theme').click() }
   else if(k==='k'){ window.location.href='/' }
-  else if(k==='escape' && state.selectedId){ document.getElementById('detail-close').click() }
   else if(k==='f' && state.globe){ state.globe.pointOfView({altitude:2.4},800) }
   else if(k==='n'){
     const newItems = state.visible.filter(v=>v.isNew).sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
-    if(newItems.length && state.globe){
-      onPointClick(newItems[0]);
-    }
+    if(newItems.length) onPointClick(newItems[0]);
   } else {
-    // lane jump by first letter
     const laneByKey = {j:'JZ',h:'HE',p:'PA',b:'BA',m:'MA',i:'IK'};
     const code = laneByKey[k];
     if(code && state.globe){
@@ -833,7 +1221,7 @@ document.addEventListener('keydown', e => {
       if(laneItems.length){
         const avgLat = laneItems.reduce((s,v)=>s+v.lat,0)/laneItems.length;
         const avgLng = laneItems.reduce((s,v)=>s+v.lng,0)/laneItems.length;
-        state.globe.pointOfView({lat:avgLat,lng:avgLng,altitude:1.6},800);
+        state.globe.pointOfView({lat:avgLat,lng:avgLng,altitude:1.55},800);
       }
     }
   }
@@ -841,19 +1229,33 @@ document.addEventListener('keydown', e => {
 
 // ======= Boot =======
 async function start(){
-  await loadData();
-  renderRail();
+  applyTheme(state.theme);   // sets body class before globe creation
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('loadtxt').textContent = 'lade daten';
+
+  // Try GitHub first, fallback to local cache
+  try{
+    const remote = await fetchItemsFromGithub();
+    state.items = remote.items;
+    state.connections = remote.connections;
+    state.sha = remote.sha;
+    try{ localStorage.setItem(SHA_KEY, state.sha||''); }catch(e){}
+    persistLocal();
+  }catch(err){
+    console.warn('remote load failed, using local', err);
+    loadLocalCache();
+  }
+
+  document.getElementById('loading').classList.add('hidden');
   buildPoints();
   makeGlobe();
+  renderRail();
   updateRotateBtn();
-  window.addEventListener('resize', () => {
-    if(state.globe){
-      state.globe.width(window.innerWidth).height(window.innerHeight);
-    }
-  });
+  updateLabelBtn();
+  refreshAll();
 }
 
-console.log('%cLifeOS Globe v0.1','color:#5eead4;font-size:16px;font-weight:bold');
+console.log('%cLifeOS Globe v0.2','color:#5eead4;font-size:16px;font-weight:bold');
 </script>
 </body>
 </html>
