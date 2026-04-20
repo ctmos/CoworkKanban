@@ -3822,3 +3822,157 @@ details.ik-km-item[open] > summary.ik-km-item-header::after { transform: rotate(
 
 .frisch-card-title { font-size: 14px; font-weight: 500; }
 .frisch-card-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
+
+/* ─── Transkript Lazy-Load (AudioRec v2 Phase 4) ─────────────────────────── */
+
+.btn-transcript-load {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: rgba(229, 72, 77, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(229, 72, 77, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-transcript-load:hover:not(:disabled) {
+  background: rgba(229, 72, 77, 0.22);
+  border-color: rgba(229, 72, 77, 0.5);
+}
+
+.btn-transcript-load:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.entry-preview {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+  font-style: italic;
+}
+
+.transcript-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.transcript-modal {
+  max-width: 720px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--panel, #1a1a1a);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  font-family: 'Lexend', sans-serif;
+}
+
+.transcript-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.transcript-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.btn-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.btn-modal-close:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.08);
+}
+
+.transcript-modal-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.transcript-summary {
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent);
+  color: var(--text-primary);
+}
+
+.transcript-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.transcript-segment {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  align-items: baseline;
+}
+
+.transcript-time {
+  color: var(--text-muted, var(--text-secondary));
+  font-size: 0.75rem;
+  min-width: 3.5rem;
+  flex-shrink: 0;
+}
+
+.transcript-speaker {
+  font-weight: 600;
+  min-width: 5rem;
+  flex-shrink: 0;
+}
+
+.transcript-speaker.speaker-t { color: var(--accent); }
+.transcript-speaker.speaker-p { color: #22c55e; }
+
+.transcript-text {
+  color: var(--text-primary);
+}
+
+.transcript-offline-notice {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* ─── Ende Transkript Lazy-Load ───────────────────────────────────────────── */
