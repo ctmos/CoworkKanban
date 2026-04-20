@@ -853,8 +853,18 @@ try{
   const lv = localStorage.getItem(LAST_VISIT_KEY);
   state.lastVisit = lv ? parseInt(lv,10) : nowMs - 2*86400000;
   localStorage.setItem(LAST_VISIT_KEY, String(nowMs));
-  const studioRaw = localStorage.getItem(STUDIO_KEY);
-  if(studioRaw){ state.studio = {...STUDIO_DEFAULT, ...JSON.parse(studioRaw)}; }
+  // Migration v3: force stronger defaults (old installs had lines 25 / globe 30 — invisible)
+  const STUDIO_VER = '3';
+  try{
+    if(localStorage.getItem(STUDIO_KEY+'.v') !== STUDIO_VER){
+      localStorage.setItem(STUDIO_KEY, JSON.stringify(STUDIO_DEFAULT));
+      localStorage.setItem(STUDIO_KEY+'.v', STUDIO_VER);
+      state.studio = {...STUDIO_DEFAULT};
+    } else {
+      const studioRaw = localStorage.getItem(STUDIO_KEY);
+      if(studioRaw){ state.studio = {...STUDIO_DEFAULT, ...JSON.parse(studioRaw)}; }
+    }
+  }catch(e){ state.studio = {...STUDIO_DEFAULT}; }
   state.studioCollapsed = localStorage.getItem(STUDIO_COLLAPSE_KEY) === '1';
   state.view = localStorage.getItem(VIEW_KEY) || state.settings.general.startView || 'globe';
 }catch(e){}
