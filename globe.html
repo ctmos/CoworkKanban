@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="theme-color" content="#05070d" />
+<title>LifeOS · Globe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070d; --bg-2:#0b1020; --panel:rgba(16,22,40,.78);
+  --ink:#e8ecf7; --muted:#9aa3bf; --dim:#5a6684;
+  --accent:#5eead4; --accent-2:#60a5fa; --danger:#f87171; --warn:#fbbf24; --ok:#34d399;
+  --border:rgba(120,150,220,.18);
+  --shadow:0 10px 40px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+  --radius:14px;
+  --lane-HE:#ff6b6b; --lane-JZ:#ff3860; --lane-PA:#4ecdc4; --lane-BA:#ffe66d;
+  --lane-MA:#60a5fa; --lane-IK:#c9b1ff; --lane-FR:#ffb4a2; --lane-FA:#b8f2e6;
+  --lane-PR:#ff9f1c; --lane-EV:#95e1d3; --lane-WB:#9d4edd; --lane-FI:#34d399;
+  --lane-EM:#ffc0cb; --lane-EX:#7dd3fc; --lane-TB:#d4a5ff; --lane-EK:#ff7f50;
+  --lane-UNK:#64748b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;width:100%;background:var(--bg);color:var(--ink);font-family:'Lexend',system-ui,sans-serif;overflow:hidden}
+body{background:radial-gradient(ellipse at 50% 30%, #0c1230 0%, #05070d 60%, #000 100%)}
+
+/* Login overlay */
+#login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
+#login.hidden{display:none}
+.login-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:32px 40px;text-align:center;backdrop-filter:blur(12px);box-shadow:var(--shadow);min-width:300px}
+.login-box h1{font-weight:300;font-size:22px;margin:0 0 6px;letter-spacing:.5px}
+.login-box p{color:var(--muted);font-size:13px;margin:0 0 20px}
+.login-box input{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--ink);font-family:inherit;font-size:18px;text-align:center;letter-spacing:8px;outline:none}
+.login-box input:focus{border-color:var(--accent)}
+.login-box .err{color:var(--danger);font-size:12px;margin-top:10px;min-height:16px}
+
+/* Topbar */
+#top{position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;padding:0 16px;gap:12px;z-index:100;background:linear-gradient(180deg,rgba(5,7,13,.85) 0%,rgba(5,7,13,0) 100%);pointer-events:none}
+#top > *{pointer-events:auto}
+#top .brand{font-weight:600;font-size:15px;letter-spacing:.3px;color:var(--ink);display:flex;align-items:center;gap:10px}
+#top .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2s ease-in-out infinite}
+#top .brand .sub{color:var(--muted);font-weight:300;font-size:12px;letter-spacing:2px;text-transform:uppercase}
+#search{margin-left:auto;background:rgba(16,22,40,.85);border:1px solid var(--border);border-radius:10px;color:var(--ink);padding:8px 14px;font-family:inherit;font-size:13px;width:260px;outline:none;backdrop-filter:blur(8px)}
+#search:focus{border-color:var(--accent-2)}
+.btn{background:rgba(16,22,40,.85);border:1px solid var(--border);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;letter-spacing:.4px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(8px);transition:all .15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.active{background:var(--accent);color:#051210;border-color:var(--accent)}
+.kbd{background:rgba(0,0,0,.4);border:1px solid var(--border);padding:2px 6px;border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted)}
+
+/* Left rail */
+#rail{position:fixed;top:60px;left:12px;bottom:12px;width:250px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px;backdrop-filter:blur(12px);box-shadow:var(--shadow);z-index:50;overflow-y:auto;overflow-x:hidden}
+#rail h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:500;margin:6px 0 10px}
+#rail h3:not(:first-child){margin-top:18px}
+.lane-row{display:flex;align-items:center;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:13px;gap:10px;transition:background .12s;user-select:none}
+.lane-row:hover{background:rgba(255,255,255,.04)}
+.lane-row.off{opacity:.35}
+.lane-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
+.lane-row .cnt{margin-left:auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lane-row .lane-code{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);min-width:18px}
+.lane-row .lane-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:100px;font-size:11px;margin-right:6px;margin-bottom:6px;border:1px solid var(--border);cursor:pointer;transition:all .12s;color:var(--muted)}
+.status-chip.on{background:var(--accent);color:#051210;border-color:var(--accent)}
+.status-chip:hover:not(.on){border-color:var(--accent);color:var(--ink)}
+
+/* Stats block */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat{background:rgba(0,0,0,.25);border-radius:8px;padding:8px 10px;border:1px solid var(--border)}
+.stat .n{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.stat .l{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+
+/* Right detail panel */
+#detail{position:fixed;top:60px;right:12px;width:360px;max-height:calc(100% - 72px);background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;backdrop-filter:blur(12px);box-shadow:var(--shadow);z-index:50;overflow-y:auto;transform:translateX(120%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#detail.open{transform:translateX(0)}
+#detail .close{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px}
+#detail .close:hover{background:rgba(255,255,255,.06);color:var(--ink)}
+#detail .head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-right:30px}
+#detail .lane-badge{padding:4px 9px;border-radius:6px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+#detail h2{font-size:17px;font-weight:500;margin:0 0 8px;line-height:1.3}
+#detail .meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;font-size:11px}
+#detail .meta span{padding:3px 8px;border-radius:5px;background:rgba(0,0,0,.3);border:1px solid var(--border);color:var(--muted)}
+#detail .meta .urgent{color:var(--danger);border-color:var(--danger)}
+#detail .meta .new{color:var(--warn);border-color:var(--warn)}
+#detail .desc{font-size:13px;line-height:1.55;color:var(--ink);white-space:pre-wrap;border-top:1px solid var(--border);padding-top:14px;margin-top:10px;max-height:240px;overflow-y:auto}
+#detail .links{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+#detail .links .lk{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer;transition:border-color .12s}
+#detail .links .lk:hover{border-color:var(--accent)}
+#detail .links .lk .tt{font-weight:500}
+#detail .links .lk .mm{color:var(--muted);font-size:10px;margin-top:2px}
+
+/* Globe canvas container */
+#globe-wrap{position:fixed;inset:0;z-index:1}
+#globe-wrap canvas{display:block}
+
+/* Tooltip */
+#tip{position:fixed;z-index:200;background:rgba(7,11,24,.96);border:1px solid var(--accent);border-radius:8px;padding:8px 12px;font-size:12px;pointer-events:none;display:none;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.6);backdrop-filter:blur(8px)}
+#tip .t1{font-weight:500;margin-bottom:3px}
+#tip .t2{color:var(--muted);font-size:10px;display:flex;gap:8px}
+
+/* Legend bottom */
+#legend{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:14px;background:var(--panel);border:1px solid var(--border);border-radius:100px;padding:8px 18px;font-size:11px;color:var(--muted);backdrop-filter:blur(12px);z-index:40;align-items:center}
+#legend .it{display:flex;align-items:center;gap:5px}
+#legend .sep{width:1px;height:14px;background:var(--border)}
+#legend .kbd{margin:0 2px}
+
+/* Loading */
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:500;flex-direction:column;gap:16px}
+#loading.hidden{display:none}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+.loadtxt{color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase}
+
+/* Empty state */
+#empty{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:12px;display:none;z-index:30}
+
+/* Mobile */
+@media (max-width:900px){
+  #rail{width:210px;left:8px;top:56px;bottom:8px}
+  #detail{width:calc(100vw - 24px);max-width:340px;right:8px}
+  #search{width:140px}
+  #legend{font-size:10px;padding:6px 12px;gap:8px;bottom:8px}
+  #legend .kbd{display:none}
+}
+@media (max-width:600px){
+  #rail{transform:translateX(-120%);transition:transform .3s;z-index:60}
+  #rail.open{transform:translateX(0)}
+  #rail-toggle{display:flex}
+}
+#rail-toggle{display:none}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25)}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login">
+  <div class="login-box">
+    <h1>LifeOS · Globe</h1>
+    <p>PIN eingeben</p>
+    <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" />
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div id="loading" class="hidden">
+  <div class="spinner"></div>
+  <div class="loadtxt" id="loadtxt">lade globe</div>
+</div>
+
+<!-- UI -->
+<div id="top">
+  <button class="btn" id="rail-toggle" title="Filter">☰</button>
+  <div class="brand"><span class="dot"></span>LifeOS<span class="sub">Globe</span></div>
+  <input id="search" type="search" placeholder="Suchen…" />
+  <button class="btn" id="btn-rotate" title="Rotation an/aus (R)">◉ Rotate</button>
+  <button class="btn" id="btn-kanban" title="Kanban-Ansicht (K)">▦ Kanban</button>
+</div>
+
+<aside id="rail">
+  <div class="stats">
+    <div class="stat"><div class="n" id="s-total">–</div><div class="l">Items</div></div>
+    <div class="stat"><div class="n" id="s-urgent">–</div><div class="l">Urgent</div></div>
+  </div>
+  <h3>Status</h3>
+  <div id="status-chips"></div>
+  <h3>Lanes</h3>
+  <div id="lane-list"></div>
+  <h3>Shortcuts</h3>
+  <div style="font-size:11px;color:var(--muted);line-height:1.9">
+    <span class="kbd">R</span> rotate<br>
+    <span class="kbd">K</span> Kanban<br>
+    <span class="kbd">F</span> Focus fit<br>
+    <span class="kbd">N</span> Neue first<br>
+    <span class="kbd">J</span> Jetzt · <span class="kbd">H</span> Heute · <span class="kbd">P</span> Patienten<br>
+    <span class="kbd">B</span> Barmelweid · <span class="kbd">M</span> Moser.AI
+  </div>
+</aside>
+
+<aside id="detail">
+  <button class="close" id="detail-close">×</button>
+  <div class="head">
+    <span class="lane-badge" id="d-badge">–</span>
+    <div style="flex:1">
+      <div style="font-size:10px;color:var(--dim);letter-spacing:1px;font-family:'JetBrains Mono',monospace" id="d-id">–</div>
+    </div>
+  </div>
+  <h2 id="d-title">–</h2>
+  <div class="meta" id="d-meta"></div>
+  <div class="desc" id="d-desc"></div>
+  <div class="links" id="d-links"></div>
+</aside>
+
+<div id="globe-wrap"></div>
+<div id="tip"><div class="t1"></div><div class="t2"></div></div>
+<div id="empty">Keine Items matchen deine Filter</div>
+
+<div id="legend">
+  <div class="it"><span class="lane-dot" style="background:#ff3860"></span>heiß (Jetzt/Heute)</div>
+  <div class="sep"></div>
+  <div class="it"><span style="color:var(--warn)">●</span> neu</div>
+  <div class="it"><span style="color:var(--danger)">●</span> überdue</div>
+  <div class="sep"></div>
+  <div class="it"><span class="kbd">Hover</span> Details · <span class="kbd">Click</span> öffnen</div>
+</div>
+
+<!-- libs -->
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/globe.gl@2.33.2/dist/globe.gl.min.js"></script>
+
+<script>
+/* ============================================================
+   LifeOS · Globe v0.1 — 2026-04-20
+   ============================================================ */
+
+const GH_API = 'https://api.github.com/repos/ctmos/cowork-data/contents/data';
+const PIN_STORE_KEY = 'lifeos.pin';
+const LAST_VISIT_KEY = 'lifeos.globe.lastVisit';
+const GH_TOKEN_KEY = 'cowork_gh_token';
+
+function getGhToken(){
+  try{ return localStorage.getItem(GH_TOKEN_KEY) || ''; }catch(e){ return ''; }
+}
+async function ghFetchJson(path){
+  const token = getGhToken();
+  const headers = { 'Accept':'application/vnd.github.v3+json' };
+  if(token) headers['Authorization'] = 'token ' + token;
+  const r = await fetch(`${GH_API}/${path}?t=${Date.now()}`, { headers, cache:'no-store' });
+  if(!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
+  const meta = await r.json();
+  // meta.content is base64-encoded; use atob + UTF-8 decode
+  const b64 = (meta.content || '').replace(/\n/g,'');
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  const txt = new TextDecoder('utf-8').decode(bytes);
+  return JSON.parse(txt);
+}
+
+// Lane definitions — order defines longitude wedges on globe
+const LANES = [
+  {code:'JZ', name:'Jetzt',       color:'#ff3860'},
+  {code:'HE', name:'Heute',       color:'#ff6b6b'},
+  {code:'BA', name:'Barmelweid',  color:'#ffe66d'},
+  {code:'PA', name:'Patienten',   color:'#4ecdc4'},
+  {code:'MA', name:'MOSER.AI',    color:'#60a5fa'},
+  {code:'IK', name:'ImperialKI',  color:'#c9b1ff'},
+  {code:'PR', name:'Projekte',    color:'#ff9f1c'},
+  {code:'WB', name:'PSP WB',      color:'#9d4edd'},
+  {code:'FR', name:'Freunde',     color:'#ffb4a2'},
+  {code:'FA', name:'Familie',     color:'#b8f2e6'},
+  {code:'EV', name:'Events',      color:'#95e1d3'},
+  {code:'FI', name:'Finanzen',    color:'#34d399'},
+  {code:'TB', name:'Tagebuch',    color:'#d4a5ff'},
+  {code:'EK', name:'Einkaufsliste',color:'#ff7f50'},
+  {code:'EM', name:'Erinnerungen',color:'#ffc0cb'},
+  {code:'EX', name:'Explore',     color:'#7dd3fc'},
+];
+const LANE_MAP = Object.fromEntries(LANES.map((l,i)=>[l.code,{...l,idx:i}]));
+
+// Status list
+const STATUSES = ['offen','in-arbeit','erledigt','geplant','blockiert'];
+
+// ======= PIN gate =======
+const $pin = document.getElementById('pin');
+const $err = document.getElementById('err');
+const $login = document.getElementById('login');
+function checkPin(val){
+  if(val === '2611'){
+    try{localStorage.setItem(PIN_STORE_KEY,'1')}catch(e){}
+    $login.classList.add('hidden');
+    start();
+  } else {
+    $err.textContent = 'Falsch.';
+    $pin.value = '';
+  }
+}
+$pin.addEventListener('input',()=>{
+  $err.textContent='';
+  if($pin.value.length===4) checkPin($pin.value);
+});
+try{ if(localStorage.getItem(PIN_STORE_KEY)==='1'){ $login.classList.add('hidden'); queueMicrotask(start);} else { setTimeout(()=>$pin.focus(),100); } }catch(e){ setTimeout(()=>$pin.focus(),100); }
+
+// ======= Utility =======
+const hash = s => { let h=0; s=String(s); for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0} return h };
+const daysBetween = (a,b) => Math.floor((a-b)/86400000);
+const now = new Date();
+const nowMs = now.getTime();
+
+function urgencyScore(item){
+  const status = (item.status||'').toLowerCase();
+  if(status==='erledigt' || status==='done' || status==='abgeschlossen') return 0.05;
+  if(item.deadline){
+    const dl = new Date(item.deadline).getTime();
+    if(!isNaN(dl)){
+      const days = daysBetween(dl, nowMs);
+      if(days < 0) return 1.0;        // overdue
+      if(days === 0) return 0.95;     // today
+      if(days <= 3) return 0.8;
+      if(days <= 7) return 0.65;
+      if(days <= 30) return 0.45;
+      return 0.25;
+    }
+  }
+  const p = (item.priority||'').toLowerCase();
+  if(p==='kritisch'||p==='critical') return 0.85;
+  if(p==='hoch'||p==='high') return 0.6;
+  if(p==='mittel'||p==='medium') return 0.4;
+  if(p==='niedrig'||p==='low') return 0.2;
+  return 0.3;
+}
+
+function isNewish(item, lastVisit){
+  const t = item.updatedAt || item.createdAt;
+  if(!t) return false;
+  const ts = new Date(t).getTime();
+  return !isNaN(ts) && ts > lastVisit;
+}
+
+function isOverdue(item){
+  if(!item.deadline) return false;
+  if(['erledigt','done','abgeschlossen'].includes((item.status||'').toLowerCase())) return false;
+  const dl = new Date(item.deadline).getTime();
+  return !isNaN(dl) && dl < nowMs - 86400000; // past yesterday
+}
+
+function laneLongitude(code, item){
+  const L = LANE_MAP[code] || {idx:LANES.length, color:'#64748b'};
+  const total = LANES.length;
+  // center each lane wedge at (-180 + (idx+0.5)/total * 360)
+  const center = -180 + ((L.idx + 0.5) / total) * 360;
+  // consistent jitter within wedge (±10°)
+  const wedgeHalf = 360 / total / 2 * 0.8;  // keep gap between wedges
+  const j = ((hash(item.id||item.title||Math.random()) % 1000) / 1000 - 0.5) * 2 * wedgeHalf;
+  return center + j;
+}
+
+function itemLatitude(item, urg){
+  // equator=hot, poles=cold
+  // urg 1.0 → |lat| ≈ 5; urg 0 → |lat| ≈ 70
+  const absLat = (1 - urg) * 65 + 5;
+  const sign = (hash((item.id||'')+'_sign') % 2 === 0) ? 1 : -1;
+  // small jitter to avoid rows
+  const jitter = ((hash((item.id||'')+'_lat') % 100) / 100 - 0.5) * 8;
+  return sign * absLat + jitter;
+}
+
+// ======= State =======
+const state = {
+  items: [],
+  visible: [],
+  selectedId: null,
+  filters:{
+    lanes: new Set(LANES.map(l=>l.code)),
+    statuses: new Set(['offen','in-arbeit','geplant','blockiert']),  // erledigt off by default
+    search: ''
+  },
+  rotate: true,
+  hovered: null,
+  lastVisit: 0,
+  globe: null,
+};
+
+// Last visit
+try{
+  const lv = localStorage.getItem(LAST_VISIT_KEY);
+  state.lastVisit = lv ? parseInt(lv,10) : nowMs - 2*86400000;
+  localStorage.setItem(LAST_VISIT_KEY, String(nowMs));
+}catch(e){ state.lastVisit = nowMs - 2*86400000 }
+
+// ======= Data loading =======
+async function loadData(){
+  const $lt = document.getElementById('loadtxt');
+  document.getElementById('loading').classList.remove('hidden');
+  try{
+    if(!getGhToken()){
+      $lt.innerHTML = 'kein GitHub-Token · bitte erst <a href="/" style="color:var(--accent)">einloggen</a>';
+      return;
+    }
+    $lt.textContent = 'lade daten';
+    const [tasksJ, backlogJ, projJ] = await Promise.all([
+      ghFetchJson('tasks.json'),
+      ghFetchJson('backlog.json'),
+      ghFetchJson('projects.json'),
+    ]);
+
+    const items = [];
+
+    // Tasks → points
+    const cards = tasksJ.cards || tasksJ.tasks || tasksJ;
+    const taskList = Array.isArray(cards) ? cards : Object.values(cards);
+    for(const t of taskList){
+      if(t.deletedAt) continue;
+      if(!t.id || !t.title) continue;
+      items.push({
+        id: t.id,
+        kind: 'task',
+        title: t.title,
+        desc: t.desc || t.context || '',
+        lane: t.lane || 'EX',
+        status: t.status || 'offen',
+        priority: t.priority || '',
+        deadline: t.deadline || null,
+        updatedAt: t.updatedAt || t.createdAt,
+        createdAt: t.createdAt,
+        linkedProject: t.linkedProject,
+        linkedPatient: t.linkedPatient,
+        tags: t.tags || [],
+        dependsOn: t.dependsOn || [],
+        assignee: t.assignee,
+        source: t.source,
+      });
+    }
+
+    // Backlog → treat as 'PR' (Projekte) lane items (or map by category)
+    const backlogList = Array.isArray(backlogJ) ? backlogJ : (backlogJ.items || Object.values(backlogJ));
+    const catMap = {
+      'Infrastruktur':'PR','Automation':'PR','Features':'MA','KI':'MA',
+      'Datenschutz':'PR','Integration':'MA','Plan':'PR'
+    };
+    for(const b of backlogList){
+      if(b.deletedAt) continue;
+      if(!b.id || !b.title) continue;
+      items.push({
+        id: b.id,
+        kind: 'backlog',
+        title: b.title,
+        desc: b.description || '',
+        lane: catMap[b.category] || 'PR',
+        status: b.status || 'geplant',
+        priority: b.priority || '',
+        deadline: b.deadline || null,
+        updatedAt: b.updatedAt || b.createdAt,
+        createdAt: b.createdAt,
+        tags: b.tags || [],
+        category: b.category,
+        dependsOn: b.dependencies || [],
+      });
+    }
+
+    // Projects → 'PR' lane items as anchors
+    const projList = Array.isArray(projJ) ? projJ : (projJ.projects || Object.values(projJ));
+    for(const p of projList){
+      if(!p.id || !p.title) continue;
+      items.push({
+        id: p.id,
+        kind: 'project',
+        title: p.title,
+        desc: p.description || '',
+        lane: 'PR',
+        status: p.status || 'aktiv',
+        color: p.color,
+        updatedAt: p.updatedAt || p.createdAt,
+        createdAt: p.createdAt,
+        tags: [],
+      });
+    }
+
+    state.items = items;
+    document.getElementById('loading').classList.add('hidden');
+    return items;
+  } catch(err){
+    console.error('data load failed', err);
+    $lt.textContent = 'fehler: ' + err.message;
+  }
+}
+
+// ======= Build point data from items =======
+function buildPoints(){
+  const filt = state.filters;
+  const q = filt.search.toLowerCase();
+  const pts = [];
+  for(const it of state.items){
+    if(!filt.lanes.has(it.lane)) continue;
+    if(!filt.statuses.has(it.status)) continue;
+    if(q && !(it.title.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q) || (it.id||'').toLowerCase().includes(q))) continue;
+
+    const urg = urgencyScore(it);
+    const lane = LANE_MAP[it.lane] || {color:'#64748b'};
+    const isNew = isNewish(it, state.lastVisit);
+    const overdue = isOverdue(it);
+
+    pts.push({
+      ...it,
+      lat: itemLatitude(it, urg),
+      lng: laneLongitude(it.lane, it),
+      alt: 0.015 + urg * 0.08,           // altitude = urgency
+      size: 0.25 + urg * 0.75,           // radius
+      color: overdue ? '#f87171' : (it.color || lane.color),
+      urgency: urg,
+      isNew,
+      overdue,
+    });
+  }
+  state.visible = pts;
+  return pts;
+}
+
+function buildRings(){
+  // gold pulsing ring for new, red for overdue
+  return state.visible
+    .filter(p => p.isNew || p.overdue)
+    .map(p => ({
+      lat: p.lat,
+      lng: p.lng,
+      maxR: p.overdue ? 3.5 : 2.5,
+      propagationSpeed: p.overdue ? 2 : 1.5,
+      repeatPeriod: p.overdue ? 900 : 1400,
+      color: p.overdue ? '#f87171' : '#fbbf24',
+    }));
+}
+
+function buildArcsForItem(item){
+  // arcs to dependencies + same linked project
+  const arcs = [];
+  const lookup = Object.fromEntries(state.visible.map(p=>[p.id,p]));
+  if(item.dependsOn && item.dependsOn.length){
+    for(const dep of item.dependsOn){
+      const target = lookup[dep];
+      if(target){
+        arcs.push({startLat:item.lat,startLng:item.lng,endLat:target.lat,endLng:target.lng,color:['#5eead4','#60a5fa']});
+      }
+    }
+  }
+  if(item.linkedProject){
+    const target = lookup[item.linkedProject];
+    if(target){
+      arcs.push({startLat:item.lat,startLng:item.lng,endLat:target.lat,endLng:target.lng,color:['#ff9f1c','#ffe66d']});
+    }
+  }
+  // also surface peers in same linkedProject
+  if(item.linkedProject){
+    for(const peer of state.visible){
+      if(peer.id !== item.id && peer.linkedProject === item.linkedProject){
+        arcs.push({startLat:item.lat,startLng:item.lng,endLat:peer.lat,endLng:peer.lng,color:['#ffe66d','#ff9f1c']});
+      }
+    }
+  }
+  return arcs;
+}
+
+// ======= Globe setup =======
+function makeGlobe(){
+  const mat = new THREE.MeshPhongMaterial({
+    color: 0x0a1229,
+    emissive: 0x050a18,
+    shininess: 2,
+    transparent: true,
+    opacity: 0.92,
+  });
+
+  const g = Globe()(document.getElementById('globe-wrap'))
+    .backgroundColor('rgba(0,0,0,0)')
+    .showGlobe(true)
+    .showAtmosphere(true)
+    .atmosphereColor('#60a5fa')
+    .atmosphereAltitude(0.18)
+    .globeMaterial(mat)
+    .pointsData(state.visible)
+    .pointLat('lat').pointLng('lng').pointColor('color')
+    .pointAltitude('alt')
+    .pointRadius('size')
+    .pointsMerge(false)
+    .pointResolution(12)
+    .onPointHover(onPointHover)
+    .onPointClick(onPointClick)
+    .ringsData(buildRings())
+    .ringColor(d => () => d.color)
+    .ringMaxRadius('maxR')
+    .ringPropagationSpeed('propagationSpeed')
+    .ringRepeatPeriod('repeatPeriod')
+    .arcsData([])
+    .arcColor('color')
+    .arcStroke(0.4)
+    .arcAltitudeAutoScale(0.35)
+    .arcDashLength(0.4).arcDashGap(0.6).arcDashAnimateTime(2200)
+    .labelsData([])
+    .labelText('title')
+    .labelLat('lat').labelLng('lng')
+    .labelColor(() => '#e8ecf7')
+    .labelSize(0.4).labelDotRadius(0)
+    .labelAltitude(d => d.alt + 0.005)
+    .labelResolution(3);
+
+  // Custom dotted-land sphere on top — use an icosphere of small dots
+  try{
+    const dotGroup = new THREE.Group();
+    const geom = new THREE.SphereGeometry(0.7, 1);
+    const cnt = 2200;
+    const dotMat = new THREE.MeshBasicMaterial({color:0x3a4a78,transparent:true,opacity:0.45});
+    const baseGeo = new THREE.SphereGeometry(1, 0, 0);
+    const dotMesh = new THREE.InstancedMesh(new THREE.CircleGeometry(0.7, 6), dotMat, cnt);
+    const dummy = new THREE.Object3D();
+    const R = 100.15; // globe radius is 100 in globe.gl
+    const phi = Math.PI * (3 - Math.sqrt(5));
+    for(let i=0;i<cnt;i++){
+      const y = 1 - (i / (cnt-1))*2;
+      const r = Math.sqrt(1 - y*y);
+      const theta = phi * i;
+      const x = Math.cos(theta)*r, z = Math.sin(theta)*r;
+      dummy.position.set(x*R, y*R, z*R);
+      dummy.lookAt(0,0,0);
+      dummy.rotateY(Math.PI);
+      dummy.updateMatrix();
+      dotMesh.setMatrixAt(i, dummy.matrix);
+    }
+    dotMesh.instanceMatrix.needsUpdate = true;
+    g.scene().add(dotMesh);
+  }catch(e){console.warn('dot mesh skipped',e)}
+
+  // lighting tweak
+  g.scene().children.forEach(c=>{
+    if(c.isDirectionalLight){ c.intensity = 0.6 }
+    if(c.isAmbientLight){ c.intensity = 0.45 }
+  });
+  const extra = new THREE.PointLight(0x5eead4, 0.6, 800);
+  extra.position.set(200, 140, 220);
+  g.scene().add(extra);
+
+  // controls
+  const controls = g.controls();
+  controls.autoRotate = state.rotate;
+  controls.autoRotateSpeed = 0.35;
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 180;
+  controls.maxDistance = 550;
+  controls.addEventListener('start', () => { controls.autoRotate = false; updateRotateBtn() });
+
+  // initial POV
+  g.pointOfView({altitude: 2.1}, 0);
+
+  state.globe = g;
+  return g;
+}
+
+// ======= Interactions =======
+const tip = document.getElementById('tip');
+function onPointHover(p){
+  state.hovered = p;
+  if(!p){
+    tip.style.display='none';
+    // clear arcs unless a selection is active
+    if(state.globe) state.globe.arcsData(state.selectedId ? buildArcsForItem(state.visible.find(v=>v.id===state.selectedId)||{}) : []);
+    return;
+  }
+  tip.style.display='block';
+  tip.querySelector('.t1').textContent = p.title;
+  const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) : '';
+  tip.querySelector('.t2').innerHTML =
+    `<span style="color:${p.color}">${p.lane}</span>` +
+    `<span>${p.status}</span>` +
+    (deadline?`<span>⏰ ${deadline}</span>`:'') +
+    (p.overdue?`<span style="color:var(--danger)">überdue</span>`:'') +
+    (p.isNew?`<span style="color:var(--warn)">neu</span>`:'');
+  // arcs on hover (unless something is selected)
+  if(!state.selectedId && state.globe){
+    state.globe.arcsData(buildArcsForItem(p));
+  }
+}
+
+function onPointClick(p){
+  state.selectedId = p.id;
+  openDetail(p);
+  if(state.globe){
+    state.globe.arcsData(buildArcsForItem(p));
+    state.globe.pointOfView({lat:p.lat,lng:p.lng,altitude:1.6}, 800);
+    state.globe.controls().autoRotate = false;
+    state.rotate = false; updateRotateBtn();
+  }
+}
+
+document.addEventListener('mousemove',e=>{
+  if(tip.style.display==='block'){
+    let x = e.clientX + 14, y = e.clientY + 14;
+    if(x + 290 > window.innerWidth) x = e.clientX - 300;
+    if(y + 80 > window.innerHeight) y = e.clientY - 90;
+    tip.style.left = x+'px'; tip.style.top = y+'px';
+  }
+});
+
+// ======= Detail panel =======
+const $detail = document.getElementById('detail');
+function openDetail(p){
+  document.getElementById('d-id').textContent = p.id + ' · ' + p.kind;
+  const badge = document.getElementById('d-badge');
+  badge.textContent = p.lane;
+  badge.style.background = p.color;
+  badge.style.color = '#0a0f1f';
+  document.getElementById('d-title').textContent = p.title;
+  const meta = document.getElementById('d-meta');
+  meta.innerHTML = '';
+  const addMeta = (txt, cls='') => {
+    const s = document.createElement('span');
+    if(cls) s.className = cls;
+    s.textContent = txt; meta.appendChild(s);
+  };
+  addMeta(p.status);
+  if(p.priority) addMeta('prio: '+p.priority);
+  if(p.deadline) addMeta('⏰ '+new Date(p.deadline).toLocaleDateString('de-DE'), p.overdue?'urgent':'');
+  if(p.isNew) addMeta('neu', 'new');
+  if(p.overdue) addMeta('überdue', 'urgent');
+  if(p.updatedAt) addMeta('upd: '+new Date(p.updatedAt).toLocaleDateString('de-DE'));
+  if(p.tags && p.tags.length) p.tags.slice(0,5).forEach(t=>addMeta('#'+t));
+  document.getElementById('d-desc').textContent = p.desc || '— keine Beschreibung —';
+  // linked
+  const links = document.getElementById('d-links');
+  links.innerHTML = '';
+  const related = [];
+  if(p.linkedProject) related.push({label:'Linked Project', id:p.linkedProject});
+  if(p.linkedPatient) related.push({label:'Linked Patient', id:p.linkedPatient});
+  if(p.dependsOn) p.dependsOn.forEach(d=>related.push({label:'dependsOn', id:d}));
+  related.forEach(r => {
+    const found = state.items.find(i=>i.id===r.id);
+    const el = document.createElement('div');
+    el.className = 'lk';
+    el.innerHTML = `<div class="tt">${r.label}</div><div class="mm">${r.id}${found?' — '+found.title:''}</div>`;
+    if(found) el.onclick = () => { const pt = state.visible.find(v=>v.id===found.id); if(pt) onPointClick(pt) };
+    links.appendChild(el);
+  });
+  $detail.classList.add('open');
+}
+document.getElementById('detail-close').onclick = () => {
+  $detail.classList.remove('open');
+  state.selectedId = null;
+  if(state.globe) state.globe.arcsData([]);
+};
+
+// ======= Left rail =======
+function renderRail(){
+  const laneCounts = {};
+  for(const it of state.items) laneCounts[it.lane] = (laneCounts[it.lane]||0)+1;
+  const $lane = document.getElementById('lane-list');
+  $lane.innerHTML = '';
+  LANES.forEach(l => {
+    if(!laneCounts[l.code]) return; // skip empty lanes in rail
+    const row = document.createElement('div');
+    row.className = 'lane-row' + (state.filters.lanes.has(l.code)?'':' off');
+    row.innerHTML = `<span class="lane-dot" style="background:${l.color};color:${l.color}"></span>
+      <span class="lane-code">${l.code}</span>
+      <span class="lane-name">${l.name}</span>
+      <span class="cnt">${laneCounts[l.code]||0}</span>`;
+    row.onclick = () => {
+      if(state.filters.lanes.has(l.code)) state.filters.lanes.delete(l.code);
+      else state.filters.lanes.add(l.code);
+      row.classList.toggle('off');
+      refreshPoints();
+    };
+    $lane.appendChild(row);
+  });
+  // status chips
+  const $st = document.getElementById('status-chips');
+  $st.innerHTML = '';
+  STATUSES.forEach(s => {
+    const c = document.createElement('span');
+    c.className = 'status-chip' + (state.filters.statuses.has(s)?' on':'');
+    c.textContent = s;
+    c.onclick = () => {
+      if(state.filters.statuses.has(s)) state.filters.statuses.delete(s);
+      else state.filters.statuses.add(s);
+      c.classList.toggle('on');
+      refreshPoints();
+    };
+    $st.appendChild(c);
+  });
+  // stats
+  document.getElementById('s-total').textContent = state.items.length;
+  const urg = state.items.filter(i=>isOverdue(i) || urgencyScore(i) > 0.7).length;
+  document.getElementById('s-urgent').textContent = urg;
+}
+
+// ======= Update loop =======
+function refreshPoints(){
+  const pts = buildPoints();
+  if(state.globe){
+    state.globe.pointsData(pts).ringsData(buildRings());
+  }
+  document.getElementById('empty').style.display = pts.length ? 'none':'block';
+}
+
+// ======= Search =======
+document.getElementById('search').addEventListener('input', e => {
+  state.filters.search = e.target.value.trim();
+  refreshPoints();
+});
+
+// ======= Rotate button =======
+const $btnRot = document.getElementById('btn-rotate');
+function updateRotateBtn(){
+  $btnRot.classList.toggle('active', state.rotate);
+  if(state.globe) state.globe.controls().autoRotate = state.rotate;
+}
+$btnRot.onclick = () => { state.rotate = !state.rotate; updateRotateBtn() };
+
+// ======= Kanban toggle =======
+document.getElementById('btn-kanban').onclick = () => {
+  // redirect to main Kanban — same PIN session
+  window.location.href = '/';
+};
+
+// ======= Rail toggle (mobile) =======
+document.getElementById('rail-toggle').onclick = () => {
+  document.getElementById('rail').classList.toggle('open');
+};
+
+// ======= Keyboard =======
+document.addEventListener('keydown', e => {
+  if(e.target.tagName==='INPUT') return;
+  const k = e.key.toLowerCase();
+  if(k==='r'){ state.rotate=!state.rotate; updateRotateBtn() }
+  else if(k==='k'){ window.location.href='/' }
+  else if(k==='escape' && state.selectedId){ document.getElementById('detail-close').click() }
+  else if(k==='f' && state.globe){ state.globe.pointOfView({altitude:2.4},800) }
+  else if(k==='n'){
+    const newItems = state.visible.filter(v=>v.isNew).sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
+    if(newItems.length && state.globe){
+      onPointClick(newItems[0]);
+    }
+  } else {
+    // lane jump by first letter
+    const laneByKey = {j:'JZ',h:'HE',p:'PA',b:'BA',m:'MA',i:'IK'};
+    const code = laneByKey[k];
+    if(code && state.globe){
+      const laneItems = state.visible.filter(v=>v.lane===code);
+      if(laneItems.length){
+        const avgLat = laneItems.reduce((s,v)=>s+v.lat,0)/laneItems.length;
+        const avgLng = laneItems.reduce((s,v)=>s+v.lng,0)/laneItems.length;
+        state.globe.pointOfView({lat:avgLat,lng:avgLng,altitude:1.6},800);
+      }
+    }
+  }
+});
+
+// ======= Boot =======
+async function start(){
+  await loadData();
+  renderRail();
+  buildPoints();
+  makeGlobe();
+  updateRotateBtn();
+  window.addEventListener('resize', () => {
+    if(state.globe){
+      state.globe.width(window.innerWidth).height(window.innerHeight);
+    }
+  });
+}
+
+console.log('%cLifeOS Globe v0.1','color:#5eead4;font-size:16px;font-weight:bold');
+</script>
+</body>
+</html>
