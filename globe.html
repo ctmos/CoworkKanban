@@ -442,19 +442,19 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
       <button class="preset-btn" data-preset="blueprint">blue</button>
       <button class="preset-btn" data-preset="vivid">vivid</button>
     </div>
-    <div class="slider-row"><div class="slider-label"><span class="name">line strength</span><span class="val" id="v-lines">25</span></div><input type="range" min="0" max="100" value="25" id="s-lines" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">globe presence</span><span class="val" id="v-globe">30</span></div><input type="range" min="0" max="100" value="30" id="s-globe" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">point size</span><span class="val" id="v-point">50</span></div><input type="range" min="0" max="100" value="50" id="s-point" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">schriftgröße</span><span class="val" id="v-label">50</span></div><input type="range" min="0" max="100" value="50" id="s-label" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">line strength</span><span class="val" id="v-lines">60</span></div><input type="range" min="0" max="100" value="60" id="s-lines" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">globe presence</span><span class="val" id="v-globe">70</span></div><input type="range" min="0" max="100" value="70" id="s-globe" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">point size</span><span class="val" id="v-point">55</span></div><input type="range" min="0" max="100" value="55" id="s-point" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">schriftgröße</span><span class="val" id="v-label">60</span></div><input type="range" min="0" max="100" value="60" id="s-label" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">label-sichtbarkeit</span><span class="val" id="v-labelOpacity">100</span></div><input type="range" min="0" max="100" value="100" id="s-labelOpacity" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">color saturation</span><span class="val" id="v-sat">20</span></div><input type="range" min="0" max="100" value="20" id="s-sat" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">arc weight</span><span class="val" id="v-arc">40</span></div><input type="range" min="0" max="100" value="40" id="s-arc" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">color saturation</span><span class="val" id="v-sat">55</span></div><input type="range" min="0" max="100" value="55" id="s-sat" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">arc weight</span><span class="val" id="v-arc">55</span></div><input type="range" min="0" max="100" value="55" id="s-arc" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">globus-grösse</span><span class="val" id="v-globeScale">50</span></div><input type="range" min="0" max="100" value="50" id="s-globeScale" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">rotation speed</span><span class="val" id="v-rot">20</span></div><input type="range" min="0" max="100" value="20" id="s-rot" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">rotation speed</span><span class="val" id="v-rot">18</span></div><input type="range" min="0" max="100" value="18" id="s-rot" /></div>
     <div class="section-divider">terrain</div>
-    <div class="slider-row"><div class="slider-label"><span class="name">relief intensity</span><span class="val" id="v-relief">45</span></div><input type="range" min="0" max="100" value="45" id="s-relief" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">peak radius</span><span class="val" id="v-peakr">35</span></div><input type="range" min="0" max="100" value="35" id="s-peakr" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">contour density</span><span class="val" id="v-contour">50</span></div><input type="range" min="0" max="100" value="50" id="s-contour" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">relief intensity</span><span class="val" id="v-relief">50</span></div><input type="range" min="0" max="100" value="50" id="s-relief" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">peak radius</span><span class="val" id="v-peakr">38</span></div><input type="range" min="0" max="100" value="38" id="s-peakr" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">contour density</span><span class="val" id="v-contour">55</span></div><input type="range" min="0" max="100" value="55" id="s-contour" /></div>
     <div class="studio-foot"><span class="note">live · persisted</span><button class="reset-btn" id="studio-reset">reset</button></div>
   </div>
 </aside>
@@ -853,16 +853,23 @@ try{
   const lv = localStorage.getItem(LAST_VISIT_KEY);
   state.lastVisit = lv ? parseInt(lv,10) : nowMs - 2*86400000;
   localStorage.setItem(LAST_VISIT_KEY, String(nowMs));
-  // Migration v3: force stronger defaults (old installs had lines 25 / globe 30 — invisible)
-  const STUDIO_VER = '3';
+  // Migration v4: erzwingt starke Defaults (alte Installs hatten lines:25/globe:30 — unsichtbar).
+  // Zusätzlich Self-Heal: wenn Werte offensichtlich zu schwach sind (invisible-range), resetten.
+  const STUDIO_VER = '4';
   try{
-    if(localStorage.getItem(STUDIO_KEY+'.v') !== STUDIO_VER){
+    const verStored = localStorage.getItem(STUDIO_KEY+'.v');
+    const studioRaw = localStorage.getItem(STUDIO_KEY);
+    let parsed = null;
+    try{ parsed = studioRaw ? JSON.parse(studioRaw) : null; }catch(e){ parsed = null; }
+    const tooWeak = parsed && (Number(parsed.lines||0) < 40 || Number(parsed.globe||0) < 50);
+    if(verStored !== STUDIO_VER || tooWeak){
       localStorage.setItem(STUDIO_KEY, JSON.stringify(STUDIO_DEFAULT));
       localStorage.setItem(STUDIO_KEY+'.v', STUDIO_VER);
       state.studio = {...STUDIO_DEFAULT};
+    } else if(parsed){
+      state.studio = {...STUDIO_DEFAULT, ...parsed};
     } else {
-      const studioRaw = localStorage.getItem(STUDIO_KEY);
-      if(studioRaw){ state.studio = {...STUDIO_DEFAULT, ...JSON.parse(studioRaw)}; }
+      state.studio = {...STUDIO_DEFAULT};
     }
   }catch(e){ state.studio = {...STUDIO_DEFAULT}; }
   state.studioCollapsed = localStorage.getItem(STUDIO_COLLAPSE_KEY) === '1';
