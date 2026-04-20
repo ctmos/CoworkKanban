@@ -16,6 +16,7 @@
   --dot:#666666;--dot-faded:rgba(102,102,102,0.3);--arc:rgba(17,17,17,0.55);--arc-faded:rgba(17,17,17,0.12);
   --label:#111111;--label-faded:rgba(17,17,17,0.3);--continent:#1a1a1a;
   --tip-bg:#ffffff;--label-chip:rgba(255,255,255,0.88);--studio-bg:rgba(255,255,255,0.94);
+  --globe-surface:#eef0f3;
 }
 body.dark{
   --bg:#111111;--surface:#161616;--ink:#fafafa;--ink-soft:#c8c8c8;--muted:#8a8a8a;--dim:#555555;
@@ -24,6 +25,7 @@ body.dark{
   --dot:#9a9a9a;--dot-faded:rgba(154,154,154,0.3);--arc:rgba(250,250,250,0.55);--arc-faded:rgba(250,250,250,0.12);
   --label:#fafafa;--label-faded:rgba(250,250,250,0.3);--continent:#ededed;
   --tip-bg:#161616;--label-chip:rgba(22,22,22,0.88);--studio-bg:rgba(22,22,22,0.94);
+  --globe-surface:#202428;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{height:100%;width:100%;background:var(--bg);color:var(--ink);font-family:'Geist',system-ui,sans-serif;font-weight:400;overflow:hidden;transition:background .4s ease,color .4s ease;letter-spacing:0.01em}
@@ -1632,14 +1634,14 @@ function addMountainTerrain(globe){
 }
 
 function currentPalette(){
-  const cs = getComputedStyle(document.documentElement);
-  const bg = cs.getPropertyValue('--bg').trim();
-  const base = new THREE.Color(bg);
-  let mid, high, inkCol, ambient;
+  // WICHTIG: base darf NICHT --bg sein, sonst ist der Globus unsichtbar auf identischem Hintergrund.
+  let base, mid, high, inkCol, ambient;
   if(state.theme === 'dark'){
+    base = new THREE.Color('#2a2f36');
     mid = new THREE.Color('#6e5a3e'); high = new THREE.Color('#f0ede6');
     inkCol = new THREE.Color('#000000'); ambient = new THREE.Color('#1a1a1a');
   } else {
+    base = new THREE.Color('#d8dde3');
     mid = new THREE.Color('#c9a876'); high = new THREE.Color('#ffffff');
     inkCol = new THREE.Color('#222222'); ambient = new THREE.Color('#f0f0f0');
   }
@@ -1692,7 +1694,9 @@ function animatePeakIntro(){
 function makeGlobe(){
   const cs = getComputedStyle(document.documentElement);
   const bg = cs.getPropertyValue('--bg').trim() || '#fafafa';
-  const baseMat = new THREE.MeshBasicMaterial({color: new THREE.Color(bg), transparent: true, opacity: 0.0, depthWrite: false});
+  const surface = cs.getPropertyValue('--globe-surface').trim() || '#eef0f3';
+  const baseOpacity = clamp((state.studio.globe || 0) / 100 * 0.6, 0.05, 0.6);
+  const baseMat = new THREE.MeshBasicMaterial({color: new THREE.Color(surface), transparent: true, opacity: baseOpacity, depthWrite: true});
   const ptsRes = clamp(state.settings.advanced.pointResolution || 10, 6, 24);
   const atmoAlt = clamp(state.settings.advanced.atmosphereAltitude || 0.15, 0, 0.5);
 
@@ -1719,11 +1723,6 @@ function makeGlobe(){
     .htmlElementsData(computeVisibleLabels())
     .htmlLat('lat').htmlLng('lng').htmlAltitude(d => (d.alt||0) + 0.006)
     .htmlElement(d => buildLabelChipEl(d))
-    .htmlElementVisibilityModifier((el, isVisible) => {
-      if(!el) return;
-      if(isVisible) el.classList.remove('hidden');
-      else el.classList.add('hidden');
-    })
     .customLayerData(buildContinentLabels())
     .customThreeObject(d => continentSprite(d))
     .customThreeObjectUpdate((obj, d) => {
@@ -1856,7 +1855,14 @@ function applyStudio(persist=true){
     state.wireframe.material.needsUpdate = true;
   }
   const mat = state.globe.globeMaterial();
-  if(mat){ mat.opacity = 0.0; mat.needsUpdate = true; }
+  if(mat){
+    const cs = getComputedStyle(document.documentElement);
+    const surface = cs.getPropertyValue('--globe-surface').trim() || '#eef0f3';
+    mat.color = new THREE.Color(surface);
+    mat.opacity = clamp((state.studio.globe || 0) / 100 * 0.6, 0.05, 0.6);
+    mat.transparent = true;
+    mat.needsUpdate = true;
+  }
   state.globe.showAtmosphere(state.studio.globe >= 45);
   state.globe.atmosphereAltitude(clamp(state.settings.advanced.atmosphereAltitude || (0.08 + (state.studio.globe/100) * 0.12), 0, 0.5));
   if(state.terrainMat){
