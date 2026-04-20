@@ -373,7 +373,6 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
   <button class="btn" id="btn-studio" title="Studio (S)"><span class="btn-txt">studio</span></button>
   <button class="btn" id="btn-rotate" title="Rotation (R)"><span class="glyph">〇</span><span class="btn-txt">drehen</span></button>
   <button class="btn" id="btn-theme" title="Theme (T)"><span class="btn-txt">theme</span></button>
-  <button class="btn" id="btn-kanban" title="Kanban (G)"><span class="btn-txt">kanban</span></button>
   <button class="btn" id="btn-settings" title="Settings (,)"><span class="glyph">⚙</span><span class="btn-txt">settings</span></button>
 </div>
 
@@ -669,17 +668,12 @@ const $login = document.getElementById('login');
 function isLoggedIn(){
   try{
     if(localStorage.getItem(PIN_STORE_KEY)==='1') return true;
-    if(sessionStorage.getItem('cowork_pin_set')==='true') return true;
-    if(sessionStorage.getItem('cowork_pin_val')==='2611') return true;
   }catch(e){}
   return false;
 }
 function acceptPin(val){
-  try{
-    localStorage.setItem(PIN_STORE_KEY,'1');
-    sessionStorage.setItem('cowork_pin_set','true');
-    sessionStorage.setItem('cowork_pin_val', val);
-  }catch(e){}
+  // Globe hat EIGENEN Login, entkoppelt von Main-App
+  try{ localStorage.setItem(PIN_STORE_KEY,'1'); }catch(e){}
 }
 function checkPin(val){
   if(val === '2611'){ acceptPin(val); $login.classList.add('hidden'); start(); }
@@ -2491,7 +2485,6 @@ if($pendingBadge){
 }
 
 document.getElementById('btn-theme').onclick = () => applyTheme(state.theme==='dark'?'light':'dark');
-document.getElementById('btn-kanban').onclick = () => toggleKanbanView();
 document.getElementById('btn-connect').onclick = () => {
   if(state.connect.mode==='idle') enterConnectMode();
   else cancelConnect();
@@ -3101,8 +3094,7 @@ document.addEventListener('keydown', e => {
   }
   else if(k === kb.studio){ document.getElementById('btn-studio').click(); }
   else if(k === kb.theme){ document.getElementById('btn-theme').click(); }
-  else if(k === kb.kanbanGoto){ window.location.href='/'; }
-  else if(k === kb.kanbanToggle){ toggleKanbanView(); }
+  // Kanban-Keys entfernt — Globe ist unabhängig
   else if(k === kb.fit && state.globe){ state.globe.pointOfView({altitude:2.3}, 800); }
   else if(k === kb.settings){ e.preventDefault(); openSettings(); }
   else if(k === kb.jumpNew){
