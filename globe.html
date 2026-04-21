@@ -485,6 +485,7 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
     <div class="slider-row"><div class="slider-label"><span class="name">schriftgröße</span><span class="val" id="v-label">60</span></div><input type="range" min="0" max="100" value="60" id="s-label" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">label-sichtbarkeit</span><span class="val" id="v-labelOpacity">100</span></div><input type="range" min="0" max="100" value="100" id="s-labelOpacity" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">label-abstand</span><span class="val" id="v-labelDist">30</span></div><input type="range" min="0" max="100" value="30" id="s-labelDist" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">label-länge</span><span class="val" id="v-labelChars">30</span></div><input type="range" min="0" max="100" value="30" id="s-labelChars" /></div>
     <div class="label-styles" id="studio-label-styles">
       <button class="lstyle-btn" data-lstyle="chip">chip</button>
       <button class="lstyle-btn" data-lstyle="solid">solid</button>
@@ -705,11 +706,12 @@ const CONTEXTS = ['—','home','office','travel','morning','evening','deep-work'
 // mode: 'net' (v5-minimal-Stil, nur Wireframe-Gitternetz) oder 'mountains' (Terrain-Shader an)
 // labelStyle: 'chip' (Default) | 'solid' | 'outline' | 'badge' | 'plain'
 // labelDist: 0..100 → Abstand der Label zur Kugel-Oberfläche
+// labelChars: 0..100 → max. Zeichen pro Label (mapped auf 4..60)
 // zoneRadius: 0..100 → Größe der Lane-Hintergrund-Zonen auf dem Globus
 // itemSpread: 0..100 → wie weit Items vom Lane-Zentrum wegstreuen (bei niedriger Urgency)
 // zoneFill:   0..100 → Opacity der Lane-Hintergrund-Farbe
 // itemAlt:    0..100 → globale Höhe der Items über der Kugel-Oberfläche
-const STUDIO_DEFAULT = {mode:'net',labelStyle:'chip',labelDist:30,zoneRadius:50,itemSpread:50,zoneFill:25,itemAlt:30,lines:70,globe:0,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50};
+const STUDIO_DEFAULT = {mode:'net',labelStyle:'chip',labelDist:30,labelChars:30,zoneRadius:50,itemSpread:50,zoneFill:25,itemAlt:30,lines:70,globe:0,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50};
 const LABEL_STYLES = ['chip','solid','outline','badge','plain'];
 const STUDIO_PRESETS = {
   paper:     {lines:55,globe:60,point:50,label:65,labelOpacity:100,sat:35,arc:40,rot:10,relief:45,peakr:40,contour:65,globeScale:50},
@@ -989,16 +991,31 @@ function spreadOverlappingPoints(pts){
   return pts;
 }
 const STOPWORDS = new Set(['der','die','das','den','dem','und','oder','mit','für','im','in','an','auf','ab','von','zu','bei','nach','über','vor','bis','wegen','eine','einen','einer','einem','ein','de','zur','zum','ist','sind','war','mich','dich','sich','the','and','with','for']);
-function shortLabel(item){
+// labelChars-Slider (0..100) mapped auf max. 4..60 Zeichen.
+// Unter 6 Zeichen kommt nur das erste Wort gekürzt; darüber werden Wörter bis zum Limit hinzugefügt.
+function labelMaxChars(){
+  const s = state?.studio?.labelChars;
+  const v = (typeof s === 'number') ? s : 30;
+  return Math.round(4 + (clamp(v, 0, 100) / 100) * 56); // 4..60
+}
+function shortLabel(item, overrideMax){
   let t = (item.title||'').trim(); if(!t) return '';
   t = t.replace(/^[\W_]+/,'').replace(/[*_`]/g,'');
   t = t.replace(/^(WICHTIG|TODO|FIXME|FIX|BUG|TEST)\s*:?\s*/i,'');
+  const maxCh = overrideMax || labelMaxChars();
   const words = t.split(/\s+/).filter(w => w && !STOPWORDS.has(w.toLowerCase()));
-  if(!words.length) return t.slice(0, 14);
-  if(words.length === 1) return words[0].slice(0, 16);
-  const pair = words[0] + ' ' + words[1];
-  if(pair.length <= 18) return pair;
-  return words[0].slice(0, 16);
+  if(!words.length) return t.slice(0, maxCh);
+  // Wörter aufsammeln bis maxCh erreicht oder überschritten
+  let out = '';
+  for(const w of words){
+    const next = out ? (out + ' ' + w) : w;
+    if(next.length <= maxCh){ out = next; continue; }
+    // nächstes Wort würde zu lang werden — nehme altes Ergebnis (wenn vorhanden)
+    if(out) break;
+    // erstes Wort ist schon zu lang → hart abschneiden
+    return w.slice(0, Math.max(maxCh, 3));
+  }
+  return out || words[0].slice(0, Math.max(maxCh, 3));
 }
 function laneHslColor(code, s01, lum){
   const L = LANE_MAP[code]; if(!L) return null;
@@ -1079,9 +1096,8 @@ try{
   const lv = localStorage.getItem(LAST_VISIT_KEY);
   state.lastVisit = lv ? parseInt(lv,10) : nowMs - 2*86400000;
   localStorage.setItem(LAST_VISIT_KEY, String(nowMs));
-  // Migration v7: Lane-Polar-Layout hinzugekommen — zoneRadius, itemSpread,
-  // zoneFill, itemAlt Slider. Alte Installs bekommen neue Defaults.
-  const STUDIO_VER = '7';
+  // Migration v8: labelChars-Slider hinzugekommen (max. Zeichen pro Label).
+  const STUDIO_VER = '8';
   try{
     const verStored = localStorage.getItem(STUDIO_KEY+'.v');
     const studioRaw = localStorage.getItem(STUDIO_KEY);
@@ -1414,7 +1430,12 @@ function buildPoints(){
   const dotFaded = cs.getPropertyValue('--dot-faded').trim();
 
   const sat01 = state.studio.sat / 100;
-  const pointMult = 0.2 + (state.studio.point / 100) * 2.8;
+  // pointMult: Basis aus point-slider * inverser globeScale.
+  // globeScale=0 → Items groß (1.6×), globeScale=50 → normal (1.0×), globeScale=100 → Items klein (0.4×)
+  // Dadurch ändert sich das Verhältnis Globus-zu-Item, ohne Kamera-Zoom.
+  const gs01 = (state.studio.globeScale ?? 50) / 100;
+  const globeItemRatio = 1.6 - gs01 * 1.2; // 1.6..0.4
+  const pointMult = (0.2 + (state.studio.point / 100) * 2.8) * globeItemRatio;
 
   // Label density
   const density = state.settings.general.labelDensity || 'all';
@@ -2216,12 +2237,10 @@ function applyStudio(persist=true){
   if(state.studio.rot === 0) controls.autoRotate = false;
   else if(state.rotate) controls.autoRotate = true;
 
-  /* globus-grösse: slider 0→100 maps altitude 0.8→2.1→3.8 */
-  const gs01 = (state.studio.globeScale ?? 50) / 100;
-  const gsAlt = gs01 <= 0.5 ? 0.8 + gs01 * 2 * (2.1 - 0.8) : 2.1 + (gs01 - 0.5) * 2 * (3.8 - 2.1);
-  controls.minDistance = 101 + gs01 * 250;
-  controls.maxDistance = 400 + gs01 * 600;
-  if(persist) state.globe.pointOfView({altitude: gsAlt}, 400);
+  /* globus-grösse: steuert das VERHÄLTNIS Globus-zu-Item-Größe (invers via pointMult in buildPoints).
+     Kamera-Distanz bleibt stabil — User kann manuell per Maus-/Trackpad zoomen. */
+  controls.minDistance = 180;
+  controls.maxDistance = 900;
 
   const pts = buildPoints();
   state.globe.pointsData(pts);
@@ -2240,7 +2259,7 @@ function applyStudio(persist=true){
 }
 
 function syncStudioDom(){
-  const keys = ['lines','globe','point','label','labelOpacity','labelDist','zoneRadius','itemSpread','zoneFill','itemAlt','sat','arc','globeScale','rot','relief','peakr','contour'];
+  const keys = ['lines','globe','point','label','labelOpacity','labelDist','labelChars','zoneRadius','itemSpread','zoneFill','itemAlt','sat','arc','globeScale','rot','relief','peakr','contour'];
   keys.forEach(k => {
     const s = document.getElementById('s-'+k);
     const v = document.getElementById('v-'+k);
@@ -2277,7 +2296,7 @@ function scheduleApplyStudio(){
 }
 
 function wireStudio(){
-  const keys = ['lines','globe','point','label','labelOpacity','labelDist','zoneRadius','itemSpread','zoneFill','itemAlt','sat','arc','globeScale','rot','relief','peakr','contour'];
+  const keys = ['lines','globe','point','label','labelOpacity','labelDist','labelChars','zoneRadius','itemSpread','zoneFill','itemAlt','sat','arc','globeScale','rot','relief','peakr','contour'];
   keys.forEach(k => {
     const s = document.getElementById('s-'+k);
     const v = document.getElementById('v-'+k);
