@@ -166,6 +166,18 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--ink)
 #studio .preset-btn:hover{border-color:var(--ink);color:var(--ink)}
 #studio .preset-btn.active{border-color:var(--accent);color:var(--accent)}
 #studio .mode-dimmed{opacity:0.35;transition:opacity .15s}
+#studio .lane-colors-head{margin:14px 0 6px;padding-top:10px;border-top:1px solid var(--line-soft);font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);font-family:'Geist Mono',monospace;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+#studio .lane-colors-head:hover{color:var(--ink)}
+#studio .lane-colors-head .caret{transition:transform .15s;font-size:10px}
+#studio .lane-colors-head.open .caret{transform:rotate(90deg)}
+#studio .lane-colors{display:none;grid-template-columns:1fr;gap:3px;padding:4px 0}
+#studio .lane-colors.open{display:grid}
+#studio .lane-color-row{display:grid;grid-template-columns:28px 1fr auto auto;gap:6px;align-items:center;font-size:10px}
+#studio .lane-color-row .code{color:var(--muted);font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:0.1em}
+#studio .lane-color-row .name{color:var(--ink-soft);text-transform:lowercase;letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#studio .lane-color-picker{width:28px;height:20px;border:1px solid var(--line);padding:0;cursor:pointer;background:none;border-radius:2px}
+#studio .lane-color-reset{background:transparent;border:1px solid var(--line);color:var(--muted);font-size:10px;cursor:pointer;width:22px;height:20px;padding:0;transition:all .12s;line-height:1}
+#studio .lane-color-reset:hover{border-color:var(--ink);color:var(--ink)}
 #studio .label-styles{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px;margin-bottom:4px}
 #studio .lstyle-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:7px 4px;cursor:pointer;font-size:9px;font-weight:400;letter-spacing:0.1em;text-transform:lowercase;transition:all .12s;text-align:center;min-height:30px}
 #studio .lstyle-btn:hover{border-color:var(--ink);color:var(--ink)}
@@ -430,8 +442,8 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
   <div class="hints">
     <span class="kbd">A</span>neu · <span class="kbd">C</span>verbinden<br>
     <span class="kbd">S</span>studio · <span class="kbd">R</span>drehen<br>
-    <span class="kbd">T</span>theme · <span class="kbd">G</span>kanban<br>
-    <span class="kbd">F</span>fit · <span class="kbd">,</span>settings<br>
+    <span class="kbd">T</span>theme · <span class="kbd">F</span>fit<br>
+    <span class="kbd">N</span>neuestes · <span class="kbd">,</span>settings<br>
     <span class="kbd">1-9</span>lanes · <span class="kbd">Esc</span>abbruch
   </div>
 </aside>
@@ -478,6 +490,8 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
     <div class="slider-row"><div class="slider-label"><span class="name">item-streuung</span><span class="val" id="v-itemSpread">50</span></div><input type="range" min="0" max="100" value="50" id="s-itemSpread" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">zonen-deckung</span><span class="val" id="v-zoneFill">25</span></div><input type="range" min="0" max="100" value="25" id="s-zoneFill" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">item-höhe</span><span class="val" id="v-itemAlt">30</span></div><input type="range" min="0" max="100" value="30" id="s-itemAlt" /></div>
+    <div class="lane-colors-head" id="studio-lane-colors-head"><span>lane-farben</span><span class="caret" id="studio-lane-colors-caret">▸</span></div>
+    <div class="lane-colors" id="studio-lane-colors"></div>
     <div class="section-divider">netz &amp; globus</div>
     <div class="slider-row"><div class="slider-label"><span class="name">line strength</span><span class="val" id="v-lines">60</span></div><input type="range" min="0" max="100" value="60" id="s-lines" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">globe presence</span><span class="val" id="v-globe">70</span></div><input type="range" min="0" max="100" value="70" id="s-globe" /></div>
@@ -711,7 +725,7 @@ const CONTEXTS = ['—','home','office','travel','morning','evening','deep-work'
 // itemSpread: 0..100 → wie weit Items vom Lane-Zentrum wegstreuen (bei niedriger Urgency)
 // zoneFill:   0..100 → Opacity der Lane-Hintergrund-Farbe
 // itemAlt:    0..100 → globale Höhe der Items über der Kugel-Oberfläche
-const STUDIO_DEFAULT = {mode:'net',labelStyle:'chip',labelDist:30,labelChars:30,zoneRadius:50,itemSpread:50,zoneFill:25,itemAlt:30,lines:70,globe:0,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50};
+const STUDIO_DEFAULT = {mode:'net',labelStyle:'chip',labelDist:30,labelChars:30,zoneRadius:50,itemSpread:50,zoneFill:25,itemAlt:30,lines:70,globe:0,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50,laneColors:{}};
 const LABEL_STYLES = ['chip','solid','outline','badge','plain'];
 const STUDIO_PRESETS = {
   paper:     {lines:55,globe:60,point:50,label:65,labelOpacity:100,sat:35,arc:40,rot:10,relief:45,peakr:40,contour:65,globeScale:50},
@@ -725,7 +739,7 @@ const DEFAULT_SETTINGS = {
   general: {themeDefault:'system', startView:'globe', language:'de', rotationSpeed:20, labelDensity:'all'},
   keybinds: {
     add:'a', connect:'c', rotate:'r', labels:'l', studio:'s', theme:'t',
-    kanbanGoto:'k', kanbanToggle:'g', fit:'f', jumpNew:'n', settings:',',
+    fit:'f', jumpNew:'n', settings:',',
     lane1:'1', lane2:'2', lane3:'3', lane4:'4', lane5:'5',
     lane6:'6', lane7:'7', lane8:'8', lane9:'9',
   },
@@ -865,12 +879,30 @@ function itemLatitude(item, urg){
 // Items werden polar um das Zentrum angeordnet: dringend = innen, unwichtig = außen.
 // Radius der Zone skaliert mit √(itemCount) damit große Lanes mehr Platz kriegen.
 
-// Max-Radius in Grad bogenlänge für eine Lane-Zone mit N items (für zoneRadius=50 default)
-function laneZoneRadiusDeg(itemCount, zoneRadius01){
+// Anzahl Lanes, die gerade mindestens ein sichtbares Item haben (für Auto-Scale)
+function activeLaneCount(){
+  const seen = new Set();
+  for(const it of state.items){
+    if(it.deletedAt) continue;
+    if(!state.filters.lanes.has(it.lane)) continue;
+    if(typeof (LANE_MAP[it.lane]||{}).lat !== 'number') continue;
+    seen.add(it.lane);
+    if(seen.size >= LANES.length) break;
+  }
+  return seen.size;
+}
+
+// Max-Radius in Grad bogenlänge für eine Lane-Zone mit N items.
+// Berücksichtigt auch die Anzahl aktiver Lanes: viele Lanes → engere Zonen (damit nichts überlappt).
+function laneZoneRadiusDeg(itemCount, zoneRadius01, laneCount){
   const base = 8;   // mindestens 8 Grad Radius bei 1 item
   const perItem = 2.4;  // Wachstum per Item
   const raw = base + Math.sqrt(Math.max(itemCount, 1) - 1) * perItem * 4;
-  return raw * (0.3 + zoneRadius01 * 1.8); // Slider skaliert 0.3x .. 2.1x
+  const userScale = 0.3 + zoneRadius01 * 1.8; // Slider-Anteil
+  // Density-Scale: 1 Lane → 1.6x, 8 Lanes → 1.0x, 16 Lanes → 0.55x
+  const lc = typeof laneCount === 'number' ? laneCount : activeLaneCount();
+  const densityScale = clamp(1.75 - Math.log2(Math.max(lc,1)+1) * 0.35, 0.5, 1.75);
+  return raw * userScale * densityScale;
 }
 
 // Versetzt einen Punkt um distanceDeg Grad (Großkreis-Distanz) vom Center in Richtung bearingDeg.
@@ -919,11 +951,12 @@ function buildLaneZones(){
     counts[it.lane] = (counts[it.lane]||0) + 1;
   }
   const zoneRadius01 = (state.studio.zoneRadius ?? 50) / 100;
+  const activeCnt = Object.keys(counts).filter(c => counts[c] > 0 && typeof (LANE_MAP[c]||{}).lat === 'number').length;
   for(const lane of LANES){
     const cnt = counts[lane.code] || 0;
     if(cnt === 0) continue;
     if(typeof lane.lat !== 'number') continue;
-    const R = laneZoneRadiusDeg(cnt, zoneRadius01);
+    const R = laneZoneRadiusDeg(cnt, zoneRadius01, activeCnt);
     const ring = [];
     const SEGS = 32;
     for(let k = 0; k <= SEGS; k++){
@@ -940,16 +973,36 @@ function buildLaneZones(){
   return zones;
 }
 
+function hexToRgba(hex, alpha){
+  const h = (hex||'').replace('#','');
+  if(h.length !== 6) return `rgba(120,120,120,${alpha})`;
+  const r = parseInt(h.substring(0,2), 16);
+  const g = parseInt(h.substring(2,4), 16);
+  const b = parseInt(h.substring(4,6), 16);
+  if(isNaN(r)||isNaN(g)||isNaN(b)) return `rgba(120,120,120,${alpha})`;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function hslToHex(h, s, l){
+  s /= 100; l /= 100;
+  const k = n => (n + h/30) % 12;
+  const a = s * Math.min(l, 1-l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n)-3, Math.min(9-k(n), 1)));
+  const toHex = v => Math.round(v*255).toString(16).padStart(2,'0');
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+}
 function laneZoneColor(code){
   const L = LANE_MAP[code];
   if(!L) return 'rgba(120,120,120,0.2)';
-  // User-überschreibung aus state.studio.laneColors (Color-Picker, kommt im nächsten Commit)
-  const override = (state.studio.laneColors || {})[code];
-  if(override) return override;
   const fill01 = (state.studio.zoneFill ?? 25) / 100;
+  const alpha = fill01 * 0.6;
+  // User-Override (Color-Picker)
+  const override = (state.studio.laneColors || {})[code];
+  if(override) return hexToRgba(override, alpha);
   const sat = 60, light = state.theme === 'dark' ? 42 : 62;
-  // alpha aus zoneFill-Slider
-  return `hsla(${L.hue}, ${sat}%, ${light}%, ${fill01 * 0.6})`;
+  return `hsla(${L.hue}, ${sat}%, ${light}%, ${alpha})`;
+}
+function laneDefaultHex(lane){
+  return hslToHex(lane.hue, 60, state.theme === 'dark' ? 42 : 62);
 }
 
 // Force-Separation: wenn zwei Items geometrisch zu nah sind, deterministisch auseinander schieben.
@@ -1096,8 +1149,8 @@ try{
   const lv = localStorage.getItem(LAST_VISIT_KEY);
   state.lastVisit = lv ? parseInt(lv,10) : nowMs - 2*86400000;
   localStorage.setItem(LAST_VISIT_KEY, String(nowMs));
-  // Migration v8: labelChars-Slider hinzugekommen (max. Zeichen pro Label).
-  const STUDIO_VER = '8';
+  // Migration v9: Color-Picker pro Lane (state.studio.laneColors Map).
+  const STUDIO_VER = '9';
   try{
     const verStored = localStorage.getItem(STUDIO_KEY+'.v');
     const studioRaw = localStorage.getItem(STUDIO_KEY);
@@ -2356,7 +2409,62 @@ function wireStudio(){
     try{ localStorage.setItem(STUDIO_COLLAPSE_KEY, state.studioCollapsed ? '1' : '0'); }catch(e){}
   });
   if(state.studioCollapsed) document.getElementById('studio').classList.add('collapsed');
+  // Color-Picker pro Lane
+  renderLaneColorPickers();
+  const head = document.getElementById('studio-lane-colors-head');
+  const body = document.getElementById('studio-lane-colors');
+  if(head && body){
+    // Initial: ausgeklappt falls mindestens 1 Override gesetzt ist, sonst eingeklappt
+    const hasOverrides = state.studio.laneColors && Object.keys(state.studio.laneColors).length > 0;
+    if(hasOverrides){ head.classList.add('open'); body.classList.add('open'); }
+    head.addEventListener('click', () => {
+      head.classList.toggle('open');
+      body.classList.toggle('open');
+    });
+  }
   syncStudioDom();
+}
+
+function renderLaneColorPickers(){
+  const wrap = document.getElementById('studio-lane-colors');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  state.studio.laneColors = state.studio.laneColors || {};
+  for(const lane of LANES){
+    const row = document.createElement('div');
+    row.className = 'lane-color-row';
+    const code = document.createElement('span');
+    code.className = 'code';
+    code.textContent = lane.code;
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = lane.name;
+    const override = state.studio.laneColors[lane.code];
+    const picker = document.createElement('input');
+    picker.type = 'color';
+    picker.className = 'lane-color-picker';
+    picker.value = override || laneDefaultHex(lane);
+    picker.addEventListener('input', () => {
+      state.studio.laneColors[lane.code] = picker.value;
+      scheduleApplyStudio();
+    });
+    const reset = document.createElement('button');
+    reset.className = 'lane-color-reset';
+    reset.textContent = '↺';
+    reset.title = 'Standard-Farbe';
+    reset.addEventListener('click', () => {
+      if(state.studio.laneColors[lane.code]){
+        delete state.studio.laneColors[lane.code];
+        picker.value = laneDefaultHex(lane);
+        scheduleApplyStudio();
+      }
+    });
+    row.appendChild(code);
+    row.appendChild(name);
+    row.appendChild(picker);
+    row.appendChild(reset);
+    wrap.appendChild(row);
+  }
 }
 
 /* === Interactions === */
@@ -3061,8 +3169,7 @@ function renderGeneralPane(){
         <span class="label">Start-Ansicht</span>
         <div class="ctrl">
           <div class="radio-row">
-            <label><input type="radio" name="sg-startview" value="globe"${s.startView==='globe'?' checked':''}>globe</label>
-            <label><input type="radio" name="sg-startview" value="kanban"${s.startView==='kanban'?' checked':''}>kanban</label>
+            <label><input type="radio" name="sg-startview" value="globe" checked>globe</label>
           </div>
         </div>
       </div>
@@ -3106,8 +3213,6 @@ function renderKeybindsPane(){
     ['Labels toggle', 'labels'],
     ['Studio Panel', 'studio'],
     ['Theme umschalten', 'theme'],
-    ['Kanban öffnen (navigate)', 'kanbanGoto'],
-    ['Kanban Toggle (iframe)', 'kanbanToggle'],
     ['Fit-View', 'fit'],
     ['Neuestes Item', 'jumpNew'],
     ['Settings', 'settings'],
