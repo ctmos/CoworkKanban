@@ -1684,13 +1684,43 @@ async function loadFromGitHub() {
 
     if (patientsRemote) {
 
+      // Wait for _encKey if PIN-derive-Race triggered loadFromGitHub before key is set
+      var _keyWait = 0;
+      while (!_encKey && _keyWait < 50) {  // max 5s total
+        await new Promise(function(r){ setTimeout(r, 100); });
+        _keyWait++;
+      }
+
       try {
 
         var pContent = await decryptJSON(patientsRemote.content);
 
-        _appState.patients = JSON.parse(pContent) || [];
+        // Integritäts-Check: Decrypt muss gültiges Array liefern, sonst WriteGuard aktivieren
+        if (pContent === null || pContent === undefined) {
+          console.error('[loadFromGitHub] patients decrypt returned null — blocking writes to prevent data loss');
+          window._patientsLoadFailed = true;
+          showErrorBanner && showErrorBanner('Patienten konnten nicht entschlüsselt werden — Bitte PIN-Reload (Schreibschutz aktiv)');
+        } else {
+          var parsed = JSON.parse(pContent);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            _appState.patients = parsed;
+            window._patientsLoadFailed = false;
+          } else if (Array.isArray(parsed) && parsed.length === 0) {
+            // Leere Liste vom Server — ungewöhnlich aber legitim wenn wirklich keine Patienten existieren
+            // NICHT überschreiben wenn wir vorher schon patients hatten
+            if ((_appState.patients || []).length > 0) {
+              console.error('[loadFromGitHub] empty patients from server but local had data — keeping local + blocking writes');
+              window._patientsLoadFailed = true;
+            } else {
+              _appState.patients = parsed;
+            }
+          } else {
+            console.error('[loadFromGitHub] unexpected patients format:', typeof parsed);
+            window._patientsLoadFailed = true;
+          }
+        }
 
-      } catch(e) { console.error('[loadFromGitHub] patients parse:', e); }
+      } catch(e) { console.error('[loadFromGitHub] patients parse:', e); window._patientsLoadFailed = true; }
 
     }
 
@@ -2020,7 +2050,23 @@ function lsSet(key, val) {
 
     cowork_cards_savedAt:  function(v) { _appState.cards_savedAt = v; },
 
-    cowork_patients:       function(v) { _appState.patients = v; scheduleSavePatientsToGitHub(); },
+    cowork_patients:       function(v) {
+      // WRITE-GUARD: Kein Push wenn Load fehlgeschlagen ist (Decrypt-Fehler, leere Liste)
+      // Verhindert dass leerer lokaler State die GitHub-Version mit 28 Patienten überschreibt
+      if (window._patientsLoadFailed === true && (!v || v.length === 0)) {
+        console.error('[lsSet:patients] BLOCKED — _patientsLoadFailed=true und leerer Write (Datenverlust-Schutz)');
+        showErrorBanner && showErrorBanner('Patienten-Write blockiert: Entschlüsselung lief noch nicht');
+        return;
+      }
+      // Zusätzlich: sha-Shrink-Guard — wenn neue Liste drastisch kleiner als letzte serverseitige
+      if (Array.isArray(v) && (_appState.patients||[]).length > 0 && v.length < Math.max(1, Math.floor((_appState.patients||[]).length * 0.5))) {
+        console.error('[lsSet:patients] BLOCKED — neue Liste ' + v.length + ' < 50% der aktuellen ' + (_appState.patients||[]).length);
+        showErrorBanner && showErrorBanner('Patienten-Schrumpf-Guard: Write blockiert (' + v.length + ' < ' + (_appState.patients||[]).length + ')');
+        return;
+      }
+      _appState.patients = v;
+      scheduleSavePatientsToGitHub();
+    },
 
     cowork_autonomy_log:   function(v) { _appState.autonomy_log = v; scheduleAutonomyLogToGitHub(); },
 
