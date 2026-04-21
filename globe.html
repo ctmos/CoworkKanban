@@ -62,7 +62,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .kbd{font-family:'Geist Mono',monospace;font-size:9px;color:var(--muted);padding:0 4px;border:1px solid var(--line);letter-spacing:0.08em;text-transform:uppercase}
 
 /* LEFT RAIL */
-#rail{position:fixed;top:72px;left:24px;bottom:24px;width:240px;background:transparent;padding:0;z-index:50;overflow-y:auto;overflow-x:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#rail{position:fixed;top:72px;left:24px;bottom:24px;width:300px;background:transparent;padding:0;z-index:50;overflow-y:auto;overflow-x:hidden;transition:transform .3s cubic-bezier(.4,0,.2,1)}
 #rail h3{font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 #rail h3:not(:first-child){margin-top:32px}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:32px;border-top:1px solid var(--line)}
@@ -286,7 +286,7 @@ body.dark #modal-backdrop,body.dark #settings-backdrop,body.dark #stub-backdrop{
 
 /* MOBILE */
 @media (max-width:900px){
-  #rail{width:200px;left:12px;top:64px;bottom:12px}
+  #rail{width:250px;left:12px;top:64px;bottom:12px}
   #detail{width:calc(100vw - 24px);max-width:340px;right:12px;top:64px;padding:24px}
   #search{width:120px;margin-left:16px}
   #legend{font-size:9px;padding:0;gap:0;bottom:12px}
@@ -840,10 +840,52 @@ function laneLongitude(code, item){
   return center + j;
 }
 function itemLatitude(item, urg){
-  const absLat = (1 - urg) * 62 + 5;
+  // Grundlinie nach Urgency (dringendere = näher am Äquator), aber mit stärkerem Jitter
+  // damit bei ähnlicher Urgency Items nicht übereinanderliegen.
+  const absLat = (1 - urg) * 58 + 6;
   const sign = (hash((item.id||'')+'_s')%2===0) ? 1 : -1;
-  const j = ((hash((item.id||'')+'_l')%100)/100 - 0.5) * 22;
+  // Jitter erhöht von ±11 auf ±18 Grad — mehr Streuung bei ähnlichen urg-Werten
+  const j = ((hash((item.id||'')+'_l')%1000)/1000 - 0.5) * 36;
   return sign * absLat + j;
+}
+
+// Force-Separation: wenn zwei Items geometrisch zu nah sind, deterministisch auseinander schieben.
+// Wird auf den gebauten pts[] angewendet, beachtet custom-positionierte Items nicht.
+function spreadOverlappingPoints(pts){
+  const MIN_ANGULAR_SEP = 2.8; // Grad Minimalabstand auf lat/lng Grid
+  const MAX_ITERATIONS = 3;
+  for(let iter = 0; iter < MAX_ITERATIONS; iter++){
+    let moved = 0;
+    for(let i = 0; i < pts.length; i++){
+      for(let j = i+1; j < pts.length; j++){
+        const a = pts[i], b = pts[j];
+        // Custom-positionierte Items bleiben fix (User-Intent respektieren)
+        if(a._hasCustom && b._hasCustom) continue;
+        const dLat = b.lat - a.lat;
+        const dLng = b.lng - a.lng;
+        const dist = Math.sqrt(dLat*dLat + dLng*dLng);
+        if(dist < MIN_ANGULAR_SEP){
+          const nudge = (MIN_ANGULAR_SEP - dist) / 2 + 0.3;
+          // Richtung: von a weg (wenn dist=0 dann deterministisch nach Item-ID)
+          let ux, uy;
+          if(dist < 0.01){
+            const h = hash((a.id||'')+'_'+(b.id||''));
+            const ang = (h % 360) * Math.PI / 180;
+            ux = Math.cos(ang); uy = Math.sin(ang);
+          } else {
+            ux = dLat/dist; uy = dLng/dist;
+          }
+          if(!a._hasCustom){ a.lat -= ux * nudge; a.lng -= uy * nudge; }
+          if(!b._hasCustom){ b.lat += ux * nudge; b.lng += uy * nudge; }
+          moved++;
+        }
+      }
+    }
+    if(moved === 0) break;
+  }
+  // Latitudes auf ±85° clampen damit nichts an den Polen festsitzt
+  for(const p of pts){ p.lat = clamp(p.lat, -85, 85); }
+  return pts;
 }
 const STOPWORDS = new Set(['der','die','das','den','dem','und','oder','mit','für','im','in','an','auf','ab','von','zu','bei','nach','über','vor','bis','wegen','eine','einen','einer','einem','ein','de','zur','zum','ist','sind','war','mich','dich','sich','the','and','with','for']);
 function shortLabel(item){
@@ -1347,6 +1389,7 @@ function buildPoints(){
       _hasCustom: hasCustom,
     });
   }
+  spreadOverlappingPoints(pts);
   state.visible = pts;
   return pts;
 }
@@ -1356,9 +1399,10 @@ function buildRings(){
   const accent = cs.getPropertyValue('--accent').trim() || '#c1121f';
   const selId = state.selectedId;
   if(!selId) return [];
+  // Dezentere Ringe — vorher erzeugte pulsierender Ring visuell einen "Cluster"-Eindruck.
   return state.visible
     .filter(p => p._selected || p._neighbor)
-    .map(p => ({lat:p.lat, lng:p.lng, maxR: p._selected?2.2:1.6, propagationSpeed:1.2, repeatPeriod: p._selected?1800:2400, color:accent}));
+    .map(p => ({lat:p.lat, lng:p.lng, maxR: p._selected?1.2:0.9, propagationSpeed:0.6, repeatPeriod: p._selected?2600:3400, color:accent}));
 }
 
 /* === Chip-style HTML labels === */
