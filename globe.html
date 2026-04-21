@@ -166,6 +166,10 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--ink)
 #studio .preset-btn:hover{border-color:var(--ink);color:var(--ink)}
 #studio .preset-btn.active{border-color:var(--accent);color:var(--accent)}
 #studio .mode-dimmed{opacity:0.35;transition:opacity .15s}
+#studio .label-styles{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px;margin-bottom:4px}
+#studio .lstyle-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:7px 4px;cursor:pointer;font-size:9px;font-weight:400;letter-spacing:0.1em;text-transform:lowercase;transition:all .12s;text-align:center;min-height:30px}
+#studio .lstyle-btn:hover{border-color:var(--ink);color:var(--ink)}
+#studio .lstyle-btn.active{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent)}
 #studio .section-divider{margin:12px 0 10px;padding-top:10px;border-top:1px solid var(--line-soft);font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);font-family:'Geist Mono',monospace}
 #studio .slider-row{margin-bottom:12px}
 #studio .slider-row:last-child{margin-bottom:0}
@@ -325,11 +329,30 @@ body.dark #modal-backdrop,body.dark #settings-backdrop,body.dark #stub-backdrop{
 ::-webkit-scrollbar-thumb{background:var(--line)}
 ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 
-/* ITEM LABELS (chip-style, htmlElementsData) */
-.item-label{background:var(--label-chip);color:var(--label);padding:3px 8px;border-radius:0;font-family:'Geist',sans-serif;font-weight:500;border:1px solid var(--line);pointer-events:none;white-space:nowrap;letter-spacing:0.01em;transform:translate(-50%,-50%);transition:opacity .2s,border-color .15s,color .15s,font-weight .15s}
+/* ITEM LABELS (5 Stile, umschaltbar im Studio-Panel) */
+.item-label{color:var(--label);font-family:'Geist',sans-serif;font-weight:500;pointer-events:none;white-space:nowrap;letter-spacing:0.01em;transform:translate(-50%,-50%);transition:opacity .2s,border-color .15s,color .15s,font-weight .15s,background .15s}
 .item-label.faded{opacity:0.25}
-.item-label.selected{border-color:var(--accent);color:var(--accent);font-weight:600}
+.item-label.selected{color:var(--accent);font-weight:600}
 .item-label.hidden{display:none}
+
+/* chip: heller chip mit border (v5-minimal-Stil, Default) */
+.item-label--chip{background:var(--label-chip);border:1px solid var(--line);padding:3px 8px;border-radius:0}
+.item-label--chip.selected{border-color:var(--accent)}
+
+/* solid: voller Farb-Chip, kein Border, gut lesbar bei jedem Untergrund */
+.item-label--solid{background:var(--ink);color:var(--bg);border:none;padding:4px 9px;border-radius:2px;font-weight:500;letter-spacing:0.02em}
+.item-label--solid.selected{background:var(--accent);color:var(--accent-ink)}
+
+/* outline: nur Text mit Doppel-Outline (schwarz+weiß) — maximale Lesbarkeit ohne Hintergrund */
+.item-label--outline{background:transparent;border:none;padding:0;font-weight:600;letter-spacing:0.02em;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg),-1px 0 0 var(--bg),1px 0 0 var(--bg),0 -1px 0 var(--bg),0 1px 0 var(--bg)}
+.item-label--outline.selected{color:var(--accent);text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 6px var(--bg),-1px 0 0 var(--bg),1px 0 0 var(--bg),0 -1px 0 var(--bg),0 1px 0 var(--bg)}
+
+/* badge: kleiner, akzent-gerahmter Pill, mehr Kontrast */
+.item-label--badge{background:var(--surface);color:var(--ink);border:1px solid var(--ink);padding:2px 7px;border-radius:999px;font-size:0.92em;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,0.08)}
+.item-label--badge.selected{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* plain: nur Text, kein Chip, kein Schatten (puristisch) */
+.item-label--plain{background:transparent;border:none;padding:0;font-weight:500;letter-spacing:0.02em}
 
 /* DRAG / MOVE MODE */
 #globe-wrap canvas{cursor:default}
@@ -455,6 +478,14 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
     <div class="slider-row"><div class="slider-label"><span class="name">point size</span><span class="val" id="v-point">55</span></div><input type="range" min="0" max="100" value="55" id="s-point" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">schriftgröße</span><span class="val" id="v-label">60</span></div><input type="range" min="0" max="100" value="60" id="s-label" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">label-sichtbarkeit</span><span class="val" id="v-labelOpacity">100</span></div><input type="range" min="0" max="100" value="100" id="s-labelOpacity" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">label-abstand</span><span class="val" id="v-labelDist">30</span></div><input type="range" min="0" max="100" value="30" id="s-labelDist" /></div>
+    <div class="label-styles" id="studio-label-styles">
+      <button class="lstyle-btn" data-lstyle="chip">chip</button>
+      <button class="lstyle-btn" data-lstyle="solid">solid</button>
+      <button class="lstyle-btn" data-lstyle="outline">outline</button>
+      <button class="lstyle-btn" data-lstyle="badge">badge</button>
+      <button class="lstyle-btn" data-lstyle="plain">plain</button>
+    </div>
     <div class="slider-row"><div class="slider-label"><span class="name">color saturation</span><span class="val" id="v-sat">55</span></div><input type="range" min="0" max="100" value="55" id="s-sat" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">arc weight</span><span class="val" id="v-arc">55</span></div><input type="range" min="0" max="100" value="55" id="s-arc" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">globus-grösse</span><span class="val" id="v-globeScale">50</span></div><input type="range" min="0" max="100" value="50" id="s-globeScale" /></div>
@@ -663,7 +694,10 @@ const ENERGIES = ['drain','neutral','boost'];
 const CONTEXTS = ['—','home','office','travel','morning','evening','deep-work','shallow'];
 
 // mode: 'net' (v5-minimal-Stil, nur Wireframe-Gitternetz) oder 'mountains' (Terrain-Shader an)
-const STUDIO_DEFAULT = {mode:'net',lines:70,globe:0,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50};
+// labelStyle: 'chip' (Default) | 'solid' | 'outline' | 'badge' | 'plain'
+// labelDist: 0..100 → Abstand der Label zur Kugel-Oberfläche
+const STUDIO_DEFAULT = {mode:'net',labelStyle:'chip',labelDist:30,lines:70,globe:0,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50};
+const LABEL_STYLES = ['chip','solid','outline','badge','plain'];
 const STUDIO_PRESETS = {
   paper:     {lines:55,globe:60,point:50,label:65,labelOpacity:100,sat:35,arc:40,rot:10,relief:45,peakr:40,contour:65,globeScale:50},
   wireframe: {lines:85,globe:20,point:40,label:50,labelOpacity:85,sat:10, arc:60,rot:20,relief:55,peakr:30,contour:85,globeScale:45},
@@ -902,10 +936,10 @@ try{
   const lv = localStorage.getItem(LAST_VISIT_KEY);
   state.lastVisit = lv ? parseInt(lv,10) : nowMs - 2*86400000;
   localStorage.setItem(LAST_VISIT_KEY, String(nowMs));
-  // Migration v5: default auf 'net'-mode (Wireframe-Netz, kein Terrain-Shader) umgestellt.
-  // v4 hatte Mountains als Default → Wunsch war v5-minimal-Look.
+  // Migration v6: Label-Stile + label-Abstand hinzugekommen.
+  // v5 hatte Netz-Mode, v6 erweitert um labelStyle + labelDist Slider.
   // Self-Heal: wenn Werte offensichtlich zu schwach sind, resetten.
-  const STUDIO_VER = '5';
+  const STUDIO_VER = '6';
   try{
     const verStored = localStorage.getItem(STUDIO_KEY+'.v');
     const studioRaw = localStorage.getItem(STUDIO_KEY);
@@ -1390,20 +1424,27 @@ function computeVisibleLabels(){
 }
 // Re-use existing DOM element by id (globe.gl recreates data objects each refresh)
 const _labelEls = new Map();
+// Label-Altitude-Offset: slider 0..100 → 0 .. 0.08 (sehr nah bis deutlich abgesetzt)
+function labelAltOffset(){
+  const v = state.studio.labelDist ?? 30;
+  return (clamp(v, 0, 100) / 100) * 0.08;
+}
+
 function buildLabelChipEl(d){
   const lab01 = state.studio.label / 100;
   const vis01 = (state.studio.labelOpacity == null ? 100 : state.studio.labelOpacity) / 100;
   const fs = Math.round(9 + lab01 * 10); // 9..19px
   const selId = state.selectedId;
+  const style = LABEL_STYLES.includes(state.studio.labelStyle) ? state.studio.labelStyle : 'chip';
   let el = _labelEls.get(d.id);
   if(!el){
     el = document.createElement('div');
-    el.className = 'item-label';
     _labelEls.set(d.id, el);
   }
+  // Base-Klasse + aktive Style-Klasse setzen
+  el.className = 'item-label item-label--' + style;
   if(el.textContent !== (d.label||'')) el.textContent = d.label || '';
   el.style.fontSize = fs + 'px';
-  el.classList.remove('selected','faded');
   if(selId){
     if(d.id === selId) el.classList.add('selected');
     else if(d._neighbor) { /* normal */ }
@@ -1779,7 +1820,8 @@ function makeGlobe(){
     .arcDashAnimateTime(d => d.dashAnim || 0)
     .labelsData([])
     .htmlElementsData(computeVisibleLabels())
-    .htmlLat('lat').htmlLng('lng').htmlAltitude(d => (d.alt||0) + 0.006)
+    .htmlLat('lat').htmlLng('lng')
+    .htmlAltitude(d => (d.alt||0) + labelAltOffset())
     .htmlElement(d => buildLabelChipEl(d))
     .customLayerData(buildContinentLabels())
     .customThreeObject(d => continentSprite(d))
@@ -1953,6 +1995,8 @@ function applyStudio(persist=true){
   const pts = buildPoints();
   state.globe.pointsData(pts);
   updateTerrainPeaks();
+  // htmlAltitude neu binden mit aktuellem labelDist; Re-trigger via leeres data + neu.
+  state.globe.htmlAltitude(d => (d.alt||0) + labelAltOffset());
   state.globe.htmlElementsData(computeVisibleLabels());
   state.globe.arcsData(buildAllArcs(state.selectedId ? {id:state.selectedId} : null));
   state.globe.arcAltitudeAutoScale(0.28 + arcAltitudeBoost());
@@ -1962,7 +2006,7 @@ function applyStudio(persist=true){
 }
 
 function syncStudioDom(){
-  const keys = ['lines','globe','point','label','labelOpacity','sat','arc','globeScale','rot','relief','peakr','contour'];
+  const keys = ['lines','globe','point','label','labelOpacity','labelDist','sat','arc','globeScale','rot','relief','peakr','contour'];
   keys.forEach(k => {
     const s = document.getElementById('s-'+k);
     const v = document.getElementById('v-'+k);
@@ -1973,6 +2017,11 @@ function syncStudioDom(){
   document.querySelectorAll('#studio-mode .mode-btn').forEach(btn => {
     const mk = btn.getAttribute('data-mode');
     btn.classList.toggle('active', state.studio.mode === mk);
+  });
+  // Label-Style-Buttons: active-State nach aktuellem state.studio.labelStyle
+  document.querySelectorAll('#studio-label-styles .lstyle-btn').forEach(btn => {
+    const lk = btn.getAttribute('data-lstyle');
+    btn.classList.toggle('active', (state.studio.labelStyle || 'chip') === lk);
   });
   // Mountain-only Slider im net-Modus visuell zurücknehmen (disabled-Look)
   const isNet = state.studio.mode !== 'mountains';
@@ -1994,7 +2043,7 @@ function scheduleApplyStudio(){
 }
 
 function wireStudio(){
-  const keys = ['lines','globe','point','label','labelOpacity','sat','arc','globeScale','rot','relief','peakr','contour'];
+  const keys = ['lines','globe','point','label','labelOpacity','labelDist','sat','arc','globeScale','rot','relief','peakr','contour'];
   keys.forEach(k => {
     const s = document.getElementById('s-'+k);
     const v = document.getElementById('v-'+k);
@@ -2016,6 +2065,18 @@ function wireStudio(){
       state.studio = { ...preset, mode: state.studio.mode };
       syncStudioDom(); applyStudio(true);
       toast('preset · ' + pk);
+    });
+  });
+  // Label-Style-Buttons (5 Stile)
+  document.querySelectorAll('#studio-label-styles .lstyle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lk = btn.getAttribute('data-lstyle');
+      if(!LABEL_STYLES.includes(lk)) return;
+      state.studio.labelStyle = lk;
+      // Bestehende DOM-Elements clearen, damit neue Klassen greifen
+      if(typeof _labelEls !== 'undefined' && _labelEls?.clear) _labelEls.clear();
+      syncStudioDom(); applyStudio(true);
+      toast('label · ' + lk);
     });
   });
   // Mode-Toggle (netz / mountains)
