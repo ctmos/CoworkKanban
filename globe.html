@@ -1696,6 +1696,16 @@ void main(){
 }
 `;
 
+// Minimal-Fragment für Wireframe-Overlay: nur Linien-Farbe, Alpha aus Uniform.
+const WIRE_FRAGMENT_SHADER = `
+precision highp float;
+uniform vec3  uWireColor;
+uniform float uWireOpacity;
+void main(){
+  gl_FragColor = vec4(uWireColor, uWireOpacity);
+}
+`;
+
 function addMountainTerrain(globe){
   const geo = new THREE.SphereGeometry(TERRAIN_RADIUS, SPHERE_SEGMENTS_W, SPHERE_SEGMENTS_H);
   const palette = currentPalette();
@@ -1726,6 +1736,36 @@ function addMountainTerrain(globe){
   mesh.renderOrder = 0;
   globe.scene().add(mesh);
   state.terrainMesh = mesh; state.terrainMat = mat;
+
+  // === Displaced Wireframe-Overlay ===
+  // Gleiche Geometry + gleicher Vertex-Shader → Linien wandern mit den Bergen mit.
+  // Eigene peaksArr + Uniforms damit wir sie unabhängig setzen können (oder spiegeln in updateTerrainPeaks).
+  const wireGeo = new THREE.SphereGeometry(TERRAIN_RADIUS + 0.02, SPHERE_SEGMENTS_W, SPHERE_SEGMENTS_H);
+  const wirePeaksArr = [];
+  for(let i=0;i<MAX_PEAKS;i++) wirePeaksArr.push(new THREE.Vector4(0,1,0,0));
+  const cs = getComputedStyle(document.documentElement);
+  const wireColCss = cs.getPropertyValue('--wire-strong').trim() || cs.getPropertyValue('--wire').trim() || 'rgba(0,0,0,0.5)';
+  const wireMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uIntensity: { value: state.studio.relief / 100 * 0.85 },
+      uPeakRadius: { value: 0.02 + (state.studio.peakr / 100) * 0.26 },
+      uBaseRadius: { value: TERRAIN_RADIUS + 0.02 },
+      uNumPeaks: { value: 0 },
+      uPeaks: { value: wirePeaksArr },
+      uPeakWeight: { value: state.peakIntroWeight },
+      uWireColor: { value: new THREE.Color(wireColCss) },
+      uWireOpacity: { value: (state.studio.lines / 100) * 0.9 },
+    },
+    vertexShader: VERTEX_SHADER,
+    fragmentShader: WIRE_FRAGMENT_SHADER,
+    transparent: true, depthWrite: false, wireframe: true, side: THREE.FrontSide,
+  });
+  const wireMesh = new THREE.Mesh(wireGeo, wireMat);
+  wireMesh.renderOrder = 1; // nach terrainMesh zeichnen
+  wireMesh.visible = (state.studio.mode === 'mountains');
+  globe.scene().add(wireMesh);
+  state.terrainWireMesh = wireMesh; state.terrainWireMat = wireMat;
+
   updateTerrainPeaks();
 }
 
@@ -1747,6 +1787,7 @@ function currentPalette(){
 function updateTerrainPeaks(){
   if(!state.terrainMat) return;
   const peaksArr = state.terrainMat.uniforms.uPeaks.value;
+  const wirePeaksArr = state.terrainWireMat?.uniforms?.uPeaks?.value;
   const peaks = state.visible.slice(0, MAX_PEAKS);
   const sig = peaks.map(p => p.id + ':' + p.urgency.toFixed(3)).join('|');
   if(sig !== state.lastPeaksSig) state.lastPeaksSig = sig;
@@ -1755,13 +1796,22 @@ function updateTerrainPeaks(){
       const p = peaks[i];
       const v = latLngToVec3(p.lat, p.lng);
       peaksArr[i].set(v.x, v.y, v.z, p.urgency);
-    } else peaksArr[i].set(0, 1, 0, 0);
+      if(wirePeaksArr) wirePeaksArr[i].set(v.x, v.y, v.z, p.urgency);
+    } else {
+      peaksArr[i].set(0, 1, 0, 0);
+      if(wirePeaksArr) wirePeaksArr[i].set(0, 1, 0, 0);
+    }
   }
   state.terrainMat.uniforms.uNumPeaks.value = peaks.length;
   state.terrainMat.uniforms.uPeaks.needsUpdate = true;
+  if(state.terrainWireMat){
+    state.terrainWireMat.uniforms.uNumPeaks.value = peaks.length;
+    state.terrainWireMat.uniforms.uPeaks.needsUpdate = true;
+  }
   if(peaks.length === 0){
     state.peakIntroWeight = 0; state.peakIntroTarget = 0;
     state.terrainMat.uniforms.uPeakWeight.value = 0;
+    if(state.terrainWireMat) state.terrainWireMat.uniforms.uPeakWeight.value = 0;
   } else state.peakIntroTarget = 1.0;
 }
 
@@ -1781,6 +1831,7 @@ function animatePeakIntro(){
     }
     state.peakIntroWeight += diff * 0.08;
     state.terrainMat.uniforms.uPeakWeight.value = state.peakIntroWeight;
+    if(state.terrainWireMat) state.terrainWireMat.uniforms.uPeakWeight.value = state.peakIntroWeight;
     peakIntroAnimHandle = requestAnimationFrame(tick);
   };
   peakIntroAnimHandle = requestAnimationFrame(tick);
@@ -1836,7 +1887,10 @@ function makeGlobe(){
 
   addMountainTerrain(g);
   if(state.terrainMesh) state.terrainMesh.visible = (state.studio.mode === 'mountains');
+  if(state.terrainWireMesh) state.terrainWireMesh.visible = (state.studio.mode === 'mountains');
   addWireframeSphere(g);
+  // Statische Wireframe-Sphere nur im net-mode sichtbar, im mountains-mode übernimmt terrainWireMesh
+  if(state.wireframe) state.wireframe.visible = (state.studio.mode !== 'mountains');
   g.scene().children.forEach(c=>{
     if(c.isDirectionalLight) c.intensity = 0.4;
     if(c.isAmbientLight) c.intensity = 1.0;
@@ -1927,6 +1981,11 @@ function applyTheme(theme){
     state.wireframe.material.opacity = (state.studio.lines / 100) * 0.9;
     state.wireframe.material.needsUpdate = true;
   }
+  if(state.terrainWireMat){
+    const cs2 = getComputedStyle(document.documentElement);
+    state.terrainWireMat.uniforms.uWireColor.value = new THREE.Color(cs2.getPropertyValue('--wire-strong').trim() || cs2.getPropertyValue('--wire').trim() || '#333');
+    state.terrainWireMat.needsUpdate = true;
+  }
   if(state.terrainMat){
     const palette = currentPalette();
     state.terrainMat.uniforms.uBaseColor.value = palette.base;
@@ -1953,14 +2012,24 @@ function applyStudio(persist=true){
   const isNet = state.studio.mode !== 'mountains';
 
   if(state.wireframe){
-    // Im net-mode stärker (Base des v5-minimal), im mountains-mode unverändert
-    const factor = isNet ? 1.0 : 0.9;
-    state.wireframe.material.opacity = clamp((state.studio.lines / 100) * factor, 0, 1);
-    state.wireframe.visible = state.studio.lines > 0;
+    // Im net-mode: statische Wireframe-Sphere voll sichtbar (v5-Stil)
+    // Im mountains-mode: statische Wireframe aus (displaced terrainWire übernimmt)
+    state.wireframe.material.opacity = clamp((state.studio.lines / 100) * 1.0, 0, 1);
+    state.wireframe.visible = isNet && state.studio.lines > 0;
     state.wireframe.material.needsUpdate = true;
   }
   if(state.terrainMesh){
     state.terrainMesh.visible = !isNet;
+  }
+  if(state.terrainWireMat){
+    // Displaced Wireframe (Polygon-Linien die mit den Bergen mitwandern):
+    // Opacity aus lines-slider, nur im mountains-mode sichtbar.
+    state.terrainWireMat.uniforms.uWireOpacity.value = clamp((state.studio.lines / 100) * 0.9, 0, 1);
+    state.terrainWireMat.uniforms.uIntensity.value = (state.studio.relief / 100) * 0.85;
+    state.terrainWireMat.uniforms.uPeakRadius.value = 0.02 + (state.studio.peakr / 100) * 0.26;
+  }
+  if(state.terrainWireMesh){
+    state.terrainWireMesh.visible = !isNet && state.studio.lines > 0;
   }
   const mat = state.globe.globeMaterial();
   if(mat){
