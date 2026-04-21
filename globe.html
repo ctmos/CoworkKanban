@@ -559,6 +559,47 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
    Base: v7-mountains shader + all v8 feature extensions
    ============================================================ */
 
+/* === SW Auto-Update ===
+   Globe ist eigenständig, kein Datenverlust-Risiko.
+   Wenn ein neuer SW wartet (altes Cache), force-activate + reload EINMAL.
+   Verhindert dass User mit "normalem Browser" (ohne Incognito) auf alter Version hängen bleibt. */
+(async () => {
+  try {
+    if(!('serviceWorker' in navigator)) return;
+    if(sessionStorage.getItem('globe.swReloaded') === '1') return; // Loop-Schutz
+
+    const reg = await navigator.serviceWorker.getRegistration();
+    if(!reg) return;
+
+    const promoteWaiting = () => {
+      if(reg.waiting){
+        sessionStorage.setItem('globe.swReloaded', '1');
+        reg.waiting.postMessage({type: 'GLOBE_SKIP_WAITING'});
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if(sessionStorage.getItem('globe.swReloaded') === '1'){
+        sessionStorage.removeItem('globe.swReloaded');
+        location.reload();
+      }
+    });
+
+    // Check ob bereits ein Update wartet, triggere update-check, und höre auf neue waiting SWs
+    await reg.update();
+    promoteWaiting();
+    reg.addEventListener('updatefound', () => {
+      const sw = reg.installing;
+      if(!sw) return;
+      sw.addEventListener('statechange', () => {
+        if(sw.state === 'installed' && navigator.serviceWorker.controller){
+          promoteWaiting();
+        }
+      });
+    });
+  } catch(e) { /* silent, SW-Update ist best-effort */ }
+})();
+
 const STORE_FILE = 'data/globe-items.json';
 const HISTORY_DIR = 'data/globe-history';
 const GH_OWNER = 'ctmos';

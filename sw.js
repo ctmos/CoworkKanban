@@ -1,5 +1,5 @@
 // LifeOS Service Worker
-const CACHE_NAME = 'lifeos-v7.20';
+const CACHE_NAME = 'lifeos-v7.21';
 const isCustomDomain = self.location.hostname === 'lifeos.moser.ai' || self.location.hostname === 'app.moser.ai';
 const BASE = isCustomDomain ? '/' : '/CoworkKanban/';
 const APP_SHELL = [
@@ -89,10 +89,15 @@ async function syncPendingWrites() {
   });
 }
 
-// Listen for messages from main thread
-// SKIP_WAITING ENTFERNT — SW-Updates dürfen NIEMALS laufende Tabs killen
+// Listen for messages from main thread.
+// SKIP_WAITING ist NUR für globe.html erlaubt (eigenständige Seite ohne mutable Forms).
+// Haupt-App (index.html / kanban) darf das NICHT triggern - Regel: keine Force-Reloads dort.
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'CACHE_VERSION') {
     event.source.postMessage({ type: 'CACHE_VERSION_RESPONSE', version: CACHE_NAME });
+  }
+  if (event.data && event.data.type === 'GLOBE_SKIP_WAITING') {
+    // Nur aktivieren wenn der Client die Globe-Seite ist
+    self.skipWaiting();
   }
 });
