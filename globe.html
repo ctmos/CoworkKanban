@@ -150,7 +150,9 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--ink)
 #detail .actions .btn.danger:hover{color:var(--accent);border-bottom-color:var(--accent)}
 
 /* STUDIO PANEL */
-#studio{position:fixed;right:24px;bottom:24px;width:320px;background:var(--studio-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);box-shadow:var(--shadow-panel);z-index:60;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .3s}
+#studio{position:fixed;right:24px;bottom:24px;width:320px;background:var(--studio-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);box-shadow:var(--shadow-panel);z-index:40;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .3s}
+/* Wenn Detail-Panel offen: Studio rausgleiten damit Detail + Save-Button klickbar bleiben */
+body.has-detail-open #studio{transform:translateX(120%);opacity:0;pointer-events:none}
 #studio.collapsed{transform:translateY(calc(100% - 44px))}
 #studio .studio-head{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;cursor:pointer;border-bottom:1px solid var(--line);user-select:none;height:44px}
 #studio .studio-head .title{font-size:10px;font-weight:500;letter-spacing:0.3em;text-transform:uppercase}
@@ -319,6 +321,8 @@ body.dark #modal-backdrop,body.dark #settings-backdrop,body.dark #stub-backdrop{
   #studio{position:fixed;left:0;right:0;bottom:0;width:100%;border:none;border-top:1px solid var(--line)}
   #studio.collapsed{transform:translateY(calc(100% - 44px))}
   #studio:not(.collapsed){transform:translateY(0)}
+  /* Mobile: wenn Detail offen, Studio nach unten raus (statt nach rechts) */
+  body.has-detail-open #studio{transform:translateY(120%)!important;opacity:0;pointer-events:none}
   #settings-backdrop .settings-modal{flex-direction:column;width:100vw;height:100vh;max-width:100vw;max-height:100vh}
   .settings-rail{width:100%;flex-direction:row;overflow-x:auto;padding:8px 0;border-right:none;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:10}
   .settings-rail .s-head{display:none}
@@ -2842,11 +2846,13 @@ function openDetail(p){
     links.appendChild(el);
   });
   $detail.classList.add('open');
+  document.body.classList.add('has-detail-open');
   state.selectedId = it.id;
 }
 
 document.getElementById('detail-close').onclick = () => {
   $detail.classList.remove('open');
+  document.body.classList.remove('has-detail-open');
   state.selectedId = null;
   refreshAll();
 };
@@ -2921,6 +2927,7 @@ document.getElementById('d-delete').onclick = () => {
   state.connections = state.connections.filter(c => c.from!==id && c.to!==id);
   scheduleSave();
   $detail.classList.remove('open');
+  document.body.classList.remove('has-detail-open');
   state.selectedId = null;
   refreshAll();
   toast('gelöscht');
@@ -2929,6 +2936,7 @@ document.getElementById('d-delete').onclick = () => {
 document.getElementById('d-connect-from').onclick = () => {
   const id = state.selectedId; if(!id) return;
   $detail.classList.remove('open');
+  document.body.classList.remove('has-detail-open');
   enterConnectMode(id);
 };
 
