@@ -473,6 +473,12 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
       <button class="preset-btn" data-preset="blueprint">blue</button>
       <button class="preset-btn" data-preset="vivid">vivid</button>
     </div>
+    <div class="section-divider">kontinente</div>
+    <div class="slider-row"><div class="slider-label"><span class="name">zonen-radius</span><span class="val" id="v-zoneRadius">50</span></div><input type="range" min="0" max="100" value="50" id="s-zoneRadius" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">item-streuung</span><span class="val" id="v-itemSpread">50</span></div><input type="range" min="0" max="100" value="50" id="s-itemSpread" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">zonen-deckung</span><span class="val" id="v-zoneFill">25</span></div><input type="range" min="0" max="100" value="25" id="s-zoneFill" /></div>
+    <div class="slider-row"><div class="slider-label"><span class="name">item-höhe</span><span class="val" id="v-itemAlt">30</span></div><input type="range" min="0" max="100" value="30" id="s-itemAlt" /></div>
+    <div class="section-divider">netz &amp; globus</div>
     <div class="slider-row"><div class="slider-label"><span class="name">line strength</span><span class="val" id="v-lines">60</span></div><input type="range" min="0" max="100" value="60" id="s-lines" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">globe presence</span><span class="val" id="v-globe">70</span></div><input type="range" min="0" max="100" value="70" id="s-globe" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">point size</span><span class="val" id="v-point">55</span></div><input type="range" min="0" max="100" value="55" id="s-point" /></div>
@@ -668,23 +674,26 @@ const MAX_PEAKS = 200;
 const SPHERE_SEGMENTS_W = 128;
 const SPHERE_SEGMENTS_H = 96;
 
+// LANES: jede Lane hat ein Zentrum auf der Kugel (lat, lng).
+// Items werden polar um dieses Zentrum angeordnet: dringend=innen, unwichtig=außen.
+// Geografische Verteilung so gewählt dass Kontinente gut trennbar sind (keine Überlappung).
 const LANES = [
-  {code:'JZ', name:'Jetzt', hue:0},
-  {code:'HE', name:'Heute', hue:16},
-  {code:'BA', name:'Barmelweid', hue:210},
-  {code:'PA', name:'Patienten', hue:340},
-  {code:'MA', name:'MOSER.AI', hue:260},
-  {code:'IK', name:'ImperialKI', hue:195},
-  {code:'PR', name:'Projekte', hue:32},
-  {code:'WB', name:'PSP WB', hue:140},
-  {code:'FR', name:'Freunde', hue:52},
-  {code:'FA', name:'Familie', hue:12},
-  {code:'EV', name:'Events', hue:280},
-  {code:'FI', name:'Finanzen', hue:90},
-  {code:'TB', name:'Tagebuch', hue:230},
-  {code:'EK', name:'Einkaufsliste', hue:170},
-  {code:'EM', name:'Erinnerungen', hue:300},
-  {code:'EX', name:'Explore', hue:110},
+  {code:'JZ', name:'Jetzt',         hue:  0, lat: 52, lng:-105},
+  {code:'HE', name:'Heute',         hue: 16, lat: 45, lng: -20},
+  {code:'BA', name:'Barmelweid',    hue:210, lat: 25, lng:  40},
+  {code:'PA', name:'Patienten',     hue:340, lat: 15, lng: 110},
+  {code:'MA', name:'MOSER.AI',      hue:260, lat: 50, lng:-160},
+  {code:'IK', name:'ImperialKI',    hue:195, lat: 18, lng: 170},
+  {code:'PR', name:'Projekte',      hue: 32, lat: -5, lng: -75},
+  {code:'WB', name:'PSP WB',        hue:140, lat:-20, lng:  15},
+  {code:'FR', name:'Freunde',       hue: 52, lat:-40, lng: -50},
+  {code:'FA', name:'Familie',       hue: 12, lat:-35, lng:  65},
+  {code:'EV', name:'Events',        hue:280, lat:-55, lng: 135},
+  {code:'FI', name:'Finanzen',      hue: 90, lat: 60, lng:  90},
+  {code:'TB', name:'Tagebuch',      hue:230, lat: 10, lng: -30},
+  {code:'EK', name:'Einkaufsliste', hue:170, lat:-15, lng: 160},
+  {code:'EM', name:'Erinnerungen',  hue:300, lat: 30, lng:-145},
+  {code:'EX', name:'Explore',       hue:110, lat:-60, lng: -95},
 ];
 const LANE_MAP = Object.fromEntries(LANES.map((l,i)=>[l.code,{...l,idx:i}]));
 const STATUSES = ['offen','in-arbeit','geplant','blockiert','erledigt','verworfen'];
@@ -696,7 +705,11 @@ const CONTEXTS = ['—','home','office','travel','morning','evening','deep-work'
 // mode: 'net' (v5-minimal-Stil, nur Wireframe-Gitternetz) oder 'mountains' (Terrain-Shader an)
 // labelStyle: 'chip' (Default) | 'solid' | 'outline' | 'badge' | 'plain'
 // labelDist: 0..100 → Abstand der Label zur Kugel-Oberfläche
-const STUDIO_DEFAULT = {mode:'net',labelStyle:'chip',labelDist:30,lines:70,globe:0,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50};
+// zoneRadius: 0..100 → Größe der Lane-Hintergrund-Zonen auf dem Globus
+// itemSpread: 0..100 → wie weit Items vom Lane-Zentrum wegstreuen (bei niedriger Urgency)
+// zoneFill:   0..100 → Opacity der Lane-Hintergrund-Farbe
+// itemAlt:    0..100 → globale Höhe der Items über der Kugel-Oberfläche
+const STUDIO_DEFAULT = {mode:'net',labelStyle:'chip',labelDist:30,zoneRadius:50,itemSpread:50,zoneFill:25,itemAlt:30,lines:70,globe:0,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50};
 const LABEL_STYLES = ['chip','solid','outline','badge','plain'];
 const STUDIO_PRESETS = {
   paper:     {lines:55,globe:60,point:50,label:65,labelOpacity:100,sat:35,arc:40,rot:10,relief:45,peakr:40,contour:65,globeScale:50},
@@ -822,16 +835,15 @@ function isOverdue(item){
   const dl = new Date(item.deadline).getTime();
   return !isNaN(dl) && dl < nowMs - 86400000;
 }
+// Alte wedge-basierte Positions-Helper (nur noch als Fallback, nicht mehr primär).
 function laneLongitude(code, item){
   const L = LANE_MAP[code] || {idx:LANES.length};
   const total = LANES.length;
   const center = -180 + ((L.idx + 0.5) / total) * 360;
   const wedgeHalf = (360 / total) / 2 * 0.88;
-  // Deterministic index-within-lane spread (if provided), fallback to hash jitter
   let j;
   if(typeof item._laneIdx === 'number' && typeof item._laneCount === 'number' && item._laneCount > 0){
     const t = item._laneCount > 1 ? item._laneIdx / (item._laneCount - 1) : 0.5;
-    // small hash micro-jitter so same index in repeated rebuilds stays deterministic but not perfectly linear
     const micro = ((hash((item.id||'')+'_mj')%1000)/1000 - 0.5) * 0.06;
     j = (t - 0.5) * 2 * wedgeHalf * 0.95 + micro * wedgeHalf;
   } else {
@@ -840,13 +852,102 @@ function laneLongitude(code, item){
   return center + j;
 }
 function itemLatitude(item, urg){
-  // Grundlinie nach Urgency (dringendere = näher am Äquator), aber mit stärkerem Jitter
-  // damit bei ähnlicher Urgency Items nicht übereinanderliegen.
   const absLat = (1 - urg) * 58 + 6;
   const sign = (hash((item.id||'')+'_s')%2===0) ? 1 : -1;
-  // Jitter erhöht von ±11 auf ±18 Grad — mehr Streuung bei ähnlichen urg-Werten
   const j = ((hash((item.id||'')+'_l')%1000)/1000 - 0.5) * 36;
   return sign * absLat + j;
+}
+
+// === POLAR-LAYOUT (Lane als Kontinent-Zone) ===
+// Jede Lane hat ein (lat, lng) Zentrum auf dem Globus.
+// Items werden polar um das Zentrum angeordnet: dringend = innen, unwichtig = außen.
+// Radius der Zone skaliert mit √(itemCount) damit große Lanes mehr Platz kriegen.
+
+// Max-Radius in Grad bogenlänge für eine Lane-Zone mit N items (für zoneRadius=50 default)
+function laneZoneRadiusDeg(itemCount, zoneRadius01){
+  const base = 8;   // mindestens 8 Grad Radius bei 1 item
+  const perItem = 2.4;  // Wachstum per Item
+  const raw = base + Math.sqrt(Math.max(itemCount, 1) - 1) * perItem * 4;
+  return raw * (0.3 + zoneRadius01 * 1.8); // Slider skaliert 0.3x .. 2.1x
+}
+
+// Versetzt einen Punkt um distanceDeg Grad (Großkreis-Distanz) vom Center in Richtung bearingDeg.
+// Rückgabe: {lat, lng} in Grad.
+function offsetLatLng(centerLat, centerLng, distanceDeg, bearingDeg){
+  const toRad = d => d * Math.PI/180;
+  const toDeg = r => r * 180/Math.PI;
+  const φ1 = toRad(centerLat), λ1 = toRad(centerLng);
+  const θ  = toRad(bearingDeg);
+  const δ  = toRad(distanceDeg);
+  const φ2 = Math.asin(Math.sin(φ1)*Math.cos(δ) + Math.cos(φ1)*Math.sin(δ)*Math.cos(θ));
+  const λ2 = λ1 + Math.atan2(Math.sin(θ)*Math.sin(δ)*Math.cos(φ1), Math.cos(δ) - Math.sin(φ1)*Math.sin(φ2));
+  let lng = toDeg(λ2);
+  while(lng > 180) lng -= 360;
+  while(lng < -180) lng += 360;
+  return {lat: toDeg(φ2), lng};
+}
+
+function itemPolarPosition(item, urg, laneCount){
+  const L = LANE_MAP[item.lane];
+  if(!L || typeof L.lat !== 'number'){
+    // Fallback für Lanes ohne Zentrum
+    return {lat: itemLatitude(item, urg), lng: laneLongitude(item.lane, item)};
+  }
+  const zoneRadius01 = (state.studio.zoneRadius ?? 50) / 100;
+  const spread01     = (state.studio.itemSpread ?? 50) / 100;
+  const maxDist = laneZoneRadiusDeg(laneCount, zoneRadius01);
+  // distance from lane center: urgency=1 → fast im Zentrum, urgency=0 → außen
+  // Plus kleines Jitter damit gleichdringende nicht exakt am selben Radius sitzen
+  const urgDist = (1 - urg) * maxDist * (0.85 + spread01 * 0.3);
+  const jitter  = ((hash((item.id||'')+'_rj')%1000)/1000 - 0.5) * (maxDist * 0.15);
+  const distanceDeg = clamp(urgDist + jitter, 0, maxDist);
+  // Bearing: deterministisch per item-ID, gleichmäßig verteilt plus micro-jitter
+  const ringSlot = (typeof item._laneIdx === 'number' && laneCount > 1) ? item._laneIdx / laneCount : ((hash((item.id||'')+'_b')%1000)/1000);
+  const bearingDeg = (ringSlot * 360 + ((hash((item.id||'')+'_bj')%360))) % 360;
+  return offsetLatLng(L.lat, L.lng, distanceDeg, bearingDeg);
+}
+
+// Lane-Zone als Polygon (24-Punkt-Kreis auf der Kugel), für polygonsData.
+function buildLaneZones(){
+  const zones = [];
+  const counts = {};
+  for(const it of state.items){
+    if(it.deletedAt) continue;
+    if(!state.filters.lanes.has(it.lane)) continue;
+    counts[it.lane] = (counts[it.lane]||0) + 1;
+  }
+  const zoneRadius01 = (state.studio.zoneRadius ?? 50) / 100;
+  for(const lane of LANES){
+    const cnt = counts[lane.code] || 0;
+    if(cnt === 0) continue;
+    if(typeof lane.lat !== 'number') continue;
+    const R = laneZoneRadiusDeg(cnt, zoneRadius01);
+    const ring = [];
+    const SEGS = 32;
+    for(let k = 0; k <= SEGS; k++){
+      const b = (k / SEGS) * 360;
+      const p = offsetLatLng(lane.lat, lane.lng, R, b);
+      ring.push([p.lng, p.lat]);
+    }
+    zones.push({
+      code: lane.code, name: lane.name, count: cnt,
+      geometry: { type:'Polygon', coordinates: [ring] },
+      hue: lane.hue,
+    });
+  }
+  return zones;
+}
+
+function laneZoneColor(code){
+  const L = LANE_MAP[code];
+  if(!L) return 'rgba(120,120,120,0.2)';
+  // User-überschreibung aus state.studio.laneColors (Color-Picker, kommt im nächsten Commit)
+  const override = (state.studio.laneColors || {})[code];
+  if(override) return override;
+  const fill01 = (state.studio.zoneFill ?? 25) / 100;
+  const sat = 60, light = state.theme === 'dark' ? 42 : 62;
+  // alpha aus zoneFill-Slider
+  return `hsla(${L.hue}, ${sat}%, ${light}%, ${fill01 * 0.6})`;
 }
 
 // Force-Separation: wenn zwei Items geometrisch zu nah sind, deterministisch auseinander schieben.
@@ -978,10 +1079,9 @@ try{
   const lv = localStorage.getItem(LAST_VISIT_KEY);
   state.lastVisit = lv ? parseInt(lv,10) : nowMs - 2*86400000;
   localStorage.setItem(LAST_VISIT_KEY, String(nowMs));
-  // Migration v6: Label-Stile + label-Abstand hinzugekommen.
-  // v5 hatte Netz-Mode, v6 erweitert um labelStyle + labelDist Slider.
-  // Self-Heal: wenn Werte offensichtlich zu schwach sind, resetten.
-  const STUDIO_VER = '6';
+  // Migration v7: Lane-Polar-Layout hinzugekommen — zoneRadius, itemSpread,
+  // zoneFill, itemAlt Slider. Alte Installs bekommen neue Defaults.
+  const STUDIO_VER = '7';
   try{
     const verStored = localStorage.getItem(STUDIO_KEY+'.v');
     const studioRaw = localStorage.getItem(STUDIO_KEY);
@@ -1368,18 +1468,30 @@ function buildPoints(){
 
     let lat, lng;
     const hasCustom = typeof it.customLat === 'number' && typeof it.customLng === 'number';
+    const laneCnt = (byLane[it.lane] || []).length;
     if(hasCustom){
       lat = it.customLat; lng = it.customLng;
-    } else if(it.isStub && it.stubType === 'values'){ lat = 68; lng = laneLongitude('EX', it); }
-    else if(it.isStub && it.stubType === 'goals'){ lat = -68; lng = laneLongitude('EX', it); }
-    else { lat = itemLatitude(it, urg); lng = laneLongitude(it.lane, it); }
+    } else if(it.isStub && it.stubType === 'values'){
+      const L = LANE_MAP['EX']; lat = (L?.lat ?? 0) + 25; lng = L?.lng ?? 0;
+    } else if(it.isStub && it.stubType === 'goals'){
+      const L = LANE_MAP['EX']; lat = (L?.lat ?? 0) - 25; lng = L?.lng ?? 0;
+    } else {
+      // Polar-Layout: Lane-Zentrum als Kontinent, Items radial positioniert
+      const p = itemPolarPosition(it, urg, laneCnt);
+      lat = p.lat; lng = p.lng;
+    }
 
     const showLabel = density === 'off' ? false : (density === 'all' ? true : (scored ? scored.has(it.id) : true));
 
+    // Item-Altitude: globaler Offset aus Studio-Slider itemAlt (0..100 → 0..0.1),
+    // plus urgency-basierte Peak-Altitude für Mountain-Shader.
+    const itemAlt01 = (state.studio.itemAlt ?? 30) / 100;
+    const globalAlt = itemAlt01 * 0.1;
+    const peakAlt = itemPeakAltitude(urg);
     pts.push({
       ...it,
       lat, lng,
-      alt: itemPeakAltitude(urg),
+      alt: peakAlt + globalAlt,
       size: 0.4 * pointMult,
       color,
       urgency: urg, isNew, overdue,
@@ -1501,11 +1613,12 @@ function buildLabelChipEl(d){
 function buildContinentLabels(){
   const cs = getComputedStyle(document.documentElement);
   const color = cs.getPropertyValue('--continent').trim() || '#111111';
-  const total = LANES.length;
   const counts = {};
   for(const it of state.items){ if(!it.deletedAt) counts[it.lane] = (counts[it.lane]||0)+1 }
   return LANES.filter(l => counts[l.code] > 0 || state.filters.lanes.has(l.code)).map((l) => ({
-    lat: 0, lng: -180 + ((l.idx + 0.5)/total)*360,
+    // Continent-Label am Lane-Zentrum (passt zur Zone). Fallback auf Wedge falls keine lat/lng.
+    lat: typeof l.lat === 'number' ? l.lat : 0,
+    lng: typeof l.lng === 'number' ? l.lng : (-180 + ((l.idx + 0.5)/LANES.length)*360),
     text: l.name, code: l.code, color, count: counts[l.code]||0,
   }));
 }
@@ -1918,6 +2031,11 @@ function makeGlobe(){
     .htmlLat('lat').htmlLng('lng')
     .htmlAltitude(d => (d.alt||0) + labelAltOffset())
     .htmlElement(d => buildLabelChipEl(d))
+    .polygonsData(buildLaneZones())
+    .polygonCapColor(d => laneZoneColor(d.code))
+    .polygonSideColor(() => 'rgba(0,0,0,0)')
+    .polygonStrokeColor(() => 'rgba(0,0,0,0)')
+    .polygonAltitude(0.001)
     .customLayerData(buildContinentLabels())
     .customThreeObject(d => continentSprite(d))
     .customThreeObjectUpdate((obj, d) => {
@@ -2108,6 +2226,9 @@ function applyStudio(persist=true){
   const pts = buildPoints();
   state.globe.pointsData(pts);
   updateTerrainPeaks();
+  // Lane-Zonen (polygonsData) neu laden - Radius/Color folgen Slider-Werten
+  state.globe.polygonsData(buildLaneZones());
+  state.globe.polygonCapColor(d => laneZoneColor(d.code));
   // htmlAltitude neu binden mit aktuellem labelDist; Re-trigger via leeres data + neu.
   state.globe.htmlAltitude(d => (d.alt||0) + labelAltOffset());
   state.globe.htmlElementsData(computeVisibleLabels());
@@ -2119,7 +2240,7 @@ function applyStudio(persist=true){
 }
 
 function syncStudioDom(){
-  const keys = ['lines','globe','point','label','labelOpacity','labelDist','sat','arc','globeScale','rot','relief','peakr','contour'];
+  const keys = ['lines','globe','point','label','labelOpacity','labelDist','zoneRadius','itemSpread','zoneFill','itemAlt','sat','arc','globeScale','rot','relief','peakr','contour'];
   keys.forEach(k => {
     const s = document.getElementById('s-'+k);
     const v = document.getElementById('v-'+k);
@@ -2156,7 +2277,7 @@ function scheduleApplyStudio(){
 }
 
 function wireStudio(){
-  const keys = ['lines','globe','point','label','labelOpacity','labelDist','sat','arc','globeScale','rot','relief','peakr','contour'];
+  const keys = ['lines','globe','point','label','labelOpacity','labelDist','zoneRadius','itemSpread','zoneFill','itemAlt','sat','arc','globeScale','rot','relief','peakr','contour'];
   keys.forEach(k => {
     const s = document.getElementById('s-'+k);
     const v = document.getElementById('v-'+k);
