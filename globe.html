@@ -157,10 +157,15 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--ink)
 #studio .studio-head .caret{font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace;transition:transform .3s}
 #studio.collapsed .studio-head .caret{transform:rotate(180deg)}
 #studio .studio-body{padding:16px 18px 18px;max-height:70vh;overflow-y:auto}
+#studio .mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px}
+#studio .mode-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:8px 6px;cursor:pointer;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;transition:all .12s;text-align:center;min-height:32px;font-family:'Geist Mono',monospace}
+#studio .mode-btn:hover{border-color:var(--ink);color:var(--ink)}
+#studio .mode-btn.active{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent)}
 #studio .presets{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
 #studio .preset-btn{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:7px 4px;cursor:pointer;font-size:9px;font-weight:400;letter-spacing:0.1em;text-transform:lowercase;transition:all .12s;text-align:center;min-height:32px}
 #studio .preset-btn:hover{border-color:var(--ink);color:var(--ink)}
 #studio .preset-btn.active{border-color:var(--accent);color:var(--accent)}
+#studio .mode-dimmed{opacity:0.35;transition:opacity .15s}
 #studio .section-divider{margin:12px 0 10px;padding-top:10px;border-top:1px solid var(--line-soft);font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);font-family:'Geist Mono',monospace}
 #studio .slider-row{margin-bottom:12px}
 #studio .slider-row:last-child{margin-bottom:0}
@@ -434,6 +439,10 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
     <span class="caret">▾</span>
   </div>
   <div class="studio-body">
+    <div class="mode-switch" id="studio-mode">
+      <button class="mode-btn" data-mode="net">netz</button>
+      <button class="mode-btn" data-mode="mountains">mountains</button>
+    </div>
     <div class="presets" id="studio-presets">
       <button class="preset-btn" data-preset="paper">paper</button>
       <button class="preset-btn" data-preset="wireframe">wire</button>
@@ -450,10 +459,10 @@ body.move-mode::after{content:'move-mode · pfeiltasten · esc zum beenden';posi
     <div class="slider-row"><div class="slider-label"><span class="name">arc weight</span><span class="val" id="v-arc">55</span></div><input type="range" min="0" max="100" value="55" id="s-arc" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">globus-grösse</span><span class="val" id="v-globeScale">50</span></div><input type="range" min="0" max="100" value="50" id="s-globeScale" /></div>
     <div class="slider-row"><div class="slider-label"><span class="name">rotation speed</span><span class="val" id="v-rot">18</span></div><input type="range" min="0" max="100" value="18" id="s-rot" /></div>
-    <div class="section-divider">terrain</div>
-    <div class="slider-row"><div class="slider-label"><span class="name">relief intensity</span><span class="val" id="v-relief">50</span></div><input type="range" min="0" max="100" value="50" id="s-relief" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">peak radius</span><span class="val" id="v-peakr">38</span></div><input type="range" min="0" max="100" value="38" id="s-peakr" /></div>
-    <div class="slider-row"><div class="slider-label"><span class="name">contour density</span><span class="val" id="v-contour">55</span></div><input type="range" min="0" max="100" value="55" id="s-contour" /></div>
+    <div class="section-divider terrain-only">terrain (mountains-mode)</div>
+    <div class="slider-row terrain-only"><div class="slider-label"><span class="name">relief intensity</span><span class="val" id="v-relief">50</span></div><input type="range" min="0" max="100" value="50" id="s-relief" /></div>
+    <div class="slider-row terrain-only"><div class="slider-label"><span class="name">peak radius</span><span class="val" id="v-peakr">38</span></div><input type="range" min="0" max="100" value="38" id="s-peakr" /></div>
+    <div class="slider-row terrain-only"><div class="slider-label"><span class="name">contour density</span><span class="val" id="v-contour">55</span></div><input type="range" min="0" max="100" value="55" id="s-contour" /></div>
     <div class="studio-foot"><span class="note">live · persisted</span><button class="reset-btn" id="studio-reset">reset</button></div>
   </div>
 </aside>
@@ -653,7 +662,8 @@ const MOODS = ['dread','neutral','excited'];
 const ENERGIES = ['drain','neutral','boost'];
 const CONTEXTS = ['—','home','office','travel','morning','evening','deep-work','shallow'];
 
-const STUDIO_DEFAULT = {lines:60,globe:70,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50};
+// mode: 'net' (v5-minimal-Stil, nur Wireframe-Gitternetz) oder 'mountains' (Terrain-Shader an)
+const STUDIO_DEFAULT = {mode:'net',lines:70,globe:0,point:55,label:60,labelOpacity:100,sat:55,arc:55,rot:18,relief:50,peakr:38,contour:55,globeScale:50};
 const STUDIO_PRESETS = {
   paper:     {lines:55,globe:60,point:50,label:65,labelOpacity:100,sat:35,arc:40,rot:10,relief:45,peakr:40,contour:65,globeScale:50},
   wireframe: {lines:85,globe:20,point:40,label:50,labelOpacity:85,sat:10, arc:60,rot:20,relief:55,peakr:30,contour:85,globeScale:45},
@@ -892,15 +902,20 @@ try{
   const lv = localStorage.getItem(LAST_VISIT_KEY);
   state.lastVisit = lv ? parseInt(lv,10) : nowMs - 2*86400000;
   localStorage.setItem(LAST_VISIT_KEY, String(nowMs));
-  // Migration v4: erzwingt starke Defaults (alte Installs hatten lines:25/globe:30 — unsichtbar).
-  // Zusätzlich Self-Heal: wenn Werte offensichtlich zu schwach sind (invisible-range), resetten.
-  const STUDIO_VER = '4';
+  // Migration v5: default auf 'net'-mode (Wireframe-Netz, kein Terrain-Shader) umgestellt.
+  // v4 hatte Mountains als Default → Wunsch war v5-minimal-Look.
+  // Self-Heal: wenn Werte offensichtlich zu schwach sind, resetten.
+  const STUDIO_VER = '5';
   try{
     const verStored = localStorage.getItem(STUDIO_KEY+'.v');
     const studioRaw = localStorage.getItem(STUDIO_KEY);
     let parsed = null;
     try{ parsed = studioRaw ? JSON.parse(studioRaw) : null; }catch(e){ parsed = null; }
-    const tooWeak = parsed && (Number(parsed.lines||0) < 40 || Number(parsed.globe||0) < 50);
+    // Self-Heal: nur reset wenn Darstellung kaputt wäre.
+    // - lines < 30 = Wireframe fast unsichtbar im net-mode
+    // - mountains-mode + globe < 40 = Kugel zu transparent
+    const mode = parsed?.mode || 'net';
+    const tooWeak = parsed && (Number(parsed.lines||0) < 30 || (mode === 'mountains' && Number(parsed.globe||0) < 40));
     if(verStored !== STUDIO_VER || tooWeak){
       localStorage.setItem(STUDIO_KEY, JSON.stringify(STUDIO_DEFAULT));
       localStorage.setItem(STUDIO_KEY+'.v', STUDIO_VER);
@@ -1735,8 +1750,11 @@ function makeGlobe(){
   const cs = getComputedStyle(document.documentElement);
   const bg = cs.getPropertyValue('--bg').trim() || '#fafafa';
   const surface = cs.getPropertyValue('--globe-surface').trim() || '#eef0f3';
-  const baseOpacity = clamp((state.studio.globe || 0) / 100 * 0.6, 0.05, 0.6);
-  const baseMat = new THREE.MeshBasicMaterial({color: new THREE.Color(surface), transparent: true, opacity: baseOpacity, depthWrite: true});
+  // Im net-mode ist die Basis-Kugel komplett transparent → nur Wireframe sichtbar (v5-Stil).
+  // Im mountains-mode bestimmt 'globe presence' die Opacity der Basis-Kugel.
+  const isNet = state.studio.mode !== 'mountains';
+  const baseOpacity = isNet ? 0.0 : clamp((state.studio.globe || 0) / 100 * 0.6, 0.05, 0.6);
+  const baseMat = new THREE.MeshBasicMaterial({color: new THREE.Color(surface), transparent: true, opacity: baseOpacity, depthWrite: !isNet});
   const ptsRes = clamp(state.settings.advanced.pointResolution || 10, 6, 24);
   const atmoAlt = clamp(state.settings.advanced.atmosphereAltitude || 0.15, 0, 0.5);
 
@@ -1775,6 +1793,7 @@ function makeGlobe(){
     });
 
   addMountainTerrain(g);
+  if(state.terrainMesh) state.terrainMesh.visible = (state.studio.mode === 'mountains');
   addWireframeSphere(g);
   g.scene().children.forEach(c=>{
     if(c.isDirectionalLight) c.intensity = 0.4;
@@ -1889,23 +1908,31 @@ function applyTheme(theme){
 /* === Studio === */
 function applyStudio(persist=true){
   if(!state.globe) return;
+  const isNet = state.studio.mode !== 'mountains';
+
   if(state.wireframe){
-    state.wireframe.material.opacity = (state.studio.lines / 100) * 0.9;
+    // Im net-mode stärker (Base des v5-minimal), im mountains-mode unverändert
+    const factor = isNet ? 1.0 : 0.9;
+    state.wireframe.material.opacity = clamp((state.studio.lines / 100) * factor, 0, 1);
     state.wireframe.visible = state.studio.lines > 0;
     state.wireframe.material.needsUpdate = true;
+  }
+  if(state.terrainMesh){
+    state.terrainMesh.visible = !isNet;
   }
   const mat = state.globe.globeMaterial();
   if(mat){
     const cs = getComputedStyle(document.documentElement);
     const surface = cs.getPropertyValue('--globe-surface').trim() || '#eef0f3';
     mat.color = new THREE.Color(surface);
-    mat.opacity = clamp((state.studio.globe || 0) / 100 * 0.6, 0.05, 0.6);
+    mat.opacity = isNet ? 0.0 : clamp((state.studio.globe || 0) / 100 * 0.6, 0.05, 0.6);
     mat.transparent = true;
+    mat.depthWrite = !isNet;
     mat.needsUpdate = true;
   }
-  state.globe.showAtmosphere(state.studio.globe >= 45);
+  state.globe.showAtmosphere(!isNet && state.studio.globe >= 45);
   state.globe.atmosphereAltitude(clamp(state.settings.advanced.atmosphereAltitude || (0.08 + (state.studio.globe/100) * 0.12), 0, 0.5));
-  if(state.terrainMat){
+  if(state.terrainMat && !isNet){
     state.terrainMat.uniforms.uIntensity.value = (state.studio.relief / 100) * 0.85;
     state.terrainMat.uniforms.uPeakRadius.value = 0.02 + (state.studio.peakr / 100) * 0.26;
     state.terrainMat.uniforms.uContourDensity.value = state.studio.contour / 100;
@@ -1942,6 +1969,16 @@ function syncStudioDom(){
     if(s) s.value = state.studio[k];
     if(v) v.textContent = state.studio[k];
   });
+  // Mode-Buttons: active-State nach aktuellem state.studio.mode
+  document.querySelectorAll('#studio-mode .mode-btn').forEach(btn => {
+    const mk = btn.getAttribute('data-mode');
+    btn.classList.toggle('active', state.studio.mode === mk);
+  });
+  // Mountain-only Slider im net-Modus visuell zurücknehmen (disabled-Look)
+  const isNet = state.studio.mode !== 'mountains';
+  document.querySelectorAll('#studio .terrain-only').forEach(row => {
+    row.classList.toggle('mode-dimmed', isNet);
+  });
   document.querySelectorAll('#studio-presets .preset-btn').forEach(btn => {
     const pk = btn.getAttribute('data-preset');
     const preset = STUDIO_PRESETS[pk];
@@ -1975,9 +2012,24 @@ function wireStudio(){
       const pk = btn.getAttribute('data-preset');
       const preset = STUDIO_PRESETS[pk];
       if(!preset) return;
-      state.studio = { ...preset };
+      // Mode beim Preset-Wechsel nicht überschreiben — User bleibt im gewählten Modus
+      state.studio = { ...preset, mode: state.studio.mode };
       syncStudioDom(); applyStudio(true);
       toast('preset · ' + pk);
+    });
+  });
+  // Mode-Toggle (netz / mountains)
+  document.querySelectorAll('#studio-mode .mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mk = btn.getAttribute('data-mode');
+      if(!mk || state.studio.mode === mk) return;
+      state.studio.mode = mk;
+      // Kluger Default-Swap: Im Netz-mode globe-presence auf 0 (unsichtbare Basis-Kugel),
+      // im Mountains-mode auf sinnvolles 60.
+      if(mk === 'net'){ state.studio.globe = 0; state.studio.lines = Math.max(state.studio.lines, 55); }
+      else { if(state.studio.globe < 40) state.studio.globe = 60; }
+      syncStudioDom(); applyStudio(true);
+      toast('mode · ' + mk);
     });
   });
   document.getElementById('studio-reset').addEventListener('click', () => {
