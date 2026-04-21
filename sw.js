@@ -1,5 +1,5 @@
 // LifeOS Service Worker
-const CACHE_NAME = 'lifeos-v7.28';
+const CACHE_NAME = 'lifeos-v7.29';
 const isCustomDomain = self.location.hostname === 'lifeos.moser.ai' || self.location.hostname === 'app.moser.ai';
 const BASE = isCustomDomain ? '/' : '/CoworkKanban/';
 const APP_SHELL = [
@@ -13,16 +13,20 @@ const APP_SHELL = [
   BASE + 'icon-512.png'
 ];
 
-// Install: pre-cache app shell — KEIN skipWaiting() um Force-Reload zu verhindern
-// Neuer SW wird erst aktiv wenn ALLE Tabs geschlossen werden (sicher für Daten)
+// Install: pre-cache app shell
+// EINMALIGE AUSNAHME v7.29: skipWaiting() aktiv, weil v7.28 patients-Race-Condition-Fix
+// sonst bei Christian nicht ankommt (alte SW blockiert Update bis alle Tabs zu sind).
+// Safety: Write-Guards in data-layer.js blocken jeden Patients-Write wenn Load fehlgeschlagen,
+// keine pending mutations beim User, Daten mehrfach auf GitHub gesichert.
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(APP_SHELL))
   );
 });
 
-// Activate: clean up old caches
+// Activate: clean up old caches + force-claim alle Clients
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(names =>
@@ -30,6 +34,12 @@ self.addEventListener('activate', event => {
         names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n))
       )
     ).then(() => self.clients.claim())
+    .then(() => {
+      // v7.29 Notfall: Alle offenen Tabs reload damit patients-Fix aktiv wird
+      return self.clients.matchAll({type:'window'}).then(clients => {
+        clients.forEach(client => client.postMessage({ type: 'RELOAD_FOR_PATIENTS_FIX', version: CACHE_NAME }));
+      });
+    })
   );
 });
 

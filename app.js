@@ -4572,6 +4572,14 @@ if ('serviceWorker' in navigator) {
 
   }).catch(function(err) { console.warn('[SW] Registration failed:', err); });
 
+  // v7.29 Emergency-Reload: SW sendet RELOAD_FOR_PATIENTS_FIX nach Aktivierung
+  navigator.serviceWorker.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'RELOAD_FOR_PATIENTS_FIX') {
+      console.log('[SW] Notfall-Reload für patients-Fix', e.data.version);
+      window.location.reload();
+    }
+  });
+
 }
 
 
