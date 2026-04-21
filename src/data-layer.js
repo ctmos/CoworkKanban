@@ -578,13 +578,38 @@ async function fetchFromGitHub(path, options) {
 
     if (ghSHA.hasOwnProperty(path)) ghSHA[path] = d.sha;
 
-    // Fallback für Dateien >1MB: GitHub gibt encoding:"none" und kein content
-    if (!d.content && d.download_url) {
-      var rawResp = await fetch(d.download_url);
-      if (rawResp.ok) {
-        var rawText = await rawResp.text();
-        return { content: rawText, sha: d.sha };
+    // Fallback für Dateien >1MB: GitHub Contents-API gibt encoding:"none" ohne content.
+    // download_url hat token-signed URL die oft CORS-preflight triggert (Failed to fetch).
+    // Stattdessen git/blobs API nutzen — gleicher Auth-Header wie contents, liefert base64.
+    if (!d.content && d.sha) {
+      try {
+        var blobResp = await fetch(GH_API_BASE + '/repos/' + GH_DATA_REPO + '/git/blobs/' + d.sha, {
+          headers: headers
+        });
+        if (blobResp.ok) {
+          var blobJson = await blobResp.json();
+          if (blobJson.content && blobJson.encoding === 'base64') {
+            return { content: decodeBase64Utf8(blobJson.content.replace(/\n/g, '')), sha: d.sha };
+          }
+        } else {
+          console.warn('[fetchFromGitHub] blob fallback HTTP ' + blobResp.status + ' for ' + path);
+        }
+      } catch(blobErr) {
+        console.warn('[fetchFromGitHub] blob fallback threw for ' + path, blobErr);
       }
+      // Second fallback: download_url (falls blob endpoint aus Auth-Gründen blockiert)
+      if (d.download_url) {
+        try {
+          var rawResp = await fetch(d.download_url);
+          if (rawResp.ok) {
+            var rawText = await rawResp.text();
+            return { content: rawText, sha: d.sha };
+          }
+        } catch(rawErr) {
+          console.warn('[fetchFromGitHub] download_url fallback threw for ' + path, rawErr);
+        }
+      }
+      return null;
     }
 
     return { content: decodeBase64Utf8(d.content), sha: d.sha };
