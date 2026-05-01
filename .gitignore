@@ -1,0 +1,17 @@
+# Secrets — niemals committen
+.env
+.env.*
+*.token
+*credentials*
+*secret*
+*.pem
+service-tokens/
+
+# Build / Cache
+__pycache__/
+venv/
+*.bak.*
+*.pyc
+.DS_Store
+Thumbs.db
+node_modules/
