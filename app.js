@@ -4017,7 +4017,7 @@ function renderImperialKI(container) {
 
 // ─── IKI TAB (Imperial College Kurs-Tree) ───────────────────────────────────
 // Progressive-Disclosure-Tree mit 4 Ebenen: Header / Modul / Subtopic / Deep-Section.
-// Daten kommen von raw.githubusercontent.com/ctmos/cowork-data/main/data/iki_tree.json.
+// Daten kommen aus cowork-data (private repo) via api.github.com mit Token.
 
 var _ikiData = null;
 var _ikiMode = 'standard';   // 'kompakt' | 'standard' | 'tief'
@@ -4028,11 +4028,20 @@ async function showIKITab() {
   if (!tree) return;
   if (!_ikiData) {
     tree.innerHTML = '<div class="empty-state">Wird geladen…</div>';
+    var token = getGHToken();
+    if (!token) {
+      tree.innerHTML = '<div class="empty-state">Bitte GitHub-Token in Einstellungen eintragen.</div>';
+      return;
+    }
     try {
-      var url = 'https://raw.githubusercontent.com/ctmos/cowork-data/main/data/iki_tree.json?ts=' + Date.now();
-      var r = await fetch(url, { cache: 'no-store' });
+      var url = 'https://api.github.com/repos/ctmos/cowork-data/contents/data/iki_tree.json?ts=' + Date.now();
+      var r = await fetch(url, {
+        headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' },
+        cache: 'no-store'
+      });
       if (!r.ok) throw new Error('HTTP ' + r.status);
-      _ikiData = await r.json();
+      var d = await r.json();
+      _ikiData = JSON.parse(decodeBase64Utf8(d.content));
     } catch (e) {
       tree.innerHTML = '<div class="empty-state">IKI-Tree nicht erreichbar: ' + esc(e.message) + '</div>';
       return;
