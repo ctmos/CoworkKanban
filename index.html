@@ -204,6 +204,7 @@
       <button class="tab-btn" data-tab="v2p">V2P</button>
       <button class="tab-btn" data-tab="life">Life</button>
       <button class="tab-btn" data-tab="imperialki">ImperialKI</button>
+      <button class="tab-btn" data-tab="iki">IKI</button>
       <button class="tab-btn" data-tab="system">System<span class="nav-alert" id="nav-system-alert" hidden aria-label="Problem">&#9889;</span></button>
     </div>
     <button class="theme-toggle" id="theme-toggle" title="Theme wechseln">&#9790;</button>
@@ -486,6 +487,24 @@
 
     <div id="ik-container"><div class="empty-state">Wird geladen&#x2026;</div></div>
 
+  </div>
+
+  <!-- IKI TAB (Imperial College Kurs-Tree) -->
+  <div id="tab-iki" class="tab-content">
+    <div class="iki-shell">
+      <div class="iki-main">
+        <div class="iki-toolbar">
+          <input type="search" id="iki-search" class="iki-search" placeholder="Im Tree suchen&#x2026;" autocomplete="off">
+          <div class="iki-mode-group" role="group" aria-label="Anzeige-Modus">
+            <button class="iki-mode-btn" data-iki-mode="kompakt">Kompakt</button>
+            <button class="iki-mode-btn iki-mode-active" data-iki-mode="standard">Standard</button>
+            <button class="iki-mode-btn" data-iki-mode="tief">Tief</button>
+          </div>
+        </div>
+        <div id="iki-tree"><div class="empty-state">Wird geladen&#x2026;</div></div>
+      </div>
+      <aside class="iki-toc" id="iki-toc" aria-label="Inhaltsverzeichnis"></aside>
+    </div>
   </div>
 
   <!-- LIFE TAB (Kategorie fuer Persoenliches) -->

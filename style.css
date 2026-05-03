@@ -3976,3 +3976,299 @@ details.ik-km-item[open] > summary.ik-km-item-header::after { transform: rotate(
 }
 
 /* ─── Ende Transkript Lazy-Load ───────────────────────────────────────────── */
+
+
+/* ─── IKI Tab (Imperial College Kurs-Tree) ────────────────────────────────────
+ * Progressive-Disclosure-Tree mit 4 Ebenen: Header / Modul / Subtopic / Deep.
+ * Native <details>/<summary>, sticky TOC rechts, Such-Filter, View-Mode-Toggles.
+ */
+
+#tab-iki { padding: 0; }
+
+.iki-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 24px;
+  align-items: start;
+  padding: 18px 22px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.iki-main { min-width: 0; }
+
+.iki-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+}
+
+.iki-search {
+  flex: 1;
+  min-width: 180px;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.iki-search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.iki-mode-group {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.iki-mode-btn {
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.iki-mode-btn:last-child { border-right: none; }
+.iki-mode-btn:hover { color: var(--text); background: var(--surface2); }
+
+.iki-mode-btn.iki-mode-active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Header (Level 1) */
+.iki-header {
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.iki-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.iki-summary {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 8px 0;
+}
+
+.iki-summary-l1 { font-size: 14px; }
+.iki-summary-l2 { font-size: 13px; margin-bottom: 12px; }
+.iki-summary-l3 { font-size: 12.5px; margin-bottom: 10px; }
+
+/* Tree Nodes */
+.iki-node {
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color var(--transition), opacity var(--transition);
+}
+
+.iki-node[open] {
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+
+.iki-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  font-weight: 500;
+  color: var(--text);
+  transition: background var(--transition);
+}
+
+.iki-summary-row::-webkit-details-marker { display: none; }
+.iki-summary-row:hover { background: var(--bg); }
+.iki-summary-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.iki-caret {
+  display: inline-block;
+  width: 14px;
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+}
+
+.iki-node[open] > .iki-summary-row > .iki-caret {
+  transform: rotate(90deg);
+}
+
+.iki-node-title { flex: 1; }
+
+.iki-body {
+  padding: 4px 14px 14px 28px;
+  animation: ikiFadeIn 0.18s ease;
+}
+
+@keyframes ikiFadeIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Level-spezifische Skalierung */
+.iki-node-l2 > .iki-summary-row {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.iki-node-l3 {
+  margin-left: 14px;
+  border-color: var(--border);
+  background: var(--surface3);
+}
+.iki-node-l3 > .iki-summary-row {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.iki-node-l4 {
+  margin-left: 28px;
+  border-color: var(--border);
+  background: var(--surface2);
+}
+.iki-node-l4 > .iki-summary-row {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.iki-node-l4 > .iki-body {
+  padding-left: 22px;
+}
+
+.iki-para {
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.iki-para:last-child { margin-bottom: 0; }
+
+/* Such-Filter States */
+.iki-node.iki-dim {
+  opacity: 0.35;
+}
+
+.iki-node.iki-hit > .iki-summary-row {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.iki-node.iki-hit > .iki-summary-row > .iki-node-title {
+  font-weight: 600;
+}
+
+/* Sticky Table-of-Contents */
+.iki-toc {
+  position: sticky;
+  top: 18px;
+  align-self: start;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.iki-toc-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.iki-toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.iki-toc-list li { margin-bottom: 4px; }
+
+.iki-toc-list a {
+  display: block;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), color var(--transition);
+}
+
+.iki-toc-list a:hover {
+  color: var(--text);
+  background: var(--bg);
+}
+
+.iki-toc-list a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Mobile: TOC unter Tree */
+@media (max-width: 900px) {
+  .iki-shell {
+    grid-template-columns: 1fr;
+    padding: 14px 14px 28px;
+  }
+  .iki-toc {
+    position: static;
+    max-height: none;
+    margin-top: 18px;
+  }
+  .iki-toolbar { position: static; }
+  .iki-node-l3 { margin-left: 8px; }
+  .iki-node-l4 { margin-left: 16px; }
+  .iki-body { padding-left: 18px; }
+}
+
+/* ─── Ende IKI Tab ─────────────────────────────────────────────────────────── */

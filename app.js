@@ -428,6 +428,7 @@ function switchTab(id) {
   if (id === 'v2p')        showV2PTab();
   if (id === 'life')       renderMoneyTab();
   if (id === 'imperialki') showImperialKITab();
+  if (id === 'iki')        showIKITab();
   if (id === 'v2')        renderV2Tab();
   if (id === 'system')     {
     showSystemTab();
@@ -4012,6 +4013,170 @@ function renderImperialKI(container) {
   html += renderIKAssignmentStudio(ik);
   html += renderIKOfficeHoursPrep(ik);
   container.innerHTML = html;
+}
+
+// ─── IKI TAB (Imperial College Kurs-Tree) ───────────────────────────────────
+// Progressive-Disclosure-Tree mit 4 Ebenen: Header / Modul / Subtopic / Deep-Section.
+// Daten kommen von raw.githubusercontent.com/ctmos/cowork-data/main/data/iki_tree.json.
+
+var _ikiData = null;
+var _ikiMode = 'standard';   // 'kompakt' | 'standard' | 'tief'
+var _ikiInited = false;
+
+async function showIKITab() {
+  var tree = document.getElementById('iki-tree');
+  if (!tree) return;
+  if (!_ikiData) {
+    tree.innerHTML = '<div class="empty-state">Wird geladen…</div>';
+    try {
+      var url = 'https://raw.githubusercontent.com/ctmos/cowork-data/main/data/iki_tree.json?ts=' + Date.now();
+      var r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      _ikiData = await r.json();
+    } catch (e) {
+      tree.innerHTML = '<div class="empty-state">IKI-Tree nicht erreichbar: ' + esc(e.message) + '</div>';
+      return;
+    }
+  }
+  renderIKITab();
+  if (!_ikiInited) bindIKIHandlers();
+  _ikiInited = true;
+}
+
+function renderIKITab() {
+  var data = _ikiData;
+  if (!data) return;
+  var tree = document.getElementById('iki-tree');
+  var toc  = document.getElementById('iki-toc');
+  if (!tree) return;
+
+  var html = '';
+  html += '<header class="iki-header">';
+  html += '<h2 class="iki-title">' + esc(data.header && data.header.title || 'IKI') + '</h2>';
+  if (data.header && data.header.summary_5) {
+    html += '<p class="iki-summary iki-summary-l1">' + esc(data.header.summary_5) + '</p>';
+  }
+  html += '</header>';
+
+  (data.modules || []).forEach(function(mod) {
+    html += '<details class="iki-node iki-node-l2" data-iki-level="2" id="iki-' + esc(mod.id) + '">';
+    html += '<summary class="iki-summary-row"><span class="iki-caret">▸</span><span class="iki-node-title">' + esc(mod.title) + '</span></summary>';
+    html += '<div class="iki-body">';
+    if (mod.summary_5) html += '<p class="iki-summary iki-summary-l2">' + esc(mod.summary_5) + '</p>';
+    (mod.subtopics || []).forEach(function(sub) {
+      html += '<details class="iki-node iki-node-l3" data-iki-level="3" id="iki-' + esc(sub.id) + '">';
+      html += '<summary class="iki-summary-row"><span class="iki-caret">▸</span><span class="iki-node-title">' + esc(sub.title) + '</span></summary>';
+      html += '<div class="iki-body">';
+      if (sub.summary_5) html += '<p class="iki-summary iki-summary-l3">' + esc(sub.summary_5) + '</p>';
+      (sub.deep_sections || []).forEach(function(deep) {
+        html += '<details class="iki-node iki-node-l4" data-iki-level="4" id="iki-' + esc(deep.id) + '">';
+        html += '<summary class="iki-summary-row"><span class="iki-caret">▸</span><span class="iki-node-title">' + esc(deep.title) + '</span></summary>';
+        html += '<div class="iki-body">';
+        (deep.paragraphs || []).forEach(function(p) {
+          html += '<p class="iki-para">' + esc(p) + '</p>';
+        });
+        html += '</div></details>';
+      });
+      html += '</div></details>';
+    });
+    html += '</div></details>';
+  });
+
+  tree.innerHTML = html;
+
+  // TOC: Module als Quick-Nav.
+  if (toc) {
+    var tocHtml = '<div class="iki-toc-title">Module</div><ul class="iki-toc-list">';
+    (data.modules || []).forEach(function(mod) {
+      tocHtml += '<li><a href="#iki-' + esc(mod.id) + '" data-iki-jump="' + esc(mod.id) + '">' + esc(mod.title) + '</a></li>';
+    });
+    tocHtml += '</ul>';
+    toc.innerHTML = tocHtml;
+  }
+
+  applyIKIMode();
+}
+
+function applyIKIMode() {
+  var tree = document.getElementById('iki-tree');
+  if (!tree) return;
+  // kompakt: alles geschlossen. standard: Modul-Ebene offen. tief: alles offen.
+  tree.querySelectorAll('details.iki-node').forEach(function(d) {
+    var lvl = parseInt(d.dataset.ikiLevel, 10);
+    if (_ikiMode === 'kompakt') {
+      d.open = false;
+    } else if (_ikiMode === 'standard') {
+      d.open = (lvl === 2);
+    } else if (_ikiMode === 'tief') {
+      d.open = true;
+    }
+  });
+  document.querySelectorAll('.iki-mode-btn').forEach(function(b) {
+    b.classList.toggle('iki-mode-active', b.dataset.ikiMode === _ikiMode);
+  });
+}
+
+function bindIKIHandlers() {
+  var search = document.getElementById('iki-search');
+  if (search) {
+    search.addEventListener('input', function() { applyIKISearch(search.value); });
+  }
+  document.querySelectorAll('.iki-mode-btn').forEach(function(b) {
+    b.addEventListener('click', function() {
+      _ikiMode = b.dataset.ikiMode || 'standard';
+      applyIKIMode();
+    });
+  });
+  var toc = document.getElementById('iki-toc');
+  if (toc) {
+    toc.addEventListener('click', function(ev) {
+      var a = ev.target.closest('a[data-iki-jump]');
+      if (!a) return;
+      ev.preventDefault();
+      var id = a.dataset.ikiJump;
+      var node = document.getElementById('iki-' + id);
+      if (node) {
+        node.open = true;
+        node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+}
+
+function applyIKISearch(q) {
+  var tree = document.getElementById('iki-tree');
+  if (!tree) return;
+  var query = (q || '').trim().toLowerCase();
+  var nodes = tree.querySelectorAll('details.iki-node');
+  if (!query) {
+    nodes.forEach(function(n) {
+      n.classList.remove('iki-hit', 'iki-dim');
+    });
+    // Zurueck zum aktuellen Mode.
+    applyIKIMode();
+    return;
+  }
+  // Schritt 1: alle als gedimmt markieren, alle aufklappen.
+  nodes.forEach(function(n) {
+    n.classList.add('iki-dim');
+    n.classList.remove('iki-hit');
+  });
+  // Schritt 2: Treffer markieren + Pfad nach oben oeffnen.
+  nodes.forEach(function(n) {
+    var text = (n.textContent || '').toLowerCase();
+    if (text.indexOf(query) !== -1) {
+      n.classList.add('iki-hit');
+      n.classList.remove('iki-dim');
+      n.open = true;
+      // Eltern auch oeffnen + un-dim, damit der Treffer sichtbar ist.
+      var parent = n.parentElement && n.parentElement.closest('details.iki-node');
+      while (parent) {
+        parent.classList.remove('iki-dim');
+        parent.open = true;
+        parent = parent.parentElement && parent.parentElement.closest('details.iki-node');
+      }
+    }
+  });
 }
 
 
