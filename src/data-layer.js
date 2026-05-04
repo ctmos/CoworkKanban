@@ -1834,7 +1834,11 @@ async function loadFromGitHub() {
 
 
 
-    // ─── FILE SIZE MONITORING (warn before GitHub API 1MB limit) ──────────────
+    // ─── FILE SIZE MONITORING ────────────────────────────────────────────────
+    // GitHub Contents-API: PUT bis 100 MB, GET >1 MB liefert nur Metadata
+    // (wir haben 3-Tier-Fallback: Contents → git/blobs → download_url, deckt das ab).
+    // Realistische Schwelle: ~30 MB Warning, ~60 MB Critical. Browser-JSON.parse
+    // und AES-GCM-Decrypt werden ab ~50 MB merklich langsam.
 
     var _sizeChecks = [
 
@@ -1852,15 +1856,15 @@ async function loadFromGitHub() {
 
       var size = new Blob([JSON.stringify(f.data)]).size;
 
-      if (size > 900000) {
+      if (size > 60000000) {
 
-        console.error('[SizeMonitor] CRITICAL: ' + f.name + ' = ' + (size/1024).toFixed(0) + 'KB — approaching 1MB GitHub limit!');
+        console.error('[SizeMonitor] CRITICAL: ' + f.name + ' = ' + (size/1048576).toFixed(1) + 'MB — naehere mich GitHub-Repofile-Limit (100 MB).');
 
-        showToast(f.name + ' ist ' + (size/1024).toFixed(0) + 'KB — bald zu gross!', true);
+        showToast(f.name + ' ist ' + (size/1048576).toFixed(1) + 'MB — naehert sich Limit', true);
 
-      } else if (size > 700000) {
+      } else if (size > 30000000) {
 
-        console.warn('[SizeMonitor] WARNING: ' + f.name + ' = ' + (size/1024).toFixed(0) + 'KB');
+        console.warn('[SizeMonitor] WARNING: ' + f.name + ' = ' + (size/1048576).toFixed(1) + 'MB');
 
       }
 
