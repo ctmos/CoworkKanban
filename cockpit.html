@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16181c">
+  <meta name="description" content="LifeOS Cockpit v2 Shell">
+  <title>LifeOS Cockpit</title>
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --cockpit-bg: #16181c;
+      --cockpit-panel: #1d2128;
+      --cockpit-panel-2: #242933;
+      --cockpit-border: #343a46;
+      --cockpit-text: #eef2f7;
+      --cockpit-muted: #9aa3b2;
+      --stream-carl: #7c3aed;
+      --stream-hermine: #2563eb;
+      --stream-reflect: #0f766e;
+      --stream-track: #65a30d;
+      --stream-patient: #dc2626;
+      --stream-cockpit: #64748b;
+      --stream-wiki: #ca8a04;
+      --stream-email: #db2777;
+    }
+
+    body.cockpit-v2 {
+      min-height: 100vh;
+      background: var(--cockpit-bg);
+      color: var(--cockpit-text);
+    }
+
+    .cockpit-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 252px minmax(0, 1fr);
+    }
+
+    .cockpit-rail {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 18px;
+      background: #111418;
+      border-right: 1px solid var(--cockpit-border);
+    }
+
+    .cockpit-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+    }
+
+    .cockpit-brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+    }
+
+    .cockpit-brand strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.1;
+    }
+
+    .cockpit-brand span,
+    .status-item span,
+    .stream-card span,
+    .workpackage span {
+      color: var(--cockpit-muted);
+      font-size: 12px;
+    }
+
+    .cockpit-nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .cockpit-nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 0 10px;
+      color: var(--cockpit-text);
+      text-decoration: none;
+      border: 1px solid transparent;
+      border-radius: 8px;
+    }
+
+    .cockpit-nav a[aria-current="page"],
+    .cockpit-nav a:hover {
+      background: var(--cockpit-panel);
+      border-color: var(--cockpit-border);
+    }
+
+    .nav-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--stream-cockpit);
+      flex: 0 0 auto;
+    }
+
+    .cockpit-main {
+      min-width: 0;
+      padding: 20px clamp(16px, 3vw, 34px) 34px;
+    }
+
+    .cockpit-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .cockpit-title h1 {
+      font-size: clamp(24px, 4vw, 42px);
+      line-height: 1.04;
+      letter-spacing: 0;
+      margin: 0 0 6px;
+    }
+
+    .cockpit-title p {
+      color: var(--cockpit-muted);
+      margin: 0;
+      max-width: 680px;
+    }
+
+    .menu-button {
+      display: none;
+      width: 42px;
+      height: 42px;
+      align-items: center;
+      justify-content: center;
+      color: var(--cockpit-text);
+      background: var(--cockpit-panel);
+      border: 1px solid var(--cockpit-border);
+      border-radius: 8px;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .status-item,
+    .stream-card,
+    .workpackage,
+    .system-panel {
+      background: var(--cockpit-panel);
+      border: 1px solid var(--cockpit-border);
+      border-radius: 8px;
+    }
+
+    .status-item {
+      min-height: 94px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .status-item strong {
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .status-pill {
+      width: fit-content;
+      max-width: 100%;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      color: #08130d;
+      background: #7dd3a8;
+      white-space: nowrap;
+    }
+
+    .status-pill.pause {
+      color: #1d1301;
+      background: #f6c35f;
+    }
+
+    .status-pill.standby {
+      color: #10131a;
+      background: #c7d2fe;
+    }
+
+    .cockpit-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .system-panel {
+      padding: 16px;
+    }
+
+    .system-panel h2 {
+      font-size: 16px;
+      margin: 0 0 14px;
+    }
+
+    .stream-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stream-card {
+      min-height: 104px;
+      padding: 14px;
+      border-left: 4px solid var(--stream-cockpit);
+    }
+
+    .stream-card strong,
+    .workpackage strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .stream-card[data-stream="carl"] { border-left-color: var(--stream-carl); }
+    .stream-card[data-stream="hermine"] { border-left-color: var(--stream-hermine); }
+    .stream-card[data-stream="reflect"] { border-left-color: var(--stream-reflect); }
+    .stream-card[data-stream="track"] { border-left-color: var(--stream-track); }
+    .stream-card[data-stream="patient"] { border-left-color: var(--stream-patient); }
+    .stream-card[data-stream="cockpit"] { border-left-color: var(--stream-cockpit); }
+    .stream-card[data-stream="wiki"] { border-left-color: var(--stream-wiki); }
+    .stream-card[data-stream="email"] { border-left-color: var(--stream-email); }
+
+    .workpackage-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .workpackage {
+      padding: 14px;
+      min-height: 86px;
+    }
+
+    .workpackage small {
+      display: inline-flex;
+      margin-bottom: 7px;
+      color: var(--cockpit-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .manual-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .manual-strip button {
+      min-height: 38px;
+      color: var(--cockpit-text);
+      background: var(--cockpit-panel-2);
+      border: 1px solid var(--cockpit-border);
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    .manual-strip button[aria-pressed="true"] {
+      border-color: #f6c35f;
+      color: #ffe8ad;
+    }
+
+    @media (max-width: 900px) {
+      .cockpit-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .cockpit-rail {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(280px, 84vw);
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform 0.18s ease;
+        z-index: 20;
+        box-shadow: 24px 0 48px rgba(0, 0, 0, 0.42);
+      }
+
+      .cockpit-shell.nav-open .cockpit-rail {
+        transform: translateX(0);
+      }
+
+      .menu-button {
+        display: inline-flex;
+      }
+
+      .status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .cockpit-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 599px) {
+      .cockpit-main {
+        padding: 14px;
+      }
+
+      .cockpit-topbar {
+        align-items: flex-start;
+      }
+
+      .status-grid,
+      .stream-grid,
+      .manual-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .status-item {
+        min-height: 82px;
+      }
+    }
+  </style>
+</head>
+<body class="cockpit-v2">
+  <div class="cockpit-shell" id="cockpitShell">
+    <aside class="cockpit-rail" aria-label="Cockpit Navigation">
+      <div class="cockpit-brand">
+        <img src="icon-192.png" alt="">
+        <div>
+          <strong>LifeOS Cockpit</strong>
+          <span>v2 Shell</span>
+        </div>
+      </div>
+      <nav class="cockpit-nav">
+        <a href="#status" aria-current="page"><i class="nav-dot"></i>Status</a>
+        <a href="#streams"><i class="nav-dot" style="background: var(--stream-hermine)"></i>Streams</a>
+        <a href="#workpackages"><i class="nav-dot" style="background: var(--stream-wiki)"></i>Workpackages</a>
+        <a href="#manual"><i class="nav-dot" style="background: #f6c35f"></i>Manual-Control</a>
+      </nav>
+    </aside>
+
+    <main class="cockpit-main">
+      <header class="cockpit-topbar">
+        <div class="cockpit-title">
+          <h1>my.moser.ai Cockpit</h1>
+          <p>Operative Zentrale fuer Hermine, Codex, Streams und kontrollierte LifeOS-Arbeit.</p>
+        </div>
+        <button class="menu-button" id="menuButton" type="button" aria-label="Navigation" aria-expanded="false">
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+        </button>
+      </header>
+
+      <section class="status-grid" id="status" aria-label="Systemstatus">
+        <article class="status-item">
+          <span>Hermine</span>
+          <strong>GPT-5.5 live</strong>
+          <em class="status-pill">openai-codex</em>
+        </article>
+        <article class="status-item">
+          <span>Engineering</span>
+          <strong>Codex primary</strong>
+          <em class="status-pill">active</em>
+        </article>
+        <article class="status-item">
+          <span>Review</span>
+          <strong>Claude standby</strong>
+          <em class="status-pill standby">standby</em>
+        </article>
+        <article class="status-item">
+          <span>Automation</span>
+          <strong>Manual-Control</strong>
+          <em class="status-pill pause">default</em>
+        </article>
+        <article class="status-item">
+          <span>Routinen</span>
+          <strong>Crons pausiert</strong>
+          <em class="status-pill pause">guarded</em>
+        </article>
+      </section>
+
+      <div class="cockpit-layout">
+        <section class="system-panel" id="streams">
+          <h2>Streams</h2>
+          <div class="stream-grid">
+            <article class="stream-card" data-stream="hermine"><strong>Hermine</strong><span>Telegram, Voice, Gateway</span></article>
+            <article class="stream-card" data-stream="carl"><strong>Carl</strong><span>Reflexion, Motivation, Review</span></article>
+            <article class="stream-card" data-stream="reflect"><strong>Reflect</strong><span>Journal-Marker, sanitisiert</span></article>
+            <article class="stream-card" data-stream="track"><strong>Track</strong><span>Status-Marker ohne BL/S/E/O-Build</span></article>
+            <article class="stream-card" data-stream="patient"><strong>Patient</strong><span>Metadaten-Grenze, restricted</span></article>
+            <article class="stream-card" data-stream="wiki"><strong>Wiki</strong><span>Kuratierte Wissensbasis</span></article>
+            <article class="stream-card" data-stream="email"><strong>Email</strong><span>HITL, keine Cloud-LLM-Inhalte</span></article>
+            <article class="stream-card" data-stream="cockpit"><strong>Cockpit</strong><span>Zentrale, Sessions, Locks</span></article>
+          </div>
+        </section>
+
+        <aside class="system-panel" id="workpackages">
+          <h2>Workpackages</h2>
+          <div class="workpackage-list">
+            <article class="workpackage">
+              <small>WP-001</small>
+              <strong>lifeos-kernel</strong>
+              <span>NPM/TypeScript Pure-Logic Fundament.</span>
+            </article>
+            <article class="workpackage">
+              <small>WP-002</small>
+              <strong>Stream Registry</strong>
+              <span>Single Source of Truth fuer Stream-Grenzen.</span>
+            </article>
+            <article class="workpackage">
+              <small>WP-006</small>
+              <strong>Cockpit Shell</strong>
+              <span>Nicht-brechender Prototyp fuer my.moser.ai/cockpit/.</span>
+            </article>
+          </div>
+        </aside>
+      </div>
+
+      <section class="system-panel" id="manual" style="margin-top: 16px;">
+        <h2>Manual-Control</h2>
+        <div class="manual-strip">
+          <button type="button" aria-pressed="true">Briefings aus</button>
+          <button type="button" aria-pressed="true">Digests aus</button>
+          <button type="button" aria-pressed="true">Proaktiv aus</button>
+          <button type="button" aria-pressed="true">LLM-Crons aus</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const manifest = {
+      name: "LifeOS Cockpit",
+      short_name: "Cockpit",
+      id: "/cockpit-v2/",
+      start_url: "./cockpit.html",
+      scope: "./",
+      display: "standalone",
+      orientation: "any",
+      background_color: "#16181c",
+      theme_color: "#16181c",
+      lang: "de-CH",
+      icons: [
+        { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+        { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+      ]
+    };
+
+    const manifestUrl = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" }));
+    const link = document.createElement("link");
+    link.rel = "manifest";
+    link.href = manifestUrl;
+    document.head.appendChild(link);
+
+    const shell = document.getElementById("cockpitShell");
+    const menuButton = document.getElementById("menuButton");
+
+    menuButton.addEventListener("click", () => {
+      const isOpen = shell.classList.toggle("nav-open");
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.querySelectorAll(".cockpit-nav a").forEach((linkEl) => {
+      linkEl.addEventListener("click", () => {
+        document.querySelectorAll(".cockpit-nav a").forEach((item) => item.removeAttribute("aria-current"));
+        linkEl.setAttribute("aria-current", "page");
+        shell.classList.remove("nav-open");
+        menuButton.setAttribute("aria-expanded", "false");
+      });
+    });
+  </script>
+</body>
+</html>
