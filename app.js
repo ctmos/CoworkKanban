@@ -1690,6 +1690,67 @@ function changeEntryType(entryId, newType) {
   showPatientDetail(_patCurrentId);
 }
 
+function getPatientEntryTime(entry) {
+  var raw = entry.date || entry.ts || 0;
+  var time = new Date(raw).getTime();
+  return isNaN(time) ? 0 : time;
+}
+
+function getPatientEntryManualOrder(entry) {
+  var order = Number(entry.manualOrder);
+  return isNaN(order) ? null : order;
+}
+
+function getPatientEntriesForDisplay(pat) {
+  var entries = (pat.entries || []).slice().filter(function(entry) { return !entry.trashed; });
+  var hasManualOrder = entries.some(function(entry) { return getPatientEntryManualOrder(entry) !== null; });
+  entries.sort(function(a, b) {
+    var aOrder = getPatientEntryManualOrder(a);
+    var bOrder = getPatientEntryManualOrder(b);
+    if (hasManualOrder && (aOrder !== null || bOrder !== null)) {
+      if (aOrder === null && bOrder !== null) return -1;
+      if (aOrder !== null && bOrder === null) return 1;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+    }
+    return getPatientEntryTime(b) - getPatientEntryTime(a);
+  });
+  return entries;
+}
+
+function applyPatientEntryOrder(pat, orderedEntries) {
+  var orderedIds = {};
+  orderedEntries.forEach(function(entry, index) {
+    entry.manualOrder = index;
+    orderedIds[entry.id] = true;
+  });
+  var byId = {};
+  (pat.entries || []).forEach(function(entry) { byId[entry.id] = entry; });
+  var nextEntries = [];
+  orderedEntries.forEach(function(entry) {
+    if (byId[entry.id]) nextEntries.push(byId[entry.id]);
+  });
+  (pat.entries || []).forEach(function(entry) {
+    if (!orderedIds[entry.id]) nextEntries.push(entry);
+  });
+  pat.entries = nextEntries;
+}
+
+function movePatientEntry(entryId, direction) {
+  var patients = getPatients().map(migratePatientEntries);
+  var pat = patients.find(function(p){ return p.id === _patCurrentId; });
+  if (!pat) return;
+  var entries = getPatientEntriesForDisplay(pat);
+  var currentIndex = entries.findIndex(function(entry) { return entry.id === entryId; });
+  var targetIndex = currentIndex + direction;
+  if (currentIndex < 0 || targetIndex < 0 || targetIndex >= entries.length) return;
+  var moving = entries[currentIndex];
+  entries[currentIndex] = entries[targetIndex];
+  entries[targetIndex] = moving;
+  applyPatientEntryOrder(pat, entries);
+  savePatients(patients);
+  showPatientDetail(_patCurrentId);
+}
+
 function showPatientDetail(patId) {
 
   _patCurrentView = 'detail';
@@ -1865,7 +1926,7 @@ function showPatientDetail(patId) {
 
 
 
-  var entries = (pat.entries||[]).slice().filter(function(e){return !e.trashed;}).sort(function(a,b){ return new Date(b.date||b.ts||0)-new Date(a.date||a.ts||0); });
+  var entries = getPatientEntriesForDisplay(pat);
 
   if (entries.length === 0) {
 
@@ -1873,7 +1934,7 @@ function showPatientDetail(patId) {
 
   } else {
 
-    entries.forEach(function(e){
+    entries.forEach(function(e, entryIndex){
 
       var rawDate = e.date || e.ts || null;
       var d = rawDate ? new Date(rawDate) : null;
@@ -1902,6 +1963,10 @@ function showPatientDetail(patId) {
         + (function(){ var t=e.content||e.text||''; var ls=t.split('\n'); var lo=ls.length>5||t.length>400; var ex=_entryExpanded[e.id]; return '<div class="pat-entry-content'+(lo&&!ex?' collapsed':'')+'">' + esc(t) + '</div>' + (lo ? '<button class="pat-entry-expand" onclick="toggleEntryExpand(\x27'+esc(e.id)+'\x27)">'+(ex?'Weniger':'Mehr anzeigen...')+'</button>' : ''); }())
 
         + '<div class="pat-entry-actions">'
+
+        + '<button class="pat-entry-move" onclick="movePatientEntry(\''+esc(e.id)+'\',-1)" title="Nach oben" aria-label="Eintrag nach oben"'+(entryIndex===0?' disabled':'')+'>&#8593;</button>'
+
+        + '<button class="pat-entry-move" onclick="movePatientEntry(\''+esc(e.id)+'\',1)" title="Nach unten" aria-label="Eintrag nach unten"'+(entryIndex===entries.length-1?' disabled':'')+'>&#8595;</button>'
 
         + '<button onclick="openEntryModal(\''+esc(e.id)+'\')">Bearbeiten</button>'
 
